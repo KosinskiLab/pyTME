@@ -8,7 +8,6 @@
    
 
 
-..
    .. autosummary::
       :toctree:
       
@@ -45,7 +44,6 @@
    
 
 
-..
    .. autosummary::
       :toctree:
       

@@ -472,7 +472,8 @@ document.write(`
         <span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_memmap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Density&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Reads in a file and converts it into py:class:`Density` instance.</span>
+<span class="sd">        Reads in a file and converts it into :py:class:`Density` instance.</span>
+
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -486,7 +487,7 @@ document.write(`
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Density</span>
-<span class="sd">            An instance of the py:class:`Density` class.</span>
+<span class="sd">            An instance of the :py:class:`Density` class.</span>
 
 <span class="sd">        References</span>
 <span class="sd">        ----------</span>
@@ -1794,7 +1795,7 @@ document.write(`
 <span class="sd">        Calculates the surface coordinates of the current class instance using</span>
 <span class="sd">        different boundary and surface detection methods. This method is relevant</span>
 <span class="sd">        for determining coordinates used in template matching,</span>
-<span class="sd">        see :py:class:`tme.fitRefinement.FitRefinement`.</span>
+<span class="sd">        see :py:class:`tme.matching_exhaustive.FitRefinement`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1839,11 +1840,11 @@ document.write(`
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.NormalVectorScore`</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.PartialLeastSquareDifference`</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.MutualInformation`</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.Envelope`</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.Chamfer`</span>
+<span class="sd">        :py:class:`tme.matching_exhaustive.NormalVectorScore`</span>
+<span class="sd">        :py:class:`tme.matching_exhaustive.PartialLeastSquareDifference`</span>
+<span class="sd">        :py:class:`tme.matching_exhaustive.MutualInformation`</span>
+<span class="sd">        :py:class:`tme.matching_exhaustive.Envelope`</span>
+<span class="sd">        :py:class:`tme.matching_exhaustive.Chamfer`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">available_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ConvexHull&quot;</span><span class="p">,</span> <span class="s2">&quot;Weight&quot;</span><span class="p">,</span> <span class="s2">&quot;Sobel&quot;</span><span class="p">,</span> <span class="s2">&quot;Laplace&quot;</span><span class="p">,</span> <span class="s2">&quot;Minimum&quot;</span><span class="p">]</span>
 
@@ -1904,7 +1905,7 @@ document.write(`
 <span class="sd">        of the current class instance. If the normal vector to a given coordinate</span>
 <span class="sd">        can not be computed, the zero vector is returned instead. The output of this</span>
 <span class="sd">        function can e.g. be used in</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.NormalVectorScore`.</span>
+<span class="sd">        :py:class:`tme.matching_optimization.NormalVectorScore`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1933,11 +1934,11 @@ document.write(`
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.NormalVectorScore`</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.PartialLeastSquareDifference`</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.MutualInformation`</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.Envelope`</span>
-<span class="sd">        :py:class:`tme.fitRefinement.FitRefinement.Chamfer`</span>
+<span class="sd">        :py:class:`tme.matching_optimization.NormalVectorScore`</span>
+<span class="sd">        :py:class:`tme.matching_optimization.PartialLeastSquareDifference`</span>
+<span class="sd">        :py:class:`tme.matching_optimization.MutualInformation`</span>
+<span class="sd">        :py:class:`tme.matching_optimization.Envelope`</span>
+<span class="sd">        :py:class:`tme.matching_optimization.Chamfer`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">normal_vectors</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
