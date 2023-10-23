@@ -1,0 +1,73 @@
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+stages:
+  - test
+  - build
+  - docs
+  - deploy
+  - .post
+
+test:
+  stage: test
+  image: python:3.11.5
+  script:
+    - python --version
+    - python -mpip install pytest
+    - python -mpip install .
+    # - pytest -vvv .
+
+build:
+  stage: build
+  image: python:3.11.5
+  script:
+    - python -mpip install .
+    - python -mpip install setuptools wheel
+    - python setup.py sdist bdist_wheel
+  artifacts:
+    paths:
+      - dist/*
+
+docs:
+  stage: docs
+  image: python:3.11.5
+  script:
+    - python -mpip install .
+    - python -mpip install \
+      Sphinx \
+      pydata-sphinx-theme \
+      sphinx_design \
+      numpydoc \
+      sphinx_copybutton \
+      sphinx-tabs
+    - cd doc
+    - make clean
+    - make html
+    - mkdir -p ../public
+    - mv _build/html/* ../public/
+  artifacts:
+    paths:
+      - public
+
+# deploy:
+#   stage: deploy
+#   only:
+#     - master
+#   script:
+#     - pip install twine
+#     - echo $PYPI_PASSWORD | twine upload --username vmaurer --password-stdin dist/*
+
+pages:
+  stage: .post
+  image: busybox
+  script:
+    - echo "The site will be deployed to $CI_PAGES_URL"
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

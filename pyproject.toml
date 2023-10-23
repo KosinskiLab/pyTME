@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools", "numpy", "pytest", "pybind11"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="pytme"
+authors = [
+  { name = "Valentin Maurer", email = "valentin.maurer@embl-hamburg.de" },
+]
+version="0.1"
+description="Python Template Matching Engine"
+readme="README.md"
+requires-python = ">=3.11"
+dependencies=[
+    "mrcfile>=1.4.3",
+    "numpy>=1.22.2",
+    "pyfftw>=0.13.1",
+    "pytest>=6.2.5",
+    "PyWavelets>=1.2.0",
+    "PyYAML>=6.0",
+    "scikit-image>=0.19.0",
+    "scikit_learn>=1.2.1",
+    "scipy>=1.9.1",
+    "pybind11",
+    "psutil",
+]
+license = {text = "Proprietary"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+match-template = "tme.scripts:match_template"
+estimate-ram-usage = "tme.scripts:estimate_ram_usage"
+preprocessor-gui = "tme.scripts:preprocessor_gui"
+preprocess = "tme.scripts:preprocess"
+postprocess = "tme.scripts:postprocess"
+
+[project.urls]
+"Homepage" = "https://git.embl.de/vmaurer/pytme"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
+[tool.coverage.run]
+omit = [
+    "tme/tests/*"
+]

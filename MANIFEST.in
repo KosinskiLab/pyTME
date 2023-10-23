@@ -1,0 +1,70 @@
+# Byte-compiled / optimized / DLL files
+global-exclude __pycache__/
+global-exclude *.py[cod]
+
+# C extensions
+global-exclude *.so
+
+# Distribution / packaging
+global-exclude .Python
+prune env/
+prune build/
+prune develop-eggs/
+prune dist/
+prune downloads/
+prune eggs/
+prune .eggs/
+prune lib/
+prune lib64/
+prune parts/
+prune sdist/
+prune var/
+prune *.egg-info/
+global-exclude .installed.cfg
+global-exclude *.egg
+
+# PyInstaller
+global-exclude *.manifest
+global-exclude *.spec
+
+# Installer logs
+global-exclude pip-log.txt
+global-exclude pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+prune htmlcov/
+prune .tox/
+global-exclude .coverage
+global-exclude .coverage.*
+global-exclude .cache
+global-exclude nosetests.xml
+global-exclude coverage.xml
+global-exclude *,cover
+prune .pytest_cache/
+
+# Translations
+global-exclude *.mo
+global-exclude *.pot
+
+# Django stuff:
+global-exclude *.log
+
+# Sphinx documentation
+prune docs/_build/
+
+# PyBuilder
+prune target/
+
+# Other exclusions
+global-exclude .DS_Store
+global-exclude .gitconfig
+global-exclude *.pickle
+prune tme/temp
+global-exclude doc/compileApiReference.sh
+prune public
+global-exclude tme/matching_backend.py
+prune doc/_build
+prune doc/reference/api
+global-exclude tme/packaging.py
+global-exclude tme/tests/test_packaging.py
+global-exclude scripts/match_template_devel.py
