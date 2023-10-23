@@ -1,0 +1,6 @@
+﻿cam\_setup
+=================================
+
+.. currentmodule:: tme.matching_exhaustive
+
+.. autofunction:: cam_setup

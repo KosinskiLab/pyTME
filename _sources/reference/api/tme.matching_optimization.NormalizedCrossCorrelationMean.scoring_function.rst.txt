@@ -1,0 +1,6 @@
+NormalizedCrossCorrelationMean.scoring\_function
+=========================================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: NormalizedCrossCorrelationMean.scoring_function

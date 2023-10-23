@@ -1,0 +1,6 @@
+MatchCoordinatesToDensity.\_\_call\_\_
+============================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: MatchCoordinatesToDensity.__call__

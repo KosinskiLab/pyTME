@@ -1,0 +1,22 @@
+﻿tme.matching\_memory.CAMMemoryUsage
+===================================
+
+.. currentmodule:: tme.matching_memory
+
+.. autoclass:: CAMMemoryUsage
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      CAMMemoryUsage.base_usage
+      CAMMemoryUsage.per_fork
+
+
+
+
+   
+

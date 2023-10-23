@@ -1,0 +1,79 @@
+﻿tme.backends.PytorchBackend
+===========================
+
+.. currentmodule:: tme.backends
+
+.. autoclass:: PytorchBackend
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      PytorchBackend.abs
+      PytorchBackend.add
+      PytorchBackend.arange
+      PytorchBackend.argsort
+      PytorchBackend.arr_to_sharedarr
+      PytorchBackend.astype
+      PytorchBackend.build_fft
+      PytorchBackend.center_of_mass
+      PytorchBackend.clip
+      PytorchBackend.compute_convolution_shapes
+      PytorchBackend.concatenate
+      PytorchBackend.datatype_bytes
+      PytorchBackend.device_count
+      PytorchBackend.divide
+      PytorchBackend.einsum
+      PytorchBackend.eps
+      PytorchBackend.extract_center
+      PytorchBackend.fill
+      PytorchBackend.flip
+      PytorchBackend.free_cache
+      PytorchBackend.free_sharedarr
+      PytorchBackend.full
+      PytorchBackend.get_available_memory
+      PytorchBackend.indices
+      PytorchBackend.max
+      PytorchBackend.max_filter_coordinates
+      PytorchBackend.maximum
+      PytorchBackend.mean
+      PytorchBackend.min
+      PytorchBackend.minimum
+      PytorchBackend.mod
+      PytorchBackend.multiply
+      PytorchBackend.power
+      PytorchBackend.preallocate_array
+      PytorchBackend.repeat
+      PytorchBackend.reverse
+      PytorchBackend.roll
+      PytorchBackend.rotate_array
+      PytorchBackend.rotate_array_coordinates
+      PytorchBackend.set_device
+      PytorchBackend.sharedarr_to_arr
+      PytorchBackend.size
+      PytorchBackend.sqrt
+      PytorchBackend.square
+      PytorchBackend.stack
+      PytorchBackend.std
+      PytorchBackend.subtract
+      PytorchBackend.sum
+      PytorchBackend.to_backend_array
+      PytorchBackend.to_cpu_array
+      PytorchBackend.to_numpy_array
+      PytorchBackend.tobytes
+      PytorchBackend.topk_indices
+      PytorchBackend.topleft_pad
+      PytorchBackend.transpose
+      PytorchBackend.tril_indices
+      PytorchBackend.unique
+      PytorchBackend.unravel_index
+      PytorchBackend.zeros
+
+
+
+
+   
+

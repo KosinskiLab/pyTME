@@ -1,0 +1,23 @@
+﻿tme.analyzer.PeakCallerSort
+===========================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: PeakCallerSort
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      PeakCallerSort.__call__
+      PeakCallerSort.call_peaks
+      PeakCallerSort.merge
+
+
+
+
+   
+

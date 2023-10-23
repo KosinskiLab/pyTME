@@ -1,0 +1,6 @@
+ScoreStatistics.merge
+==================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: ScoreStatistics.merge

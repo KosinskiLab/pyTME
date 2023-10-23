@@ -1,0 +1,22 @@
+﻿tme.matching\_memory.CORRMemoryUsage
+====================================
+
+.. currentmodule:: tme.matching_memory
+
+.. autoclass:: CORRMemoryUsage
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      CORRMemoryUsage.base_usage
+      CORRMemoryUsage.per_fork
+
+
+
+
+   
+

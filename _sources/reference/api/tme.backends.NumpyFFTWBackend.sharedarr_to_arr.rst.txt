@@ -1,0 +1,6 @@
+NumpyFFTWBackend.sharedarr\_to\_arr
+==============================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: NumpyFFTWBackend.sharedarr_to_arr

@@ -1,0 +1,6 @@
+FitRefinement.refine
+==============================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: FitRefinement.refine

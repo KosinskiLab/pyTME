@@ -1,0 +1,6 @@
+NumpyFFTWBackend.extract\_center
+===========================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.extract_center

@@ -1,0 +1,1625 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tme.matching_optimization &#8212; pytme 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=e68c333d" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+
+    <script src="../../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/tme/matching_optimization';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../quickstart/index.html">
+                        Quickstart
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../reference/index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../genindex.html">
+                        Index
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../quickstart/index.html">
+                        Quickstart
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../reference/index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../genindex.html">
+                        Index
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">tme.matching...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for tme.matching_optimization</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Implements various methods for non-exhaustive template matching</span>
+<span class="sd">    based on numerical optimization.</span>
+
+<span class="sd">    Copyright (c) 2023 European Molecular Biology Laboratory</span>
+
+<span class="sd">    Author: Valentin Maurer &lt;valentin.maurer@embl-hamburg.de&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">differential_evolution</span><span class="p">,</span>
+    <span class="n">LinearConstraint</span><span class="p">,</span>
+    <span class="n">basinhopping</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">laplace</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">KDTree</span>
+
+<span class="kn">from</span> <span class="nn">.matching_utils</span> <span class="kn">import</span> <span class="n">rigid_transform</span><span class="p">,</span> <span class="n">euler_to_rotationmatrix</span>
+
+
+<div class="viewcode-block" id="MatchCoordinatesToDensity">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MatchCoordinatesToDensity.html#tme.matching_optimization.MatchCoordinatesToDensity">[docs]</a>
+<span class="k">class</span> <span class="nc">MatchCoordinatesToDensity</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to template match coordinate sets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    target_coordinates : NDArray</span>
+<span class="sd">        The coordinates of the target.</span>
+<span class="sd">    template_coordinates : NDArray</span>
+<span class="sd">        The coordinates of the template.</span>
+<span class="sd">    target_weights : NDArray</span>
+<span class="sd">        The weights of the target.</span>
+<span class="sd">    template_weights : NDArray</span>
+<span class="sd">        The weights of the template.</span>
+<span class="sd">    sampling_rate : NDArray</span>
+<span class="sd">        The size of the voxel.</span>
+<span class="sd">    template_mask_coordinates : NDArray, optional</span>
+<span class="sd">        The coordinates of the template mask. Default is None.</span>
+<span class="sd">    target_mask_coordinates : NDArray, optional</span>
+<span class="sd">        The coordinates of the target mask. Default is None.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Other keyword arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">template_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">target_weights</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">template_weights</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">sampling_rate</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">template_mask_coordinates</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">target_mask_coordinates</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">target</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="n">FitRefinement</span><span class="o">.</span><span class="n">array_from_coordinates</span><span class="p">(</span>
+            <span class="n">target_coordinates</span><span class="p">,</span> <span class="n">target_weights</span><span class="p">,</span> <span class="n">sampling_rate</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_origin</span> <span class="o">=</span> <span class="n">origin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">sampling_rate</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span> <span class="o">=</span> <span class="n">template_weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates</span> <span class="o">=</span> <span class="n">template_coordinates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates_rotated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_mask_density</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">target_mask_coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">target_mask</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">FitRefinement</span><span class="o">.</span><span class="n">array_from_coordinates</span><span class="p">(</span>
+                <span class="n">coordinates</span><span class="o">=</span><span class="n">target_mask_coordinates</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">target_mask_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">origin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target_origin</span><span class="p">,</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_mask_density</span> <span class="o">=</span> <span class="n">target_mask</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates_rotated</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">template_mask_coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates</span> <span class="o">=</span> <span class="n">template_mask_coordinates</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates_rotated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="MatchCoordinatesToDensity.__call__">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MatchCoordinatesToDensity.__call__.html#tme.matching_optimization.MatchCoordinatesToDensity.__call__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the score for a given transformation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : NDArray</span>
+<span class="sd">            The input transformation parameters.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The negative score from the scoring function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+        <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">euler_to_rotationmatrix</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+
+        <span class="n">rigid_transform</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates</span><span class="p">,</span>
+            <span class="n">coordinates_mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates</span><span class="p">,</span>
+            <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="p">,</span>
+            <span class="n">translation</span><span class="o">=</span><span class="n">translation</span><span class="p">,</span>
+            <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates_rotated</span><span class="p">,</span>
+            <span class="n">out_mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates_rotated</span><span class="p">,</span>
+            <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">mapping</span> <span class="o">=</span> <span class="n">FitRefinement</span><span class="o">.</span><span class="n">map_coordinates_to_array</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates_rotated</span><span class="p">,</span>
+            <span class="n">coordinates_mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates_rotated</span><span class="p">,</span>
+            <span class="n">array_origin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target_origin</span><span class="p">,</span>
+            <span class="n">array_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">scoring_function</span><span class="p">(</span>
+            <span class="n">transformed_coordinates</span><span class="o">=</span><span class="n">mapping</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">transformed_coordinates_mask</span><span class="o">=</span><span class="n">mapping</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">in_volume</span><span class="o">=</span><span class="n">mapping</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="n">in_volume_mask</span><span class="o">=</span><span class="n">mapping</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MatchCoordinatesToDensity.scoring_function">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MatchCoordinatesToDensity.scoring_function.html#tme.matching_optimization.MatchCoordinatesToDensity.scoring_function">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes a scoring metric for a given set of coordinates.</span>
+
+<span class="sd">        This function is not intended to be called directly, but should rather be</span>
+<span class="sd">        defined by classes inheriting from :py:class:`MatchCoordinatesToDensity`</span>
+<span class="sd">        to parse a given file format.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+</div>
+
+
+
+<span class="k">class</span> <span class="nc">MatchCoordinatesToCoordinates</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to template match coordinate sets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    target_coordinates : NDArray</span>
+<span class="sd">        The coordinates of the target.</span>
+<span class="sd">    template_coordinates : NDArray</span>
+<span class="sd">        The coordinates of the template.</span>
+<span class="sd">    target_weights : NDArray</span>
+<span class="sd">        The weights of the target.</span>
+<span class="sd">    template_weights : NDArray</span>
+<span class="sd">        The weights of the template.</span>
+<span class="sd">    sampling_rate : NDArray</span>
+<span class="sd">        The size of the voxel.</span>
+<span class="sd">    template_mask_coordinates : NDArray, optional</span>
+<span class="sd">        The coordinates of the template mask. Default is None.</span>
+<span class="sd">    target_mask_coordinates : NDArray, optional</span>
+<span class="sd">        The coordinates of the target mask. Default is None.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Other keyword arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">template_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">target_weights</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">template_weights</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">template_mask_coordinates</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">target_mask_coordinates</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_weights</span> <span class="o">=</span> <span class="n">target_weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_coordinates</span> <span class="o">=</span> <span class="n">target_coordinates</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span> <span class="o">=</span> <span class="n">template_weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates</span> <span class="o">=</span> <span class="n">template_coordinates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates_rotated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_mask_coordinates</span> <span class="o">=</span> <span class="n">target_mask_coordinates</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates_rotated</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">template_mask_coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates</span> <span class="o">=</span> <span class="n">template_mask_coordinates</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates_rotated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the score for a given transformation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : NDArray</span>
+<span class="sd">            The input transformation parameters.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The negative score from the scoring function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+        <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">euler_to_rotationmatrix</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+
+        <span class="n">rigid_transform</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates</span><span class="p">,</span>
+            <span class="n">coordinates_mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates</span><span class="p">,</span>
+            <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="p">,</span>
+            <span class="n">translation</span><span class="o">=</span><span class="n">translation</span><span class="p">,</span>
+            <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates_rotated</span><span class="p">,</span>
+            <span class="n">out_mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates_rotated</span><span class="p">,</span>
+            <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">scoring_function</span><span class="p">(</span>
+            <span class="n">transformed_coordinates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates_rotated</span><span class="p">,</span>
+            <span class="n">transformed_coordinates_mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates_rotated</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes a scoring metric for a given set of coordinates.</span>
+
+<span class="sd">        This function is not intended to be called directly, but should rather be</span>
+<span class="sd">        defined by classes inheriting from :py:class:`MatchCoordinatesToDensity`</span>
+<span class="sd">        to parse a given file format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="CrossCorrelation">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation">[docs]</a>
+<span class="k">class</span> <span class="nc">CrossCorrelation</span><span class="p">(</span><span class="n">MatchCoordinatesToDensity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Cross-Correlation matching score.</span>
+
+<span class="sd">    Cross-Correlation score formula:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{score} = \\text{target_weights} \\cdot \\text{template_weights}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denominator</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="CrossCorrelation.scoring_function">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.CrossCorrelation.scoring_function.html#tme.matching_optimization.CrossCorrelation.scoring_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">transformed_coordinates_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">in_volume</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">in_volume_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Cross-Correlation score.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        transformed_coordinates : NDArray</span>
+<span class="sd">            Transformed coordinates.</span>
+<span class="sd">        transformed_coordinates_mask : NDArray</span>
+<span class="sd">            Mask for the transformed coordinates.</span>
+<span class="sd">        in_volume : NDArray</span>
+<span class="sd">            Binary mask indicating which ``transformed_coordinates`` are in the</span>
+<span class="sd">            target volume.</span>
+<span class="sd">        in_volume_mask : NDArray</span>
+<span class="sd">            Binary mask indicating which ``transformed_coordinates`` are in the</span>
+<span class="sd">            target mask volume.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The Cross-Correlation score.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">transformed_coordinates</span><span class="p">[:,</span> <span class="n">in_volume</span><span class="p">])],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">[</span><span class="n">in_volume</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">score</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">denominator</span>
+        <span class="k">return</span> <span class="n">score</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="LaplaceCrossCorrelation">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.LaplaceCrossCorrelation.html#tme.matching_optimization.LaplaceCrossCorrelation">[docs]</a>
+<span class="k">class</span> <span class="nc">LaplaceCrossCorrelation</span><span class="p">(</span><span class="n">CrossCorrelation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Laplace Cross-Correlation matching score.</span>
+
+<span class="sd">    The score is computed like CrossCorrelation, but with Laplace filtered</span>
+<span class="sd">    weights, indicated by the Laplace operator :math:`\\nabla^{2}`.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{score} = \\nabla^{2} \\text{target_weights} \\cdot</span>
+<span class="sd">                        \\nabla^{2} \\text{template_weights}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span> <span class="o">=</span> <span class="n">laplace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="p">)</span>
+
+        <span class="n">arr</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">FitRefinement</span><span class="o">.</span><span class="n">array_from_coordinates</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span> <span class="o">=</span> <span class="n">laplace</span><span class="p">(</span><span class="n">arr</span><span class="p">)[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">positions</span><span class="p">)]</span></div>
+
+
+
+<div class="viewcode-block" id="NormalizedCrossCorrelation">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation">[docs]</a>
+<span class="k">class</span> <span class="nc">NormalizedCrossCorrelation</span><span class="p">(</span><span class="n">CrossCorrelation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Normalized Cross-Correlation matching score.</span>
+
+<span class="sd">    The score is computed by normalizing the dot product of `target_weights` and</span>
+<span class="sd">    `template_weights` with the product of their norms. This normalization ensures</span>
+<span class="sd">    the score lies between -1 and 1, providing a measure of similarity that&#39;s invariant</span>
+<span class="sd">    to scale.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{score} = \\frac{\\text{target_weights} \\cdot \\text{template_weights}}</span>
+<span class="sd">                        {\\text{max(target_norm} \\times \\text{template_norm, eps)}}</span>
+
+<span class="sd">    Where:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{target_norm} = ||\\text{target_weights}||</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{template_norm} = ||\\text{template_weights}||</span>
+
+<span class="sd">    Here, :math:`||.||` denotes the L2 (Euclidean) norm.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">target_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_density</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">template_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">target_norm</span> <span class="o">*</span> <span class="n">template_norm</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="NormalizedCrossCorrelationMean">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.NormalizedCrossCorrelationMean.html#tme.matching_optimization.NormalizedCrossCorrelationMean">[docs]</a>
+<span class="k">class</span> <span class="nc">NormalizedCrossCorrelationMean</span><span class="p">(</span><span class="n">NormalizedCrossCorrelation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Mean Normalized Cross-Correlation matching score.</span>
+
+<span class="sd">    This class extends the Normalized Cross-Correlation by computing the score</span>
+<span class="sd">    after subtracting the mean from both `target_weights` and `template_weights`.</span>
+<span class="sd">    This modification enhances the matching score&#39;s sensitivity to patterns</span>
+<span class="sd">    over flat regions in the data.</span>
+
+<span class="sd">    Mathematically, the Mean Normalized Cross-Correlation score is computed as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{score} = \\frac{(\\text{target_weights} - \\text{mean(target_weights)})</span>
+<span class="sd">                        \\cdot (\\text{template_weights} -</span>
+<span class="sd">                        \\text{mean(template_weights)})}</span>
+<span class="sd">                        {\\text{max(target_norm} \\times \\text{template_norm, eps)}}</span>
+
+<span class="sd">    Where:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{target_norm} = ||\\text{target_weights} - \\text{mean(target_weights)}||</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{template_norm} = ||\\text{template_weights} -</span>
+<span class="sd">        \\text{mean(template_weights)}||</span>
+
+<span class="sd">    Here, :math:`||.||` denotes the L2 (Euclidean) norm, and :math:`\\text{mean(.)}`</span>
+<span class="sd">    computes the mean of the respective weights.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;target_weights&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;target_weights&quot;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;target_weights&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;template_weights&quot;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;template_weights&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MaskedCrossCorrelation">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MaskedCrossCorrelation.html#tme.matching_optimization.MaskedCrossCorrelation">[docs]</a>
+<span class="k">class</span> <span class="nc">MaskedCrossCorrelation</span><span class="p">(</span><span class="n">MatchCoordinatesToDensity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Masked Cross-Correlation matching score.</span>
+
+<span class="sd">    The Masked Cross-Correlation computes the similarity between `target_weights`</span>
+<span class="sd">    and `template_weights` under respective masks. The score is normalized and lies</span>
+<span class="sd">    between -1 and 1, providing a measure of similarity even in the presence of</span>
+<span class="sd">    missing or masked data.</span>
+
+<span class="sd">    The formula for the Masked Cross-Correlation is:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \\text{numerator} = \\text{dot}(\\text{target_weights},</span>
+<span class="sd">                            \\text{template_weights}) -</span>
+<span class="sd">                            \\frac{\\text{sum}(\\text{mask_target}) \\times</span>
+<span class="sd">                            \\text{sum}(\\text{mask_template})}</span>
+<span class="sd">                                  {\\text{mask_overlap}}</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \\text{denominator1} = \\text{sum}(\\text{mask_target}^2) -</span>
+<span class="sd">                               \\frac{\\text{sum}(\\text{mask_target})^2}</span>
+<span class="sd">                                     {\\text{mask_overlap}}</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \\text{denominator2} = \\text{sum}(\\text{mask_template}^2) -</span>
+<span class="sd">                               \\frac{\\text{sum}(\\text{mask_template})^2}</span>
+<span class="sd">                                     {\\text{mask_overlap}}</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \\text{denominator} = \\sqrt{\\text{denominator1} \\times \\text{denominator2}}</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \\text{score} = \\frac{\\text{numerator}}{\\text{denominator}}</span>
+<span class="sd">                        \\text{ if denominator } \\neq 0</span>
+<span class="sd">                        \\text{ else } 0</span>
+
+<span class="sd">    Where:</span>
+
+<span class="sd">    -   mask_target and mask_template are binary masks for the target_weights</span>
+<span class="sd">        and template_weights respectively.</span>
+
+<span class="sd">    -   mask_overlap represents the number of overlapping non-zero elements in</span>
+<span class="sd">        the masks.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  Masked FFT registration, Dirk Padfield, CVPR 2010 conference</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MaskedCrossCorrelation.scoring_function">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MaskedCrossCorrelation.scoring_function.html#tme.matching_optimization.MaskedCrossCorrelation.scoring_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">transformed_coordinates_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">in_volume</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">in_volume_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Masked Cross-Correlation score.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        transformed_coordinates : NDArray</span>
+<span class="sd">            Transformed coordinates.</span>
+<span class="sd">        transformed_coordinates_mask : NDArray</span>
+<span class="sd">            Mask for the transformed coordinates.</span>
+<span class="sd">        in_volume : NDArray</span>
+<span class="sd">            Binary mask indicating which ``transformed_coordinates`` are in the</span>
+<span class="sd">            target volume.</span>
+<span class="sd">        in_volume_mask : NDArray</span>
+<span class="sd">            Binary mask indicating which ``transformed_coordinates`` are in the</span>
+<span class="sd">            target mask volume.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The Masked Cross-Correlation score.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mask_overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_mask_density</span><span class="p">[</span>
+                <span class="nb">tuple</span><span class="p">(</span><span class="n">transformed_coordinates_mask</span><span class="p">[:,</span> <span class="n">in_volume_mask</span><span class="p">])</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">mask_overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">mask_overlap</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+        <span class="n">mask_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="p">[</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">transformed_coordinates_mask</span><span class="p">[:,</span> <span class="n">in_volume_mask</span><span class="p">])</span>
+        <span class="p">]</span>
+        <span class="n">denominator1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_target</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_target</span><span class="p">)),</span> <span class="n">mask_overlap</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">mask_template</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">[</span><span class="n">in_volume</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_mask_density</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">transformed_coordinates</span><span class="p">[:,</span> <span class="n">in_volume</span><span class="p">])],</span>
+        <span class="p">)</span>
+        <span class="n">denominator2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_template</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_template</span><span class="p">)),</span> <span class="n">mask_overlap</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="n">denominator1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">denominator1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">denominator2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">denominator2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">denominator1</span><span class="p">,</span> <span class="n">denominator2</span><span class="p">))</span>
+
+        <span class="n">numerator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">transformed_coordinates</span><span class="p">[:,</span> <span class="n">in_volume</span><span class="p">])],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">[</span><span class="n">in_volume</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">numerator</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_target</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_template</span><span class="p">)),</span> <span class="n">mask_overlap</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">denominator</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="n">score</span> <span class="o">=</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>
+        <span class="k">return</span> <span class="n">score</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PartialLeastSquareDifference">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.PartialLeastSquareDifference.html#tme.matching_optimization.PartialLeastSquareDifference">[docs]</a>
+<span class="k">class</span> <span class="nc">PartialLeastSquareDifference</span><span class="p">(</span><span class="n">MatchCoordinatesToDensity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Partial Least Square Difference matching score.</span>
+
+<span class="sd">    The Partial Least Square Difference (PLSQ) between the target :math:`f` and the</span>
+<span class="sd">    template :math:`g` is calculated as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{d(f,g)} = \\sum_{i=1}^{n} \\| f(\\mathbf{p}_i) - g(\\mathbf{q}_i) \\|^2</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  Daven Vasishtan and Maya Topf, &quot;Scoring functions for cryoEM density</span>
+<span class="sd">            fitting&quot;, Journal of Structural Biology, vol. 174, no. 2,</span>
+<span class="sd">            pp. 333--343, 2011. DOI: https://doi.org/10.1016/j.jsb.2011.01.012</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PartialLeastSquareDifference.scoring_function">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.PartialLeastSquareDifference.scoring_function.html#tme.matching_optimization.PartialLeastSquareDifference.scoring_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">transformed_coordinates_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">in_volume</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">in_volume_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Partial Least Square Difference score.</span>
+
+<span class="sd">        Given the transformed coordinates and their associated mask, this function</span>
+<span class="sd">        computes the difference between target and template densities.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        transformed_coordinates : NDArray</span>
+<span class="sd">            Transformed coordinates.</span>
+<span class="sd">        transformed_coordinates_mask : NDArray</span>
+<span class="sd">            Mask for the transformed coordinates.</span>
+<span class="sd">        in_volume : NDArray</span>
+<span class="sd">            Binary mask indicating which ``transformed_coordinates`` are in the</span>
+<span class="sd">            target volume.</span>
+<span class="sd">        in_volume_mask : NDArray</span>
+<span class="sd">            Binary mask indicating which ``transformed_coordinates`` are in the</span>
+<span class="sd">            target mask volume.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The negative of the Partial Least Square Difference score.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">transformed_coordinates</span><span class="p">[:,</span> <span class="n">in_volume</span><span class="p">])],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">[</span><span class="n">in_volume</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">score</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">in_volume</span><span class="p">)]))</span>
+
+        <span class="k">return</span> <span class="o">-</span><span class="n">score</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Chamfer">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.Chamfer.html#tme.matching_optimization.Chamfer">[docs]</a>
+<span class="k">class</span> <span class="nc">Chamfer</span><span class="p">(</span><span class="n">MatchCoordinatesToCoordinates</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Chamfer matching score.</span>
+
+<span class="sd">    The Chamfer distance is computed as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{d(f,g)} = \\frac{1}{|X|} \\sum_{\\mathbf{f}_i \\in X}</span>
+<span class="sd">        \\inf_{\\mathbf{g} \\in Y} ||\\mathbf{f}_i - \\mathbf{g}||_2</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  Daven Vasishtan and Maya Topf, &quot;Scoring functions for cryoEM density</span>
+<span class="sd">            fitting&quot;, Journal of Structural Biology, vol. 174, no. 2,</span>
+<span class="sd">            pp. 333--343, 2011. DOI: https://doi.org/10.1016/j.jsb.2011.01.012</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_tree</span> <span class="o">=</span> <span class="n">KDTree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_coordinates</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Chamfer.scoring_function">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.Chamfer.scoring_function.html#tme.matching_optimization.Chamfer.scoring_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">transformed_coordinates_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Chamfer distance score.</span>
+
+<span class="sd">        Given the transformed coordinates and their associated mask, this function</span>
+<span class="sd">        calculates the average distance between the rotated template coordinates</span>
+<span class="sd">        and the nearest target coordinates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        transformed_coordinates : NDArray</span>
+<span class="sd">            Transformed coordinates.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The negative of the Chamfer distance score.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dist</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_tree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates_rotated</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">score</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MutualInformation">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MutualInformation.html#tme.matching_optimization.MutualInformation">[docs]</a>
+<span class="k">class</span> <span class="nc">MutualInformation</span><span class="p">(</span><span class="n">MatchCoordinatesToDensity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Mutual Information matching score.</span>
+
+<span class="sd">    The Mutual Information (MI) score is calculated as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{d(f,g)} = \\sum_{f,g} p(f,g) \\log \\frac{p(f,g)}{p(f)p(g)}</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  Daven Vasishtan and Maya Topf, &quot;Scoring functions for cryoEM density</span>
+<span class="sd">            fitting&quot;, Journal of Structural Biology, vol. 174, no. 2,</span>
+<span class="sd">            pp. 333--343, 2011. DOI: https://doi.org/10.1016/j.jsb.2011.01.012</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MutualInformation.scoring_function">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MutualInformation.scoring_function.html#tme.matching_optimization.MutualInformation.scoring_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">transformed_coordinates_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">in_volume</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">in_volume_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Mutual Information score.</span>
+
+<span class="sd">        Given the transformed coordinates and their associated mask, this function</span>
+<span class="sd">        computes the mutual information between the target and template densities.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        transformed_coordinates : NDArray</span>
+<span class="sd">            Transformed coordinates.</span>
+<span class="sd">        transformed_coordinates_mask : NDArray</span>
+<span class="sd">            Mask for the transformed coordinates.</span>
+<span class="sd">        in_volume : NDArray</span>
+<span class="sd">            Binary mask indicating which ``transformed_coordinates`` are in the</span>
+<span class="sd">            target volume.</span>
+<span class="sd">        in_volume_mask : NDArray</span>
+<span class="sd">            Binary mask indicating which ``transformed_coordinates`` are in the</span>
+<span class="sd">            target mask volume.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The Mutual Information score.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p_xy</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">template</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">transformed_coordinates</span><span class="p">[:,</span> <span class="n">in_volume</span><span class="p">])],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">[</span><span class="n">in_volume</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">p_x</span><span class="p">,</span> <span class="n">p_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p_xy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p_xy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">p_xy</span> <span class="o">/=</span> <span class="n">p_xy</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">p_x</span> <span class="o">/=</span> <span class="n">p_x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">p_y</span> <span class="o">/=</span> <span class="n">p_y</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="n">logprob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">p_xy</span><span class="p">,</span> <span class="n">p_x</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">p_y</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">p_xy</span> <span class="o">*</span> <span class="n">logprob</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">score</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Envelope">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.Envelope.html#tme.matching_optimization.Envelope">[docs]</a>
+<span class="k">class</span> <span class="nc">Envelope</span><span class="p">(</span><span class="n">MatchCoordinatesToDensity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Envelope matching score.</span>
+
+<span class="sd">    The Envelope score (ENV) is calculated as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{d(f,g)} =    \\sum_{\\mathbf{p} \\in P} f&#39;(\\mathbf{p})</span>
+<span class="sd">                            \\cdot g&#39;(\\mathbf{p})</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  Daven Vasishtan and Maya Topf, &quot;Scoring functions for cryoEM density</span>
+<span class="sd">            fitting&quot;, Journal of Structural Biology, vol. 174, no. 2,</span>
+<span class="sd">            pp. 333--343, 2011. DOI: https://doi.org/10.1016/j.jsb.2011.01.012</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_density</span> <span class="o">&gt;</span> <span class="n">target_threshold</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_density_present</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_density</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_density_absent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_density</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Envelope.scoring_function">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.Envelope.scoring_function.html#tme.matching_optimization.Envelope.scoring_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">transformed_coordinates_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">in_volume</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">in_volume_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Envelope score.</span>
+
+<span class="sd">        Given the transformed coordinates and their associated mask, this function</span>
+<span class="sd">        computes the envelope score based on target density thresholds.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        transformed_coordinates : NDArray</span>
+<span class="sd">            Transformed coordinates.</span>
+<span class="sd">        transformed_coordinates_mask : NDArray</span>
+<span class="sd">            Mask for the transformed coordinates.</span>
+<span class="sd">        in_volume : NDArray</span>
+<span class="sd">            Binary mask indicating which ``transformed_coordinates`` are in the</span>
+<span class="sd">            target volume.</span>
+<span class="sd">        in_volume_mask : NDArray</span>
+<span class="sd">            Binary mask indicating which ``transformed_coordinates`` are in the</span>
+<span class="sd">            target mask volume.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The Envelope score.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">transformed_coordinates</span><span class="p">[:,</span> <span class="n">in_volume</span><span class="p">])]</span>
+        <span class="n">unassigned_density</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_density_present</span> <span class="o">-</span> <span class="p">(</span><span class="n">score</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="n">score</span> <span class="o">=</span> <span class="n">score</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">unassigned_density</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">in_volume</span><span class="p">))</span>
+        <span class="n">min_score</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">target_density_present</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_density_absent</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="p">(</span><span class="n">score</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">min_score</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_density_present</span> <span class="o">-</span> <span class="n">min_score</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">score</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NormalVectorScore">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.NormalVectorScore.html#tme.matching_optimization.NormalVectorScore">[docs]</a>
+<span class="k">class</span> <span class="nc">NormalVectorScore</span><span class="p">(</span><span class="n">MatchCoordinatesToCoordinates</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing the Normal Vector matching score.</span>
+
+<span class="sd">    The Normal Vector Score (NVS) is calculated as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{d(f,g)} = \\frac{1}{N} \\sum_{i=1}^{N}</span>
+<span class="sd">        \\frac{</span>
+<span class="sd">            {\\vec{f}_i} \\cdot {\\vec{g}_i}</span>
+<span class="sd">        }{</span>
+<span class="sd">            ||\\vec{f}_i|| \\, ||\\vec{g}_i||</span>
+<span class="sd">        }</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  Daven Vasishtan and Maya Topf, &quot;Scoring functions for cryoEM density</span>
+<span class="sd">            fitting&quot;, Journal of Structural Biology, vol. 174, no. 2,</span>
+<span class="sd">            pp. 333--343, 2011. DOI: https://doi.org/10.1016/j.jsb.2011.01.012</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NormalVectorScore.scoring_function">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.NormalVectorScore.scoring_function.html#tme.matching_optimization.NormalVectorScore.scoring_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">transformed_coordinates_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Normal Vector Score.</span>
+
+<span class="sd">        Given the template and target vectors, this function computes the average</span>
+<span class="sd">        cosine similarity between the two sets of vectors.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        template_vectors : NDArray</span>
+<span class="sd">            Normal vectors derived from the template.</span>
+<span class="sd">        target_vectors : NDArray</span>
+<span class="sd">            Normal vectors derived from the target.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The Normal Vector Score.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">numerator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">transformed_coordinates</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_coordinates</span><span class="p">)</span>
+        <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">transformed_coordinates</span><span class="p">)</span>
+        <span class="n">denominator</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_coordinates</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">score</span></div>
+</div>
+
+
+
+<span class="n">MATCHING_OPTIMIZATION_REGISTER</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;CrossCorrelation&quot;</span><span class="p">:</span> <span class="n">CrossCorrelation</span><span class="p">,</span>
+    <span class="s2">&quot;LaplaceCrossCorrelation&quot;</span><span class="p">:</span> <span class="n">LaplaceCrossCorrelation</span><span class="p">,</span>
+    <span class="s2">&quot;NormalizedCrossCorrelationMean&quot;</span><span class="p">:</span> <span class="n">NormalizedCrossCorrelationMean</span><span class="p">,</span>
+    <span class="s2">&quot;NormalizedCrossCorrelation&quot;</span><span class="p">:</span> <span class="n">NormalizedCrossCorrelation</span><span class="p">,</span>
+    <span class="s2">&quot;MaskedCrossCorrelation&quot;</span><span class="p">:</span> <span class="n">MaskedCrossCorrelation</span><span class="p">,</span>
+    <span class="s2">&quot;PartialLeastSquareDifference&quot;</span><span class="p">:</span> <span class="n">PartialLeastSquareDifference</span><span class="p">,</span>
+    <span class="s2">&quot;Envelope&quot;</span><span class="p">:</span> <span class="n">Envelope</span><span class="p">,</span>
+    <span class="s2">&quot;Chamfer&quot;</span><span class="p">:</span> <span class="n">Chamfer</span><span class="p">,</span>
+    <span class="s2">&quot;MutualInformation&quot;</span><span class="p">:</span> <span class="n">MutualInformation</span><span class="p">,</span>
+    <span class="s2">&quot;NormalVectorScore&quot;</span><span class="p">:</span> <span class="n">NormalVectorScore</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">register_matching_optimization</span><span class="p">(</span><span class="n">match_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">match_class</span><span class="p">:</span> <span class="nb">type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Registers a class to be used by :py:class:`FitRefinement`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    match_name : str</span>
+<span class="sd">        Name of the matching instance.</span>
+<span class="sd">    match_class : type</span>
+<span class="sd">        Class pointer.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If any of the required methods is not defined.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">methods_to_check</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;__init__&quot;</span><span class="p">,</span> <span class="s2">&quot;__call__&quot;</span><span class="p">,</span> <span class="s2">&quot;scoring_function&quot;</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">methods_to_check</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">match_class</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Method &#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; is not defined in the provided class or object.&quot;</span>
+            <span class="p">)</span>
+    <span class="n">MATCHING_OPTIMIZATION_REGISTER</span><span class="p">[</span><span class="n">match_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">match_class</span>
+
+
+<div class="viewcode-block" id="FitRefinement">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.FitRefinement.html#tme.matching_optimization.FitRefinement">[docs]</a>
+<span class="k">class</span> <span class="nc">FitRefinement</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to refine the fit between target and template coordinates.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    By default scipy.optimize.differential_evolution or scipy.optimize.basinhopping</span>
+<span class="sd">    are used which can be unreliable if the initial alignment is very poor. Other</span>
+<span class="sd">    optimizers can be implemented by subclassing :py:class:`FitRefinement` and</span>
+<span class="sd">    overwriting the :py:meth:`FitRefinement.refine` function.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="FitRefinement.map_coordinates_to_array">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.FitRefinement.map_coordinates_to_array.html#tme.matching_optimization.FitRefinement.map_coordinates_to_array">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">map_coordinates_to_array</span><span class="p">(</span>
+        <span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">array_shape</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">array_origin</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">sampling_rate</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">coordinates_mask</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map coordinates to a volume based on given voxel size and origin.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coordinates : NDArray</span>
+<span class="sd">            An array representing the coordinates to be mapped [d x N].</span>
+<span class="sd">        array_shape : NDArray</span>
+<span class="sd">            The shape of the array to which the coordinates are mapped.</span>
+<span class="sd">        array_origin : NDArray</span>
+<span class="sd">            The origin of the array to which the coordinates are mapped.</span>
+<span class="sd">        sampling_rate : NDArray</span>
+<span class="sd">            The size of a voxel in the array.</span>
+<span class="sd">        coordinates_mask : NDArray, optional</span>
+<span class="sd">            An array representing the mask for the coordinates [d x T].</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            Returns transformed coordinates, transformed coordinates mask,</span>
+<span class="sd">            mask for in_volume points, and mask for in_volume points in mask.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">sampling_rate</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+            <span class="n">coordinates</span> <span class="o">-</span> <span class="n">array_origin</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">sampling_rate</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">coordinates</span>
+        <span class="p">)</span>
+        <span class="n">transformed_coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">in_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+            <span class="n">transformed_coordinates</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">array_shape</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">],</span>
+            <span class="n">transformed_coordinates</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">transformed_coordinates_mask</span><span class="p">,</span> <span class="n">in_volume_mask</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">coordinates_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">coordinates_mask</span> <span class="o">=</span> <span class="n">coordinates_mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">sampling_rate</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+                <span class="n">coordinates_mask</span> <span class="o">-</span> <span class="n">array_origin</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span>
+                <span class="n">sampling_rate</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span>
+                <span class="n">out</span><span class="o">=</span><span class="n">coordinates_mask</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">transformed_coordinates_mask</span> <span class="o">=</span> <span class="n">coordinates_mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">in_volume_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+                <span class="n">transformed_coordinates_mask</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">array_shape</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">],</span>
+                <span class="n">transformed_coordinates_mask</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">transformed_coordinates</span><span class="p">,</span>
+            <span class="n">transformed_coordinates_mask</span><span class="p">,</span>
+            <span class="n">in_volume</span><span class="p">,</span>
+            <span class="n">in_volume_mask</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FitRefinement.array_from_coordinates">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.FitRefinement.array_from_coordinates.html#tme.matching_optimization.FitRefinement.array_from_coordinates">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">array_from_coordinates</span><span class="p">(</span>
+        <span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">weights</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">sampling_rate</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">origin</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a volume from coordinates, using given weights and voxel size.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coordinates : NDArray</span>
+<span class="sd">            An array representing the coordinates [d x N].</span>
+<span class="sd">        weights : NDArray</span>
+<span class="sd">            An array representing the weights for each coordinate [N].</span>
+<span class="sd">        sampling_rate : NDArray</span>
+<span class="sd">            The size of a voxel in the volume.</span>
+<span class="sd">        origin : NDArray, optional</span>
+<span class="sd">            The origin of the volume.</span>
+<span class="sd">        shape : NDArray, optional</span>
+<span class="sd">            The shape of the volume.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            Returns the generated volume, positions of coordinates, and origin.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">origin</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">coordinates</span> <span class="o">-</span> <span class="n">origin</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">sampling_rate</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">positions</span><span class="p">),</span> <span class="n">weights</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">arr</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">origin</span></div>
+
+
+<div class="viewcode-block" id="FitRefinement.refine">
+<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.FitRefinement.refine.html#tme.matching_optimization.FitRefinement.refine">[docs]</a>
+    <span class="k">def</span> <span class="nf">refine</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">target_weights</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">template_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">template_weights</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">translational_uncertainty</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rotational_uncertainty</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scoring_class</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;CrossCorrelation&quot;</span><span class="p">,</span>
+        <span class="n">scoring_class_parameters</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span>
+        <span class="n">local_optimization</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">maxiter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Refines the alignment of template coordinates to target coordinates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        target_coordinates : NDArray</span>
+<span class="sd">            The coordinates of the target.</span>
+
+<span class="sd">        target_weights : NDArray</span>
+<span class="sd">            The weights of the target.</span>
+
+<span class="sd">        template_coordinates : NDArray</span>
+<span class="sd">            The coordinates of the template.</span>
+
+<span class="sd">        template_weights : NDArray</span>
+<span class="sd">            The weights of the template.</span>
+
+<span class="sd">        sampling_rate : float, optional</span>
+<span class="sd">            The size of the voxel. Default is None.</span>
+
+<span class="sd">        translational_uncertainty : (float,), optional</span>
+<span class="sd">            The translational uncertainty. Default is None.</span>
+
+<span class="sd">        rotational_uncertainty : (float,), optional</span>
+<span class="sd">            The rotational uncertainty. Default is None.</span>
+
+<span class="sd">        scoring_class : str, optional</span>
+<span class="sd">            The scoring class to be used. Default is &quot;CC&quot;.</span>
+
+<span class="sd">        scoring_class_parameters : dict, optional</span>
+<span class="sd">            The parameters for the scoring class. Default is an empty dictionary.</span>
+
+<span class="sd">        local_optimization : bool, optional</span>
+<span class="sd">            Whether to use local optimization. Default is True.</span>
+
+<span class="sd">        maxiter : int, optional</span>
+<span class="sd">            The maximum number of iterations. Default is 100.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            A tuple containing the translation and rotation matrix of the refinement,</span>
+<span class="sd">            as well as the score of the refinement.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NotNotImplementedError</span>
+<span class="sd">            If scoring class is not a part of `MATCHING_OPTIMIZATION_REGISTER`.</span>
+<span class="sd">            Individual scores can be added via</span>
+<span class="sd">            :py:meth:`register_matching_optimization`.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :py:meth:`register_matching_optimization`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">scoring_class</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MATCHING_OPTIMIZATION_REGISTER</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Parameter score has to be one of &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MATCHING_OPTIMIZATION_REGISTER</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">scoring_class</span> <span class="o">=</span> <span class="n">MATCHING_OPTIMIZATION_REGISTER</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">scoring_class</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
+            <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">target_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="n">sampling_rate</span><span class="o">.</span><span class="n">size</span>
+        <span class="p">)</span>
+
+        <span class="n">score</span> <span class="o">=</span> <span class="n">scoring_class</span><span class="p">(</span>
+            <span class="n">target_coordinates</span><span class="o">=</span><span class="n">target_coordinates</span><span class="p">,</span>
+            <span class="n">template_coordinates</span><span class="o">=</span><span class="n">template_coordinates</span><span class="p">,</span>
+            <span class="n">target_weights</span><span class="o">=</span><span class="n">target_weights</span><span class="p">,</span>
+            <span class="n">template_weights</span><span class="o">=</span><span class="n">template_weights</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">scoring_class_parameters</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">initial_score</span> <span class="o">=</span> <span class="n">score</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span>
+
+        <span class="n">mass_center_target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">target_coordinates</span><span class="p">,</span> <span class="n">target_weights</span><span class="p">)</span>
+        <span class="n">mass_center_target</span> <span class="o">/=</span> <span class="n">target_weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">mass_center_template</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">template_coordinates</span><span class="p">,</span> <span class="n">template_weights</span><span class="p">)</span>
+        <span class="n">mass_center_template</span> <span class="o">/=</span> <span class="n">template_weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">translational_uncertainty</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mass_center_difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">mass_center_target</span><span class="p">,</span> <span class="n">mass_center_template</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">target_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+                        <span class="n">target_coordinates</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">target_coordinates</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="p">),</span>
+                    <span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">translational_uncertainty</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">center</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">center</span> <span class="o">+</span> <span class="n">start</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">center</span><span class="p">,</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">mass_center_difference</span><span class="p">,</span> <span class="n">target_range</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">rotational_uncertainty</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rotational_uncertainty</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">target_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="p">)</span>
+
+        <span class="n">uncertainty</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">translational_uncertainty</span><span class="p">,</span> <span class="o">*</span><span class="n">rotational_uncertainty</span><span class="p">)</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">bound</span> <span class="k">if</span> <span class="n">bound</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="o">-</span><span class="mf">1e-9</span><span class="p">,</span> <span class="mf">1e-9</span><span class="p">)</span> <span class="k">for</span> <span class="n">bound</span> <span class="ow">in</span> <span class="n">uncertainty</span><span class="p">]</span>
+        <span class="n">linear_constraint</span> <span class="o">=</span> <span class="n">LinearConstraint</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">local_optimization</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">basinhopping</span><span class="p">(</span>
+                <span class="n">x0</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span>
+                <span class="n">func</span><span class="o">=</span><span class="n">score</span><span class="p">,</span>
+                <span class="n">niter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span>
+                <span class="n">minimizer_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;COBYLA&quot;</span><span class="p">,</span> <span class="s2">&quot;constraints&quot;</span><span class="p">:</span> <span class="n">linear_constraint</span><span class="p">},</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">differential_evolution</span><span class="p">(</span>
+                <span class="n">func</span><span class="o">=</span><span class="n">score</span><span class="p">,</span>
+                <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                <span class="n">constraints</span><span class="o">=</span><span class="n">linear_constraint</span><span class="p">,</span>
+                <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initial score: </span><span class="si">{</span><span class="o">-</span><span class="n">initial_score</span><span class="si">}</span><span class="s2"> - Refined score: </span><span class="si">{</span><span class="o">-</span><span class="n">result</span><span class="o">.</span><span class="n">fun</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">initial_score</span> <span class="o">&lt;</span> <span class="n">result</span><span class="o">.</span><span class="n">fun</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+        <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">euler_to_rotationmatrix</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">translation</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">,</span> <span class="o">-</span><span class="n">result</span><span class="o">.</span><span class="n">fun</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023 European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

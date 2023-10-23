@@ -1,0 +1,79 @@
+﻿tme.backends.NumpyFFTWBackend
+=============================
+
+.. currentmodule:: tme.backends
+
+.. autoclass:: NumpyFFTWBackend
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      NumpyFFTWBackend.abs
+      NumpyFFTWBackend.add
+      NumpyFFTWBackend.arange
+      NumpyFFTWBackend.argsort
+      NumpyFFTWBackend.arr_to_sharedarr
+      NumpyFFTWBackend.astype
+      NumpyFFTWBackend.build_fft
+      NumpyFFTWBackend.center_of_mass
+      NumpyFFTWBackend.clip
+      NumpyFFTWBackend.compute_convolution_shapes
+      NumpyFFTWBackend.concatenate
+      NumpyFFTWBackend.datatype_bytes
+      NumpyFFTWBackend.device_count
+      NumpyFFTWBackend.divide
+      NumpyFFTWBackend.einsum
+      NumpyFFTWBackend.eps
+      NumpyFFTWBackend.extract_center
+      NumpyFFTWBackend.fill
+      NumpyFFTWBackend.flip
+      NumpyFFTWBackend.free_cache
+      NumpyFFTWBackend.free_sharedarr
+      NumpyFFTWBackend.full
+      NumpyFFTWBackend.get_available_memory
+      NumpyFFTWBackend.indices
+      NumpyFFTWBackend.max
+      NumpyFFTWBackend.max_filter_coordinates
+      NumpyFFTWBackend.maximum
+      NumpyFFTWBackend.mean
+      NumpyFFTWBackend.min
+      NumpyFFTWBackend.minimum
+      NumpyFFTWBackend.mod
+      NumpyFFTWBackend.multiply
+      NumpyFFTWBackend.power
+      NumpyFFTWBackend.preallocate_array
+      NumpyFFTWBackend.repeat
+      NumpyFFTWBackend.reverse
+      NumpyFFTWBackend.roll
+      NumpyFFTWBackend.rotate_array
+      NumpyFFTWBackend.rotate_array_coordinates
+      NumpyFFTWBackend.set_device
+      NumpyFFTWBackend.sharedarr_to_arr
+      NumpyFFTWBackend.size
+      NumpyFFTWBackend.sqrt
+      NumpyFFTWBackend.square
+      NumpyFFTWBackend.stack
+      NumpyFFTWBackend.std
+      NumpyFFTWBackend.subtract
+      NumpyFFTWBackend.sum
+      NumpyFFTWBackend.to_backend_array
+      NumpyFFTWBackend.to_cpu_array
+      NumpyFFTWBackend.to_numpy_array
+      NumpyFFTWBackend.tobytes
+      NumpyFFTWBackend.topk_indices
+      NumpyFFTWBackend.topleft_pad
+      NumpyFFTWBackend.transpose
+      NumpyFFTWBackend.tril_indices
+      NumpyFFTWBackend.unique
+      NumpyFFTWBackend.unravel_index
+      NumpyFFTWBackend.zeros
+
+
+
+
+   
+

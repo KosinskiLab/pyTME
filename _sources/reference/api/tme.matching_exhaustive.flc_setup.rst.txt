@@ -1,0 +1,6 @@
+﻿flc\_setup
+=================================
+
+.. currentmodule:: tme.matching_exhaustive
+
+.. autofunction:: flc_setup

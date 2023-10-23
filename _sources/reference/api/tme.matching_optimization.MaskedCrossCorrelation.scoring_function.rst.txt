@@ -1,0 +1,6 @@
+MaskedCrossCorrelation.scoring\_function
+=================================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: MaskedCrossCorrelation.scoring_function

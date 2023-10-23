@@ -1,0 +1,6 @@
+Structure.details
+===============================
+
+.. currentmodule:: tme.structure
+
+.. autoattribute:: Structure.details

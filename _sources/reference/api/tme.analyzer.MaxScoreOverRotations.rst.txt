@@ -1,0 +1,22 @@
+﻿tme.analyzer.MaxScoreOverRotations
+==================================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: MaxScoreOverRotations
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      MaxScoreOverRotations.__call__
+      MaxScoreOverRotations.merge
+
+
+
+
+   
+

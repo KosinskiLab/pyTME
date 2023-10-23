@@ -1,0 +1,22 @@
+﻿tme.matching\_memory.PeakCallerMaximumFilterMemoryUsage
+=======================================================
+
+.. currentmodule:: tme.matching_memory
+
+.. autoclass:: PeakCallerMaximumFilterMemoryUsage
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      PeakCallerMaximumFilterMemoryUsage.base_usage
+      PeakCallerMaximumFilterMemoryUsage.per_fork
+
+
+
+
+   
+

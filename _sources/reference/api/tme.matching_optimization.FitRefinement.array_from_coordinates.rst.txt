@@ -1,0 +1,6 @@
+FitRefinement.array\_from\_coordinates
+==============================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: FitRefinement.array_from_coordinates

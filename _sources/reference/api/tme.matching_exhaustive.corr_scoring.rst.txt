@@ -1,0 +1,6 @@
+﻿corr\_scoring
+====================================
+
+.. currentmodule:: tme.matching_exhaustive
+
+.. autofunction:: corr_scoring

@@ -1,0 +1,6 @@
+Preprocessor.molmap
+====================================
+
+.. currentmodule:: tme.preprocessor
+
+.. automethod:: Preprocessor.molmap

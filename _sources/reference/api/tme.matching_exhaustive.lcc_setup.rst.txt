@@ -1,0 +1,6 @@
+﻿lcc\_setup
+=================================
+
+.. currentmodule:: tme.matching_exhaustive
+
+.. autofunction:: lcc_setup

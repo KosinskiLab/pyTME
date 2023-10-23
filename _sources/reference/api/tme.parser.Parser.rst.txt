@@ -1,0 +1,25 @@
+﻿tme.parser.Parser
+=================
+
+.. currentmodule:: tme.parser
+
+.. autoclass:: Parser
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      Parser.get
+      Parser.items
+      Parser.keys
+      Parser.parse_input
+      Parser.values
+
+
+
+
+   
+

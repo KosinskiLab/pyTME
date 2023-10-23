@@ -1,0 +1,6 @@
+Preprocessor.wavelet\_filter
+============================================
+
+.. currentmodule:: tme.preprocessor
+
+.. automethod:: Preprocessor.wavelet_filter

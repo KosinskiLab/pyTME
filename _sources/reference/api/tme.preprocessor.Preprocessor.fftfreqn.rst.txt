@@ -1,0 +1,6 @@
+Preprocessor.fftfreqn
+======================================
+
+.. currentmodule:: tme.preprocessor
+
+.. automethod:: Preprocessor.fftfreqn

@@ -1,0 +1,6 @@
+﻿split\_numpy\_array\_slices
+===========================================
+
+.. currentmodule:: tme.matching_utils
+
+.. autofunction:: split_numpy_array_slices

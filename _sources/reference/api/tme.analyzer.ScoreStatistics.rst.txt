@@ -1,0 +1,24 @@
+﻿tme.analyzer.ScoreStatistics
+============================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: ScoreStatistics
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      ScoreStatistics.__call__
+      ScoreStatistics.call_peaks
+      ScoreStatistics.merge
+      ScoreStatistics.set_reference
+
+
+
+
+   
+

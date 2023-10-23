@@ -1,0 +1,6 @@
+﻿crop\_input
+=============================
+
+.. currentmodule:: tme.matching_utils
+
+.. autofunction:: crop_input

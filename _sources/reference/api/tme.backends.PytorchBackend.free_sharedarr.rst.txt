@@ -1,0 +1,6 @@
+PytorchBackend.free\_sharedarr
+==========================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: PytorchBackend.free_sharedarr

@@ -1,0 +1,6 @@
+Preprocessor.ntree\_filter
+==========================================
+
+.. currentmodule:: tme.preprocessor
+
+.. automethod:: Preprocessor.ntree_filter

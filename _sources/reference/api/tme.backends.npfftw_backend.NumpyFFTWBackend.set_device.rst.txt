@@ -1,0 +1,6 @@
+NumpyFFTWBackend.set\_device
+=======================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.set_device

@@ -1,0 +1,23 @@
+﻿tme.analyzer.PeakCallerMaximumFilter
+====================================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: PeakCallerMaximumFilter
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      PeakCallerMaximumFilter.__call__
+      PeakCallerMaximumFilter.call_peaks
+      PeakCallerMaximumFilter.merge
+
+
+
+
+   
+

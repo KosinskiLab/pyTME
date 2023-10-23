@@ -1,0 +1,6 @@
+﻿mcc\_setup
+=================================
+
+.. currentmodule:: tme.matching_exhaustive
+
+.. autofunction:: mcc_setup

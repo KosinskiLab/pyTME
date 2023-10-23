@@ -1,0 +1,6 @@
+NumpyFFTWBackend.transpose
+======================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.transpose

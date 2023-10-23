@@ -1,0 +1,6 @@
+NumpyFFTWBackend.tobytes
+====================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.tobytes

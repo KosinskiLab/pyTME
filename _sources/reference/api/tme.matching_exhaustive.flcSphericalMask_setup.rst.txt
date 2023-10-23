@@ -1,0 +1,6 @@
+﻿flcSphericalMask\_setup
+==============================================
+
+.. currentmodule:: tme.matching_exhaustive
+
+.. autofunction:: flcSphericalMask_setup

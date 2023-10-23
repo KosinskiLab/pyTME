@@ -1,0 +1,22 @@
+﻿tme.matching\_optimization.Chamfer
+==================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. autoclass:: Chamfer
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      Chamfer.__call__
+      Chamfer.scoring_function
+
+
+
+
+   
+

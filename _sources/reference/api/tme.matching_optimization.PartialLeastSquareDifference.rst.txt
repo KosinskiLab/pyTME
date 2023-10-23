@@ -1,0 +1,22 @@
+﻿tme.matching\_optimization.PartialLeastSquareDifference
+=======================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. autoclass:: PartialLeastSquareDifference
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      PartialLeastSquareDifference.__call__
+      PartialLeastSquareDifference.scoring_function
+
+
+
+
+   
+

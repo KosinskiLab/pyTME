@@ -1,0 +1,22 @@
+﻿tme.matching\_memory.LCCMemoryUsage
+===================================
+
+.. currentmodule:: tme.matching_memory
+
+.. autoclass:: LCCMemoryUsage
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      LCCMemoryUsage.base_usage
+      LCCMemoryUsage.per_fork
+
+
+
+
+   
+

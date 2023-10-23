@@ -1,0 +1,6 @@
+﻿mcc\_scoring
+===================================
+
+.. currentmodule:: tme.matching_exhaustive
+
+.. autofunction:: mcc_scoring

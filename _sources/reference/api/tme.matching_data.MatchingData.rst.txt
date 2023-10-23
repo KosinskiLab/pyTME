@@ -1,0 +1,35 @@
+﻿tme.matching\_data.MatchingData
+===============================
+
+.. currentmodule:: tme.matching_data
+
+.. autoclass:: MatchingData
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      MatchingData.subset_array
+      MatchingData.subset_by_slice
+      MatchingData.to_backend
+
+
+
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      MatchingData.rotations
+      MatchingData.target
+      MatchingData.target_mask
+      MatchingData.template
+      MatchingData.template_mask
+
+

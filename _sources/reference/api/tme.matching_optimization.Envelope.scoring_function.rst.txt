@@ -1,0 +1,6 @@
+Envelope.scoring\_function
+===================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: Envelope.scoring_function

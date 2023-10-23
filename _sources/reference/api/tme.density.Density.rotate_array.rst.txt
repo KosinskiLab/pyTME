@@ -1,0 +1,6 @@
+Density.rotate\_array
+================================
+
+.. currentmodule:: tme.density
+
+.. automethod:: Density.rotate_array

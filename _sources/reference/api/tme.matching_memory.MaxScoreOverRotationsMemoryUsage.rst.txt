@@ -1,0 +1,22 @@
+﻿tme.matching\_memory.MaxScoreOverRotationsMemoryUsage
+=====================================================
+
+.. currentmodule:: tme.matching_memory
+
+.. autoclass:: MaxScoreOverRotationsMemoryUsage
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      MaxScoreOverRotationsMemoryUsage.base_usage
+      MaxScoreOverRotationsMemoryUsage.per_fork
+
+
+
+
+   
+

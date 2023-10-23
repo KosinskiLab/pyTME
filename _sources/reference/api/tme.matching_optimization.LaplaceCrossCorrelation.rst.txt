@@ -1,0 +1,22 @@
+﻿tme.matching\_optimization.LaplaceCrossCorrelation
+==================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. autoclass:: LaplaceCrossCorrelation
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      LaplaceCrossCorrelation.__call__
+      LaplaceCrossCorrelation.scoring_function
+
+
+
+
+   
+

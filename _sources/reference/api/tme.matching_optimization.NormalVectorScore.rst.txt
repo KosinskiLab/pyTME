@@ -1,0 +1,22 @@
+﻿tme.matching\_optimization.NormalVectorScore
+============================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. autoclass:: NormalVectorScore
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      NormalVectorScore.__call__
+      NormalVectorScore.scoring_function
+
+
+
+
+   
+

@@ -1,0 +1,6 @@
+﻿cc\_setup
+================================
+
+.. currentmodule:: tme.matching_exhaustive
+
+.. autofunction:: cc_setup

@@ -1,0 +1,6 @@
+Structure.get\_chains
+==================================
+
+.. currentmodule:: tme.structure
+
+.. automethod:: Structure.get_chains

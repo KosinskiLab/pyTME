@@ -1,0 +1,22 @@
+﻿tme.matching\_optimization.MutualInformation
+============================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. autoclass:: MutualInformation
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      MutualInformation.__call__
+      MutualInformation.scoring_function
+
+
+
+
+   
+

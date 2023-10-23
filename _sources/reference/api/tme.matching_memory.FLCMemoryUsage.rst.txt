@@ -1,0 +1,22 @@
+﻿tme.matching\_memory.FLCMemoryUsage
+===================================
+
+.. currentmodule:: tme.matching_memory
+
+.. autoclass:: FLCMemoryUsage
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      FLCMemoryUsage.base_usage
+      FLCMemoryUsage.per_fork
+
+
+
+
+   
+

@@ -1,0 +1,6 @@
+Density.align\_coordinate\_systems
+============================================
+
+.. currentmodule:: tme.density
+
+.. automethod:: Density.align_coordinate_systems

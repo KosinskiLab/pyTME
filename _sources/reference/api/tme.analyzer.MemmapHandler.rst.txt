@@ -1,0 +1,23 @@
+﻿tme.analyzer.MemmapHandler
+==========================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: MemmapHandler
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      MemmapHandler.__call__
+      MemmapHandler.merge
+      MemmapHandler.update_indices
+
+
+
+
+   
+

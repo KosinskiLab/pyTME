@@ -1,0 +1,6 @@
+ScoreStatistics.call\_peaks
+=======================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: ScoreStatistics.call_peaks

@@ -1,0 +1,22 @@
+﻿tme.matching\_optimization.Envelope
+===================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. autoclass:: Envelope
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      Envelope.__call__
+      Envelope.scoring_function
+
+
+
+
+   
+

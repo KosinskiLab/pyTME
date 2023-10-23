@@ -1,0 +1,25 @@
+﻿tme.parser.PDBParser
+====================
+
+.. currentmodule:: tme.parser
+
+.. autoclass:: PDBParser
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      PDBParser.get
+      PDBParser.items
+      PDBParser.keys
+      PDBParser.parse_input
+      PDBParser.values
+
+
+
+
+   
+

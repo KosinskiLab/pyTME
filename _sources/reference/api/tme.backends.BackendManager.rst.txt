@@ -1,0 +1,22 @@
+﻿tme.backends.BackendManager
+===========================
+
+.. currentmodule:: tme.backends
+
+.. autoclass:: BackendManager
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      BackendManager.add_backend
+      BackendManager.change_backend
+
+
+
+
+   
+

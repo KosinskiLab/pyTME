@@ -1,0 +1,6 @@
+NumpyFFTWBackend.preallocate\_array
+==============================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.preallocate_array

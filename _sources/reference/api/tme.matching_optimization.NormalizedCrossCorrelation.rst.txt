@@ -1,0 +1,22 @@
+﻿tme.matching\_optimization.NormalizedCrossCorrelation
+=====================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. autoclass:: NormalizedCrossCorrelation
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      NormalizedCrossCorrelation.__call__
+      NormalizedCrossCorrelation.scoring_function
+
+
+
+
+   
+

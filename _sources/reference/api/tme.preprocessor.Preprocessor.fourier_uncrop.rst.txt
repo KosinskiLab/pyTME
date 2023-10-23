@@ -1,0 +1,6 @@
+Preprocessor.fourier\_uncrop
+============================================
+
+.. currentmodule:: tme.preprocessor
+
+.. automethod:: Preprocessor.fourier_uncrop

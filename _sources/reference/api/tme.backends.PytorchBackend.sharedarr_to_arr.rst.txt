@@ -1,0 +1,6 @@
+PytorchBackend.sharedarr\_to\_arr
+============================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: PytorchBackend.sharedarr_to_arr

@@ -1,0 +1,22 @@
+﻿tme.matching\_memory.CCMemoryUsage
+==================================
+
+.. currentmodule:: tme.matching_memory
+
+.. autoclass:: CCMemoryUsage
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      CCMemoryUsage.base_usage
+      CCMemoryUsage.per_fork
+
+
+
+
+   
+

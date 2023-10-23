@@ -1,0 +1,6 @@
+NumpyFFTWBackend.compute\_convolution\_shapes
+=======================================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.compute_convolution_shapes

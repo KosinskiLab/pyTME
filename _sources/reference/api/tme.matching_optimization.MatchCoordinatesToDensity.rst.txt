@@ -1,0 +1,22 @@
+﻿tme.matching\_optimization.MatchCoordinatesToDensity
+====================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. autoclass:: MatchCoordinatesToDensity
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      MatchCoordinatesToDensity.__call__
+      MatchCoordinatesToDensity.scoring_function
+
+
+
+
+   
+

@@ -1,0 +1,6 @@
+Preprocessor.fourier\_crop
+==========================================
+
+.. currentmodule:: tme.preprocessor
+
+.. automethod:: Preprocessor.fourier_crop

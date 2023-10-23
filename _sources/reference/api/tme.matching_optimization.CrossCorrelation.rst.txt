@@ -1,0 +1,22 @@
+﻿tme.matching\_optimization.CrossCorrelation
+===========================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. autoclass:: CrossCorrelation
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      CrossCorrelation.__call__
+      CrossCorrelation.scoring_function
+
+
+
+
+   
+

@@ -1,0 +1,1675 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tme.analyzer &#8212; pytme 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=e68c333d" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+
+    <script src="../../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/tme/analyzer';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../quickstart/index.html">
+                        Quickstart
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../reference/index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../genindex.html">
+                        Index
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../quickstart/index.html">
+                        Quickstart
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../reference/index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../genindex.html">
+                        Index
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">tme.analyzer</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for tme.analyzer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Implements classes to analyze score spaces from systematic fitting.</span>
+
+<span class="sd">    Copyright (c) 2023 European Molecular Biology Laboratory</span>
+
+<span class="sd">    Author: Valentin Maurer &lt;valentin.maurer@embl-hamburg.de&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">nullcontext</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">RawValue</span><span class="p">,</span> <span class="n">Manager</span><span class="p">,</span> <span class="n">Lock</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">entropy</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">DBSCAN</span>
+<span class="kn">from</span> <span class="nn">skimage.feature</span> <span class="kn">import</span> <span class="n">peak_local_max</span>
+
+<span class="kn">from</span> <span class="nn">.extensions</span> <span class="kn">import</span> <span class="n">max_index_by_label</span><span class="p">,</span> <span class="n">online_statistics</span>
+<span class="kn">from</span> <span class="nn">.matching_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">split_numpy_array_slices</span><span class="p">,</span>
+    <span class="n">array_to_memmap</span><span class="p">,</span>
+    <span class="n">generate_tempfile_name</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.backends</span> <span class="kn">import</span> <span class="n">backend</span>
+
+
+<span class="k">def</span> <span class="nf">filter_points_indices</span><span class="p">(</span><span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="n">min_distance</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">bucket_indices</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
+    <span class="n">multiplier</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">power</span><span class="p">(</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">bucket_indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">bucket_indices</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">bucket_indices</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">bucket_indices</span><span class="p">)</span>
+    <span class="n">flattened_indices</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">bucket_indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">unique_indices</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">flattened_indices</span><span class="p">,</span> <span class="n">return_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">unique_indices</span> <span class="o">=</span> <span class="n">unique_indices</span><span class="p">[</span><span class="n">backend</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">unique_indices</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">unique_indices</span>
+
+
+<span class="k">def</span> <span class="nf">filter_points</span><span class="p">(</span><span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+    <span class="n">unique_indices</span> <span class="o">=</span> <span class="n">filter_points_indices</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">)</span>
+    <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">unique_indices</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">coordinates</span>
+
+
+<div class="viewcode-block" id="PeakCaller">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCaller.html#tme.analyzer.PeakCaller">[docs]</a>
+<span class="k">class</span> <span class="nc">PeakCaller</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for peak calling algorithms.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    number_of_peaks : int, optional</span>
+<span class="sd">        Number of candidate peaks to consider.</span>
+<span class="sd">    min_distance : int, optional</span>
+<span class="sd">        Minimum distance between peaks.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Additional keyword arguments.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If number_of_peaks is less than or equal to zero.</span>
+<span class="sd">        If min_distances is less than zero.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">number_of_peaks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">min_distance</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">number_of_peaks</span><span class="p">,</span> <span class="n">min_distance</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">number_of_peaks</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">min_distance</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">number_of_peaks</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;number_of_peaks has to be larger than 0, got </span><span class="si">{</span><span class="n">number_of_peaks</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">min_distance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;min_distance has to be non-negative, got </span><span class="si">{</span><span class="n">min_distance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span> <span class="o">=</span> <span class="n">min_distance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span> <span class="o">=</span> <span class="n">number_of_peaks</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a generator to list objects containing translation,</span>
+<span class="sd">        rotation, score and details of a given candidate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">backend</span><span class="o">.</span><span class="n">to_cpu_array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">]</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span>
+
+<div class="viewcode-block" id="PeakCaller.__call__">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCaller.__call__.html#tme.analyzer.PeakCaller.__call__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the internal parameter store based on input array.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : NDArray</span>
+<span class="sd">            Array containing the score space.</span>
+<span class="sd">        rotation_matrix : NDArray</span>
+<span class="sd">            Rotation matrix used to obtain the score array.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional keyword arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">peak_positions</span><span class="p">,</span> <span class="n">peak_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_peaks</span><span class="p">(</span>
+            <span class="n">score_space</span><span class="o">=</span><span class="n">score_space</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">peak_positions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">peak_positions</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">peak_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;fourier_shift&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">peak_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">peak_positions</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">,</span> <span class="n">fourier_shift</span><span class="p">),</span> <span class="n">score_space</span><span class="o">.</span><span class="n">shape</span>
+            <span class="p">)</span>
+            <span class="n">peak_positions</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">peak_details</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">peak_details</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">peak_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">rotations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
+            <span class="n">rotation_matrix</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+            <span class="n">peak_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span>
+            <span class="n">peak_positions</span><span class="o">=</span><span class="n">peak_positions</span><span class="p">,</span>
+            <span class="n">peak_details</span><span class="o">=</span><span class="n">peak_details</span><span class="p">,</span>
+            <span class="n">peak_scores</span><span class="o">=</span><span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">peak_positions</span><span class="o">.</span><span class="n">T</span><span class="p">)],</span>
+            <span class="n">rotations</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PeakCaller.call_peaks">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCaller.call_peaks.html#tme.analyzer.PeakCaller.call_peaks">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call peaks in the score space.</span>
+
+<span class="sd">        This function is not intended to be called directly, but should rather be</span>
+<span class="sd">        defined by classes inheriting from :py:class:`PeakCaller` to execute a given</span>
+<span class="sd">        peak calling algorithm.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : NDArray</span>
+<span class="sd">            Data array of scores.</span>
+<span class="sd">        minimum_score : float</span>
+<span class="sd">            Minimum score value to consider.</span>
+<span class="sd">        min_distance : float</span>
+<span class="sd">            Minimum distance between maxima.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak coordiantes.</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak details.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="PeakCaller.merge">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCaller.merge.html#tme.analyzer.PeakCaller.merge">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">candidates</span><span class="o">=</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Merge multiple instances of :py:class:`PeakCaller`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        candidate_fits : list of lists</span>
+<span class="sd">            Obtained by invoking list on the generator returned by __iter__.</span>
+<span class="sd">        param_stores : list of tuples, optional</span>
+<span class="sd">            List of parameter stores. Each tuple contains candidate data and number</span>
+<span class="sd">             of candidates.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional keyword arguments.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            NDArray of candidates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">peak_positions</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">peak_scores</span><span class="p">,</span> <span class="n">peak_details</span> <span class="o">=</span> <span class="n">candidate</span>
+            <span class="n">base</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span>
+                <span class="n">peak_positions</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">),</span>
+                <span class="n">peak_details</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">peak_details</span><span class="p">),</span>
+                <span class="n">peak_scores</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">peak_scores</span><span class="p">),</span>
+                <span class="n">rotations</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">rotations</span><span class="p">),</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">base</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">peak_positions</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">peak_details</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">peak_scores</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">rotations</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update internal parameter store.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        peak_positions : NDArray</span>
+<span class="sd">            Position of peaks with shape n x d where n is the number of</span>
+<span class="sd">            peaks and d the dimension.</span>
+<span class="sd">        peak_scores : NDArray</span>
+<span class="sd">            Corresponding score obtained at each peak.</span>
+<span class="sd">        translation_offset : NDArray, optional</span>
+<span class="sd">            Offset of the score_space, occurs e.g. when template matching</span>
+<span class="sd">            to parts of a tomogram.</span>
+<span class="sd">        rotations: NDArray</span>
+<span class="sd">            Rotations used to obtain the score space from which</span>
+<span class="sd">            the candidate stem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">translation_offset</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;translation_offset&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">peak_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">translation_offset</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">translation_offset</span><span class="p">,</span> <span class="n">peak_positions</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">,</span> <span class="n">translation_offset</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">peak_positions</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">peak_positions</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">peak_scores</span><span class="p">,</span> <span class="n">peak_details</span><span class="p">]</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">peak_positions</span><span class="p">))</span>
+        <span class="n">rotations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rotations</span><span class="p">))</span>
+        <span class="n">peak_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">peak_scores</span><span class="p">))</span>
+        <span class="n">peak_details</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">peak_details</span><span class="p">))</span>
+
+        <span class="n">top_n</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">peak_scores</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span><span class="p">)</span>
+        <span class="n">top_scores</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topk_indices</span><span class="p">(</span><span class="n">peak_scores</span><span class="p">,</span> <span class="n">top_n</span><span class="p">)</span>
+
+        <span class="n">final_order</span> <span class="o">=</span> <span class="n">top_scores</span><span class="p">[</span>
+            <span class="n">filter_points_indices</span><span class="p">(</span><span class="n">peaks</span><span class="p">[</span><span class="n">top_scores</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span><span class="n">final_order</span><span class="p">,]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotations</span><span class="p">[</span><span class="n">final_order</span><span class="p">,]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">peak_scores</span><span class="p">[</span><span class="n">final_order</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">peak_details</span><span class="p">[</span><span class="n">final_order</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="PeakCallerSort">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerSort.html#tme.analyzer.PeakCallerSort">[docs]</a>
+<span class="k">class</span> <span class="nc">PeakCallerSort</span><span class="p">(</span><span class="n">PeakCaller</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A :py:class:`PeakCaller` subclass that first selects ``number_of_peaks``</span>
+<span class="sd">    highest scores and subsequently filters local maxima to suffice a distance</span>
+<span class="sd">    from one another of ``min_distance``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PeakCallerSort.call_peaks">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerSort.call_peaks.html#tme.analyzer.PeakCallerSort.call_peaks">[docs]</a>
+    <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call peaks in the score space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : NDArray</span>
+<span class="sd">            Data array of scores.</span>
+<span class="sd">        minimum_score : float</span>
+<span class="sd">            Minimum score value to consider.</span>
+<span class="sd">        min_distance : float</span>
+<span class="sd">            Minimum distance between maxima.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak coordiantes.</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">flat_score_space</span> <span class="o">=</span> <span class="n">score_space</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">flat_score_space</span><span class="p">))</span>
+
+        <span class="n">top_k_indices</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topk_indices</span><span class="p">(</span><span class="n">flat_score_space</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">top_k_indices</span><span class="p">,</span> <span class="n">score_space</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">coordinates</span><span class="p">))</span>
+
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">filter_points</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PeakCallerMaximumFilter">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerMaximumFilter.html#tme.analyzer.PeakCallerMaximumFilter">[docs]</a>
+<span class="k">class</span> <span class="nc">PeakCallerMaximumFilter</span><span class="p">(</span><span class="n">PeakCaller</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find local maxima by applying a maximum filter and enforcing a distance</span>
+<span class="sd">    constraint subseqquently. This is similar to the strategy implemented in</span>
+<span class="sd">    skimage.feature.peak_local_max.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PeakCallerMaximumFilter.call_peaks">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerMaximumFilter.call_peaks.html#tme.analyzer.PeakCallerMaximumFilter.call_peaks">[docs]</a>
+    <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call peaks in the score space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : NDArray</span>
+<span class="sd">            Data array of scores.</span>
+<span class="sd">        minimum_score : float</span>
+<span class="sd">            Minimum score value to consider.</span>
+<span class="sd">        min_distance : float</span>
+<span class="sd">            Minimum distance between maxima.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak coordiantes.</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">max_filter_coordinates</span><span class="p">(</span><span class="n">score_space</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">)</span>
+
+        <span class="n">input_candidates</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span><span class="p">,</span> <span class="n">peaks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">score_space</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">top_indices</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topk_indices</span><span class="p">(</span>
+            <span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">peaks</span><span class="o">.</span><span class="n">T</span><span class="p">)],</span> <span class="n">input_candidates</span>
+        <span class="p">)</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span><span class="n">top_indices</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PeakCallerFast">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerFast.html#tme.analyzer.PeakCallerFast">[docs]</a>
+<span class="k">class</span> <span class="nc">PeakCallerFast</span><span class="p">(</span><span class="n">PeakCaller</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Subdivides the score space into squares with edge length ``min_distance``</span>
+<span class="sd">    and determiens maximum value for each. In a second pass, all local maxima</span>
+<span class="sd">    that are not the local maxima in a ``min_distance`` square centered around them</span>
+<span class="sd">    are removed.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PeakCallerFast.call_peaks">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerFast.call_peaks.html#tme.analyzer.PeakCallerFast.call_peaks">[docs]</a>
+    <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call peaks in the score space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : NDArray</span>
+<span class="sd">            Data array of scores.</span>
+<span class="sd">        minimum_score : float</span>
+<span class="sd">            Minimum score value to consider.</span>
+<span class="sd">        min_distance : float</span>
+<span class="sd">            Minimum distance between maxima.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak coordiantes.</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">axis</span><span class="p">:</span> <span class="n">score_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span>
+            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">score_space</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">slices</span> <span class="o">=</span> <span class="n">split_numpy_array_slices</span><span class="p">(</span><span class="n">score_space</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">splits</span><span class="p">)</span>
+
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span>
+                    <span class="n">backend</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">score_space</span><span class="p">[</span><span class="n">subvol</span><span class="p">]),</span> <span class="n">score_space</span><span class="p">[</span><span class="n">subvol</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">subvol</span> <span class="ow">in</span> <span class="n">slices</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span>
+            <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">subvol</span><span class="p">)</span> <span class="k">for</span> <span class="n">subvol</span> <span class="ow">in</span> <span class="n">slices</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">coordinates</span><span class="p">)</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">T</span><span class="p">)]),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">filter_points</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">)</span>
+
+        <span class="n">starts</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">peaks</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">stops</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">peaks</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">,</span> <span class="n">score_space</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">slices_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="o">*</span><span class="n">coord</span><span class="p">)</span> <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">start_row</span><span class="p">,</span> <span class="n">stop_row</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">start_row</span><span class="p">,</span> <span class="n">stop_row</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">stops</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">peaks</span><span class="o">.</span><span class="n">T</span><span class="p">)]</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">score</span> <span class="o">&gt;=</span> <span class="n">backend</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">score_space</span><span class="p">[</span><span class="n">subvol</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">subvol</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">slices_list</span><span class="p">,</span> <span class="n">scores</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span><span class="n">keep</span><span class="p">,]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PeakCallerRecursiveMasking">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerRecursiveMasking.html#tme.analyzer.PeakCallerRecursiveMasking">[docs]</a>
+<span class="k">class</span> <span class="nc">PeakCallerRecursiveMasking</span><span class="p">(</span><span class="n">PeakCaller</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Identifies peaks iteratively by selecting the top score and masking</span>
+<span class="sd">    a region around it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PeakCallerRecursiveMasking.call_peaks">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerRecursiveMasking.call_peaks.html#tme.analyzer.PeakCallerRecursiveMasking.call_peaks">[docs]</a>
+    <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call peaks in the score space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : NDArray</span>
+<span class="sd">            Data array of scores.</span>
+<span class="sd">        minimum_score : float</span>
+<span class="sd">            Minimum score value to consider.</span>
+<span class="sd">        min_distance : float</span>
+<span class="sd">            Minimum distance between maxima.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak coordiantes.</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">score_box</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">score_space</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">score_space</span><span class="p">)</span>
+            <span class="n">max_coord</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span>
+                <span class="n">indices</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">score_space</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="n">score_space</span><span class="o">.</span><span class="n">shape</span>
+            <span class="p">)</span>
+            <span class="n">coordinates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_coord</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">max_coord</span><span class="p">,</span> <span class="n">score_box</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">max_coord</span><span class="p">,</span> <span class="n">score_box</span><span class="p">),</span> <span class="n">score_space</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="o">*</span><span class="n">pos</span><span class="p">)</span> <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+            <span class="n">score_space</span><span class="p">[</span><span class="n">coords</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PeakCallerScipy">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerScipy.html#tme.analyzer.PeakCallerScipy">[docs]</a>
+<span class="k">class</span> <span class="nc">PeakCallerScipy</span><span class="p">(</span><span class="n">PeakCaller</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Peak calling using skimage.feature.peak_local_max to compute local maxima.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PeakCallerScipy.call_peaks">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerScipy.call_peaks.html#tme.analyzer.PeakCallerScipy.call_peaks">[docs]</a>
+    <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call peaks in the score space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : NDArray</span>
+<span class="sd">            Data array of scores.</span>
+<span class="sd">        minimum_score : float</span>
+<span class="sd">            Minimum score value to consider.</span>
+<span class="sd">        min_distance : float</span>
+<span class="sd">            Minimum distance between maxima.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak coordiantes.</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Array of peak details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">peak_local_max</span><span class="p">(</span>
+            <span class="n">score_space</span><span class="p">,</span>
+            <span class="n">num_peaks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span><span class="p">,</span>
+            <span class="n">min_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<span class="k">class</span> <span class="nc">PeakClustering</span><span class="p">(</span><span class="n">PeakCallerSort</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use DBScan clustering to identify more reliable peaks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">number_of_peaks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;min_distance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">number_of_peaks</span><span class="o">=</span><span class="n">number_of_peaks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Merge multiple instances of Analyzer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional keyword arguments passed to :py:meth:`PeakCaller.merge`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            NDArray of candidates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">peaks</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">candidate</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">peaks</span><span class="p">])</span>
+        <span class="n">clusters</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">clusters</span><span class="o">.</span><span class="n">labels_</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="n">label_max</span> <span class="o">=</span> <span class="n">max_index_by_label</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">)</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">in</span> <span class="n">label_max</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">label_max</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">representatives</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">label_max</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="kc">True</span> <span class="k">if</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">representatives</span> <span class="k">else</span> <span class="kc">False</span>
+                <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">peaks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span><span class="n">keep</span><span class="p">,]</span>
+        <span class="n">rotations</span> <span class="o">=</span> <span class="n">rotations</span><span class="p">[</span><span class="n">keep</span><span class="p">,]</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+        <span class="n">details</span> <span class="o">=</span> <span class="n">details</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">details</span>
+
+
+<div class="viewcode-block" id="ScoreStatistics">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.ScoreStatistics.html#tme.analyzer.ScoreStatistics">[docs]</a>
+<span class="k">class</span> <span class="nc">ScoreStatistics</span><span class="p">(</span><span class="n">PeakCallerFast</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute basic statistics on score spaces with respect to a reference</span>
+<span class="sd">    score or value.</span>
+
+<span class="sd">    This class is used to evaluate a blurring or scoring method when the correct fit</span>
+<span class="sd">    is known. It is thread-safe and is designed to be shared among multiple processes</span>
+<span class="sd">    with write permissions to the internal parameters.</span>
+
+<span class="sd">    After instantiation, the class&#39;s functionality can be accessed through the</span>
+<span class="sd">    `__call__` method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    reference_position : int, optional</span>
+<span class="sd">        Index of the correct fit in the array passed to call. Defaults to None.</span>
+<span class="sd">    min_distance : float, optional</span>
+<span class="sd">        Minimum distance for local maxima. Defaults to None.</span>
+<span class="sd">    reference_fit : float, optional</span>
+<span class="sd">        Score of the correct fit. If set, `reference_position` will be ignored.</span>
+<span class="sd">        Defaults to None.</span>
+<span class="sd">    number_of_peaks : int, optional</span>
+<span class="sd">        Number of candidate fits to consider. Defaults to 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">reference_position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">min_distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">reference_fit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">number_of_peaks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">number_of_peaks</span><span class="o">=</span><span class="n">number_of_peaks</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="n">min_distance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">RawValue</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rmean</span> <span class="o">=</span> <span class="n">RawValue</span><span class="p">(</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ssqd</span> <span class="o">=</span> <span class="n">RawValue</span><span class="p">(</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nbetter_or_equal</span> <span class="o">=</span> <span class="n">RawValue</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maximum_value</span> <span class="o">=</span> <span class="n">RawValue</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_value</span> <span class="o">=</span> <span class="n">RawValue</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shannon_entropy</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">candidate_fits</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotation_names</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_fit</span> <span class="o">=</span> <span class="n">RawValue</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_reference</span> <span class="o">=</span> <span class="n">RawValue</span><span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span> <span class="o">=</span> <span class="n">reference_position</span>
+        <span class="k">if</span> <span class="n">reference_fit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reference_fit</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">reference_fit</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">has_reference</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="ScoreStatistics.__call__">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.ScoreStatistics.__call__.html#tme.analyzer.ScoreStatistics.__call__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Processes the input array and rotation matrix.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arr : NDArray</span>
+<span class="sd">            Input data array.</span>
+<span class="sd">        rotation_matrix : NDArray</span>
+<span class="sd">            Rotation matrix for processing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_reference</span><span class="p">(</span><span class="n">score_space</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_reference</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stalling processes until reference_fit has been set.&quot;</span><span class="p">)</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">rotation_matrix</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">rmean</span><span class="p">,</span> <span class="n">ssqd</span><span class="p">,</span> <span class="n">nbetter_or_equal</span><span class="p">,</span> <span class="n">max_value</span><span class="p">,</span> <span class="n">min_value</span> <span class="o">=</span> <span class="n">online_statistics</span><span class="p">(</span>
+            <span class="n">score_space</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_fit</span><span class="o">.</span><span class="n">value</span>
+        <span class="p">)</span>
+
+        <span class="n">freq</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">score_space</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">shannon_entropy</span> <span class="o">=</span> <span class="n">entropy</span><span class="p">(</span><span class="n">freq</span> <span class="o">/</span> <span class="n">score_space</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="n">peaks</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">call_peaks</span><span class="p">(</span>
+            <span class="n">score_space</span><span class="o">=</span><span class="n">score_space</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">peaks</span><span class="o">.</span><span class="n">T</span><span class="p">)]</span>
+        <span class="n">rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
+            <span class="n">rotation_matrix</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+            <span class="n">peaks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">peaks</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span>
+            <span class="n">peak_positions</span><span class="o">=</span><span class="n">peaks</span><span class="p">,</span>
+            <span class="n">rotations</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
+            <span class="n">peak_scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
+            <span class="n">peak_details</span><span class="o">=</span><span class="n">distances</span><span class="p">,</span>
+            <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+            <span class="n">rmean</span><span class="o">=</span><span class="n">rmean</span><span class="p">,</span>
+            <span class="n">ssqd</span><span class="o">=</span><span class="n">ssqd</span><span class="p">,</span>
+            <span class="n">nbetter_or_equal</span><span class="o">=</span><span class="n">nbetter_or_equal</span><span class="p">,</span>
+            <span class="n">max_value</span><span class="o">=</span><span class="n">max_value</span><span class="p">,</span>
+            <span class="n">min_value</span><span class="o">=</span><span class="n">min_value</span><span class="p">,</span>
+            <span class="n">entropy</span><span class="o">=</span><span class="n">shannon_entropy</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">param_store</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rmean</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ssqd</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nbetter_or_equal</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maximum_value</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minimum_value</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shannon_entropy</span><span class="p">),</span>
+            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_names</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reference_fit</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">param_store</span>
+
+    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">rmean</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">ssqd</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">nbetter_or_equal</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">min_value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">entropy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the internal statistics of the analyzer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            Sample size.</span>
+<span class="sd">        rmean : float</span>
+<span class="sd">            Running mean.</span>
+<span class="sd">        ssqd : float</span>
+<span class="sd">            Sum of squared differences.</span>
+<span class="sd">        nbetter_or_equal : int</span>
+<span class="sd">            Number of values better or equal to reference.</span>
+<span class="sd">        max_value : float</span>
+<span class="sd">            Maximum value.</span>
+<span class="sd">        min_value : float</span>
+<span class="sd">            Minimum value.</span>
+<span class="sd">        entropy : float</span>
+<span class="sd">            Shannon entropy.</span>
+<span class="sd">        candidates : list</span>
+<span class="sd">            List of candidate fits.</span>
+<span class="sd">        name : str</span>
+<span class="sd">            Name or label for the data.</span>
+<span class="sd">        kwargs : dict</span>
+<span class="sd">            Keyword arguments passed to PeakCaller._update.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="n">n_total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">n</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">rmean</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmean</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">delta2</span> <span class="o">=</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">delta</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rmean</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">n</span> <span class="o">/</span> <span class="n">n_total</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ssqd</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="n">ssqd</span> <span class="o">+</span> <span class="n">delta2</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="n">n_total</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">n_total</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nbetter_or_equal</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="n">nbetter_or_equal</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minimum_value</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minimum_value</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">min_value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maximum_value</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maximum_value</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">max_value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shannon_entropy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entropy</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rotation_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ScoreStatistics.merge">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.ScoreStatistics.merge.html#tme.analyzer.ScoreStatistics.merge">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">param_stores</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Merges multiple instances of :py:class`ScoreStatistics`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        param_stores : list of tuple</span>
+<span class="sd">            Internal parameter store. Obtained by running `tuple(instance)`.</span>
+<span class="sd">            Defaults to a list with two empty tuples.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            Contains the reference fit, the z-transform of the reference fit,</span>
+<span class="sd">            number of scores, and various other statistics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">reference_position</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">param_store</span> <span class="ow">in</span> <span class="n">param_stores</span><span class="p">:</span>
+            <span class="n">base</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span>
+                <span class="n">peak_positions</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">rotations</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">peak_scores</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                <span class="n">peak_details</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                <span class="n">n</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+                <span class="n">rmean</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span>
+                <span class="n">ssqd</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span>
+                <span class="n">nbetter_or_equal</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span>
+                <span class="n">max_value</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span>
+                <span class="n">min_value</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span>
+                <span class="n">entropy</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="n">base</span><span class="o">.</span><span class="n">reference_fit</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">param_store</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">base</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ScoreStatistics.set_reference">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.ScoreStatistics.set_reference.html#tme.analyzer.ScoreStatistics.set_reference">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the reference for the analyzer based on the input array</span>
+<span class="sd">        and rotation matrix.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : NDArray</span>
+<span class="sd">            Input data array.</span>
+<span class="sd">        rotation_matrix : NDArray</span>
+<span class="sd">            Rotation matrix for setting reference.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_ref</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+            <span class="n">rotation_matrix</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_ref</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">reference_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span>
+        <span class="k">if</span> <span class="n">reference_position</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">reference_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">score_space</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span> <span class="o">=</span> <span class="n">reference_position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_fit</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">reference_position</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_reference</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">1</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MaxScoreOverRotations">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.MaxScoreOverRotations.html#tme.analyzer.MaxScoreOverRotations">[docs]</a>
+<span class="k">class</span> <span class="nc">MaxScoreOverRotations</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtain the maximum translation score over various rotations.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    score_space : NDArray</span>
+<span class="sd">        The score space for the observed rotations.</span>
+<span class="sd">    rotations : NDArray</span>
+<span class="sd">        The rotation identifiers for each score.</span>
+<span class="sd">    translation_offset : NDArray, optional</span>
+<span class="sd">        The offset applied during translation.</span>
+<span class="sd">    observed_rotations : int</span>
+<span class="sd">        Count of observed rotations.</span>
+<span class="sd">    use_memmap : bool, optional</span>
+<span class="sd">        Whether to offload internal data arrays to disk</span>
+<span class="sd">    thread_safe: bool, optional</span>
+<span class="sd">        Whether access to internal data arrays should be thread safe</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">score_space_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">score_space_dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+        <span class="n">translation_offset</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">shared_memory_handler</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rotation_space_dtype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">use_memmap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">thread_safe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">score_space_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">score_space_shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score_space</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">arr_to_sharedarr</span><span class="p">(</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">score_space_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">score_space_dtype</span><span class="p">),</span>
+            <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">arr_to_sharedarr</span><span class="p">(</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">score_space_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rotation_space_dtype</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">shared_memory_handler</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">translation_offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">translation_offset</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">score_space_shape</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">translation_offset</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">translation_offset</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score_space_shape</span> <span class="o">=</span> <span class="n">score_space_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotation_space_dtype</span> <span class="o">=</span> <span class="n">rotation_space_dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score_space_dtype</span> <span class="o">=</span> <span class="n">score_space_dtype</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_memmap</span> <span class="o">=</span> <span class="n">use_memmap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span> <span class="k">if</span> <span class="n">thread_safe</span> <span class="k">else</span> <span class="n">nullcontext</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span> <span class="k">if</span> <span class="n">thread_safe</span> <span class="k">else</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_shape</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_dtype</span><span class="p">,</span>
+            <span class="n">shm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">internal_rotations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_shape</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_space_dtype</span><span class="p">,</span>
+            <span class="n">shm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">internal_scores</span><span class="p">)</span>
+        <span class="n">internal_rotations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">internal_rotations</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_memmap</span><span class="p">:</span>
+            <span class="n">internal_scores_filename</span> <span class="o">=</span> <span class="n">array_to_memmap</span><span class="p">(</span><span class="n">internal_scores</span><span class="p">)</span>
+            <span class="n">internal_rotations_filename</span> <span class="o">=</span> <span class="n">array_to_memmap</span><span class="p">(</span><span class="n">internal_rotations</span><span class="p">)</span>
+            <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">internal_scores_filename</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">internal_scores</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">internal_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">internal_rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">internal_rotations_filename</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">internal_rotations</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">internal_rotations</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Avoid invalidation by shared memory handler with copy</span>
+            <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">internal_scores</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">internal_rotations</span> <span class="o">=</span> <span class="n">internal_rotations</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">param_store</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">internal_scores</span><span class="p">,</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">translation_offset</span><span class="p">),</span>
+            <span class="n">internal_rotations</span><span class="p">,</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">param_store</span>
+
+<div class="viewcode-block" id="MaxScoreOverRotations.__call__">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.MaxScoreOverRotations.__call__.html#tme.analyzer.MaxScoreOverRotations.__call__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update internal parameter store based on `score_space`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : ndarray</span>
+<span class="sd">            Numpy array containing the score space.</span>
+<span class="sd">        rotation_matrix : ndarray</span>
+<span class="sd">            Square matrix describing the current rotation.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Arbitrary keyword arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="n">rotation</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rotation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">[</span><span class="n">rotation</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">)</span>
+            <span class="n">rotation_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">[</span><span class="n">rotation</span><span class="p">]</span>
+            <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
+                <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_shape</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_dtype</span><span class="p">,</span>
+                <span class="n">shm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">internal_rotations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
+                <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_shape</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_space_dtype</span><span class="p">,</span>
+                <span class="n">shm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">score_space</span> <span class="o">&gt;</span> <span class="n">internal_scores</span>
+            <span class="n">internal_scores</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">score_space</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+            <span class="n">internal_rotations</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotation_index</span></div>
+
+
+<div class="viewcode-block" id="MaxScoreOverRotations.merge">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.MaxScoreOverRotations.merge.html#tme.analyzer.MaxScoreOverRotations.merge">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">param_stores</span><span class="o">=</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Merges multiple instances of :py:class:`MaxScoreOverRotations`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        param_stores : list of tuples, optional</span>
+<span class="sd">            Internal parameter store. Obtained by running `tuple(instance)`.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Arbitrary keyword arguments.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            Max aggregated translation scores, corresponding rotations,</span>
+<span class="sd">            translation offset that is zero by default and mapping between</span>
+<span class="sd">            rotation index and rotation matrices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_stores</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">param_stores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">new_rotation_mapping</span><span class="p">,</span> <span class="n">base_max</span> <span class="o">=</span> <span class="p">{},</span> <span class="kc">None</span>
+        <span class="n">scores_out_dtype</span><span class="p">,</span> <span class="n">rotations_out_dtype</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_stores</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">score_space</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">rotation_mapping</span> <span class="o">=</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">base_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">base_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">score_space</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+                <span class="n">scores_out_dtype</span> <span class="o">=</span> <span class="n">score_space</span><span class="o">.</span><span class="n">dtype</span>
+                <span class="n">rotations_out_dtype</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">dtype</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">base_max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">score_space</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">out</span><span class="o">=</span><span class="n">base_max</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">rotation_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_rotation_mapping</span><span class="p">:</span>
+                    <span class="n">new_rotation_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_rotation_mapping</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">base_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">base_max</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">base_max</span><span class="p">)</span>
+        <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;fourier_shift&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_max</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">)</span>
+
+        <span class="n">use_memmap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use_memmap&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+            <span class="n">scores_out_filename</span> <span class="o">=</span> <span class="n">generate_tempfile_name</span><span class="p">()</span>
+            <span class="n">rotations_out_filename</span> <span class="o">=</span> <span class="n">generate_tempfile_name</span><span class="p">()</span>
+
+            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">scores_out_filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">base_max</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">scores_out_dtype</span>
+            <span class="p">)</span>
+            <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">rotations_out_filename</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">base_max</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_out_dtype</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">base_max</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">scores_out_dtype</span><span class="p">)</span>
+            <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">base_max</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_out_dtype</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_stores</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+                <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                    <span class="n">scores_out_filename</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r+&quot;</span><span class="p">,</span>
+                    <span class="n">shape</span><span class="o">=</span><span class="n">base_max</span><span class="p">,</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="n">scores_out_dtype</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                    <span class="n">rotations_out_filename</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r+&quot;</span><span class="p">,</span>
+                    <span class="n">shape</span><span class="o">=</span><span class="n">base_max</span><span class="p">,</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_out_dtype</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="n">scores_temp</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">rotations_temp</span><span class="p">,</span> <span class="n">rotation_mapping</span> <span class="o">=</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">stops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">scores_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="o">*</span><span class="n">pos</span><span class="p">)</span> <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">stops</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">axis</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">scores_temp</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+                <span class="n">score_space</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">scores_temp</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+                <span class="n">rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">rotations_temp</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">score_space</span><span class="p">,</span> <span class="n">rotations</span> <span class="o">=</span> <span class="n">scores_temp</span><span class="p">,</span> <span class="n">rotations_temp</span>
+
+            <span class="n">indices_update</span> <span class="o">=</span> <span class="n">score_space</span> <span class="o">&gt;</span> <span class="n">scores_out</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+            <span class="n">scores_out</span><span class="p">[</span><span class="n">indices</span><span class="p">][</span><span class="n">indices_update</span><span class="p">]</span> <span class="o">=</span> <span class="n">score_space</span><span class="p">[</span><span class="n">indices_update</span><span class="p">]</span>
+
+            <span class="n">lookup_table</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">rotation_mapping</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_out</span><span class="o">.</span><span class="n">dtype</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">rotation_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">lookup_table</span><span class="p">[</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_rotation_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+            <span class="n">updated_rotations</span> <span class="o">=</span> <span class="n">rotations</span><span class="p">[</span><span class="n">indices_update</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">updated_rotations</span><span class="p">):</span>
+                <span class="n">rotations_out</span><span class="p">[</span><span class="n">indices</span><span class="p">][</span><span class="n">indices_update</span><span class="p">]</span> <span class="o">=</span> <span class="n">lookup_table</span><span class="p">[</span><span class="n">updated_rotations</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+                <span class="n">scores_temp</span><span class="o">.</span><span class="n">_mmap</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">rotations_temp</span><span class="o">.</span><span class="n">_mmap</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">scores_out</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="n">rotations_out</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="n">scores_out</span><span class="p">,</span> <span class="n">rotations_out</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+            <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">score_space</span><span class="p">,</span> <span class="n">rotations</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">scores_out_filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">base_max</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">scores_out_dtype</span>
+            <span class="p">)</span>
+            <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">rotations_out_filename</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">base_max</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_out_dtype</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">scores_out</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">scores_out</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+            <span class="n">rotations_out</span><span class="p">,</span>
+            <span class="n">new_rotation_mapping</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MemmapHandler">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.MemmapHandler.html#tme.analyzer.MemmapHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">MemmapHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create numpy memmap objects to write score spaces to.</span>
+
+<span class="sd">    This is useful in cases where not the entire score space is sampled at once.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path_translation : dict</span>
+<span class="sd">        Translation between rotation matrix and memmap file path.</span>
+<span class="sd">    shape : tuple of int</span>
+<span class="sd">        Shape of the memmap array.</span>
+<span class="sd">    dtype : type</span>
+<span class="sd">        Numpy dtype of the memmap array.</span>
+<span class="sd">    mode : str, optional</span>
+<span class="sd">        Mode to open the memmap array with.</span>
+<span class="sd">    indices : tuple of slice, optional</span>
+<span class="sd">        Slices specifying which parts of the memmap array will be updated by `__call__`.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Arbitrary keyword arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path_translation</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;r+&quot;</span><span class="p">,</span>
+        <span class="n">indices</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">filepaths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">path_translation</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="n">filepaths</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path_translation</span> <span class="o">=</span> <span class="n">path_translation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="n">indices</span>
+
+<div class="viewcode-block" id="MemmapHandler.__call__">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.MemmapHandler.__call__.html#tme.analyzer.MemmapHandler.__call__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write `score_space` to memmap object on disk.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : ndarray</span>
+<span class="sd">            Numpy array containing the score space.</span>
+<span class="sd">        rotation_matrix : ndarray</span>
+<span class="sd">            Square matrix describing the current rotation.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Arbitrary keyword arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_object</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_matrix_to_filepath</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
+
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="n">current_object</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r+&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># Does not really need a lock because processes operate on different rotations</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="n">array</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">]</span> <span class="o">+=</span> <span class="n">score_space</span>
+            <span class="n">array</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MemmapHandler.merge">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.MemmapHandler.merge.html#tme.analyzer.MemmapHandler.merge">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Placeholder merge method. Does nothing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MemmapHandler.update_indices">
+<a class="viewcode-back" href="../../reference/api/tme.analyzer.MemmapHandler.update_indices.html#tme.analyzer.MemmapHandler.update_indices">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Change which parts of the memmap array will be updated.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        indices : tuple of slice</span>
+<span class="sd">            Slices specifying which parts of the memmap array will be</span>
+<span class="sd">            updated by `__call__`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="n">indices</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_rotation_matrix_to_filepath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create string representation of `rotation_matrix`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rotation_matrix : ndarray</span>
+<span class="sd">            Rotation matrix to convert to string.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            String representation of the rotation matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rotation_string</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_translation</span><span class="p">[</span><span class="n">rotation_string</span><span class="p">]</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023 European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

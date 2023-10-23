@@ -1,0 +1,22 @@
+﻿tme.matching\_memory.FLCSphericalMaskMemoryUsage
+================================================
+
+.. currentmodule:: tme.matching_memory
+
+.. autoclass:: FLCSphericalMaskMemoryUsage
+
+   
+
+
+..
+   .. autosummary::
+      :toctree:
+      
+      FLCSphericalMaskMemoryUsage.base_usage
+      FLCSphericalMaskMemoryUsage.per_fork
+
+
+
+
+   
+

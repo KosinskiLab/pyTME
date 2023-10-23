@@ -1,0 +1,6 @@
+NumpyFFTWBackend.topk\_indices
+=========================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.topk_indices

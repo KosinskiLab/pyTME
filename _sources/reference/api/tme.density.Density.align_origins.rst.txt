@@ -1,0 +1,6 @@
+Density.align\_origins
+=================================
+
+.. currentmodule:: tme.density
+
+.. automethod:: Density.align_origins

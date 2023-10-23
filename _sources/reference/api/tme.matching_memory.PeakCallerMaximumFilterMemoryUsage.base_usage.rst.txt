@@ -1,0 +1,6 @@
+PeakCallerMaximumFilterMemoryUsage.base\_usage
+=================================================================
+
+.. currentmodule:: tme.matching_memory
+
+.. automethod:: PeakCallerMaximumFilterMemoryUsage.base_usage

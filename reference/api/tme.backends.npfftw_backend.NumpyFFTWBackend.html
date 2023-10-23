@@ -1,0 +1,718 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>tme.backends.npfftw_backend.NumpyFFTWBackend &#8212; pytme 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=e68c333d" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+
+    <script src="../../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/tme.backends.npfftw_backend.NumpyFFTWBackend';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../quickstart/index.html">
+                        Quickstart
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../genindex.html">
+                        Index
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../quickstart/index.html">
+                        Quickstart
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../genindex.html">
+                        Index
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item"><nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.abs.html">NumpyFFTWBackend.abs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.add.html">NumpyFFTWBackend.add</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.arange.html">NumpyFFTWBackend.arange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.argsort.html">NumpyFFTWBackend.argsort</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.arr_to_sharedarr.html">NumpyFFTWBackend.arr_to_sharedarr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.astype.html">NumpyFFTWBackend.astype</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.build_fft.html">NumpyFFTWBackend.build_fft</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.center_of_mass.html">NumpyFFTWBackend.center_of_mass</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.clip.html">NumpyFFTWBackend.clip</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.compute_convolution_shapes.html">NumpyFFTWBackend.compute_convolution_shapes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.concatenate.html">NumpyFFTWBackend.concatenate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.datatype_bytes.html">NumpyFFTWBackend.datatype_bytes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.device_count.html">NumpyFFTWBackend.device_count</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.divide.html">NumpyFFTWBackend.divide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.einsum.html">NumpyFFTWBackend.einsum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.eps.html">NumpyFFTWBackend.eps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.extract_center.html">NumpyFFTWBackend.extract_center</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.fill.html">NumpyFFTWBackend.fill</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.flip.html">NumpyFFTWBackend.flip</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.free_cache.html">NumpyFFTWBackend.free_cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.free_sharedarr.html">NumpyFFTWBackend.free_sharedarr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.full.html">NumpyFFTWBackend.full</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.get_available_memory.html">NumpyFFTWBackend.get_available_memory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.maximum.html">NumpyFFTWBackend.maximum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.mean.html">NumpyFFTWBackend.mean</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.min.html">NumpyFFTWBackend.min</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.minimum.html">NumpyFFTWBackend.minimum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.mod.html">NumpyFFTWBackend.mod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.multiply.html">NumpyFFTWBackend.multiply</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.power.html">NumpyFFTWBackend.power</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.preallocate_array.html">NumpyFFTWBackend.preallocate_array</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.repeat.html">NumpyFFTWBackend.repeat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.reverse.html">NumpyFFTWBackend.reverse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.roll.html">NumpyFFTWBackend.roll</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.rotate_array.html">NumpyFFTWBackend.rotate_array</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.rotate_array_coordinates.html">NumpyFFTWBackend.rotate_array_coordinates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.set_device.html">NumpyFFTWBackend.set_device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.sharedarr_to_arr.html">NumpyFFTWBackend.sharedarr_to_arr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.size.html">NumpyFFTWBackend.size</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.sqrt.html">NumpyFFTWBackend.sqrt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.square.html">NumpyFFTWBackend.square</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.stack.html">NumpyFFTWBackend.stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.std.html">NumpyFFTWBackend.std</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.subtract.html">NumpyFFTWBackend.subtract</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.sum.html">NumpyFFTWBackend.sum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.to_backend_array.html">NumpyFFTWBackend.to_backend_array</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.to_cpu_array.html">NumpyFFTWBackend.to_cpu_array</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.to_numpy_array.html">NumpyFFTWBackend.to_numpy_array</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.tobytes.html">NumpyFFTWBackend.tobytes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.topk_indices.html">NumpyFFTWBackend.topk_indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.topleft_pad.html">NumpyFFTWBackend.topleft_pad</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.transpose.html">NumpyFFTWBackend.transpose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.tril_indices.html">NumpyFFTWBackend.tril_indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.unique.html">NumpyFFTWBackend.unique</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.unravel_index.html">NumpyFFTWBackend.unravel_index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.zeros.html">NumpyFFTWBackend.zeros</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">tme.backends...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="tme-backends-npfftw-backend-numpyfftwbackend">
+<h1>tme.backends.npfftw_backend.NumpyFFTWBackend<a class="headerlink" href="#tme-backends-npfftw-backend-numpyfftwbackend" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="tme.backends.npfftw_backend.NumpyFFTWBackend">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NumpyFFTWBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array_backend=&lt;module</span> <span class="pre">'numpy'</span> <span class="pre">from</span> <span class="pre">'/usr/local/lib/python3.11/site-packages/numpy/__init__.py'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_dtype=&lt;class</span> <span class="pre">'numpy.float32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">complex_dtype=&lt;class</span> <span class="pre">'numpy.complex64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_dtype_int=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/backends/npfftw_backend.html#NumpyFFTWBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.backends.npfftw_backend.NumpyFFTWBackend" title="Link to this definition">#</a></dt>
+<dd><p>A numpy and pyfftw based backend for template matching.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.abs.html#tme.backends.npfftw_backend.NumpyFFTWBackend.abs" title="tme.backends.npfftw_backend.NumpyFFTWBackend.abs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abs</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Compute the absolute of array elements.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.add.html#tme.backends.npfftw_backend.NumpyFFTWBackend.add" title="tme.backends.npfftw_backend.NumpyFFTWBackend.add"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<td><p>Interface for element-wise addition of arrays.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.arange.html#tme.backends.npfftw_backend.NumpyFFTWBackend.arange" title="tme.backends.npfftw_backend.NumpyFFTWBackend.arange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arange</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Arange values in increasing order.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.argsort.html#tme.backends.npfftw_backend.NumpyFFTWBackend.argsort" title="tme.backends.npfftw_backend.NumpyFFTWBackend.argsort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">argsort</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Perform argsort of arr.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.arr_to_sharedarr.html#tme.backends.npfftw_backend.NumpyFFTWBackend.arr_to_sharedarr" title="tme.backends.npfftw_backend.NumpyFFTWBackend.arr_to_sharedarr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arr_to_sharedarr</span></code></a>(arr[, shared_memory_handler])</p></td>
+<td><p>Converts a numpy array to an object shared in memory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.astype.html#tme.backends.npfftw_backend.NumpyFFTWBackend.astype" title="tme.backends.npfftw_backend.NumpyFFTWBackend.astype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">astype</span></code></a>(arr, dtype)</p></td>
+<td><p>Change the datatype of arr.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.build_fft.html#tme.backends.npfftw_backend.NumpyFFTWBackend.build_fft" title="tme.backends.npfftw_backend.NumpyFFTWBackend.build_fft"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_fft</span></code></a>(fast_shape, fast_ft_shape, ...[, ...])</p></td>
+<td><p>Build pyFFTW builder functions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.center_of_mass.html#tme.backends.npfftw_backend.NumpyFFTWBackend.center_of_mass" title="tme.backends.npfftw_backend.NumpyFFTWBackend.center_of_mass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">center_of_mass</span></code></a>(arr[, cutoff])</p></td>
+<td><p>Computes the center of mass of a numpy ndarray instance using all available elements.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.clip.html#tme.backends.npfftw_backend.NumpyFFTWBackend.clip" title="tme.backends.npfftw_backend.NumpyFFTWBackend.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Clip elements of arr.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.compute_convolution_shapes.html#tme.backends.npfftw_backend.NumpyFFTWBackend.compute_convolution_shapes" title="tme.backends.npfftw_backend.NumpyFFTWBackend.compute_convolution_shapes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_convolution_shapes</span></code></a>(arr1_shape, ...)</p></td>
+<td><p>Computes regular, optimized and fourier convolution shape.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.concatenate.html#tme.backends.npfftw_backend.NumpyFFTWBackend.concatenate" title="tme.backends.npfftw_backend.NumpyFFTWBackend.concatenate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concatenate</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Concatenates arrays along axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.datatype_bytes.html#tme.backends.npfftw_backend.NumpyFFTWBackend.datatype_bytes" title="tme.backends.npfftw_backend.NumpyFFTWBackend.datatype_bytes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">datatype_bytes</span></code></a>(dtype)</p></td>
+<td><p>Return the number of bytes occupied by a given datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.device_count.html#tme.backends.npfftw_backend.NumpyFFTWBackend.device_count" title="tme.backends.npfftw_backend.NumpyFFTWBackend.device_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">device_count</span></code></a>()</p></td>
+<td><p>Return the number of available compute devices.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.divide.html#tme.backends.npfftw_backend.NumpyFFTWBackend.divide" title="tme.backends.npfftw_backend.NumpyFFTWBackend.divide"><code class="xref py py-obj docutils literal notranslate"><span class="pre">divide</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<td><p>Interface for element-wise division of arrays.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.einsum.html#tme.backends.npfftw_backend.NumpyFFTWBackend.einsum" title="tme.backends.npfftw_backend.NumpyFFTWBackend.einsum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">einsum</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Interface for einstein notation based summation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.eps.html#tme.backends.npfftw_backend.NumpyFFTWBackend.eps" title="tme.backends.npfftw_backend.NumpyFFTWBackend.eps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eps</span></code></a>(dtype)</p></td>
+<td><p>Returns the eps defined as diffeerence between 1.0 and the next representable floating point value larger than 1.0.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.extract_center.html#tme.backends.npfftw_backend.NumpyFFTWBackend.extract_center" title="tme.backends.npfftw_backend.NumpyFFTWBackend.extract_center"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_center</span></code></a>(arr, newshape)</p></td>
+<td><p>Extract the centered portion of an array based on a new shape.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.fill.html#tme.backends.npfftw_backend.NumpyFFTWBackend.fill" title="tme.backends.npfftw_backend.NumpyFFTWBackend.fill"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill</span></code></a>(arr, value)</p></td>
+<td><p>Fill arr with value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.flip.html#tme.backends.npfftw_backend.NumpyFFTWBackend.flip" title="tme.backends.npfftw_backend.NumpyFFTWBackend.flip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flip</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Flip the elements of arr.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.free_cache.html#tme.backends.npfftw_backend.NumpyFFTWBackend.free_cache" title="tme.backends.npfftw_backend.NumpyFFTWBackend.free_cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">free_cache</span></code></a>()</p></td>
+<td><p>Free cached objects allocated by backend.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.free_sharedarr.html#tme.backends.npfftw_backend.NumpyFFTWBackend.free_sharedarr" title="tme.backends.npfftw_backend.NumpyFFTWBackend.free_sharedarr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">free_sharedarr</span></code></a>(link)</p></td>
+<td><p>Free shared array at link.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.full.html#tme.backends.npfftw_backend.NumpyFFTWBackend.full" title="tme.backends.npfftw_backend.NumpyFFTWBackend.full"><code class="xref py py-obj docutils literal notranslate"><span class="pre">full</span></code></a>(shape, fill_value[, dtype])</p></td>
+<td><p>Returns an aligned array of zeros with specified shape and dtype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.get_available_memory.html#tme.backends.npfftw_backend.NumpyFFTWBackend.get_available_memory" title="tme.backends.npfftw_backend.NumpyFFTWBackend.get_available_memory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_available_memory</span></code></a>()</p></td>
+<td><p>Returns the available memory available for computations in bytes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.indices.html#tme.backends.npfftw_backend.NumpyFFTWBackend.indices" title="tme.backends.npfftw_backend.NumpyFFTWBackend.indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">indices</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Creates an array representing the index grid of an input.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.max.html#tme.backends.npfftw_backend.NumpyFFTWBackend.max" title="tme.backends.npfftw_backend.NumpyFFTWBackend.max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Compute the maximum of array elements.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.max_filter_coordinates.html#tme.backends.npfftw_backend.NumpyFFTWBackend.max_filter_coordinates" title="tme.backends.npfftw_backend.NumpyFFTWBackend.max_filter_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_filter_coordinates</span></code></a>(score_space, min_distance)</p></td>
+<td><p>Identifies local maxima in score_space separated by min_distance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.maximum.html#tme.backends.npfftw_backend.NumpyFFTWBackend.maximum" title="tme.backends.npfftw_backend.NumpyFFTWBackend.maximum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">maximum</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<td><p>Compute the element wise maximum of arr1 and arr2.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.mean.html#tme.backends.npfftw_backend.NumpyFFTWBackend.mean" title="tme.backends.npfftw_backend.NumpyFFTWBackend.mean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mean</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Compute the mean of array elements.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.min.html#tme.backends.npfftw_backend.NumpyFFTWBackend.min" title="tme.backends.npfftw_backend.NumpyFFTWBackend.min"><code class="xref py py-obj docutils literal notranslate"><span class="pre">min</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Compute the minimum of array elements.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.minimum.html#tme.backends.npfftw_backend.NumpyFFTWBackend.minimum" title="tme.backends.npfftw_backend.NumpyFFTWBackend.minimum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minimum</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<td><p>Compute the element wise minimum of arr1 and arr2.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.mod.html#tme.backends.npfftw_backend.NumpyFFTWBackend.mod" title="tme.backends.npfftw_backend.NumpyFFTWBackend.mod"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mod</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<td><p>Interface for element-wise modulus of arrays.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.multiply.html#tme.backends.npfftw_backend.NumpyFFTWBackend.multiply" title="tme.backends.npfftw_backend.NumpyFFTWBackend.multiply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">multiply</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<td><p>Interface for element-wise multiplication of arrays.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.power.html#tme.backends.npfftw_backend.NumpyFFTWBackend.power" title="tme.backends.npfftw_backend.NumpyFFTWBackend.power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">power</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Compute the n-th power of an array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.preallocate_array.html#tme.backends.npfftw_backend.NumpyFFTWBackend.preallocate_array" title="tme.backends.npfftw_backend.NumpyFFTWBackend.preallocate_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">preallocate_array</span></code></a>(shape, dtype)</p></td>
+<td><p>Returns a byte-aligned array of zeros with specified shape and dtype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.repeat.html#tme.backends.npfftw_backend.NumpyFFTWBackend.repeat" title="tme.backends.npfftw_backend.NumpyFFTWBackend.repeat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">repeat</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Repeat each array elements after themselves.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.reverse.html#tme.backends.npfftw_backend.NumpyFFTWBackend.reverse" title="tme.backends.npfftw_backend.NumpyFFTWBackend.reverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reverse</span></code></a>(arr)</p></td>
+<td><p>Reverse the order of elements in an array along all its axes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.roll.html#tme.backends.npfftw_backend.NumpyFFTWBackend.roll" title="tme.backends.npfftw_backend.NumpyFFTWBackend.roll"><code class="xref py py-obj docutils literal notranslate"><span class="pre">roll</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Roll array elements along a specified axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.rotate_array.html#tme.backends.npfftw_backend.NumpyFFTWBackend.rotate_array" title="tme.backends.npfftw_backend.NumpyFFTWBackend.rotate_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate_array</span></code></a>(arr, rotation_matrix[, ...])</p></td>
+<td><p>Rotates coordinates of arr according to rotation_matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.rotate_array_coordinates.html#tme.backends.npfftw_backend.NumpyFFTWBackend.rotate_array_coordinates" title="tme.backends.npfftw_backend.NumpyFFTWBackend.rotate_array_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate_array_coordinates</span></code></a>(arr, coordinates, ...)</p></td>
+<td><p>Rotates coordinates of arr according to rotation_matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.set_device.html#tme.backends.npfftw_backend.NumpyFFTWBackend.set_device" title="tme.backends.npfftw_backend.NumpyFFTWBackend.set_device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_device</span></code></a>(device_index)</p></td>
+<td><p>Set the active device context and operate as context manager for it</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.sharedarr_to_arr.html#tme.backends.npfftw_backend.NumpyFFTWBackend.sharedarr_to_arr" title="tme.backends.npfftw_backend.NumpyFFTWBackend.sharedarr_to_arr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sharedarr_to_arr</span></code></a>(shape, dtype, shm)</p></td>
+<td><p>Returns an array of given shape and dtype from shared memory location.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.size.html#tme.backends.npfftw_backend.NumpyFFTWBackend.size" title="tme.backends.npfftw_backend.NumpyFFTWBackend.size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></a>(arr)</p></td>
+<td><p>Compute the number of elements of arr.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.sqrt.html#tme.backends.npfftw_backend.NumpyFFTWBackend.sqrt" title="tme.backends.npfftw_backend.NumpyFFTWBackend.sqrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sqrt</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Compute the square root of array elements.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.square.html#tme.backends.npfftw_backend.NumpyFFTWBackend.square" title="tme.backends.npfftw_backend.NumpyFFTWBackend.square"><code class="xref py py-obj docutils literal notranslate"><span class="pre">square</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Compute the square of array elements.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.stack.html#tme.backends.npfftw_backend.NumpyFFTWBackend.stack" title="tme.backends.npfftw_backend.NumpyFFTWBackend.stack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stack</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Join a sequence of ArrayLike objects along a specified axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.std.html#tme.backends.npfftw_backend.NumpyFFTWBackend.std" title="tme.backends.npfftw_backend.NumpyFFTWBackend.std"><code class="xref py py-obj docutils literal notranslate"><span class="pre">std</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Compute the standad deviation of array elements.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.subtract.html#tme.backends.npfftw_backend.NumpyFFTWBackend.subtract" title="tme.backends.npfftw_backend.NumpyFFTWBackend.subtract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subtract</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<td><p>Interface for element-wise subtraction of arrays.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.sum.html#tme.backends.npfftw_backend.NumpyFFTWBackend.sum" title="tme.backends.npfftw_backend.NumpyFFTWBackend.sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sum</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Compute the sum of array elements.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.to_backend_array.html#tme.backends.npfftw_backend.NumpyFFTWBackend.to_backend_array" title="tme.backends.npfftw_backend.NumpyFFTWBackend.to_backend_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_backend_array</span></code></a>(arr)</p></td>
+<td><p>Convert a numpy array instance to backend array type.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.to_cpu_array.html#tme.backends.npfftw_backend.NumpyFFTWBackend.to_cpu_array" title="tme.backends.npfftw_backend.NumpyFFTWBackend.to_cpu_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_cpu_array</span></code></a>(arr)</p></td>
+<td><p>Convert an array of a given backend to a CPU array of that backend.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.to_numpy_array.html#tme.backends.npfftw_backend.NumpyFFTWBackend.to_numpy_array" title="tme.backends.npfftw_backend.NumpyFFTWBackend.to_numpy_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_numpy_array</span></code></a>(arr)</p></td>
+<td><p>Convert an array of given backend to a numpy array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.tobytes.html#tme.backends.npfftw_backend.NumpyFFTWBackend.tobytes" title="tme.backends.npfftw_backend.NumpyFFTWBackend.tobytes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tobytes</span></code></a>(arr)</p></td>
+<td><p>Compute the bytestring representation of arr.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.topk_indices.html#tme.backends.npfftw_backend.NumpyFFTWBackend.topk_indices" title="tme.backends.npfftw_backend.NumpyFFTWBackend.topk_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topk_indices</span></code></a>(arr, k)</p></td>
+<td><p>Compute indices of largest elements.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.topleft_pad.html#tme.backends.npfftw_backend.NumpyFFTWBackend.topleft_pad" title="tme.backends.npfftw_backend.NumpyFFTWBackend.topleft_pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topleft_pad</span></code></a>(arr, shape[, padval])</p></td>
+<td><p>Returns an array that has been padded to a specified shape with a padding value at the top-left corner.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.transpose.html#tme.backends.npfftw_backend.NumpyFFTWBackend.transpose" title="tme.backends.npfftw_backend.NumpyFFTWBackend.transpose"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transpose</span></code></a>(arr)</p></td>
+<td><p>Compute the transpose of arr.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.tril_indices.html#tme.backends.npfftw_backend.NumpyFFTWBackend.tril_indices" title="tme.backends.npfftw_backend.NumpyFFTWBackend.tril_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tril_indices</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Compute indices of upper triangular matrix</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.unique.html#tme.backends.npfftw_backend.NumpyFFTWBackend.unique" title="tme.backends.npfftw_backend.NumpyFFTWBackend.unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unique</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Find the unique elements of an array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.unravel_index.html#tme.backends.npfftw_backend.NumpyFFTWBackend.unravel_index" title="tme.backends.npfftw_backend.NumpyFFTWBackend.unravel_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unravel_index</span></code></a>(indices, shape)</p></td>
+<td><p>Convert flat index to array indices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.zeros.html#tme.backends.npfftw_backend.NumpyFFTWBackend.zeros" title="tme.backends.npfftw_backend.NumpyFFTWBackend.zeros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zeros</span></code></a>(shape[, dtype])</p></td>
+<td><p>Returns an aligned array of zeros with specified shape and dtype.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tme.backends.npfftw_backend.NumpyFFTWBackend"><code class="docutils literal notranslate"><span class="pre">NumpyFFTWBackend</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/reference/api/tme.backends.npfftw_backend.NumpyFFTWBackend.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023 European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

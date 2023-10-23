@@ -1,0 +1,6 @@
+﻿estimate\_ram\_usage
+======================================
+
+.. currentmodule:: tme.matching_memory
+
+.. autofunction:: estimate_ram_usage

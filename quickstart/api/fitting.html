@@ -1,0 +1,643 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Fit a protein structure to an electron density &#8212; pytme 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=e68c333d" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+
+    <script src="../../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart/api/fitting';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Contributor’s Guide" href="../contribution.html" />
+    <link rel="prev" title="Using the API" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        Quickstart
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../reference/index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../genindex.html">
+                        Index
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        Quickstart
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../reference/index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../genindex.html">
+                        Index
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item"><nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing.html">Preprocessing</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../match_template.html">Template matching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../postprocessing.html">Postprocessing</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Using the API</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Fit a protein structure to an electron density</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contributor’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Quickstart</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Using the API</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Fit a...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="fit-a-protein-structure-to-an-electron-density">
+<h1>Fit a protein structure to an electron density<a class="headerlink" href="#fit-a-protein-structure-to-an-electron-density" title="Link to this heading">#</a></h1>
+<p>In this guide, we will walk you through the process of using template matching to fit a protein structure to an electron density map. This involves acquiring the necessary map and structure data and then applying our API’s functions to achieve the match.</p>
+<section id="obtain-the-necessary-files">
+<h2>Obtain the Necessary Files<a class="headerlink" href="#obtain-the-necessary-files" title="Link to this heading">#</a></h2>
+<p>Head over to the <a class="reference external" href="https://www.ebi.ac.uk/emdb/EMD-8621">European Bioinformatics Institute’s (EMBL-EBI) repository</a> to visually inspect and understand the data we will be working with.</p>
+<p>For the purpose of this guide, we will need the following files:</p>
+<ol class="arabic">
+<li><p><strong>Map File</strong> - This contains the electron density of our molecule.</p>
+<ul>
+<li><p><strong>Web Link:</strong> <a class="reference external" href="https://www.ebi.ac.uk/emdb/EMD-8621">EMD-8621 Map</a></p></li>
+<li><p><strong>Direct Download:</strong> If you’re familiar with command-line utilities like <cite>wget</cite> or <cite>curl</cite>, you can directly download using the link below:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-8621/map/emd_8621.map.gz
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p><strong>Structure File</strong> - This is the protein structure that we want to match to our map.</p>
+<ul>
+<li><p><strong>Web Link:</strong> <a class="reference external" href="https://files.rcsb.org/download/5UZ4.pdb">5uz4 Structure</a></p></li>
+<li><p><strong>Direct Download:</strong> Again, if you’re using command-line, use the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://files.rcsb.org/download/5UZ4.pdb
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="perform-template-matching">
+<h2>Perform template matching<a class="headerlink" href="#perform-template-matching" title="Link to this heading">#</a></h2>
+<p>We are going to use the functionalities integrated in the <a class="reference internal" href="../../reference/api/tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.density.Density</span></code></a> class to perform non-exhaustive template matching using <a class="reference internal" href="../../reference/api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation" title="tme.matching_optimization.NormalizedCrossCorrelation"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.matching_optimization.NormalizedCrossCorrelation</span></code></a>.</p>
+<p>In the following code, we make use of the data structures <a class="reference internal" href="../../reference/api/tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.density.Density</span></code></a> and <a class="reference internal" href="../../reference/api/tme.structure.Structure.html#tme.structure.Structure" title="tme.structure.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.structure.Structure</span></code></a>, which hold the electron density maps and the atomic structure respectively. Both are passed to <a class="reference internal" href="../../reference/api/tme.density.Density.match_structure_to_density.html#tme.density.Density.match_structure_to_density" title="tme.density.Density.match_structure_to_density"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.match_structure_to_density()</span></code></a>, which numerically identifies the translation and rotation of the input structure that maximizes the normalized cross correlation score. The aligned structure is written to disk as pdb file using <a class="reference internal" href="../../reference/api/tme.structure.Structure.to_file.html#tme.structure.Structure.to_file" title="tme.structure.Structure.to_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.structure.Structure.to_file()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dge</span> <span class="kn">import</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">Density</span>
+
+<span class="c1"># Paths to downloaded files, adapt to your local paths</span>
+<span class="n">map_file</span> <span class="o">=</span> <span class="s2">&quot;emd_8621.map.gz&quot;</span>
+<span class="n">structure_file</span> <span class="o">=</span> <span class="s2">&quot;5UZ4.pdb&quot;</span>
+<span class="n">structure_aligned_path</span> <span class="o">=</span> <span class="s2">&quot;5UZ4_aligned.pdb&quot;</span>
+
+<span class="c1"># Load the data</span>
+<span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">map_file</span><span class="p">)</span>
+<span class="n">structure</span> <span class="o">=</span> <span class="n">Structure</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
+    <span class="n">structure_file</span><span class="p">,</span>
+    <span class="n">filter_by_residues</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># Keep non amino acid residues</span>
+<span class="p">)</span>
+
+<span class="n">ret</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">match_structure_to_density</span><span class="p">(</span>
+  <span class="n">target</span> <span class="o">=</span> <span class="n">density</span><span class="p">,</span>
+  <span class="n">template</span> <span class="o">=</span> <span class="n">structure</span><span class="p">,</span>
+  <span class="n">cutoff_target</span> <span class="o">=</span> <span class="mf">0.0309</span><span class="p">,</span> <span class="c1"># Author reported contour level</span>
+  <span class="n">scoring_method</span> <span class="o">=</span> <span class="s2">&quot;NormalizedCrossCorrelation&quot;</span>
+<span class="p">)</span>
+<span class="n">structure_aligned</span><span class="p">,</span> <span class="n">translation</span><span class="p">,</span> <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">ret</span>
+
+<span class="n">structure_aligned</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">structure_aligned_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../../reference/api/tme.density.Density.match_structure_to_density.html#tme.density.Density.match_structure_to_density" title="tme.density.Density.match_structure_to_density"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.match_structure_to_density()</span></code></a> accepts a <a class="reference internal" href="../../reference/api/tme.structure.Structure.html#tme.structure.Structure" title="tme.structure.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.structure.Structure</span></code></a> instance which contains atomic coordinates. However, the more common scenario is that one has two data arrays which should be template matched. <a class="reference internal" href="../../reference/api/tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.density.Density</span></code></a> can be conveniently instantiated from an atomic structure file using <a class="reference internal" href="../../reference/api/tme.density.Density.from_structure.html#tme.density.Density.from_structure" title="tme.density.Density.from_structure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.from_structure()</span></code></a>. In this case, it is paramount to pass the sampling_rate parameter to register the atomic structure on a grid with equal spacing than the electron density map.</p>
+<p>Depending on the sampling rate the scoring function can be more or less smooth. Desirable is a smooth funnel-like score landscape that allows the underlying optimizer to find the optimal translation and rotation of the input structure. We can smooth the scoring function by applying filters to the atomic stucture template. For this purpose, we used methods from the <a class="reference internal" href="../../reference/api/tme.preprocessor.Preprocessor.html#tme.preprocessor.Preprocessor" title="tme.preprocessor.Preprocessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor</span></code></a>, which can directly operate on the data attribute from the <a class="reference internal" href="../../reference/api/tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.density.Density</span></code></a> template instance.</p>
+<p>In the following we use <a class="reference internal" href="../../reference/api/tme.preprocessor.Preprocessor.gaussian_filter.html#tme.preprocessor.Preprocessor.gaussian_filter" title="tme.preprocessor.Preprocessor.gaussian_filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor.gaussian_filter()</span></code></a> to perform gaussian smoothing of the structure. The output is a numpy array, which we assign to the data attribute of an empty copy of the structure. The smoothed structure is subsequently used as template in <a class="reference internal" href="../../reference/api/tme.density.Density.match_densities.html#tme.density.Density.match_densities" title="tme.density.Density.match_densities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.match_densities()</span></code></a>, which returns the aligned template as well as the used translation and rotation matrix.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span><span class="p">,</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">Preprocessor</span>
+
+<span class="c1"># Paths to downloaded files</span>
+<span class="n">map_file</span> <span class="o">=</span> <span class="s2">&quot;emd_8621.map.gz&quot;</span>
+<span class="n">structure_file</span> <span class="o">=</span> <span class="s2">&quot;5UZ4.pdb&quot;</span>
+<span class="n">structure_aligned_path</span> <span class="o">=</span> <span class="s2">&quot;5UZ4_aligned.mrc&quot;</span>
+
+<span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">map_file</span><span class="p">)</span>
+<span class="c1"># Resampling the map to reduce computation time</span>
+<span class="n">density</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">density</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+<span class="c1"># Load the data into equally spaced grids</span>
+<span class="n">structure_density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span>
+    <span class="n">structure_file</span><span class="p">,</span>
+    <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+    <span class="n">filter_by_residues</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># Keep non amino acid residues</span>
+<span class="p">)</span>
+
+<span class="n">preprocessor</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="p">()</span>
+<span class="n">structure_smoothed</span> <span class="o">=</span> <span class="n">structure_density</span><span class="o">.</span><span class="n">empty</span>
+<span class="n">structure_smoothed</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">preprocessor</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span>
+  <span class="n">template</span> <span class="o">=</span> <span class="n">structure_density</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+  <span class="n">sigma</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="p">)</span>
+
+<span class="n">structure_aligned</span><span class="p">,</span> <span class="n">translation</span><span class="p">,</span> <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">match_densities</span><span class="p">(</span>
+  <span class="n">target</span> <span class="o">=</span> <span class="n">density</span><span class="p">,</span>
+  <span class="n">template</span> <span class="o">=</span> <span class="n">structure_smoothed</span><span class="p">,</span>
+  <span class="n">cutoff_target</span> <span class="o">=</span> <span class="mf">0.0309</span><span class="p">,</span> <span class="c1"># Author reported contour level</span>
+  <span class="n">cutoff_template</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+  <span class="n">scoring_method</span> <span class="o">=</span> <span class="s2">&quot;NormalizedCrossCorrelation&quot;</span>
+<span class="p">)</span>
+
+<span class="n">structure_aligned</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">structure_aligned_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The number of non-zero elements in structure_smoothed increases with the sigma value, hence the computation time also increases. Consider either fitting a subset of all elements or increasing cutoff_template.</p>
+<p>Note that in the code above, structure_aligned contains the smoothed density. To obtain the aligned unsmoothed density you would need to use the determined translation and rotation matrix like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">structure_density_out</span> <span class="o">=</span> <span class="n">structure_density</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
+   <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">,</span>
+   <span class="n">use_geometric_center</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span>
+<span class="n">structure_density_out</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">structure_aligned</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Similarly, the template matched structure can be obtained like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">structure</span> <span class="o">=</span> <span class="n">Structure</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
+    <span class="n">structure_file</span><span class="p">,</span>
+    <span class="n">filter_by_residues</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># Keep non amino acid residues</span>
+<span class="p">)</span>
+<span class="n">final_translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="o">-</span><span class="n">structure_density</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">structure_density</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># Atom coordinates are in xyz</span>
+<span class="n">final_translation</span> <span class="o">=</span> <span class="n">final_translation</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">structure_out</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
+    <span class="n">translation</span><span class="o">=</span><span class="n">final_translation</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">rotation_matrix</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Structure coordinates are in xyz format, while Densities are zyx. <a class="reference internal" href="../../reference/api/tme.density.Density.match_densities.html#tme.density.Density.match_densities" title="tme.density.Density.match_densities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.match_densities()</span></code></a> operates on densities and hence the output translation and rotation matrix have to be adapted accordingly. The output of <a class="reference internal" href="../../reference/api/tme.density.Density.match_structure_to_density.html#tme.density.Density.match_structure_to_density" title="tme.density.Density.match_structure_to_density"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.match_structure_to_density()</span></code></a> however can be directly passed to <a class="reference internal" href="../../reference/api/tme.structure.Structure.rigid_transform.html#tme.structure.Structure.rigid_transform" title="tme.structure.Structure.rigid_transform"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.structure.Structure.rigid_transform()</span></code></a>.</p>
+</div>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>By following the steps above, you have successfully performed template matching of a protein structure against a molecular map. Feel free to explore more functionalities provided by our API!</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Using the API</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../contribution.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Contributor’s Guide</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#obtain-the-necessary-files">Obtain the Necessary Files</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#perform-template-matching">Perform template matching</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/quickstart/api/fitting.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2023 European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

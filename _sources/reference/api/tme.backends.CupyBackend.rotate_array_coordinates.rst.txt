@@ -1,0 +1,6 @@
+CupyBackend.rotate\_array\_coordinates
+=================================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: CupyBackend.rotate_array_coordinates
