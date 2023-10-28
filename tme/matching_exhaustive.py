@@ -998,6 +998,7 @@ def mcc_scoring(
     References
     ----------
     .. [1]  Masked FFT registration, Dirk Padfield, CVPR 2010 conference
+    .. [2]  https://scikit-image.org/docs/stable/api/skimage.registration.html
 
     See Also
     --------
@@ -1433,7 +1434,6 @@ def scan_subsets(
         target_pad = np.subtract(
             matching_data._templateshape, np.mod(matching_data._templateshape, 2)
         )
-
     outer_jobs, inner_jobs = job_schedule
     results = Parallel(n_jobs=outer_jobs)(
         delayed(_run_inner)(

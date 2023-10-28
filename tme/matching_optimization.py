@@ -1115,5 +1115,3 @@ class FitRefinement:
         translation, rotation = result.x[:3], result.x[3:]
         rotation_matrix = euler_to_rotationmatrix(rotation)
         return translation, rotation_matrix, -result.fun
-
-

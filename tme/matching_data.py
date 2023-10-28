@@ -37,7 +37,7 @@ class MatchingData:
         self._template_mask = None
         self._translation_offset = np.zeros(len(target.shape), dtype=int)
 
-        self.template = self._load_array(template)
+        self.template = template
 
         self._target_pad = np.zeros(len(target.shape), dtype=int)
         self._template_pad = np.zeros(len(template.shape), dtype=int)
@@ -195,7 +195,7 @@ class MatchingData:
         )
 
         target_subset = self.subset_array(
-            arr=self.target, arr_slice=target_slice, padding=target_pad
+            arr=self._target, arr_slice=target_slice, padding=target_pad
         )
         template_subset = self.subset_array(
             arr=self._template,
@@ -215,7 +215,7 @@ class MatchingData:
 
         if self._target_mask is not None:
             ret.target_mask = self.subset_array(
-                arr=self.target_mask, arr_slice=target_slice, padding=target_pad
+                arr=self._target_mask, arr_slice=target_slice, padding=target_pad
             )
         if self._template_mask is not None:
             ret.template_mask = self.subset_array(
@@ -267,11 +267,15 @@ class MatchingData:
     @property
     def target(self):
         """Returns the target NDArray."""
+        if type(self._target) == Density:
+            return self._target.data
         return self._target
 
     @property
     def template(self):
         """Returns the reversed template NDArray."""
+        if type(self._template) == Density:
+            return backend.reverse(self._template.data)
         return backend.reverse(self._template)
 
     @template.setter
@@ -284,12 +288,19 @@ class MatchingData:
         template : NDArray
             Array to set as the template.
         """
+        if type(template) == Density:
+            template.data = template.data.astype(self._default_dtype, copy=False)
+            self._template = template
+            self._templateshape = self._template.shape[::-1]
+            return None
         self._template = template.astype(self._default_dtype, copy=False)
         self._templateshape = self._template.shape[::-1]
 
     @property
     def target_mask(self):
         """Returns the target mask NDArray."""
+        if type(self._target_mask) == Density:
+            return self._target_mask.data
         return self._target_mask
 
     @target_mask.setter
@@ -297,6 +308,12 @@ class MatchingData:
         """Sets the target mask."""
         if not np.all(self.target.shape == mask.shape):
             raise ValueError("Target and its mask have to have the same shape.")
+
+        if type(mask) == Density:
+            mask.data = mask.data.astype(self._default_dtype, copy=False)
+            self._target_mask = mask
+            self._targetmaskshape = self._target_mask.shape[::-1]
+            return None
         self._target_mask = mask.astype(self._default_dtype, copy=False)
         self._targetmaskshape = self._target_mask.shape
 
@@ -310,6 +327,8 @@ class MatchingData:
         template : NDArray
             Array to set as the template.
         """
+        if type(self._template_mask) == Density:
+            return backend.reverse(self._template_mask.data)
         return backend.reverse(self._template_mask)
 
     @template_mask.setter
@@ -317,6 +336,13 @@ class MatchingData:
         """Returns the reversed template mask NDArray."""
         if not np.all(self._template.shape == mask.shape):
             raise ValueError("Target and its mask have to have the same shape.")
+
+        if type(mask) == Density:
+            mask.data = mask.data.astype(self._default_dtype, copy=False)
+            self._template_mask = mask
+            self._templatemaskshape = self._template_mask.shape[::-1]
+            return None
+
         self._template_mask = mask.astype(self._default_dtype, copy=False)
         self._templatemaskshape = self._template_mask.shape[::-1]
 

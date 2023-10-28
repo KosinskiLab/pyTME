@@ -145,8 +145,9 @@ class Density:
             )
         except ValueError:
             data, origin, sampling_rate = cls._load_skio(filename=filename)
-            cls._validate_slices(slices=subset, shape=data.shape)
-            data = data[subset].copy()
+            if subset is not None:
+                cls._validate_slices(slices=subset, shape=data.shape)
+                data = data[subset].copy()
 
         return cls(data=data, origin=origin, sampling_rate=sampling_rate)
 
@@ -409,7 +410,7 @@ class Density:
             raise ValueError(f"Subset exceeds data dimensions ({shape}).")
 
         if any([slices[i].stop < 0 for i in range(n_dims)]):
-            raise ValueError(f"Subsets have to be non-negative.")
+            raise ValueError("Subsets have to be non-negative.")
 
     @classmethod
     def _read_binary_subset(
@@ -489,7 +490,7 @@ class Density:
         Returns
         -------
         NDArray
-            The data attribute of the mrc file.
+            The data attribute of the file.
         NDArray
             The coordinate origin of the data.
         NDArray
@@ -1629,7 +1630,7 @@ class Density:
 
         If voxel sizes of target and template dont match coordinates are scaled
         to the numerically smaller voxel size. Instances are prealigned based on their
-        center of mass. Finally :py:class:`tme.fitRefinement.FitRefinement` is
+        center of mass. Finally :py:class:`tme.matching_optimization.FitRefinement` is
         used to determine translation and rotation to map template to target.
 
         Parameters
@@ -1644,7 +1645,7 @@ class Density:
             The cutoff value for the template map, by default 0.
         scoring_method : str, optional
             The scoring method to use for alignment. See
-            :py:class:`tme.fitRefinement.FitRefinement` for available methods,
+            :py:class:`tme.matching_optimization.FitRefinement` for available methods,
             by default "NormalizedCrossCorrelation".
 
         Returns
@@ -1730,7 +1731,7 @@ class Density:
 
         If voxel sizes of target and template dont match coordinates are scaled
         to the numerically smaller voxel size. Prealignment is done by center's
-        of mass. Finally :py:class:`tme.fitRefinement.FitRefinement` is used to
+        of mass. Finally :py:class:`tme.matching_optimization.FitRefinement` is used to
         determine translation and rotation to match a template to target.
 
         Parameters
@@ -1745,7 +1746,7 @@ class Density:
             The cutoff value for the template map, by default 0.
         scoring_method : str, optional
             The scoring method to use for template matching. See
-            :py:class:`tme.fitRefinement.FitRefinement` for available methods,
+            :py:class:`tme.matching_optimization.FitRefinement` for available methods,
             by default "NormalizedCrossCorrelation".
 
         Returns

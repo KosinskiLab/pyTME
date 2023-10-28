@@ -19,13 +19,12 @@ pip install pytme
 ```
 
 3. **Docker Container:**
-Build and use the PyTME container from Docker. This assumes a linux/amd64 platform and uses Python 3.11.
+Build and use the PyTME container from Docker. This assumes a linux/amd64 platform.
 ```bash
 docker build \
 	-t pytme \
 	--platform linux/amd64 \
-	--build-arg PYTHON_VERSION=3.11 \
-	-f pytme/docker/Dockerfile
+	-f docker/Dockerfile \
 	.
 ```
 🔗 For more on the Docker container, visit the [Docker Hub page](https://hub.docker.com).

@@ -632,23 +632,24 @@ def main():
         callback_class = PeakCallerMaximumFilter
 
     matching_data = MatchingData(target=target, template=template.data)
-    matching_data.rotations = get_rotation_matrices(args.angular_sampling)
+    matching_data.rotations = get_rotation_matrices(
+        angular_sampling=args.angular_sampling, dim=target.data.ndim
+    )
     matching_data.template_filter = template_filter
 
     if target_mask is not None:
         matching_data.target_mask = target_mask
-        target_mask.data = None
     if template_mask is not None:
         matching_data.template_mask = template_mask.data
-        template_mask.data = None
 
     n_splits = np.prod(list(splits.values()))
     target_split = ", ".join(
         [":".join([str(x) for x in axis]) for axis in splits.items()]
     )
+    gpus_used = 0 if args.gpu_indices is None else len(args.gpu_indices)
     options = {
         "CPU Cores": args.cores,
-        "Run on GPU": args.use_gpu,
+        "Run on GPU": f"{args.use_gpu} [N={gpus_used}]",
         "Use Mixed Precision": args.use_mixed_precision,
         "Assigned Memory [MB]": f"{args.ram // 1e6} [out of {available_memory//1e6}]",
         "Temporary Directory": args.temp_directory,
