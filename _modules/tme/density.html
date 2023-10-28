@@ -17,12 +17,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -34,11 +34,11 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=e68c333d" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
-  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
 
-    <script src="../../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../../_static/documentation_options.js?v=2709fde1"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -114,6 +114,7 @@
   
 
 <a class="navbar-brand logo" href="../../index.html">
+  
   
   
   
@@ -515,8 +516,9 @@ document.write(`
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_load_skio</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">_validate_slices</span><span class="p">(</span><span class="n">slices</span><span class="o">=</span><span class="n">subset</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">subset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_validate_slices</span><span class="p">(</span><span class="n">slices</span><span class="o">=</span><span class="n">subset</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">)</span></div>
 
@@ -780,7 +782,7 @@ document.write(`
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subset exceeds data dimensions (</span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">slices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">stop</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_dims</span><span class="p">)]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subsets have to be non-negative.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Subsets have to be non-negative.&quot;</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_read_binary_subset</span><span class="p">(</span>
@@ -860,7 +862,7 @@ document.write(`
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        NDArray</span>
-<span class="sd">            The data attribute of the mrc file.</span>
+<span class="sd">            The data attribute of the file.</span>
 <span class="sd">        NDArray</span>
 <span class="sd">            The coordinate origin of the data.</span>
 <span class="sd">        NDArray</span>
@@ -2065,7 +2067,7 @@ document.write(`
 
 <span class="sd">        If voxel sizes of target and template dont match coordinates are scaled</span>
 <span class="sd">        to the numerically smaller voxel size. Instances are prealigned based on their</span>
-<span class="sd">        center of mass. Finally :py:class:`tme.fitRefinement.FitRefinement` is</span>
+<span class="sd">        center of mass. Finally :py:class:`tme.matching_optimization.FitRefinement` is</span>
 <span class="sd">        used to determine translation and rotation to map template to target.</span>
 
 <span class="sd">        Parameters</span>
@@ -2080,7 +2082,7 @@ document.write(`
 <span class="sd">            The cutoff value for the template map, by default 0.</span>
 <span class="sd">        scoring_method : str, optional</span>
 <span class="sd">            The scoring method to use for alignment. See</span>
-<span class="sd">            :py:class:`tme.fitRefinement.FitRefinement` for available methods,</span>
+<span class="sd">            :py:class:`tme.matching_optimization.FitRefinement` for available methods,</span>
 <span class="sd">            by default &quot;NormalizedCrossCorrelation&quot;.</span>
 
 <span class="sd">        Returns</span>
@@ -2169,7 +2171,7 @@ document.write(`
 
 <span class="sd">        If voxel sizes of target and template dont match coordinates are scaled</span>
 <span class="sd">        to the numerically smaller voxel size. Prealignment is done by center&#39;s</span>
-<span class="sd">        of mass. Finally :py:class:`tme.fitRefinement.FitRefinement` is used to</span>
+<span class="sd">        of mass. Finally :py:class:`tme.matching_optimization.FitRefinement` is used to</span>
 <span class="sd">        determine translation and rotation to match a template to target.</span>
 
 <span class="sd">        Parameters</span>
@@ -2184,7 +2186,7 @@ document.write(`
 <span class="sd">            The cutoff value for the template map, by default 0.</span>
 <span class="sd">        scoring_method : str, optional</span>
 <span class="sd">            The scoring method to use for template matching. See</span>
-<span class="sd">            :py:class:`tme.fitRefinement.FitRefinement` for available methods,</span>
+<span class="sd">            :py:class:`tme.matching_optimization.FitRefinement` for available methods,</span>
 <span class="sd">            by default &quot;NormalizedCrossCorrelation&quot;.</span>
 
 <span class="sd">        Returns</span>
@@ -2362,8 +2364,8 @@ document.write(`
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -2393,7 +2395,7 @@ document.write(`
     <div class="footer-items__end">
       
         <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.2.
 </p></div>
       
     </div>

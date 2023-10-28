@@ -18,12 +18,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -35,11 +35,11 @@
     <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=e68c333d" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
 
-    <script src="../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../_static/documentation_options.js?v=2709fde1"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -114,6 +114,7 @@
   
 
 <a class="navbar-brand logo" href="../index.html">
+  
   
   
   
@@ -1000,23 +1001,24 @@ document.write(`
         <span class="n">callback_class</span> <span class="o">=</span> <span class="n">PeakCallerMaximumFilter</span>
 
     <span class="n">matching_data</span> <span class="o">=</span> <span class="n">MatchingData</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">get_rotation_matrices</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">)</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">get_rotation_matrices</span><span class="p">(</span>
+        <span class="n">angular_sampling</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span>
+    <span class="p">)</span>
     <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span>
 
     <span class="k">if</span> <span class="n">target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">matching_data</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">target_mask</span>
-        <span class="n">target_mask</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">template_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">matching_data</span><span class="o">.</span><span class="n">template_mask</span> <span class="o">=</span> <span class="n">template_mask</span><span class="o">.</span><span class="n">data</span>
-        <span class="n">template_mask</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">n_splits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">splits</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
     <span class="n">target_split</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
         <span class="p">[</span><span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">axis</span><span class="p">])</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">splits</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
     <span class="p">)</span>
+    <span class="n">gpus_used</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">gpu_indices</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">gpu_indices</span><span class="p">)</span>
     <span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;CPU Cores&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span>
-        <span class="s2">&quot;Run on GPU&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">use_gpu</span><span class="p">,</span>
+        <span class="s2">&quot;Run on GPU&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">use_gpu</span><span class="si">}</span><span class="s2"> [N=</span><span class="si">{</span><span class="n">gpus_used</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Use Mixed Precision&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">use_mixed_precision</span><span class="p">,</span>
         <span class="s2">&quot;Assigned Memory [MB]&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">ram</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="mf">1e6</span><span class="si">}</span><span class="s2"> [out of </span><span class="si">{</span><span class="n">available_memory</span><span class="o">//</span><span class="mf">1e6</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Temporary Directory&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">temp_directory</span><span class="p">,</span>
@@ -1132,8 +1134,8 @@ document.write(`
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1163,7 +1165,7 @@ document.write(`
     <div class="footer-items__end">
       
         <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.2.
 </p></div>
       
     </div>
