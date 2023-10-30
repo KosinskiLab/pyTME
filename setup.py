@@ -24,7 +24,6 @@ if __name__ == "__main__":
         cpp_args = [
             "-O3",
             "-march=native",
-            "-mfpmath=sse",
             "-std=c++11",
             "-funroll-loops",
             "-ffast-math",

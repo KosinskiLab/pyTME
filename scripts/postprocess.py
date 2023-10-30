@@ -19,7 +19,11 @@ from tme.analyzer import (
     PeakCallerRecursiveMasking,
     PeakCallerScipy,
 )
-from tme.matching_utils import load_pickle, euler_to_rotationmatrix
+from tme.matching_utils import (
+    load_pickle,
+    euler_to_rotationmatrix,
+    euler_from_rotationmatrix,
+)
 
 PEAK_CALLERS = {
     "PeakCallerSort": PeakCallerSort,
@@ -57,6 +61,12 @@ def parse_args():
         help="Peak caller to use for analysis. Ignored if input_file contains peaks.",
     )
     parser.add_argument(
+        "--orientations",
+        default=None,
+        help="Path to orientations file to overwrite orientations computed from"
+        " match_template.py output.",
+    )
+    parser.add_argument(
         "--output_format",
         choices=["orientations", "alignment", "extraction"],
         default="orientations",
@@ -74,24 +84,58 @@ def main():
     args = parse_args()
     data = load_pickle(args.input_file)
 
-    if len(data) != 5:
-        raise ValueError(f"Could not determine format of {args.input_file}.")
-
-    if data[0].ndim == data[2].ndim:
-        scores, offset, rotations, rotation_mapping, meta = data
-
-        peak_caller = PEAK_CALLERS[args.peak_caller](
-            number_of_peaks=args.number_of_peaks, min_distance=args.min_distance
-        )
-        peak_caller(scores, rotation_matrix=np.eye(3))
-        candidates = tuple(peak_caller)
-    else:
-        candidates = data
+    meta = data[-1]
 
     orientations = []
-    for translation, _, score, detail in zip(*candidates):
-        angles = rotation_mapping[rotations[tuple(translation)]]
-        orientations.append((translation, angles, score, detail))
+    if args.orientations is None:
+        if data[0].ndim == data[2].ndim:
+            scores, offset, rotations, rotation_mapping, meta = data
+            peak_caller = PEAK_CALLERS[args.peak_caller](
+                number_of_peaks=args.number_of_peaks, min_distance=args.min_distance
+            )
+            peak_caller(scores, rotation_matrix=np.eye(3))
+            candidates = tuple(peak_caller)
+            for translation, _, score, detail in zip(*candidates):
+                angles = rotation_mapping[rotations[tuple(translation)]]
+                orientations.append((translation, angles, score, detail))
+        else:
+            candidates = data
+            for translation, rotation, score, detail in zip(*candidates):
+                angles = euler_from_rotationmatrix(rotation)
+                orientations.append((translation, angles, score, detail))
+    else:
+        with open(args.orientations, mode="r", encoding="utf-8") as infile:
+            data = [x.strip().split("\t") for x in infile.read().split("\n")]
+            _ = data.pop(0)
+        translation, rotation, score, detail = [], [], [], []
+        for candidate in data:
+            if len(candidate) <= 1:
+                continue
+            if len(candidate) != 8:
+                candidate.append(-1)
+
+            candidate = [float(x) for x in candidate]
+            translation.append((candidate[0], candidate[1], candidate[2]))
+            rotation.append(
+                euler_to_rotationmatrix((candidate[3], candidate[4], candidate[5]))
+            )
+            score.append(candidate[6])
+            detail.append(candidate[7])
+            orientations.append(
+                (
+                    translation[-1],
+                    (candidate[3], candidate[4], candidate[5]),
+                    score[-1],
+                    detail[-1],
+                )
+            )
+
+        candidates = (
+            np.vstack(translation).astype(int),
+            np.vstack(rotation).astype(float),
+            np.array(score).astype(float),
+            np.array(detail).astype(float),
+        )
 
     if args.output_format == "orientations":
         header = "\t".join(
@@ -103,7 +147,9 @@ def main():
             for translation, angles, score, detail in orientations:
                 translation_string = "\t".join([str(x) for x in translation])
                 angle_string = "\t".join([str(x) for x in angles])
-                _ = ofile.write(f"{translation_string}\t{angle_string}\t{score}\n")
+                _ = ofile.write(
+                    f"{translation_string}\t{angle_string}\t{score}\t{detail}\n"
+                )
         exit(0)
 
     target_origin, _, sampling_rate, cli_args = meta
@@ -140,7 +186,6 @@ def main():
 
         candidate_starts = np.maximum(starts, 0).astype(int)
         candidate_stops = np.minimum(stops, target.shape).astype(int)
-
         keep_peaks = (
             np.sum(
                 np.multiply(starts == candidate_starts, stops == candidate_stops),
@@ -150,6 +195,8 @@ def main():
         )
 
         peaks = peaks[keep_peaks,]
+        starts = starts[keep_peaks,]
+        stops = stops[keep_peaks,]
         candidate_starts = candidate_starts[keep_peaks,]
         candidate_stops = candidate_stops[keep_peaks,]
 
@@ -181,13 +228,16 @@ def main():
 
         slices = zip(candidate_slices, observation_slices)
         for idx, (cand_slice, obs_slice) in enumerate(slices):
-            observations[idx][:] = np.mean(target[cand_slice])
-            observations[idx][obs_slice] = target[cand_slice]
+            observations[idx][:] = np.mean(target.data[cand_slice])
+            observations[idx][obs_slice] = target.data[cand_slice]
 
-        for index, observation in enumerate(observations):
+        for index in range(observations.shape[0]):
             Density(
-                data=observations, sampling_rate=sampling_rate, origin=(0, 0, 0)
+                data=observations[index],
+                sampling_rate=sampling_rate,
+                origin=candidate_starts[index] * sampling_rate,
             ).to_file(f"{args.output_prefix}{index}.mrc")
+        exit(0)
 
     for translation, angles, *_ in orientations:
         rotation_matrix = euler_to_rotationmatrix(angles)

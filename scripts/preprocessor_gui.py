@@ -34,15 +34,15 @@ def gaussian_filter(template, sigma: float, **kwargs: dict):
 
 def bandpass_filter(
     template,
-    smallest_size: float,
-    largest_size: float,
+    minimum_frequency: float,
+    maximum_frequency: float,
     gaussian_sigma: float,
     **kwargs: dict,
 ):
     return preprocessor.bandpass_filter(
         template=template,
-        smallest_size=smallest_size,
-        largest_size=largest_size,
+        minimum_frequency=minimum_frequency,
+        maximum_frequency=maximum_frequency,
         sampling_rate=1,
         gaussian_sigma=gaussian_sigma,
         **kwargs,
@@ -97,7 +97,15 @@ def ntree(
     sigma_range: Tuple[float, float],
     **kwargs: dict,
 ):
-    return preprocessor.ntree(template=template, sigma_range=sigma_range)
+    return preprocessor.ntree_filter(template=template, sigma_range=sigma_range)
+
+
+def mean(
+    template,
+    width: int,
+    **kwargs: dict,
+):
+    return preprocessor.mean_filter(template=template, width=width)
 
 
 def widgets_from_function(function: Callable, exclude_params: List = ["self"]):
@@ -158,6 +166,7 @@ WRAPPED_FUNCTIONS = {
     "ntree_filter": ntree,
     "local_gaussian_filter": local_gaussian_filter,
     "difference_of_gaussian_filter": difference_of_gaussian_filter,
+    "mean_filter" : mean,
 }
 
 EXCLUDED_FUNCTIONS = [
@@ -168,9 +177,10 @@ EXCLUDED_FUNCTIONS = [
     "fourier_uncrop",
     "interpolate_box",
     "molmap",
-    "local_gaussian_filter",
+    "local_gaussian_alignment_filter",
     "continuous_wedge_mask",
     "wedge_mask",
+    "bandpass_mask",
 ]
 
 
@@ -535,13 +545,52 @@ class PointCloudWidget(widgets.Container):
         super().__init__(layout="vertical")
 
         self.viewer = viewer
+        self.dataframes = {}
 
         self.import_button = widgets.PushButton(
             name="Import", text="Import Point Cloud"
         )
         self.import_button.clicked.connect(self._get_load_path)
 
+        self.export_button = widgets.PushButton(
+            name="Export", text="Export Point Cloud"
+        )
+        self.export_button.clicked.connect(self._export_point_cloud)
+        self.export_button.enabled = False
+
         self.append(self.import_button)
+        self.append(self.export_button)
+        self.viewer.layers.selection.events.changed.connect(self._update_buttons)
+
+    def _update_buttons(self, event):
+        is_pointcloud = isinstance(
+            self.viewer.layers.selection.active, napari.layers.Points
+        )
+        if self.viewer.layers.selection.active and is_pointcloud:
+            self.export_button.enabled = True
+        else:
+            self.export_button.enabled = False
+
+    def _export_point_cloud(self, event):
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getSaveFileName(
+            self.native,
+            "Save Point Cloud File...",
+            "",
+            "TSV Files (*.tsv);;All Files (*)",
+            options=options,
+        )
+
+        if filename:
+            layer = self.viewer.layers.selection.active
+            if layer and isinstance(layer, napari.layers.Points):
+                original_dataframe = self.dataframes.get(layer.name, pd.DataFrame())
+
+                export_data = pd.DataFrame(layer.data, columns=["z", "y", "x"])
+                merged_data = pd.merge(
+                    export_data, original_dataframe, on=["z", "y", "x"], how="left"
+                )
+                merged_data.to_csv(filename, sep="\t", index=False)
 
     def _get_load_path(self, event):
         options = QFileDialog.Options()
@@ -556,16 +605,11 @@ class PointCloudWidget(widgets.Container):
             self._load_point_cloud(filename)
 
     def _load_point_cloud(self, filename):
-        data = pd.read_csv(filename, sep="\t")
-        points = data[["z", "y", "x"]].values
-
-        self.viewer.add_points(points, size=5)
-
-
-# Example usage:
-# viewer = napari.Viewer()
-# dock_widget = QtViewerDockWidget(PointCloudWidget(viewer))
-# viewer.window.add_dock_widget(dock_widget)
+        dataframe = pd.read_csv(filename, sep="\t")
+        points = dataframe[["z", "y", "x"]].values
+        layer_name = filename.split("/")[-1]
+        self.viewer.add_points(points, size=10, name=layer_name)
+        self.dataframes[layer_name] = dataframe
 
 
 def main():
