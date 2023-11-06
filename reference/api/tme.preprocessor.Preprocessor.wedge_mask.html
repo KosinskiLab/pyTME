@@ -1202,25 +1202,25 @@ with minimal tilt.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Preprocessor</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">angles</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="o">.</span><span class="n">wedge_mask</span><span class="p">(</span>
-<span class="go">    shape = (50,50,50),</span>
-<span class="go">    tilt_angles = angles,</span>
-<span class="go">    omit_negative_frequencies = True</span>
-<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="p">()</span><span class="o">.</span><span class="n">wedge_mask</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">tilt_angles</span> <span class="o">=</span> <span class="n">angles</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">omit_negative_frequencies</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">wedge</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This will create a wedge that is open along axis 1, tilted
 around axis 2 and propagated along axis 0. The code above would
 be equivalent to the following</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="o">.</span><span class="n">continuous_wedge_mask</span><span class="p">(</span>
-<span class="go">    shape = (50,50,50),</span>
-<span class="go">    start_tilt = 50,</span>
-<span class="go">    stop_tilt=55,</span>
-<span class="go">    tilt_axis=1,</span>
-<span class="go">    omit_negative_frequencies=False,</span>
-<span class="go">    infinite_plane=False</span>
-<span class="go">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="p">()</span><span class="o">.</span><span class="n">continuous_wedge_mask</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">start_tilt</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">stop_tilt</span><span class="o">=</span><span class="mi">55</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">tilt_axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">omit_negative_frequencies</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">infinite_plane</span><span class="o">=</span><span class="kc">False</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">wedge</span><span class="p">)</span>
 </pre></div>
 </div>

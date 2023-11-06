@@ -1454,25 +1454,25 @@ document.write(`
 <span class="sd">        &gt;&gt;&gt; from tme import Preprocessor</span>
 <span class="sd">        &gt;&gt;&gt; angles = np.zeros((3, 10))</span>
 <span class="sd">        &gt;&gt;&gt; angles[2, :] = np.linspace(-50, 55, 10)</span>
-<span class="sd">        &gt;&gt;&gt; wedge = Preprocessor.wedge_mask(</span>
-<span class="sd">            shape = (50,50,50),</span>
-<span class="sd">            tilt_angles = angles,</span>
-<span class="sd">            omit_negative_frequencies = True</span>
-<span class="sd">        )</span>
+<span class="sd">        &gt;&gt;&gt; wedge = Preprocessor().wedge_mask(</span>
+<span class="sd">        &gt;&gt;&gt;    shape = (50,50,50),</span>
+<span class="sd">        &gt;&gt;&gt;    tilt_angles = angles,</span>
+<span class="sd">        &gt;&gt;&gt;    omit_negative_frequencies = True</span>
+<span class="sd">        &gt;&gt;&gt;    )</span>
 <span class="sd">        &gt;&gt;&gt; wedge = np.fft.fftshift(wedge)</span>
 
 <span class="sd">        This will create a wedge that is open along axis 1, tilted</span>
 <span class="sd">        around axis 2 and propagated along axis 0. The code above would</span>
 <span class="sd">        be equivalent to the following</span>
 
-<span class="sd">        &gt;&gt;&gt; wedge = Preprocessor.continuous_wedge_mask(</span>
-<span class="sd">            shape = (50,50,50),</span>
-<span class="sd">            start_tilt = 50,</span>
-<span class="sd">            stop_tilt=55,</span>
-<span class="sd">            tilt_axis=1,</span>
-<span class="sd">            omit_negative_frequencies=False,</span>
-<span class="sd">            infinite_plane=False</span>
-<span class="sd">        )</span>
+<span class="sd">        &gt;&gt;&gt; wedge = Preprocessor().continuous_wedge_mask(</span>
+<span class="sd">        &gt;&gt;&gt;    shape = (50,50,50),</span>
+<span class="sd">        &gt;&gt;&gt;    start_tilt = 50,</span>
+<span class="sd">        &gt;&gt;&gt;    stop_tilt=55,</span>
+<span class="sd">        &gt;&gt;&gt;    tilt_axis=1,</span>
+<span class="sd">        &gt;&gt;&gt;    omit_negative_frequencies=False,</span>
+<span class="sd">        &gt;&gt;&gt;    infinite_plane=False</span>
+<span class="sd">        &gt;&gt;&gt;    )</span>
 <span class="sd">        &gt;&gt;&gt; wedge = np.fft.fftshift(wedge)</span>
 
 <span class="sd">        with the difference being that :py:meth:`Preprocessor.continuous_wedge_mask`</span>
@@ -1494,8 +1494,6 @@ document.write(`
             <span class="n">largest_tilt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tilt_angles</span><span class="p">[:,</span> <span class="n">index</span><span class="p">]))</span>
             <span class="n">opening_axis_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">potential_axes</span> <span class="o">-</span> <span class="n">largest_tilt</span><span class="p">))</span>
             <span class="n">opening_axis</span> <span class="o">=</span> <span class="n">potential_axes</span><span class="p">[</span><span class="n">opening_axis_index</span><span class="p">]</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">largest_tilt</span><span class="p">,</span> <span class="n">potential_axes</span><span class="p">)</span>
-
             <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">euler_to_rotationmatrix</span><span class="p">(</span><span class="n">tilt_angles</span><span class="p">[:,</span> <span class="n">index</span><span class="p">])</span>
             <span class="n">plane_rotated</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">plane</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
