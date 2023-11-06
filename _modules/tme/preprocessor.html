@@ -17,12 +17,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -34,9 +34,9 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=e68c333d" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
-  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
     <script src="../../_static/documentation_options.js?v=2709fde1"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
@@ -560,6 +560,8 @@ document.write(`
 <span class="sd">        NDArray</span>
 <span class="sd">            The simulated electron densities after applying the Gaussian filter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">sigma</span>
+
         <span class="k">if</span> <span class="n">sigma</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">template</span>
 
@@ -1429,8 +1431,7 @@ document.write(`
 <span class="sd">        shape : Tuple of ints</span>
 <span class="sd">            Shape of the output wedge array.</span>
 <span class="sd">        tilt_angles : NDArray</span>
-<span class="sd">            Tilt angles in format d dimensions N tilts [d x N], e.g.</span>
-<span class="sd">            x_axis tilt, y_axis tilt, ...</span>
+<span class="sd">            Tilt angles in format d dimensions N tilts [d x N].</span>
 <span class="sd">        sigma : float, optional</span>
 <span class="sd">            Standard deviation for Gaussian kernel used for smoothing the wedge.</span>
 <span class="sd">        omit_negative_frequencies : bool, optional</span>
@@ -1442,17 +1443,67 @@ document.write(`
 <span class="sd">        NDArray</span>
 <span class="sd">            A numpy array containing the wedge mask.</span>
 
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The axis perpendicular to the tilts is the leftmost closest axis</span>
+<span class="sd">        with minimal tilt.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from tme import Preprocessor</span>
+<span class="sd">        &gt;&gt;&gt; angles = np.zeros((3, 10))</span>
+<span class="sd">        &gt;&gt;&gt; angles[2, :] = np.linspace(-50, 55, 10)</span>
+<span class="sd">        &gt;&gt;&gt; wedge = Preprocessor.wedge_mask(</span>
+<span class="sd">            shape = (50,50,50),</span>
+<span class="sd">            tilt_angles = angles,</span>
+<span class="sd">            omit_negative_frequencies = True</span>
+<span class="sd">        )</span>
+<span class="sd">        &gt;&gt;&gt; wedge = np.fft.fftshift(wedge)</span>
+
+<span class="sd">        This will create a wedge that is open along axis 1, tilted</span>
+<span class="sd">        around axis 2 and propagated along axis 0. The code above would</span>
+<span class="sd">        be equivalent to the following</span>
+
+<span class="sd">        &gt;&gt;&gt; wedge = Preprocessor.continuous_wedge_mask(</span>
+<span class="sd">            shape = (50,50,50),</span>
+<span class="sd">            start_tilt = 50,</span>
+<span class="sd">            stop_tilt=55,</span>
+<span class="sd">            tilt_axis=1,</span>
+<span class="sd">            omit_negative_frequencies=False,</span>
+<span class="sd">            infinite_plane=False</span>
+<span class="sd">        )</span>
+<span class="sd">        &gt;&gt;&gt; wedge = np.fft.fftshift(wedge)</span>
+
+<span class="sd">        with the difference being that :py:meth:`Preprocessor.continuous_wedge_mask`</span>
+<span class="sd">        does not consider individual plane tilts.</span>
+
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        :py:meth:`Preprocessor.continuous_wedge_mask`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="n">plane</span><span class="p">[</span><span class="n">plane</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">opening_axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tilt_angles</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">slices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">a</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
         <span class="n">plane_rotated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
         <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tilt_angles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">potential_axes</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tilt_angles</span><span class="p">[:,</span> <span class="n">index</span><span class="p">])</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tilt_angles</span><span class="p">[:,</span> <span class="n">index</span><span class="p">])</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">largest_tilt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tilt_angles</span><span class="p">[:,</span> <span class="n">index</span><span class="p">]))</span>
+            <span class="n">opening_axis_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">potential_axes</span> <span class="o">-</span> <span class="n">largest_tilt</span><span class="p">))</span>
+            <span class="n">opening_axis</span> <span class="o">=</span> <span class="n">potential_axes</span><span class="p">[</span><span class="n">opening_axis_index</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">largest_tilt</span><span class="p">,</span> <span class="n">potential_axes</span><span class="p">)</span>
+
             <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">euler_to_rotationmatrix</span><span class="p">(</span><span class="n">tilt_angles</span><span class="p">[:,</span> <span class="n">index</span><span class="p">])</span>
             <span class="n">plane_rotated</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">plane</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">subset</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">opening_axis</span> <span class="k">else</span> <span class="n">slices</span><span class="p">[</span><span class="n">opening_axis</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">plane</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">plane</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">Density</span><span class="o">.</span><span class="n">rotate_array</span><span class="p">(</span>
                 <span class="n">arr</span><span class="o">=</span><span class="n">plane</span><span class="p">,</span>
                 <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="p">,</span>
@@ -1485,6 +1536,7 @@ document.write(`
         <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">extrude_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">infinite_plane</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">omit_negative_frequencies</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1500,7 +1552,7 @@ document.write(`
 <span class="sd">            Ending tilt angle in degrees, , e.g. a stage tilt of -70 degrees</span>
 <span class="sd">            would yield a stop_tilt value of 70.</span>
 <span class="sd">        tilt_axis : int</span>
-<span class="sd">            Axis of tilt.</span>
+<span class="sd">            Axis that runs through the empty part of the wedge.</span>
 <span class="sd">            - 0 for X-axis</span>
 <span class="sd">            - 1 for Y-axis</span>
 <span class="sd">            - 2 for Z-axis</span>
@@ -1516,6 +1568,9 @@ document.write(`
 <span class="sd">        omit_negative_frequencies : bool, optional</span>
 <span class="sd">            Whether the wedge mask should omit negative frequencies, i.e. be</span>
 <span class="sd">            applicable to non hermitian-symmetric fourier transforms.</span>
+<span class="sd">        infinite_plane : bool, optional</span>
+<span class="sd">            Whether the plane should be considered to be larger than the shape. In this</span>
+<span class="sd">            case the output wedge mask fill have no spheric component.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1538,9 +1593,8 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">shape_center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
-        <span class="n">axis_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)))</span>
-        <span class="n">base_axis</span> <span class="o">=</span> <span class="n">axis_indices</span><span class="o">.</span><span class="n">pop</span><span class="p">((</span><span class="n">tilt_axis</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
-        <span class="n">opening_axis</span> <span class="o">=</span> <span class="n">axis_indices</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">opening_axis</span> <span class="o">=</span> <span class="n">tilt_axis</span>
+        <span class="n">base_axis</span> <span class="o">=</span> <span class="p">(</span><span class="n">tilt_axis</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
 
         <span class="n">grid</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="n">shape_center</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
@@ -1564,7 +1618,9 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">wedge</span><span class="p">,</span> <span class="n">distances</span> <span class="o">&lt;=</span> <span class="n">shape</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">wedge</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">infinite_plane</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">wedge</span><span class="p">,</span> <span class="n">distances</span> <span class="o">&lt;=</span> <span class="n">shape</span><span class="p">[</span><span class="n">opening_axis</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">wedge</span><span class="p">)</span>
+
         <span class="n">wedge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">wedge</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">fourier</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">wedge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">wedge</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">))</span>
 
@@ -1706,8 +1762,8 @@ document.write(`
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1737,7 +1793,7 @@ document.write(`
     <div class="footer-items__end">
       
         <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.2.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
 </p></div>
       
     </div>

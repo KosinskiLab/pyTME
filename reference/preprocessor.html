@@ -18,12 +18,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -35,9 +35,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=e68c333d" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
     <script src="../_static/documentation_options.js?v=2709fde1"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
@@ -408,6 +408,7 @@ document.write(`
 <li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">Preprocessor</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.preprocessor.Preprocessor.html">tme.preprocessor.Preprocessor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.preprocessor.Preprocessor.wedge_mask.html">Preprocessor.wedge_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.preprocessor.Preprocessor.continuous_wedge_mask.html">Preprocessor.continuous_wedge_mask</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.preprocessor.Preprocessor.gaussian_filter.html">Preprocessor.gaussian_filter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.preprocessor.Preprocessor.difference_of_gaussian_filter.html">Preprocessor.difference_of_gaussian_filter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.preprocessor.Preprocessor.bandpass_filter.html">Preprocessor.bandpass_filter</a></li>
@@ -1173,49 +1174,52 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.wedge_mask.html#tme.preprocessor.Preprocessor.wedge_mask" title="tme.preprocessor.Preprocessor.wedge_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.wedge_mask</span></code></a>(shape, tilt_angles)</p></td>
 <td><p>Create a wedge mask with the same shape as template by rotating a plane according to tilt angles.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.gaussian_filter.html#tme.preprocessor.Preprocessor.gaussian_filter" title="tme.preprocessor.Preprocessor.gaussian_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.gaussian_filter</span></code></a>(template, sigma)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.continuous_wedge_mask.html#tme.preprocessor.Preprocessor.continuous_wedge_mask" title="tme.preprocessor.Preprocessor.continuous_wedge_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.continuous_wedge_mask</span></code></a>(...[, ...])</p></td>
+<td><p>Generate a wedge in a given shape based on specified tilt angles and axis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.gaussian_filter.html#tme.preprocessor.Preprocessor.gaussian_filter" title="tme.preprocessor.Preprocessor.gaussian_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.gaussian_filter</span></code></a>(template, sigma)</p></td>
 <td><p>Convolve an atomic structure with a Gaussian kernel.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.difference_of_gaussian_filter.html#tme.preprocessor.Preprocessor.difference_of_gaussian_filter" title="tme.preprocessor.Preprocessor.difference_of_gaussian_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.difference_of_gaussian_filter</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.difference_of_gaussian_filter.html#tme.preprocessor.Preprocessor.difference_of_gaussian_filter" title="tme.preprocessor.Preprocessor.difference_of_gaussian_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.difference_of_gaussian_filter</span></code></a>(...)</p></td>
 <td><p>Apply the Difference of Gaussian (DoG) bandpass filter on the provided template.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.bandpass_filter.html#tme.preprocessor.Preprocessor.bandpass_filter" title="tme.preprocessor.Preprocessor.bandpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.bandpass_filter</span></code></a>(template, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.bandpass_filter.html#tme.preprocessor.Preprocessor.bandpass_filter" title="tme.preprocessor.Preprocessor.bandpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.bandpass_filter</span></code></a>(template, ...)</p></td>
 <td><p>Apply a band-pass filter on the provided template, using a Butterworth approximation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.local_gaussian_alignment_filter.html#tme.preprocessor.Preprocessor.local_gaussian_alignment_filter" title="tme.preprocessor.Preprocessor.local_gaussian_alignment_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.local_gaussian_alignment_filter</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.local_gaussian_alignment_filter.html#tme.preprocessor.Preprocessor.local_gaussian_alignment_filter" title="tme.preprocessor.Preprocessor.local_gaussian_alignment_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.local_gaussian_alignment_filter</span></code></a>(...)</p></td>
 <td><p>Simulate electron density by optimizing a sum of Gaussians.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.local_gaussian_filter.html#tme.preprocessor.Preprocessor.local_gaussian_filter" title="tme.preprocessor.Preprocessor.local_gaussian_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.local_gaussian_filter</span></code></a>(template, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.local_gaussian_filter.html#tme.preprocessor.Preprocessor.local_gaussian_filter" title="tme.preprocessor.Preprocessor.local_gaussian_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.local_gaussian_filter</span></code></a>(template, ...)</p></td>
 <td><p>Wrapper for <cite>Preprocessor.local_gaussian_alignment_filter</cite> if no target is available.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.edge_gaussian_filter.html#tme.preprocessor.Preprocessor.edge_gaussian_filter" title="tme.preprocessor.Preprocessor.edge_gaussian_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.edge_gaussian_filter</span></code></a>(template, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.edge_gaussian_filter.html#tme.preprocessor.Preprocessor.edge_gaussian_filter" title="tme.preprocessor.Preprocessor.edge_gaussian_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.edge_gaussian_filter</span></code></a>(template, ...)</p></td>
 <td><p>Perform Gaussian filterring according to edges in the input template.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.ntree_filter.html#tme.preprocessor.Preprocessor.ntree_filter" title="tme.preprocessor.Preprocessor.ntree_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.ntree_filter</span></code></a>(template, sigma_range)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.ntree_filter.html#tme.preprocessor.Preprocessor.ntree_filter" title="tme.preprocessor.Preprocessor.ntree_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.ntree_filter</span></code></a>(template, sigma_range)</p></td>
 <td><p>Use dyadic tree to identify volume partitions in <em>template</em> and filter them with respect to their occupancy.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.mean_filter.html#tme.preprocessor.Preprocessor.mean_filter" title="tme.preprocessor.Preprocessor.mean_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.mean_filter</span></code></a>(template, width)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.mean_filter.html#tme.preprocessor.Preprocessor.mean_filter" title="tme.preprocessor.Preprocessor.mean_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.mean_filter</span></code></a>(template, width)</p></td>
 <td><p>Perform mean filtering.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.rank_filter.html#tme.preprocessor.Preprocessor.rank_filter" title="tme.preprocessor.Preprocessor.rank_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.rank_filter</span></code></a>(template, rank)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.rank_filter.html#tme.preprocessor.Preprocessor.rank_filter" title="tme.preprocessor.Preprocessor.rank_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.rank_filter</span></code></a>(template, rank)</p></td>
 <td><p>Perform rank filtering.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.mipmap_filter.html#tme.preprocessor.Preprocessor.mipmap_filter" title="tme.preprocessor.Preprocessor.mipmap_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.mipmap_filter</span></code></a>(template, level)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.mipmap_filter.html#tme.preprocessor.Preprocessor.mipmap_filter" title="tme.preprocessor.Preprocessor.mipmap_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.mipmap_filter</span></code></a>(template, level)</p></td>
 <td><p>Perform mip map antialiasing filtering.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.wavelet_filter.html#tme.preprocessor.Preprocessor.wavelet_filter" title="tme.preprocessor.Preprocessor.wavelet_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.wavelet_filter</span></code></a>(template, level)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.wavelet_filter.html#tme.preprocessor.Preprocessor.wavelet_filter" title="tme.preprocessor.Preprocessor.wavelet_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.wavelet_filter</span></code></a>(template, level)</p></td>
 <td><p>Perform dyadic wavelet decomposition.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.kaiserb_filter.html#tme.preprocessor.Preprocessor.kaiserb_filter" title="tme.preprocessor.Preprocessor.kaiserb_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.kaiserb_filter</span></code></a>(template, width)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.kaiserb_filter.html#tme.preprocessor.Preprocessor.kaiserb_filter" title="tme.preprocessor.Preprocessor.kaiserb_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.kaiserb_filter</span></code></a>(template, width)</p></td>
 <td><p>Apply Kaiser filter defined as:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.blob_filter.html#tme.preprocessor.Preprocessor.blob_filter" title="tme.preprocessor.Preprocessor.blob_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.blob_filter</span></code></a>(template, width)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.blob_filter.html#tme.preprocessor.Preprocessor.blob_filter" title="tme.preprocessor.Preprocessor.blob_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.blob_filter</span></code></a>(template, width)</p></td>
 <td><p>Apply blob filter defined as:</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.hamming_filter.html#tme.preprocessor.Preprocessor.hamming_filter" title="tme.preprocessor.Preprocessor.hamming_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.hamming_filter</span></code></a>(template, width)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.hamming_filter.html#tme.preprocessor.Preprocessor.hamming_filter" title="tme.preprocessor.Preprocessor.hamming_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.hamming_filter</span></code></a>(template, width)</p></td>
 <td><p>Apply Hamming filter defined as:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.molmap.html#tme.preprocessor.Preprocessor.molmap" title="tme.preprocessor.Preprocessor.molmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.molmap</span></code></a>(coordinates, weights, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.preprocessor.Preprocessor.molmap.html#tme.preprocessor.Preprocessor.molmap" title="tme.preprocessor.Preprocessor.molmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Preprocessor.molmap</span></code></a>(coordinates, weights, ...)</p></td>
 <td><p>Compute the electron densities analogous to Chimera's molmap function.</p></td>
 </tr>
 </tbody>
@@ -1312,8 +1316,8 @@ document.write(`
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1343,7 +1347,7 @@ document.write(`
     <div class="footer-items__end">
       
         <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.2.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
 </p></div>
       
     </div>

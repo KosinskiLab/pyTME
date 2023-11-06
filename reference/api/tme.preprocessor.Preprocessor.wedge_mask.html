@@ -18,12 +18,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -35,9 +35,9 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=e68c333d" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
-  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
     <script src="../../_static/documentation_options.js?v=2709fde1"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
@@ -408,6 +408,7 @@ document.write(`
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../preprocessor.html">Preprocessor</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3 current active"><a class="reference internal" href="tme.preprocessor.Preprocessor.html">tme.preprocessor.Preprocessor</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">Preprocessor.wedge_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.continuous_wedge_mask.html">Preprocessor.continuous_wedge_mask</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.gaussian_filter.html">Preprocessor.gaussian_filter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.difference_of_gaussian_filter.html">Preprocessor.difference_of_gaussian_filter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.bandpass_filter.html">Preprocessor.bandpass_filter</a></li>
@@ -1171,8 +1172,7 @@ plane according to tilt angles. The DC component of the filter is at the origin.
 <dd class="field-odd"><dl class="simple">
 <dt><strong>shape</strong><span class="classifier">Tuple of ints</span></dt><dd><p>Shape of the output wedge array.</p>
 </dd>
-<dt><strong>tilt_angles</strong><span class="classifier">NDArray</span></dt><dd><p>Tilt angles in format d dimensions N tilts [d x N], e.g.
-x_axis tilt, y_axis tilt, …</p>
+<dt><strong>tilt_angles</strong><span class="classifier">NDArray</span></dt><dd><p>Tilt angles in format d dimensions N tilts [d x N].</p>
 </dd>
 <dt><strong>sigma</strong><span class="classifier">float, optional</span></dt><dd><p>Standard deviation for Gaussian kernel used for smoothing the wedge.</p>
 </dd>
@@ -1194,6 +1194,38 @@ applicable to non hermitian-symmetric fourier transforms.</p>
 <dt><a class="reference internal" href="tme.preprocessor.Preprocessor.continuous_wedge_mask.html#tme.preprocessor.Preprocessor.continuous_wedge_mask" title="tme.preprocessor.Preprocessor.continuous_wedge_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Preprocessor.continuous_wedge_mask()</span></code></a></dt><dd></dd>
 </dl>
 </div>
+<p class="rubric">Notes</p>
+<p>The axis perpendicular to the tilts is the leftmost closest axis
+with minimal tilt.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Preprocessor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">angles</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="o">.</span><span class="n">wedge_mask</span><span class="p">(</span>
+<span class="go">    shape = (50,50,50),</span>
+<span class="go">    tilt_angles = angles,</span>
+<span class="go">    omit_negative_frequencies = True</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">wedge</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will create a wedge that is open along axis 1, tilted
+around axis 2 and propagated along axis 0. The code above would
+be equivalent to the following</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="o">.</span><span class="n">continuous_wedge_mask</span><span class="p">(</span>
+<span class="go">    shape = (50,50,50),</span>
+<span class="go">    start_tilt = 50,</span>
+<span class="go">    stop_tilt=55,</span>
+<span class="go">    tilt_axis=1,</span>
+<span class="go">    omit_negative_frequencies=False,</span>
+<span class="go">    infinite_plane=False</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">wedge</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>with the difference being that <a class="reference internal" href="tme.preprocessor.Preprocessor.continuous_wedge_mask.html#tme.preprocessor.Preprocessor.continuous_wedge_mask" title="tme.preprocessor.Preprocessor.continuous_wedge_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Preprocessor.continuous_wedge_mask()</span></code></a>
+does not consider individual plane tilts.</p>
 </dd></dl>
 
 </section>
@@ -1266,8 +1298,8 @@ applicable to non hermitian-symmetric fourier transforms.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1297,7 +1329,7 @@ applicable to non hermitian-symmetric fourier transforms.</p>
     <div class="footer-items__end">
       
         <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.2.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
 </p></div>
       
     </div>
