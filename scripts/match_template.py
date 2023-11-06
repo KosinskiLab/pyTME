@@ -43,7 +43,7 @@ def print_block(name: str, data: dict, label_width=20) -> None:
     """Prints a formatted block of information."""
     print(f"\n> {name}")
     for key, value in data.items():
-        formatted_value = str(value)  # Convert non-string values to string
+        formatted_value = str(value)
         print(f"  - {key + ':':<{label_width}} {formatted_value}")
 
 
@@ -516,6 +516,7 @@ def main():
                 "start_tilt": tilt_start,
                 "stop_tilt": tilt_stop,
                 "tilt_axis": 1,
+                "infinite_plane": True,
                 "sigma": args.wedge_smooth,
             }
 

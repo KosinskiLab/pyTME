@@ -38,7 +38,7 @@ preprocess = "tme.scripts:preprocess"
 postprocess = "tme.scripts:postprocess"
 
 [project.urls]
-"Homepage" = "https://git.embl.de/vmaurer/pytme"
+"Homepage" = "https://github.com/KosinskiLab/pyTME"
 
 [tool.setuptools]
 include-package-data = true

@@ -183,6 +183,8 @@ class Preprocessor:
         NDArray
             The simulated electron densities after applying the Gaussian filter.
         """
+        sigma = 0 if sigma is None else sigma
+
         if sigma <= 0:
             return template
 
@@ -998,8 +1000,7 @@ class Preprocessor:
         shape : Tuple of ints
             Shape of the output wedge array.
         tilt_angles : NDArray
-            Tilt angles in format d dimensions N tilts [d x N], e.g.
-            x_axis tilt, y_axis tilt, ...
+            Tilt angles in format d dimensions N tilts [d x N].
         sigma : float, optional
             Standard deviation for Gaussian kernel used for smoothing the wedge.
         omit_negative_frequencies : bool, optional
@@ -1011,17 +1012,67 @@ class Preprocessor:
         NDArray
             A numpy array containing the wedge mask.
 
+        Notes
+        -----
+        The axis perpendicular to the tilts is the leftmost closest axis
+        with minimal tilt.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from tme import Preprocessor
+        >>> angles = np.zeros((3, 10))
+        >>> angles[2, :] = np.linspace(-50, 55, 10)
+        >>> wedge = Preprocessor.wedge_mask(
+            shape = (50,50,50),
+            tilt_angles = angles,
+            omit_negative_frequencies = True
+        )
+        >>> wedge = np.fft.fftshift(wedge)
+
+        This will create a wedge that is open along axis 1, tilted
+        around axis 2 and propagated along axis 0. The code above would
+        be equivalent to the following
+
+        >>> wedge = Preprocessor.continuous_wedge_mask(
+            shape = (50,50,50),
+            start_tilt = 50,
+            stop_tilt=55,
+            tilt_axis=1,
+            omit_negative_frequencies=False,
+            infinite_plane=False
+        )
+        >>> wedge = np.fft.fftshift(wedge)
+
+        with the difference being that :py:meth:`Preprocessor.continuous_wedge_mask`
+        does not consider individual plane tilts.
+
         See Also
         --------
         :py:meth:`Preprocessor.continuous_wedge_mask`
         """
         plane = np.zeros(shape, dtype=np.float32)
-        plane[plane.shape[0] // 2] = 1
+        opening_axis = np.argmax(np.abs(tilt_angles), axis = 0)
+        slices = tuple(slice(a,a+1) for a in np.divide(shape, 2).astype(int))
         plane_rotated = np.zeros_like(plane)
         wedge_volume = np.zeros_like(plane)
         for index in range(tilt_angles.shape[1]):
+            potential_axes, *_ = np.where(
+                np.abs(tilt_angles[:, index]) == np.abs(tilt_angles[:, index]).min()
+            )
+            largest_tilt = np.argmax(np.abs(tilt_angles[:, index]))
+            opening_axis_index = np.argmin(np.abs(potential_axes - largest_tilt))
+            opening_axis = potential_axes[opening_axis_index]
+            print(opening_axis, largest_tilt, potential_axes)
+
             rotation_matrix = euler_to_rotationmatrix(tilt_angles[:, index])
             plane_rotated.fill(0)
+            plane.fill(0)
+            subset = tuple(
+                slice(None) if i != opening_axis else slices[opening_axis]
+                for i in range(plane.ndim)
+            )
+            plane[subset] = 1
             Density.rotate_array(
                 arr=plane,
                 rotation_matrix=rotation_matrix,
@@ -1051,6 +1102,7 @@ class Preprocessor:
         tilt_axis: int = 1,
         sigma: float = 0,
         extrude_plane: bool = True,
+        infinite_plane : bool = True,
         omit_negative_frequencies: bool = True,
     ) -> NDArray:
         """
@@ -1066,7 +1118,7 @@ class Preprocessor:
             Ending tilt angle in degrees, , e.g. a stage tilt of -70 degrees
             would yield a stop_tilt value of 70.
         tilt_axis : int
-            Axis of tilt.
+            Axis that runs through the empty part of the wedge.
             - 0 for X-axis
             - 1 for Y-axis
             - 2 for Z-axis
@@ -1082,6 +1134,9 @@ class Preprocessor:
         omit_negative_frequencies : bool, optional
             Whether the wedge mask should omit negative frequencies, i.e. be
             applicable to non hermitian-symmetric fourier transforms.
+        infinite_plane : bool, optional
+            Whether the plane should be considered to be larger than the shape. In this
+            case the output wedge mask fill have no spheric component.
 
         Returns
         -------
@@ -1104,9 +1159,8 @@ class Preprocessor:
         """
         shape_center = np.divide(shape, 2).astype(int)
 
-        axis_indices = list(range(len(shape)))
-        base_axis = axis_indices.pop((tilt_axis + 1) % len(shape))
-        opening_axis = axis_indices.pop(0)
+        opening_axis = tilt_axis
+        base_axis = (tilt_axis + 1) % len(shape)
 
         grid = (np.indices(shape).T - shape_center).T
 
@@ -1130,7 +1184,9 @@ class Preprocessor:
         else:
             distances = np.linalg.norm(grid, axis=0)
 
-        np.multiply(wedge, distances <= shape[tilt_axis] // 2, out=wedge)
+        if not infinite_plane:
+            np.multiply(wedge, distances <= shape[opening_axis] // 2, out=wedge)
+
         wedge = self.gaussian_filter(template=wedge, sigma=sigma, fourier=False)
         wedge = np.fft.ifftshift(wedge > np.exp(-2))
 

@@ -108,6 +108,31 @@ def mean(
     return preprocessor.mean_filter(template=template, width=width)
 
 
+def wedge(
+    template: NDArray,
+    tilt_start: float,
+    tilt_stop: float,
+    gaussian_sigma: float,
+    tilt_axis: int = 1,
+    infinite_plane : bool = True,
+    extrude_plane : bool = True
+):
+    template_ft = np.fft.rfftn(template)
+    wedge_mask = preprocessor.continuous_wedge_mask(
+        start_tilt=tilt_start,
+        stop_tilt=tilt_stop,
+        tilt_axis=tilt_axis,
+        shape=template.shape,
+        sigma=gaussian_sigma,
+        omit_negative_frequencies=True,
+        infinite_plane = infinite_plane,
+        extrude_plane=extrude_plane
+    )
+    np.multiply(template_ft, wedge_mask, out=template_ft)
+    template = np.real(np.fft.irfftn(template_ft))
+    return template
+
+
 def widgets_from_function(function: Callable, exclude_params: List = ["self"]):
     """
     Creates list of magicui widgets by inspecting function typing ann
@@ -167,6 +192,7 @@ WRAPPED_FUNCTIONS = {
     "local_gaussian_filter": local_gaussian_filter,
     "difference_of_gaussian_filter": difference_of_gaussian_filter,
     "mean_filter" : mean,
+    "continuous_wedge_mask" : wedge,
 }
 
 EXCLUDED_FUNCTIONS = [
@@ -178,7 +204,7 @@ EXCLUDED_FUNCTIONS = [
     "interpolate_box",
     "molmap",
     "local_gaussian_alignment_filter",
-    "continuous_wedge_mask",
+    # "continuous_wedge_mask",
     "wedge_mask",
     "bandpass_mask",
 ]
@@ -372,19 +398,22 @@ def wedge_mask(
     tilt_stop: float,
     gaussian_sigma: float,
     tilt_axis: int = 1,
+    omit_negative_frequencies : bool = True,
+    extrude_plane : bool = True,
+    infinite_plane : bool = True
 ):
-    template_ft = np.fft.fftn(template)
     wedge_mask = preprocessor.continuous_wedge_mask(
         start_tilt=tilt_start,
         stop_tilt=tilt_stop,
         tilt_axis=tilt_axis,
-        shape=template_ft.shape,
+        shape=template.shape,
         sigma=gaussian_sigma,
+        omit_negative_frequencies=omit_negative_frequencies,
+        extrude_plane=extrude_plane,
+        infinite_plane=infinite_plane
     )
-
-    np.multiply(template_ft, wedge_mask, out=template_ft)
-    template = np.real(np.fft.ifftn(template_ft))
-    return template
+    wedge_mask = np.fft.fftshift(wedge_mask)
+    return wedge_mask
 
 
 class MaskWidget(widgets.Container):
@@ -411,7 +440,7 @@ class MaskWidget(widgets.Container):
         self.method_dropdown.changed.connect(self._on_method_changed)
 
         self.adapt_button = widgets.PushButton(
-            text="Adapt to current layer", enabled=False
+            text="Adapt to layer", enabled=False
         )
         self.adapt_button.changed.connect(self._update_initial_values)
 
@@ -419,25 +448,74 @@ class MaskWidget(widgets.Container):
             self._update_action_button_state
         )
 
+        self.align_button = widgets.PushButton(text="Align to axis", enabled=False)
+        self.align_button.changed.connect(self._align_with_axis)
+        self.density_field = widgets.Label()
+        # self.density_field.value = f"Positive Density in Mask: {0:.2f}%"
+
+
         self.append(self.method_dropdown)
         self.append(self.adapt_button)
+        self.append(self.align_button)
         self.append(self.action_button)
+        self.append(self.density_field)
 
         # Create GUI for initially selected filtering method
         self._on_method_changed(None)
 
     def _update_action_button_state(self, event):
+        self.align_button.enabled = bool(self.viewer.layers.selection.active)
         self.action_button.enabled = bool(self.viewer.layers.selection.active)
         self.adapt_button.enabled = bool(self.viewer.layers.selection.active)
 
+
+    def _align_with_axis(self):
+        active_layer = self.viewer.layers.selection.active
+
+        if active_layer.metadata.get("is_aligned", False):
+            return
+
+        coords = np.array(np.where(active_layer.data > 0)).T
+        centered_coords = coords - np.mean(coords, axis=0)
+        cov_matrix = np.cov(centered_coords, rowvar=False)
+
+        eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
+        principal_eigenvector = eigenvectors[:, np.argmax(eigenvalues)]
+
+
+        rotation_axis = np.cross(principal_eigenvector, [1, 0, 0])
+        rotation_angle = np.arccos(np.dot(principal_eigenvector, [1, 0, 0]))
+        k = rotation_axis / np.linalg.norm(rotation_axis)
+        K = np.array([
+            [0, -k[2], k[1]],
+            [k[2], 0, -k[0]],
+            [-k[1], k[0], 0]
+        ])
+        rotation_matrix = np.eye(3)
+        rotation_matrix += np.sin(rotation_angle) * K
+        rotation_matrix += (1 - np.cos(rotation_angle)) * np.dot(K, K)
+
+        rotated_data = Density.rotate_array(
+            arr=active_layer.data,
+            rotation_matrix=rotation_matrix,
+            use_geometric_center=False
+        )
+        eps = np.finfo(rotated_data.dtype).eps
+        rotated_data[rotated_data < eps] = 0
+
+        active_layer.metadata["is_aligned"] = True
+        active_layer.data = rotated_data
+
+
     def _update_initial_values(self, event=None):
         active_layer = self.viewer.layers.selection.active
-        center_of_mass = Density.center_of_mass(np.abs(active_layer.data))
+        center_of_mass = Density.center_of_mass(np.abs(active_layer.data), 0)
         coordinates = np.array(np.where(active_layer.data > 0))
         coordinates_min = coordinates.min(axis=1)
         coordinates_max = coordinates.max(axis=1)
         coordinates_heights = coordinates_max - coordinates_min
         coordinate_radius = np.divide(coordinates_heights, 2)
+        center_of_mass = coordinate_radius + coordinates_min
 
         defaults = dict(zip(["center_x", "center_y", "center_z"], center_of_mass))
         defaults.update(
@@ -465,7 +543,7 @@ class MaskWidget(widgets.Container):
         widgets = widgets_from_function(function)
         for widget in widgets:
             self.action_widgets.append(widget)
-            self.insert(-2, widget)
+            self.insert(1, widget)
 
     def _action(self):
         function = self.methods.get(self.method_dropdown.value)
@@ -479,7 +557,8 @@ class MaskWidget(widgets.Container):
             selected_layer = self.viewer.layers[new_layer_name]
 
         processed_data = processed_data.astype(np.float32)
-        mask = selected_layer.metadata.get("mask", False)
+        metadata = selected_layer.metadata
+        mask = metadata.get("mask", False)
         if mask == self.method_dropdown.value:
             selected_layer.data = processed_data
         else:
@@ -490,7 +569,19 @@ class MaskWidget(widgets.Container):
             metadata = selected_layer.metadata.copy()
             metadata["filter_parameters"] = {self.method_dropdown.value: kwargs.copy()}
             metadata["mask"] = self.method_dropdown.value
+            metadata["origin_layer"] = selected_layer.name
             new_layer.metadata = metadata
+
+        origin_layer = metadata["origin_layer"]
+        if origin_layer in self.viewer.layers:
+            origin_layer = self.viewer.layers[origin_layer]
+            if np.allclose(origin_layer.data.shape, processed_data.shape):
+                in_mask = np.sum(np.fmax(origin_layer.data * processed_data, 0))
+                in_mask /= np.sum(np.fmax(origin_layer.data, 0))
+                in_mask *= 100
+                self.density_field.value = f"Positive Density in Mask: {in_mask:.2f}%"
+
+
 
 
 class ExportWidget(widgets.Container):
