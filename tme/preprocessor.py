@@ -1023,25 +1023,25 @@ class Preprocessor:
         >>> from tme import Preprocessor
         >>> angles = np.zeros((3, 10))
         >>> angles[2, :] = np.linspace(-50, 55, 10)
-        >>> wedge = Preprocessor.wedge_mask(
-            shape = (50,50,50),
-            tilt_angles = angles,
-            omit_negative_frequencies = True
-        )
+        >>> wedge = Preprocessor().wedge_mask(
+        >>>    shape = (50,50,50),
+        >>>    tilt_angles = angles,
+        >>>    omit_negative_frequencies = True
+        >>>    )
         >>> wedge = np.fft.fftshift(wedge)
 
         This will create a wedge that is open along axis 1, tilted
         around axis 2 and propagated along axis 0. The code above would
         be equivalent to the following
 
-        >>> wedge = Preprocessor.continuous_wedge_mask(
-            shape = (50,50,50),
-            start_tilt = 50,
-            stop_tilt=55,
-            tilt_axis=1,
-            omit_negative_frequencies=False,
-            infinite_plane=False
-        )
+        >>> wedge = Preprocessor().continuous_wedge_mask(
+        >>>    shape = (50,50,50),
+        >>>    start_tilt = 50,
+        >>>    stop_tilt=55,
+        >>>    tilt_axis=1,
+        >>>    omit_negative_frequencies=False,
+        >>>    infinite_plane=False
+        >>>    )
         >>> wedge = np.fft.fftshift(wedge)
 
         with the difference being that :py:meth:`Preprocessor.continuous_wedge_mask`
@@ -1063,8 +1063,6 @@ class Preprocessor:
             largest_tilt = np.argmax(np.abs(tilt_angles[:, index]))
             opening_axis_index = np.argmin(np.abs(potential_axes - largest_tilt))
             opening_axis = potential_axes[opening_axis_index]
-            print(opening_axis, largest_tilt, potential_axes)
-
             rotation_matrix = euler_to_rotationmatrix(tilt_angles[:, index])
             plane_rotated.fill(0)
             plane.fill(0)
