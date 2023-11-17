@@ -1052,8 +1052,8 @@ class Preprocessor:
         :py:meth:`Preprocessor.continuous_wedge_mask`
         """
         plane = np.zeros(shape, dtype=np.float32)
-        opening_axis = np.argmax(np.abs(tilt_angles), axis = 0)
-        slices = tuple(slice(a,a+1) for a in np.divide(shape, 2).astype(int))
+        opening_axis = np.argmax(np.abs(tilt_angles), axis=0)
+        slices = tuple(slice(a, a + 1) for a in np.divide(shape, 2).astype(int))
         plane_rotated = np.zeros_like(plane)
         wedge_volume = np.zeros_like(plane)
         for index in range(tilt_angles.shape[1]):
@@ -1100,7 +1100,7 @@ class Preprocessor:
         tilt_axis: int = 1,
         sigma: float = 0,
         extrude_plane: bool = True,
-        infinite_plane : bool = True,
+        infinite_plane: bool = True,
         omit_negative_frequencies: bool = True,
     ) -> NDArray:
         """

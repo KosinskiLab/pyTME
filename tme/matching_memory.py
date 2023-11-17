@@ -327,7 +327,7 @@ def estimate_ram_usage(
     """
     if matching_method not in MATCHING_MEMORY_REGISTRY:
         raise ValueError(
-            f"Supported fitters are {','.join(MATCHING_MEMORY_REGISTRY.keys())}"
+            f"Supported options are {','.join(MATCHING_MEMORY_REGISTRY.keys())}"
         )
 
     convolution_shape, fast_shape, ft_shape = _compute_convolution_shapes(

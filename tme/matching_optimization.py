@@ -246,6 +246,7 @@ class CrossCorrelation(MatchCoordinatesToDensity):
     .. math::
 
         \\text{score} = \\text{target_weights} \\cdot \\text{template_weights}
+
     """
 
     def __init__(self, **kwargs):
@@ -298,6 +299,7 @@ class LaplaceCrossCorrelation(CrossCorrelation):
 
         \\text{score} = \\nabla^{2} \\text{target_weights} \\cdot
                         \\nabla^{2} \\text{template_weights}
+
     """
 
     def __init__(self, **kwargs):
@@ -617,6 +619,7 @@ class Chamfer(MatchCoordinatesToCoordinates):
         -------
         float
             The negative of the Chamfer distance score.
+
         """
         dist, _ = self.target_tree.query(self.template_coordinates_rotated.T)
         score = np.mean(dist)
@@ -638,6 +641,7 @@ class MutualInformation(MatchCoordinatesToDensity):
     .. [1]  Daven Vasishtan and Maya Topf, "Scoring functions for cryoEM density
             fitting", Journal of Structural Biology, vol. 174, no. 2,
             pp. 333--343, 2011. DOI: https://doi.org/10.1016/j.jsb.2011.01.012
+
     """
 
     def __init__(self, **kwargs):
@@ -776,6 +780,7 @@ class NormalVectorScore(MatchCoordinatesToCoordinates):
     .. [1]  Daven Vasishtan and Maya Topf, "Scoring functions for cryoEM density
             fitting", Journal of Structural Biology, vol. 174, no. 2,
             pp. 333--343, 2011. DOI: https://doi.org/10.1016/j.jsb.2011.01.012
+
     """
 
     def __init__(self, **kwargs):

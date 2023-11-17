@@ -121,7 +121,7 @@ class PeakCaller(ABC):
         fourier_shift = kwargs.get(
             "fourier_shift", backend.zeros(peak_positions.shape[1], dtype=int)
         )
-        if np.any(fourier_shift) != 0:
+        if backend.sum(fourier_shift != 0) != 0:
             peak_positions = backend.mod(
                 backend.add(peak_positions, fourier_shift), score_space.shape
             )
@@ -197,6 +197,7 @@ class PeakCaller(ABC):
             if len(candidate) == 0:
                 continue
             peak_positions, rotations, peak_scores, peak_details = candidate
+            kwargs["translation_offset"] = backend.zeros(peak_positions.shape[1])
             base._update(
                 peak_positions=backend.to_backend_array(peak_positions),
                 peak_details=backend.to_backend_array(peak_details),
@@ -237,7 +238,6 @@ class PeakCaller(ABC):
         translation_offset = backend.astype(translation_offset, peak_positions.dtype)
 
         backend.add(peak_positions, translation_offset, out=peak_positions)
-
         if not len(self.peak_list):
             self.peak_list = [peak_positions, rotations, peak_scores, peak_details]
             return None

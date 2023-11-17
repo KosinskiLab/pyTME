@@ -876,7 +876,6 @@ class Density:
         box_start = np.array([b.start for b in box])
         box_stop = np.array([b.stop for b in box])
         left_pad = -np.minimum(box_start, np.zeros(len(box), dtype=int))
-        has_extension = box_start < 0
 
         right_pad = box_stop - box_start * (box_start > 0)
         right_pad -= np.array(self.shape, dtype=int)
@@ -905,8 +904,6 @@ class Density:
         self.data = self.data[crop_box].copy()
 
         # In case the box is larger than the current map
-        before_shape = self.data.shape
-        after_shape = [b.stop - b.start for b in box]
         self.data = self._pad_slice(box)
 
         # Adjust the origin
@@ -934,10 +931,19 @@ class Density:
         tuple
             A tuple containing slice objects representing the box.
 
+        Raises
+        ------
+        ValueError
+            If the cutoff is larger than or equal to the maximum density value.
+
         See Also
         --------
         :py:meth:`Density.adjust_box`
         """
+        if cutoff >= self.data.max():
+            raise ValueError(
+                f"Cutoff exceeds data range ({cutoff} >= {self.data.max()})."
+            )
         starts, stops = [], []
         for axis in range(self.data.ndim):
             projected_max = np.max(

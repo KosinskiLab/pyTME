@@ -491,8 +491,11 @@ class PytorchBackend(NumpyFFTWBackend):
             Operates as a context manager, yielding None and providing
             the set GPU context for enclosed operations.
         """
-        with self._array_backend.cuda.device(device_index):
-            yield
+        if self.device == "cuda":
+            with self._array_backend.cuda.device(device_index):
+                yield
+        else:
+            yield None
 
     def device_count(self) -> int:
         """
@@ -505,7 +508,7 @@ class PytorchBackend(NumpyFFTWBackend):
         """
         return self._array_backend.cuda.device_count()
 
-    def reverse(arr: TorchTensor) -> TorchTensor:
+    def reverse(self, arr: TorchTensor) -> TorchTensor:
         """
         Reverse the order of elements in a tensor along all its axes.
 
@@ -519,4 +522,4 @@ class PytorchBackend(NumpyFFTWBackend):
         TorchTensor
             Reversed tensor.
         """
-        return self._array_backend.flip(arr, [i for i in range(arr.dim())])
+        return self._array_backend.flip(arr, [i for i in range(arr.ndim)])

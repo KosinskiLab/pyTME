@@ -426,7 +426,7 @@ def main():
 
     if not np.allclose(target.sampling_rate, template.sampling_rate):
         print(
-            f"Resampling template to {target.sampling_rate}."
+            f"Resampling template to {target.sampling_rate}. "
             "Consider providing a template with the same sampling rate as the target."
         )
         template = template.resample(target.sampling_rate, order=3)
@@ -506,7 +506,7 @@ def main():
                 -tilt_start, tilt_stop + args.tilt_step, args.tilt_step
             )
             angles = np.zeros((template.data.ndim, tilt_angles.size))
-            angles[1, :] = tilt_angles
+            angles[2, :] = tilt_angles
             template_filter["wedge_mask"] = {
                 "tilt_angles": angles,
                 "sigma": args.wedge_smooth,
@@ -598,6 +598,10 @@ def main():
     if not args.pad_fourier:
         template_box = np.ones(len(template_box), dtype=int)
 
+    callback_class = MaxScoreOverRotations
+    if args.peak_calling:
+        callback_class = PeakCallerMaximumFilter
+
     splits, schedule = compute_parallelization_schedule(
         shape1=target.shape,
         shape2=template_box,
@@ -606,7 +610,7 @@ def main():
         max_ram=args.ram,
         split_only_outer=args.use_gpu,
         matching_method=args.score,
-        analyzer_method="MaxScoreOverRotations",
+        analyzer_method=callback_class.__name__,
         backend=backend._backend_name,
         float_nbytes=backend.datatype_bytes(backend._default_dtype),
         complex_nbytes=backend.datatype_bytes(backend._complex_dtype),
@@ -628,16 +632,12 @@ def main():
     }
 
     matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[args.score]
-    callback_class = MaxScoreOverRotations
-    if args.peak_calling:
-        callback_class = PeakCallerMaximumFilter
-
     matching_data = MatchingData(target=target, template=template.data)
     matching_data.rotations = get_rotation_matrices(
         angular_sampling=args.angular_sampling, dim=target.data.ndim
     )
-    matching_data.template_filter = template_filter
 
+    matching_data.template_filter = template_filter
     if target_mask is not None:
         matching_data.target_mask = target_mask
     if template_mask is not None:

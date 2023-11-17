@@ -1136,7 +1136,6 @@ def mcc_scoring(
             mask_overlap, axis=axes, keepdims=True
         )
         temp[mask_overlap < number_px_threshold] = 0.0
-
         convolution_mode = kwargs.get("convolution_mode", "full")
         score = apply_convolution_mode(
             temp, convolution_mode=convolution_mode, s1=targetshape, s2=templateshape
@@ -1165,7 +1164,6 @@ def device_memory_handler(func: Callable):
                     return_value = func(shared_memory_handler=smh, *args, **kwargs)
         except Exception as e:
             print(e)
-            return None
             last_type, last_value, last_traceback = sys.exc_info()
         finally:
             handle_traceback(last_type, last_value, last_traceback)

@@ -114,8 +114,8 @@ def wedge(
     tilt_stop: float,
     gaussian_sigma: float,
     tilt_axis: int = 1,
-    infinite_plane : bool = True,
-    extrude_plane : bool = True
+    infinite_plane: bool = True,
+    extrude_plane: bool = True,
 ):
     template_ft = np.fft.rfftn(template)
     wedge_mask = preprocessor.continuous_wedge_mask(
@@ -125,8 +125,8 @@ def wedge(
         shape=template.shape,
         sigma=gaussian_sigma,
         omit_negative_frequencies=True,
-        infinite_plane = infinite_plane,
-        extrude_plane=extrude_plane
+        infinite_plane=infinite_plane,
+        extrude_plane=extrude_plane,
     )
     np.multiply(template_ft, wedge_mask, out=template_ft)
     template = np.real(np.fft.irfftn(template_ft))
@@ -191,8 +191,8 @@ WRAPPED_FUNCTIONS = {
     "ntree_filter": ntree,
     "local_gaussian_filter": local_gaussian_filter,
     "difference_of_gaussian_filter": difference_of_gaussian_filter,
-    "mean_filter" : mean,
-    "continuous_wedge_mask" : wedge,
+    "mean_filter": mean,
+    "continuous_wedge_mask": wedge,
 }
 
 EXCLUDED_FUNCTIONS = [
@@ -398,9 +398,9 @@ def wedge_mask(
     tilt_stop: float,
     gaussian_sigma: float,
     tilt_axis: int = 1,
-    omit_negative_frequencies : bool = True,
-    extrude_plane : bool = True,
-    infinite_plane : bool = True
+    omit_negative_frequencies: bool = True,
+    extrude_plane: bool = True,
+    infinite_plane: bool = True,
 ):
     wedge_mask = preprocessor.continuous_wedge_mask(
         start_tilt=tilt_start,
@@ -410,7 +410,7 @@ def wedge_mask(
         sigma=gaussian_sigma,
         omit_negative_frequencies=omit_negative_frequencies,
         extrude_plane=extrude_plane,
-        infinite_plane=infinite_plane
+        infinite_plane=infinite_plane,
     )
     wedge_mask = np.fft.fftshift(wedge_mask)
     return wedge_mask
@@ -439,9 +439,7 @@ class MaskWidget(widgets.Container):
         )
         self.method_dropdown.changed.connect(self._on_method_changed)
 
-        self.adapt_button = widgets.PushButton(
-            text="Adapt to layer", enabled=False
-        )
+        self.adapt_button = widgets.PushButton(text="Adapt to layer", enabled=False)
         self.adapt_button.changed.connect(self._update_initial_values)
 
         self.viewer.layers.selection.events.active.connect(
@@ -452,7 +450,6 @@ class MaskWidget(widgets.Container):
         self.align_button.changed.connect(self._align_with_axis)
         self.density_field = widgets.Label()
         # self.density_field.value = f"Positive Density in Mask: {0:.2f}%"
-
 
         self.append(self.method_dropdown)
         self.append(self.adapt_button)
@@ -468,7 +465,6 @@ class MaskWidget(widgets.Container):
         self.action_button.enabled = bool(self.viewer.layers.selection.active)
         self.adapt_button.enabled = bool(self.viewer.layers.selection.active)
 
-
     def _align_with_axis(self):
         active_layer = self.viewer.layers.selection.active
 
@@ -482,15 +478,10 @@ class MaskWidget(widgets.Container):
         eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
         principal_eigenvector = eigenvectors[:, np.argmax(eigenvalues)]
 
-
         rotation_axis = np.cross(principal_eigenvector, [1, 0, 0])
         rotation_angle = np.arccos(np.dot(principal_eigenvector, [1, 0, 0]))
         k = rotation_axis / np.linalg.norm(rotation_axis)
-        K = np.array([
-            [0, -k[2], k[1]],
-            [k[2], 0, -k[0]],
-            [-k[1], k[0], 0]
-        ])
+        K = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
         rotation_matrix = np.eye(3)
         rotation_matrix += np.sin(rotation_angle) * K
         rotation_matrix += (1 - np.cos(rotation_angle)) * np.dot(K, K)
@@ -498,14 +489,13 @@ class MaskWidget(widgets.Container):
         rotated_data = Density.rotate_array(
             arr=active_layer.data,
             rotation_matrix=rotation_matrix,
-            use_geometric_center=False
+            use_geometric_center=False,
         )
         eps = np.finfo(rotated_data.dtype).eps
         rotated_data[rotated_data < eps] = 0
 
         active_layer.metadata["is_aligned"] = True
         active_layer.data = rotated_data
-
 
     def _update_initial_values(self, event=None):
         active_layer = self.viewer.layers.selection.active
@@ -580,8 +570,6 @@ class MaskWidget(widgets.Container):
                 in_mask /= np.sum(np.fmax(origin_layer.data, 0))
                 in_mask *= 100
                 self.density_field.value = f"Positive Density in Mask: {in_mask:.2f}%"
-
-
 
 
 class ExportWidget(widgets.Container):

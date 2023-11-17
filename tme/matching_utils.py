@@ -762,6 +762,8 @@ def euler_to_rotationmatrix(angles: Tuple[float]) -> NDArray:
     NDArray
         The generated rotation matrix.
     """
+    if len(angles) == 1:
+        angles = (angles, 0, 0)
     rotation_matrix = (
         Rotation.from_euler("zyx", angles, degrees=True).as_matrix().astype(np.float32)
     )
@@ -775,13 +777,17 @@ def euler_from_rotationmatrix(rotation_matrix: NDArray) -> Tuple:
     Parameters
     ----------
     rotation_matrix : NDArray
-        A 3 x 3 rotation matrix in z y x form.
+        A 2 x 2 or 3 x 3 rotation matrix in z y x form.
 
     Returns
     -------
     Tuple
         The generate euler angles in degrees
     """
+    if rotation_matrix.shape[0] == 2:
+        temp_matrix = np.eye(3)
+        temp_matrix[:2, :2] = rotation_matrix
+        rotation_matrix = temp_matrix
     euler_angles = (
         Rotation.from_matrix(rotation_matrix)
         .as_euler("zyx", degrees=True)

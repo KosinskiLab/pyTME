@@ -71,5 +71,6 @@ doc/_build
 doc/reference/api
 tme/packaging.py
 tme/tests/test_packaging.py
+tme/scoring.py
 scripts/match_template_devel.py
 update_github.sh

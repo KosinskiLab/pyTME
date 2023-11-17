@@ -100,9 +100,12 @@ def main():
                 orientations.append((translation, angles, score, detail))
         else:
             candidates = data
-            for translation, rotation, score, detail in zip(*candidates):
-                angles = euler_from_rotationmatrix(rotation)
-                orientations.append((translation, angles, score, detail))
+            translation, rotation, score, detail, *_ = data
+            for i in range(translation.shape[0]):
+                angles = euler_from_rotationmatrix(rotation[i])
+                orientations.append(
+                    (np.array(translation[i]), angles, score[i], detail[i])
+                )
     else:
         with open(args.orientations, mode="r", encoding="utf-8") as infile:
             data = [x.strip().split("\t") for x in infile.read().split("\n")]

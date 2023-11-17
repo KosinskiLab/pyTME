@@ -116,7 +116,6 @@ class MatchingData:
         ).astype(int)
 
         ret_shape = np.add(slice_shape, padding)
-
         arr_start = np.subtract(slice_start, data_voxels_left)
         arr_stop = np.add(slice_stop, data_voxels_right)
         arr_slice = tuple(slice(*pos) for pos in zip(arr_start, arr_stop))
@@ -138,7 +137,6 @@ class MatchingData:
                     arr.filename, mode="r", shape=arr.shape, dtype=arr.dtype
                 )
             arr = np.asarray(arr[*arr_mesh])
-
         ret = np.full(
             shape=np.add(slice_shape, padding), fill_value=arr.mean(), dtype=arr.dtype
         )
@@ -188,8 +186,8 @@ class MatchingData:
             template_pad = np.zeros(len(self.target.shape), dtype=int)
 
         indices = compute_full_convolution_index(
-            outer_shape=self.target.shape,
-            inner_shape=self.template.shape,
+            outer_shape=self._target.shape,
+            inner_shape=self._template.shape,
             outer_split=target_slice,
             inner_split=template_slice,
         )
