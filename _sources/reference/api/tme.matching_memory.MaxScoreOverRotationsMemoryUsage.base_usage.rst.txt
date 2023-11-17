@@ -1,0 +1,6 @@
+MaxScoreOverRotationsMemoryUsage.base\_usage
+===============================================================
+
+.. currentmodule:: tme.matching_memory
+
+.. automethod:: MaxScoreOverRotationsMemoryUsage.base_usage

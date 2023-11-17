@@ -1,0 +1,6 @@
+NumpyFFTWBackend.indices
+====================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.indices

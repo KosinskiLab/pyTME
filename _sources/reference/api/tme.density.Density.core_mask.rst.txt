@@ -1,4 +1,4 @@
-﻿Density.core\_mask
+Density.core\_mask
 =============================
 
 .. currentmodule:: tme.density

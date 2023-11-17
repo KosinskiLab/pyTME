@@ -15,13 +15,14 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~PeakCallerScipy.call_peaks
-      
-      
-        ~PeakCallerScipy.merge
-      
+         
+         
+           PeakCallerScipy.call_peaks
+         
+         
+           PeakCallerScipy.merge
+         
    
    

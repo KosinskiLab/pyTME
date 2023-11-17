@@ -1,4 +1,4 @@
-﻿Structure.to\_volume
+Structure.to\_volume
 =================================
 
 .. currentmodule:: tme.structure

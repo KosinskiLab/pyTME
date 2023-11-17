@@ -1,0 +1,6 @@
+NumpyFFTWBackend.to\_cpu\_array
+=========================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.to_cpu_array

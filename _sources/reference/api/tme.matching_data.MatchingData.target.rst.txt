@@ -1,4 +1,4 @@
-﻿MatchingData.target
+MatchingData.target
 =====================================
 
 .. currentmodule:: tme.matching_data

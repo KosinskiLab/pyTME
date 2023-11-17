@@ -12,22 +12,23 @@
    .. rubric:: Attributes
 
    .. autosummary::
-   
+      :toctree:
       
-        ~MatchingData.rotations
-      
-      
-        ~MatchingData.target
-      
-      
-        ~MatchingData.target_mask
-      
-      
-        ~MatchingData.template
-      
-      
-        ~MatchingData.template_mask
-      
+         
+           MatchingData.rotations
+         
+         
+           MatchingData.target
+         
+         
+           MatchingData.target_mask
+         
+         
+           MatchingData.template
+         
+         
+           MatchingData.template_mask
+         
    
    
 
@@ -35,16 +36,17 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~MatchingData.subset_array
-      
-      
-        ~MatchingData.subset_by_slice
-      
-      
-        ~MatchingData.to_backend
-      
+         
+         
+           MatchingData.subset_array
+         
+         
+           MatchingData.subset_by_slice
+         
+         
+           MatchingData.to_backend
+         
    
    

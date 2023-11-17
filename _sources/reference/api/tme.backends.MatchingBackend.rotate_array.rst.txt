@@ -1,0 +1,6 @@
+MatchingBackend.rotate\_array
+=========================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: MatchingBackend.rotate_array

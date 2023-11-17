@@ -15,10 +15,11 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~NormalizedCrossCorrelation.scoring_function
-      
+         
+         
+           NormalizedCrossCorrelation.scoring_function
+         
    
    

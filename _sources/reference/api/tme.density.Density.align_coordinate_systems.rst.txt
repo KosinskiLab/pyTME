@@ -1,4 +1,4 @@
-﻿Density.align\_coordinate\_systems
+Density.align\_coordinate\_systems
 ============================================
 
 .. currentmodule:: tme.density

@@ -1,0 +1,6 @@
+CCMemoryUsage.per\_fork
+==========================================
+
+.. currentmodule:: tme.matching_memory
+
+.. automethod:: CCMemoryUsage.per_fork

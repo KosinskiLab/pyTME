@@ -15,13 +15,14 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~PeakCallerRecursiveMasking.call_peaks
-      
-      
-        ~PeakCallerRecursiveMasking.merge
-      
+         
+         
+           PeakCallerRecursiveMasking.call_peaks
+         
+         
+           PeakCallerRecursiveMasking.merge
+         
    
    

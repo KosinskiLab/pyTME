@@ -1,4 +1,4 @@
-﻿Density.trim\_box
+Density.trim\_box
 ============================
 
 .. currentmodule:: tme.density

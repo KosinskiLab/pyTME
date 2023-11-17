@@ -1,4 +1,4 @@
-﻿MatchingData.to\_backend
+MatchingData.to\_backend
 =========================================
 
 .. currentmodule:: tme.matching_data

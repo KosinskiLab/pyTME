@@ -412,6 +412,8 @@ document.write(`
 <span class="sd">    Implements filtering operations on density arrays.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="Preprocessor.apply_method">
+<a class="viewcode-back" href="../../reference/api/tme.preprocessor.Preprocessor.apply_method.html#tme.preprocessor.Preprocessor.apply_method">[docs]</a>
     <span class="k">def</span> <span class="nf">apply_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply a method on the atomic structure.</span>
@@ -437,8 +439,11 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; is not supported as a filter method on this class.&quot;</span>
             <span class="p">)</span>
         <span class="n">method_to_call</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">method_to_call</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">method_to_call</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="Preprocessor.method_to_id">
+<a class="viewcode-back" href="../../reference/api/tme.preprocessor.Preprocessor.method_to_id.html#tme.preprocessor.Preprocessor.method_to_id">[docs]</a>
     <span class="k">def</span> <span class="nf">method_to_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate a unique ID for a specific method operation.</span>
@@ -474,7 +479,8 @@ document.write(`
 
         <span class="n">default</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">default</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">default</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
+        <span class="k">return</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">default</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">default</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span></div>
+
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_gaussian_fourier</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
@@ -1346,6 +1352,8 @@ document.write(`
         <span class="k">return</span> <span class="n">ret</span></div>
 
 
+<div class="viewcode-block" id="Preprocessor.bandpass_mask">
+<a class="viewcode-back" href="../../reference/api/tme.preprocessor.Preprocessor.bandpass_mask.html#tme.preprocessor.Preprocessor.bandpass_mask">[docs]</a>
     <span class="k">def</span> <span class="nf">bandpass_mask</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
@@ -1402,7 +1410,8 @@ document.write(`
             <span class="n">stop</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
             <span class="n">bpf</span> <span class="o">=</span> <span class="n">bpf</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="n">stop</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">bpf</span>
+        <span class="k">return</span> <span class="n">bpf</span></div>
+
 
 <div class="viewcode-block" id="Preprocessor.wedge_mask">
 <a class="viewcode-back" href="../../reference/api/tme.preprocessor.Preprocessor.wedge_mask.html#tme.preprocessor.Preprocessor.wedge_mask">[docs]</a>

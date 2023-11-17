@@ -1,4 +1,4 @@
-﻿Preprocessor.mipmap\_filter
+Preprocessor.mipmap\_filter
 ===========================================
 
 .. currentmodule:: tme.preprocessor

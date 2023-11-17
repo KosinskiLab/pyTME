@@ -1,4 +1,4 @@
-﻿Parser.keys
+Parser.keys
 ======================
 
 .. currentmodule:: tme.parser

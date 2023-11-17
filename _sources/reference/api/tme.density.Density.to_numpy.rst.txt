@@ -1,4 +1,4 @@
-﻿Density.to\_numpy
+Density.to\_numpy
 ============================
 
 .. currentmodule:: tme.density

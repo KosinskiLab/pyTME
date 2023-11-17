@@ -15,16 +15,17 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~ScoreStatistics.call_peaks
-      
-      
-        ~ScoreStatistics.merge
-      
-      
-        ~ScoreStatistics.set_reference
-      
+         
+         
+           ScoreStatistics.call_peaks
+         
+         
+           ScoreStatistics.merge
+         
+         
+           ScoreStatistics.set_reference
+         
    
    

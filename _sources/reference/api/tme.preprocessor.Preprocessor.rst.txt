@@ -15,79 +15,80 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~Preprocessor.apply_method
-      
-      
-        ~Preprocessor.bandpass_filter
-      
-      
-        ~Preprocessor.bandpass_mask
-      
-      
-        ~Preprocessor.blob_filter
-      
-      
-        ~Preprocessor.continuous_wedge_mask
-      
-      
-        ~Preprocessor.difference_of_gaussian_filter
-      
-      
-        ~Preprocessor.edge_gaussian_filter
-      
-      
-        ~Preprocessor.fftfreqn
-      
-      
-        ~Preprocessor.fourier_crop
-      
-      
-        ~Preprocessor.fourier_uncrop
-      
-      
-        ~Preprocessor.gaussian_filter
-      
-      
-        ~Preprocessor.hamming_filter
-      
-      
-        ~Preprocessor.interpolate_box
-      
-      
-        ~Preprocessor.kaiserb_filter
-      
-      
-        ~Preprocessor.local_gaussian_alignment_filter
-      
-      
-        ~Preprocessor.local_gaussian_filter
-      
-      
-        ~Preprocessor.mean_filter
-      
-      
-        ~Preprocessor.method_to_id
-      
-      
-        ~Preprocessor.mipmap_filter
-      
-      
-        ~Preprocessor.molmap
-      
-      
-        ~Preprocessor.ntree_filter
-      
-      
-        ~Preprocessor.rank_filter
-      
-      
-        ~Preprocessor.wavelet_filter
-      
-      
-        ~Preprocessor.wedge_mask
-      
+         
+         
+           Preprocessor.apply_method
+         
+         
+           Preprocessor.bandpass_filter
+         
+         
+           Preprocessor.bandpass_mask
+         
+         
+           Preprocessor.blob_filter
+         
+         
+           Preprocessor.continuous_wedge_mask
+         
+         
+           Preprocessor.difference_of_gaussian_filter
+         
+         
+           Preprocessor.edge_gaussian_filter
+         
+         
+           Preprocessor.fftfreqn
+         
+         
+           Preprocessor.fourier_crop
+         
+         
+           Preprocessor.fourier_uncrop
+         
+         
+           Preprocessor.gaussian_filter
+         
+         
+           Preprocessor.hamming_filter
+         
+         
+           Preprocessor.interpolate_box
+         
+         
+           Preprocessor.kaiserb_filter
+         
+         
+           Preprocessor.local_gaussian_alignment_filter
+         
+         
+           Preprocessor.local_gaussian_filter
+         
+         
+           Preprocessor.mean_filter
+         
+         
+           Preprocessor.method_to_id
+         
+         
+           Preprocessor.mipmap_filter
+         
+         
+           Preprocessor.molmap
+         
+         
+           Preprocessor.ntree_filter
+         
+         
+           Preprocessor.rank_filter
+         
+         
+           Preprocessor.wavelet_filter
+         
+         
+           Preprocessor.wedge_mask
+         
    
    

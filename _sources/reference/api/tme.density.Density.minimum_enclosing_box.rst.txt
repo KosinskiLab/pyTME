@@ -1,4 +1,4 @@
-﻿Density.minimum\_enclosing\_box
+Density.minimum\_enclosing\_box
 =========================================
 
 .. currentmodule:: tme.density

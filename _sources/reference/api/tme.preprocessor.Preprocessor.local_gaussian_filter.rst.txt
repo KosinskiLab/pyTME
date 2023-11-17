@@ -1,4 +1,4 @@
-﻿Preprocessor.local\_gaussian\_filter
+Preprocessor.local\_gaussian\_filter
 ===================================================
 
 .. currentmodule:: tme.preprocessor

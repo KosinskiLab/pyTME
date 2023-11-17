@@ -15,13 +15,14 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~CCMemoryUsage.base_usage
-      
-      
-        ~CCMemoryUsage.per_fork
-      
+         
+         
+           CCMemoryUsage.base_usage
+         
+         
+           CCMemoryUsage.per_fork
+         
    
    

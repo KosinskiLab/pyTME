@@ -1,4 +1,4 @@
-﻿Density.centered
+Density.centered
 ============================
 
 .. currentmodule:: tme.density

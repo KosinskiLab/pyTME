@@ -1,4 +1,4 @@
-﻿Density.density\_boundary
+Density.density\_boundary
 ====================================
 
 .. currentmodule:: tme.density

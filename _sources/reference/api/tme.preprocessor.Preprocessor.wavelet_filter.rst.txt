@@ -1,4 +1,4 @@
-﻿Preprocessor.wavelet\_filter
+Preprocessor.wavelet\_filter
 ============================================
 
 .. currentmodule:: tme.preprocessor

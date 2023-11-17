@@ -15,10 +15,11 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~Chamfer.scoring_function
-      
+         
+         
+           Chamfer.scoring_function
+         
    
    

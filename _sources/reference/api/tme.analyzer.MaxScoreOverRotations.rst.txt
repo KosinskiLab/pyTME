@@ -15,10 +15,11 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~MaxScoreOverRotations.merge
-      
+         
+         
+           MaxScoreOverRotations.merge
+         
    
    

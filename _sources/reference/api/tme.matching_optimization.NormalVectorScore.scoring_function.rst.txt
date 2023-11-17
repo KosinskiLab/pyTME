@@ -1,0 +1,6 @@
+NormalVectorScore.scoring\_function
+============================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: NormalVectorScore.scoring_function

@@ -15,13 +15,14 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~MemmapHandler.merge
-      
-      
-        ~MemmapHandler.update_indices
-      
+         
+         
+           MemmapHandler.merge
+         
+         
+           MemmapHandler.update_indices
+         
    
    

@@ -1,4 +1,4 @@
-﻿Structure.rigid\_transform
+Structure.rigid\_transform
 =======================================
 
 .. currentmodule:: tme.structure

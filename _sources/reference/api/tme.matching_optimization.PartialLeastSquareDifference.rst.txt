@@ -15,10 +15,11 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~PartialLeastSquareDifference.scoring_function
-      
+         
+         
+           PartialLeastSquareDifference.scoring_function
+         
    
    

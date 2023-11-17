@@ -1,0 +1,6 @@
+MatchingBackend.sharedarr\_to\_arr
+=============================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: MatchingBackend.sharedarr_to_arr

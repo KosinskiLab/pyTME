@@ -1,0 +1,6 @@
+CrossCorrelation.scoring\_function
+===========================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: CrossCorrelation.scoring_function

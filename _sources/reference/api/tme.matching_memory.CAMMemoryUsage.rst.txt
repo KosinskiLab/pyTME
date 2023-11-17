@@ -15,13 +15,14 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~CAMMemoryUsage.base_usage
-      
-      
-        ~CAMMemoryUsage.per_fork
-      
+         
+         
+           CAMMemoryUsage.base_usage
+         
+         
+           CAMMemoryUsage.per_fork
+         
    
    

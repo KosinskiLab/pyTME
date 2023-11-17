@@ -1,0 +1,6 @@
+CupyBackend.flip
+=============================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: CupyBackend.flip

@@ -15,13 +15,14 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~PeakCallerFast.call_peaks
-      
-      
-        ~PeakCallerFast.merge
-      
+         
+         
+           PeakCallerFast.call_peaks
+         
+         
+           PeakCallerFast.merge
+         
    
    

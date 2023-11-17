@@ -425,13 +425,19 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">complex_nbytes</span> <span class="o">=</span> <span class="n">complex_nbytes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">integer_nbytes</span> <span class="o">=</span> <span class="n">integer_nbytes</span>
 
+<div class="viewcode-block" id="MatchingMemoryUsage.base_usage">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.MatchingMemoryUsage.base_usage.html#tme.matching_memory.MatchingMemoryUsage.base_usage">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">base_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the base memory usage in bytes.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the base memory usage in bytes.&quot;&quot;&quot;</span></div>
 
+
+<div class="viewcode-block" id="MatchingMemoryUsage.per_fork">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.MatchingMemoryUsage.per_fork.html#tme.matching_memory.MatchingMemoryUsage.per_fork">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">per_fork</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the memory usage per fork in bytes.&quot;&quot;&quot;</span></div>
+</div>
 
 
 
@@ -446,15 +452,21 @@ document.write(`
 <span class="sd">    :py:meth:`tme.matching_exhaustive.cc_setup`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="CCMemoryUsage.base_usage">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.CCMemoryUsage.base_usage.html#tme.matching_memory.CCMemoryUsage.base_usage">[docs]</a>
     <span class="k">def</span> <span class="nf">base_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span>
         <span class="n">complex_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_nbytes</span>
-        <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span>
+        <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span></div>
 
+
+<div class="viewcode-block" id="CCMemoryUsage.per_fork">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.CCMemoryUsage.per_fork.html#tme.matching_memory.CCMemoryUsage.per_fork">[docs]</a>
     <span class="k">def</span> <span class="nf">per_fork</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span>
         <span class="n">complex_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_nbytes</span>
         <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span></div>
+</div>
 
 
 
@@ -481,15 +493,21 @@ document.write(`
 <span class="sd">    :py:meth:`tme.matching_exhaustive.corr_setup`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="CORRMemoryUsage.base_usage">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.CORRMemoryUsage.base_usage.html#tme.matching_memory.CORRMemoryUsage.base_usage">[docs]</a>
     <span class="k">def</span> <span class="nf">base_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span> <span class="o">*</span> <span class="mi">4</span>
         <span class="n">complex_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_nbytes</span>
-        <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span>
+        <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span></div>
 
+
+<div class="viewcode-block" id="CORRMemoryUsage.per_fork">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.CORRMemoryUsage.per_fork.html#tme.matching_memory.CORRMemoryUsage.per_fork">[docs]</a>
     <span class="k">def</span> <span class="nf">per_fork</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span>
         <span class="n">complex_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_nbytes</span>
         <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span></div>
+</div>
 
 
 
@@ -530,15 +548,21 @@ document.write(`
 <span class="sd">    :py:meth:`tme.matching_exhaustive.flc_setup`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="FLCMemoryUsage.base_usage">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.FLCMemoryUsage.base_usage.html#tme.matching_memory.FLCMemoryUsage.base_usage">[docs]</a>
     <span class="k">def</span> <span class="nf">base_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span> <span class="o">*</span> <span class="mi">2</span>
         <span class="n">complex_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_nbytes</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span>
+        <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span></div>
 
+
+<div class="viewcode-block" id="FLCMemoryUsage.per_fork">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.FLCMemoryUsage.per_fork.html#tme.matching_memory.FLCMemoryUsage.per_fork">[docs]</a>
     <span class="k">def</span> <span class="nf">per_fork</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span> <span class="o">*</span> <span class="mi">3</span>
         <span class="n">complex_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_nbytes</span> <span class="o">*</span> <span class="mi">2</span>
         <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span></div>
+</div>
 
 
 
@@ -553,15 +577,21 @@ document.write(`
 <span class="sd">    :py:meth:`tme.matching_exhaustive.mcc_setup`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="MCCMemoryUsage.base_usage">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.MCCMemoryUsage.base_usage.html#tme.matching_memory.MCCMemoryUsage.base_usage">[docs]</a>
     <span class="k">def</span> <span class="nf">base_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span> <span class="o">*</span> <span class="mi">2</span>
         <span class="n">complex_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_nbytes</span> <span class="o">*</span> <span class="mi">3</span>
-        <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span>
+        <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span></div>
 
+
+<div class="viewcode-block" id="MCCMemoryUsage.per_fork">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.MCCMemoryUsage.per_fork.html#tme.matching_memory.MCCMemoryUsage.per_fork">[docs]</a>
     <span class="k">def</span> <span class="nf">per_fork</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span> <span class="o">*</span> <span class="mi">6</span>
         <span class="n">complex_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_nbytes</span>
         <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span></div>
+</div>
 
 
 
@@ -576,12 +606,18 @@ document.write(`
 <span class="sd">    :py:class:`tme.analyzer.MaxScoreOverRotations`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="MaxScoreOverRotationsMemoryUsage.base_usage">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.MaxScoreOverRotationsMemoryUsage.base_usage.html#tme.matching_memory.MaxScoreOverRotationsMemoryUsage.base_usage">[docs]</a>
     <span class="k">def</span> <span class="nf">base_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="k">return</span> <span class="n">float_arrays</span>
+        <span class="k">return</span> <span class="n">float_arrays</span></div>
 
+
+<div class="viewcode-block" id="MaxScoreOverRotationsMemoryUsage.per_fork">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.MaxScoreOverRotationsMemoryUsage.per_fork.html#tme.matching_memory.MaxScoreOverRotationsMemoryUsage.per_fork">[docs]</a>
     <span class="k">def</span> <span class="nf">per_fork</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span></div>
+</div>
 
 
 
@@ -596,13 +632,19 @@ document.write(`
 <span class="sd">    :py:class:`tme.analyzer.PeakCallerMaximumFilter`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="PeakCallerMaximumFilterMemoryUsage.base_usage">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.PeakCallerMaximumFilterMemoryUsage.base_usage.html#tme.matching_memory.PeakCallerMaximumFilterMemoryUsage.base_usage">[docs]</a>
     <span class="k">def</span> <span class="nf">base_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span>
-        <span class="k">return</span> <span class="n">float_arrays</span>
+        <span class="k">return</span> <span class="n">float_arrays</span></div>
 
+
+<div class="viewcode-block" id="PeakCallerMaximumFilterMemoryUsage.per_fork">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.PeakCallerMaximumFilterMemoryUsage.per_fork.html#tme.matching_memory.PeakCallerMaximumFilterMemoryUsage.per_fork">[docs]</a>
     <span class="k">def</span> <span class="nf">per_fork</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span>
         <span class="k">return</span> <span class="n">float_arrays</span></div>
+</div>
 
 
 
@@ -617,14 +659,20 @@ document.write(`
 <span class="sd">    :py:class:`tme.backends.CupyBackend`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="CupyBackendMemoryUsage.base_usage">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.CupyBackendMemoryUsage.base_usage.html#tme.matching_memory.CupyBackendMemoryUsage.base_usage">[docs]</a>
     <span class="k">def</span> <span class="nf">base_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="c1"># FFT plans, overhead from assigning FFT result, rotation interpolation</span>
         <span class="n">complex_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_nbytes</span> <span class="o">*</span> <span class="mi">3</span>
         <span class="n">float_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complex_array_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">float_nbytes</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span>
+        <span class="k">return</span> <span class="n">float_arrays</span> <span class="o">+</span> <span class="n">complex_arrays</span></div>
 
+
+<div class="viewcode-block" id="CupyBackendMemoryUsage.per_fork">
+<a class="viewcode-back" href="../../reference/api/tme.matching_memory.CupyBackendMemoryUsage.per_fork.html#tme.matching_memory.CupyBackendMemoryUsage.per_fork">[docs]</a>
     <span class="k">def</span> <span class="nf">per_fork</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span></div>
+</div>
 
 
 

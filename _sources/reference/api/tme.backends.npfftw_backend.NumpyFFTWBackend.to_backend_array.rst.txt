@@ -1,0 +1,6 @@
+NumpyFFTWBackend.to\_backend\_array
+=============================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.to_backend_array

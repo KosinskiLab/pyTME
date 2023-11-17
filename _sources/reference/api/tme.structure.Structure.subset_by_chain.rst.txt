@@ -1,4 +1,4 @@
-﻿Structure.subset\_by\_chain
+Structure.subset\_by\_chain
 =======================================
 
 .. currentmodule:: tme.structure

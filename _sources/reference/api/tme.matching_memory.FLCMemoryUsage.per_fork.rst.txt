@@ -1,0 +1,6 @@
+FLCMemoryUsage.per\_fork
+===========================================
+
+.. currentmodule:: tme.matching_memory
+
+.. automethod:: FLCMemoryUsage.per_fork

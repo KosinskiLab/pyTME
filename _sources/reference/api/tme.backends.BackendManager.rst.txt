@@ -15,13 +15,14 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~BackendManager.add_backend
-      
-      
-        ~BackendManager.change_backend
-      
+         
+         
+           BackendManager.add_backend
+         
+         
+           BackendManager.change_backend
+         
    
    

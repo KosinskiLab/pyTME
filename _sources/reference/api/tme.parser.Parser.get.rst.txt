@@ -1,4 +1,4 @@
-﻿Parser.get
+Parser.get
 =====================
 
 .. currentmodule:: tme.parser

@@ -15,10 +15,11 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~MatchCoordinatesToDensity.scoring_function
-      
+         
+         
+           MatchCoordinatesToDensity.scoring_function
+         
    
    

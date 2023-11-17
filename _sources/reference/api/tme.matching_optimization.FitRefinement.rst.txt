@@ -15,16 +15,17 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~FitRefinement.array_from_coordinates
-      
-      
-        ~FitRefinement.map_coordinates_to_array
-      
-      
-        ~FitRefinement.refine
-      
+         
+         
+           FitRefinement.array_from_coordinates
+         
+         
+           FitRefinement.map_coordinates_to_array
+         
+         
+           FitRefinement.refine
+         
    
    

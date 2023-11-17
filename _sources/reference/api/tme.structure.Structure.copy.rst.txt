@@ -1,4 +1,4 @@
-﻿Structure.copy
+Structure.copy
 ============================
 
 .. currentmodule:: tme.structure

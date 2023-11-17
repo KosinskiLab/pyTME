@@ -12,22 +12,23 @@
    .. rubric:: Attributes
 
    .. autosummary::
-   
+      :toctree:
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
    
    
 
@@ -35,43 +36,44 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~Structure.align_structures
-      
-      
-        ~Structure.center_of_mass
-      
-      
-        ~Structure.centered
-      
-      
-        ~Structure.compare_structures
-      
-      
-        ~Structure.copy
-      
-      
-        ~Structure.from_file
-      
-      
-        ~Structure.get_chains
-      
-      
-        ~Structure.rigid_transform
-      
-      
-        ~Structure.subset_by_chain
-      
-      
-        ~Structure.subset_by_range
-      
-      
-        ~Structure.to_file
-      
-      
-        ~Structure.to_volume
-      
+         
+         
+           Structure.align_structures
+         
+         
+           Structure.center_of_mass
+         
+         
+           Structure.centered
+         
+         
+           Structure.compare_structures
+         
+         
+           Structure.copy
+         
+         
+           Structure.from_file
+         
+         
+           Structure.get_chains
+         
+         
+           Structure.rigid_transform
+         
+         
+           Structure.subset_by_chain
+         
+         
+           Structure.subset_by_range
+         
+         
+           Structure.to_file
+         
+         
+           Structure.to_volume
+         
    
    

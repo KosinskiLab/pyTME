@@ -1,0 +1,6 @@
+NumpyFFTWBackend.free\_sharedarr
+===========================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.free_sharedarr

@@ -1,0 +1,6 @@
+NumpyFFTWBackend.concatenate
+========================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.concatenate

@@ -1,4 +1,4 @@
-﻿Density.from\_structure
+Density.from\_structure
 ==================================
 
 .. currentmodule:: tme.density

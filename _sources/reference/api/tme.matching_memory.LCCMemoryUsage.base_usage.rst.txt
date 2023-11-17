@@ -1,0 +1,6 @@
+LCCMemoryUsage.base\_usage
+=============================================
+
+.. currentmodule:: tme.matching_memory
+
+.. automethod:: LCCMemoryUsage.base_usage

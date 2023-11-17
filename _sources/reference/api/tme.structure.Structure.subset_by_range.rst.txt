@@ -1,4 +1,4 @@
-﻿Structure.subset\_by\_range
+Structure.subset\_by\_range
 =======================================
 
 .. currentmodule:: tme.structure

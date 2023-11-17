@@ -1,4 +1,4 @@
-﻿Preprocessor.blob\_filter
+Preprocessor.blob\_filter
 =========================================
 
 .. currentmodule:: tme.preprocessor

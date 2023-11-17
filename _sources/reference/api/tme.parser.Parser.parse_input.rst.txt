@@ -1,4 +1,4 @@
-﻿Parser.parse\_input
+Parser.parse\_input
 =============================
 
 .. currentmodule:: tme.parser

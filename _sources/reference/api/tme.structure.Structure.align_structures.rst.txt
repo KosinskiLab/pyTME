@@ -1,4 +1,4 @@
-﻿Structure.align\_structures
+Structure.align\_structures
 ========================================
 
 .. currentmodule:: tme.structure

@@ -1,4 +1,4 @@
-﻿MatchingData.rotations
+MatchingData.rotations
 ========================================
 
 .. currentmodule:: tme.matching_data

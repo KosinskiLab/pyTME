@@ -1,4 +1,4 @@
-﻿Density.resample
+Density.resample
 ============================
 
 .. currentmodule:: tme.density

@@ -1,0 +1,6 @@
+NumpyFFTWBackend.flip
+==================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: NumpyFFTWBackend.flip

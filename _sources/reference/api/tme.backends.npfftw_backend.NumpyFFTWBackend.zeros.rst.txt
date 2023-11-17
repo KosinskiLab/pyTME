@@ -1,0 +1,6 @@
+NumpyFFTWBackend.zeros
+==================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.zeros

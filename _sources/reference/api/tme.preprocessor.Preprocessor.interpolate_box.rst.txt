@@ -1,4 +1,4 @@
-﻿Preprocessor.interpolate\_box
+Preprocessor.interpolate\_box
 =============================================
 
 .. currentmodule:: tme.preprocessor

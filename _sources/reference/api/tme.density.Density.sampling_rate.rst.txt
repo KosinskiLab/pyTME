@@ -1,4 +1,4 @@
-﻿Density.sampling\_rate
+Density.sampling\_rate
 =================================
 
 .. currentmodule:: tme.density

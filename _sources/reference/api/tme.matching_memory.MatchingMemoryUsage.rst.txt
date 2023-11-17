@@ -15,13 +15,14 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~MatchingMemoryUsage.base_usage
-      
-      
-        ~MatchingMemoryUsage.per_fork
-      
+         
+         
+           MatchingMemoryUsage.base_usage
+         
+         
+           MatchingMemoryUsage.per_fork
+         
    
    

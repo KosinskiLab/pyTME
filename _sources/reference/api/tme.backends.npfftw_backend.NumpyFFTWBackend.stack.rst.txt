@@ -1,0 +1,6 @@
+NumpyFFTWBackend.stack
+==================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.stack

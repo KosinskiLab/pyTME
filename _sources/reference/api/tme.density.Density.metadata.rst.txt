@@ -1,4 +1,4 @@
-﻿Density.metadata
+Density.metadata
 ============================
 
 .. currentmodule:: tme.density

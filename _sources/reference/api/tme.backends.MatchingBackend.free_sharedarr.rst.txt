@@ -1,0 +1,6 @@
+MatchingBackend.free\_sharedarr
+===========================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: MatchingBackend.free_sharedarr

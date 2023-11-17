@@ -1,4 +1,4 @@
-﻿Density.rotate\_array
+Density.rotate\_array
 ================================
 
 .. currentmodule:: tme.density

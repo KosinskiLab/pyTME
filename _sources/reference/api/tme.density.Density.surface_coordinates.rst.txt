@@ -1,4 +1,4 @@
-﻿Density.surface\_coordinates
+Density.surface\_coordinates
 =======================================
 
 .. currentmodule:: tme.density

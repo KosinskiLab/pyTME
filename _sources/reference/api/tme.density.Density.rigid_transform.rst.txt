@@ -1,4 +1,4 @@
-﻿Density.rigid\_transform
+Density.rigid\_transform
 ===================================
 
 .. currentmodule:: tme.density

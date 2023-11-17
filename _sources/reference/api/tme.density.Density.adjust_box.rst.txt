@@ -1,4 +1,4 @@
-﻿Density.adjust\_box
+Density.adjust\_box
 ==============================
 
 .. currentmodule:: tme.density

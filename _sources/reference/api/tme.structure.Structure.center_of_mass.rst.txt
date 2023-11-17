@@ -1,4 +1,4 @@
-﻿Structure.center\_of\_mass
+Structure.center\_of\_mass
 ======================================
 
 .. currentmodule:: tme.structure

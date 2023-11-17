@@ -1,4 +1,4 @@
-﻿Density.shape
+Density.shape
 =========================
 
 .. currentmodule:: tme.density

@@ -15,13 +15,14 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~CORRMemoryUsage.base_usage
-      
-      
-        ~CORRMemoryUsage.per_fork
-      
+         
+         
+           CORRMemoryUsage.base_usage
+         
+         
+           CORRMemoryUsage.per_fork
+         
    
    

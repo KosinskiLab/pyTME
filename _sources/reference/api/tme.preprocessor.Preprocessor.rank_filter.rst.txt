@@ -1,4 +1,4 @@
-﻿Preprocessor.rank\_filter
+Preprocessor.rank\_filter
 =========================================
 
 .. currentmodule:: tme.preprocessor

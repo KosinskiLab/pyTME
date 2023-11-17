@@ -15,13 +15,14 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
+      :toctree:
       
-      
-        ~FLCMemoryUsage.base_usage
-      
-      
-        ~FLCMemoryUsage.per_fork
-      
+         
+         
+           FLCMemoryUsage.base_usage
+         
+         
+           FLCMemoryUsage.per_fork
+         
    
    
