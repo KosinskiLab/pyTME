@@ -1,5 +1,5 @@
-﻿tme.matching\_optimization.PartialLeastSquareDifference
-=======================================================
+﻿PartialLeastSquareDifference
+============================
 
 .. currentmodule:: tme.matching_optimization
 
@@ -7,15 +7,18 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      PartialLeastSquareDifference.__call__
-      PartialLeastSquareDifference.scoring_function
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~PartialLeastSquareDifference.scoring_function
+      
+   
+   

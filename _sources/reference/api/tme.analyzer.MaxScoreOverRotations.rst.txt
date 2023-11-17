@@ -1,5 +1,5 @@
-﻿tme.analyzer.MaxScoreOverRotations
-==================================
+﻿MaxScoreOverRotations
+=====================
 
 .. currentmodule:: tme.analyzer
 
@@ -7,15 +7,18 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      MaxScoreOverRotations.__call__
-      MaxScoreOverRotations.merge
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~MaxScoreOverRotations.merge
+      
+   
+   

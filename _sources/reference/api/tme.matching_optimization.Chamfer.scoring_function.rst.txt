@@ -1,6 +1,0 @@
-Chamfer.scoring\_function
-==================================================
-
-.. currentmodule:: tme.matching_optimization
-
-.. automethod:: Chamfer.scoring_function

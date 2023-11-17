@@ -416,45 +416,28 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">affine_transform</span> <span class="o">=</span> <span class="n">affine_transform</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_filter</span> <span class="o">=</span> <span class="n">maximum_filter</span>
 
-<div class="viewcode-block" id="CupyBackend.to_backend_array">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.to_backend_array.html#tme.backends.CupyBackend.to_backend_array">[docs]</a>
     <span class="k">def</span> <span class="nf">to_backend_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CupyArray</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">arr</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="CupyBackend.to_numpy_array">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.to_numpy_array.html#tme.backends.CupyBackend.to_numpy_array">[docs]</a>
     <span class="k">def</span> <span class="nf">to_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="CupyBackend.to_cpu_array">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.to_cpu_array.html#tme.backends.CupyBackend.to_cpu_array">[docs]</a>
     <span class="k">def</span> <span class="nf">to_cpu_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="CupyBackend.sharedarr_to_arr">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.sharedarr_to_arr.html#tme.backends.CupyBackend.sharedarr_to_arr">[docs]</a>
     <span class="k">def</span> <span class="nf">sharedarr_to_arr</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shm</span><span class="p">:</span> <span class="n">CupyArray</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CupyArray</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">shm</span></div>
+        <span class="k">return</span> <span class="n">shm</span>
 
-
-<div class="viewcode-block" id="CupyBackend.arr_to_sharedarr">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.arr_to_sharedarr.html#tme.backends.CupyBackend.arr_to_sharedarr">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">arr_to_sharedarr</span><span class="p">(</span>
         <span class="n">arr</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CupyArray</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">arr</span></div>
+        <span class="k">return</span> <span class="n">arr</span>
 
-
-<div class="viewcode-block" id="CupyBackend.preallocate_array">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.preallocate_array.html#tme.backends.CupyBackend.preallocate_array">[docs]</a>
     <span class="k">def</span> <span class="nf">preallocate_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a byte-aligned array of zeros with specified shape and dtype.</span>
@@ -472,17 +455,11 @@ document.write(`
 <span class="sd">            Byte-aligned array of zeros with specified shape and dtype.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">arr</span></div>
+        <span class="k">return</span> <span class="n">arr</span>
 
-
-<div class="viewcode-block" id="CupyBackend.unravel_index">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.unravel_index.html#tme.backends.CupyBackend.unravel_index">[docs]</a>
     <span class="k">def</span> <span class="nf">unravel_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="CupyBackend.unique">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.unique.html#tme.backends.CupyBackend.unique">[docs]</a>
     <span class="k">def</span> <span class="nf">unique</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ar</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">ar</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -491,11 +468,8 @@ document.write(`
         <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">ar</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">ar</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">tuple</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ret</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ret</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="CupyBackend.build_fft">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.build_fft.html#tme.backends.CupyBackend.build_fft">[docs]</a>
     <span class="k">def</span> <span class="nf">build_fft</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">fast_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
@@ -548,11 +522,8 @@ document.write(`
         <span class="k">def</span> <span class="nf">irfftn</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">out</span><span class="p">[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="n">arr</span><span class="p">)[:]</span>
 
-        <span class="k">return</span> <span class="n">rfftn</span><span class="p">,</span> <span class="n">irfftn</span></div>
+        <span class="k">return</span> <span class="n">rfftn</span><span class="p">,</span> <span class="n">irfftn</span>
 
-
-<div class="viewcode-block" id="CupyBackend.compute_convolution_shapes">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.compute_convolution_shapes.html#tme.backends.CupyBackend.compute_convolution_shapes">[docs]</a>
     <span class="k">def</span> <span class="nf">compute_convolution_shapes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr1_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">arr2_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
@@ -564,22 +535,16 @@ document.write(`
         <span class="n">fast_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">is_odd</span>
         <span class="n">fast_ft_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">is_odd</span>
 
-        <span class="k">return</span> <span class="n">convolution_shape</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span></div>
+        <span class="k">return</span> <span class="n">convolution_shape</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span>
 
-
-<div class="viewcode-block" id="CupyBackend.max_filter_coordinates">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.max_filter_coordinates.html#tme.backends.CupyBackend.max_filter_coordinates">[docs]</a>
     <span class="k">def</span> <span class="nf">max_filter_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
         <span class="n">score_box</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">min_distance</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">score_space</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
         <span class="n">max_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_filter</span><span class="p">(</span><span class="n">score_space</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">score_box</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">)</span>
         <span class="n">max_filter</span> <span class="o">=</span> <span class="n">max_filter</span> <span class="o">==</span> <span class="n">score_space</span>
 
         <span class="n">peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">max_filter</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
-        <span class="k">return</span> <span class="n">peaks</span></div>
+        <span class="k">return</span> <span class="n">peaks</span>
 
-
-<div class="viewcode-block" id="CupyBackend.rotate_array">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.rotate_array.html#tme.backends.CupyBackend.rotate_array">[docs]</a>
     <span class="k">def</span> <span class="nf">rotate_array</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">arr</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">,</span>
@@ -673,22 +638,16 @@ document.write(`
             <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">out_mask</span>
             <span class="k">case</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">out_mask</span></div>
+                <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">out_mask</span>
 
-
-<div class="viewcode-block" id="CupyBackend.get_available_memory">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.get_available_memory.html#tme.backends.CupyBackend.get_available_memory">[docs]</a>
     <span class="k">def</span> <span class="nf">get_available_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">():</span>
             <span class="p">(</span>
                 <span class="n">free_memory</span><span class="p">,</span>
                 <span class="n">available_memory</span><span class="p">,</span>
             <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">memGetInfo</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">free_memory</span></div>
+        <span class="k">return</span> <span class="n">free_memory</span>
 
-
-<div class="viewcode-block" id="CupyBackend.set_device">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.set_device.html#tme.backends.CupyBackend.set_device">[docs]</a>
     <span class="nd">@contextmanager</span>
     <span class="k">def</span> <span class="nf">set_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -708,11 +667,8 @@ document.write(`
 <span class="sd">            the set GPU context for enclosed operations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">(</span><span class="n">device_index</span><span class="p">):</span>
-            <span class="k">yield</span></div>
+            <span class="k">yield</span>
 
-
-<div class="viewcode-block" id="CupyBackend.device_count">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.device_count.html#tme.backends.CupyBackend.device_count">[docs]</a>
     <span class="k">def</span> <span class="nf">device_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the number of available GPU devices.</span>
@@ -723,7 +679,6 @@ document.write(`
 <span class="sd">            Number of available GPU devices.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">getDeviceCount</span><span class="p">()</span></div>
-</div>
 
 </pre></div>
 

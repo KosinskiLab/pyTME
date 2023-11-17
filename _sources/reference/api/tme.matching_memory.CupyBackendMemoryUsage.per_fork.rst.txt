@@ -1,6 +1,0 @@
-CupyBackendMemoryUsage.per\_fork
-===================================================
-
-.. currentmodule:: tme.matching_memory
-
-.. automethod:: CupyBackendMemoryUsage.per_fork

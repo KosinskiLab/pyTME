@@ -1,6 +1,0 @@
-PytorchBackend.rotate\_array
-========================================
-
-.. currentmodule:: tme.backends
-
-.. automethod:: PytorchBackend.rotate_array

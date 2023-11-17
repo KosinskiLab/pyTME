@@ -1,5 +1,5 @@
-﻿tme.backends.BackendManager
-===========================
+﻿BackendManager
+==============
 
 .. currentmodule:: tme.backends
 
@@ -7,15 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      BackendManager.add_backend
-      BackendManager.change_backend
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~BackendManager.add_backend
+      
+      
+        ~BackendManager.change_backend
+      
+   
+   

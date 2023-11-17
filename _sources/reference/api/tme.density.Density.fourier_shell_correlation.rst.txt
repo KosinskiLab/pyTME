@@ -1,4 +1,4 @@
-Density.fourier\_shell\_correlation
+﻿Density.fourier\_shell\_correlation
 =============================================
 
 .. currentmodule:: tme.density

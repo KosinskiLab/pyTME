@@ -1,4 +1,4 @@
-Density.pad
+﻿Density.pad
 =======================
 
 .. currentmodule:: tme.density

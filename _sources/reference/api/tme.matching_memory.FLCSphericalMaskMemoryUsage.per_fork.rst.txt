@@ -1,6 +1,0 @@
-FLCSphericalMaskMemoryUsage.per\_fork
-========================================================
-
-.. currentmodule:: tme.matching_memory
-
-.. automethod:: FLCSphericalMaskMemoryUsage.per_fork

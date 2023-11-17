@@ -452,8 +452,6 @@ document.write(`
         <span class="n">base_attributes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">base_attributes</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BackendManager.add_backend">
-<a class="viewcode-back" href="../../reference/api/tme.backends.BackendManager.add_backend.html#tme.backends.BackendManager.add_backend">[docs]</a>
     <span class="k">def</span> <span class="nf">add_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">backend_class</span><span class="p">:</span> <span class="nb">type</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Adds a custom backend to the registry.</span>
@@ -472,11 +470,8 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">backend_class</span><span class="p">,</span> <span class="n">MatchingBackend</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;backend_class needs to inherit from MatchingBackend.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_BACKEND_REGISTRY</span><span class="p">[</span><span class="n">backend_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">backend_class</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_BACKEND_REGISTRY</span><span class="p">[</span><span class="n">backend_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">backend_class</span>
 
-
-<div class="viewcode-block" id="BackendManager.change_backend">
-<a class="viewcode-back" href="../../reference/api/tme.backends.BackendManager.change_backend.html#tme.backends.BackendManager.change_backend">[docs]</a>
     <span class="k">def</span> <span class="nf">change_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">backend_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Change the backend.</span>
@@ -503,7 +498,6 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BACKEND_REGISTRY</span><span class="p">[</span><span class="n">backend_name</span><span class="p">](</span><span class="o">**</span><span class="n">backend_kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_backend_name</span> <span class="o">=</span> <span class="n">backend_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_backend_args</span> <span class="o">=</span> <span class="n">backend_kwargs</span></div>
-</div>
 
 
 

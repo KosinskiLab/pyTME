@@ -1,4 +1,4 @@
-Density.align\_origins
+﻿Density.align\_origins
 =================================
 
 .. currentmodule:: tme.density

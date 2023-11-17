@@ -1,6 +1,0 @@
-CupyBackend.arr\_to\_sharedarr
-=========================================
-
-.. currentmodule:: tme.backends
-
-.. automethod:: CupyBackend.arr_to_sharedarr

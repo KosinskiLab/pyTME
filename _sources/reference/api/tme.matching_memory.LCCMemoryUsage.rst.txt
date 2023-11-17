@@ -1,5 +1,5 @@
-﻿tme.matching\_memory.LCCMemoryUsage
-===================================
+﻿LCCMemoryUsage
+==============
 
 .. currentmodule:: tme.matching_memory
 
@@ -7,15 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      LCCMemoryUsage.base_usage
-      LCCMemoryUsage.per_fork
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~LCCMemoryUsage.base_usage
+      
+      
+        ~LCCMemoryUsage.per_fork
+      
+   
+   

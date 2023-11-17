@@ -461,8 +461,6 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">backend</span><span class="o">.</span><span class="n">to_cpu_array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">]</span>
         <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span>
 
-<div class="viewcode-block" id="PeakCaller.__call__">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCaller.__call__.html#tme.analyzer.PeakCaller.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -492,7 +490,7 @@ document.write(`
         <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
             <span class="s2">&quot;fourier_shift&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">peak_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">fourier_shift</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">peak_positions</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span>
                 <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">,</span> <span class="n">fourier_shift</span><span class="p">),</span> <span class="n">score_space</span><span class="o">.</span><span class="n">shape</span>
             <span class="p">)</span>
@@ -513,11 +511,8 @@ document.write(`
             <span class="n">peak_scores</span><span class="o">=</span><span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">peak_positions</span><span class="o">.</span><span class="n">T</span><span class="p">)],</span>
             <span class="n">rotations</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-
-<div class="viewcode-block" id="PeakCaller.call_peaks">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCaller.call_peaks.html#tme.analyzer.PeakCaller.call_peaks">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
@@ -544,11 +539,8 @@ document.write(`
 <span class="sd">            Array of peak coordiantes.</span>
 <span class="sd">        NDArray</span>
 <span class="sd">            Array of peak details.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="PeakCaller.merge">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCaller.merge.html#tme.analyzer.PeakCaller.merge">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">candidates</span><span class="o">=</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -574,6 +566,7 @@ document.write(`
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">peak_positions</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">peak_scores</span><span class="p">,</span> <span class="n">peak_details</span> <span class="o">=</span> <span class="n">candidate</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;translation_offset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">peak_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
             <span class="n">base</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span>
                 <span class="n">peak_positions</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">),</span>
                 <span class="n">peak_details</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">peak_details</span><span class="p">),</span>
@@ -581,8 +574,7 @@ document.write(`
                 <span class="n">rotations</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">rotations</span><span class="p">),</span>
                 <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">base</span><span class="p">)</span></div>
-
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -615,7 +607,6 @@ document.write(`
         <span class="n">translation_offset</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">translation_offset</span><span class="p">,</span> <span class="n">peak_positions</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
         <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">,</span> <span class="n">translation_offset</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">peak_positions</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">peak_positions</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">peak_scores</span><span class="p">,</span> <span class="n">peak_details</span><span class="p">]</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -649,8 +640,6 @@ document.write(`
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PeakCallerSort.call_peaks">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerSort.call_peaks.html#tme.analyzer.PeakCallerSort.call_peaks">[docs]</a>
     <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
@@ -683,7 +672,6 @@ document.write(`
 
         <span class="n">peaks</span> <span class="o">=</span> <span class="n">filter_points</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
-</div>
 
 
 
@@ -696,8 +684,6 @@ document.write(`
 <span class="sd">    skimage.feature.peak_local_max.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PeakCallerMaximumFilter.call_peaks">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerMaximumFilter.call_peaks.html#tme.analyzer.PeakCallerMaximumFilter.call_peaks">[docs]</a>
     <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
@@ -731,7 +717,6 @@ document.write(`
         <span class="n">peaks</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span><span class="n">top_indices</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
-</div>
 
 
 
@@ -746,8 +731,6 @@ document.write(`
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PeakCallerFast.call_peaks">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerFast.call_peaks.html#tme.analyzer.PeakCallerFast.call_peaks">[docs]</a>
     <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
@@ -816,7 +799,6 @@ document.write(`
             <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
-</div>
 
 
 
@@ -828,8 +810,6 @@ document.write(`
 <span class="sd">    a region around it.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PeakCallerRecursiveMasking.call_peaks">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerRecursiveMasking.call_peaks.html#tme.analyzer.PeakCallerRecursiveMasking.call_peaks">[docs]</a>
     <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
@@ -869,7 +849,6 @@ document.write(`
                 <span class="k">break</span>
         <span class="n">peaks</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
-</div>
 
 
 
@@ -880,8 +859,6 @@ document.write(`
 <span class="sd">    Peak calling using skimage.feature.peak_local_max to compute local maxima.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PeakCallerScipy.call_peaks">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerScipy.call_peaks.html#tme.analyzer.PeakCallerScipy.call_peaks">[docs]</a>
     <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
@@ -910,7 +887,6 @@ document.write(`
             <span class="n">min_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
-</div>
 
 
 
@@ -1021,8 +997,6 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">reference_fit</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">reference_fit</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">has_reference</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">1</span>
 
-<div class="viewcode-block" id="ScoreStatistics.__call__">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.ScoreStatistics.__call__.html#tme.analyzer.ScoreStatistics.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1074,8 +1048,7 @@ document.write(`
             <span class="n">min_value</span><span class="o">=</span><span class="n">min_value</span><span class="p">,</span>
             <span class="n">entropy</span><span class="o">=</span><span class="n">shannon_entropy</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-        <span class="p">)</span></div>
-
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">param_store</span> <span class="o">=</span> <span class="p">(</span>
@@ -1148,8 +1121,6 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">shannon_entropy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entropy</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rotation_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ScoreStatistics.merge">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.ScoreStatistics.merge.html#tme.analyzer.ScoreStatistics.merge">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">param_stores</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1184,11 +1155,8 @@ document.write(`
                 <span class="n">name</span><span class="o">=</span><span class="n">param_store</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span>
             <span class="p">)</span>
         <span class="n">base</span><span class="o">.</span><span class="n">reference_fit</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">param_store</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">base</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="ScoreStatistics.set_reference">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.ScoreStatistics.set_reference.html#tme.analyzer.ScoreStatistics.set_reference">[docs]</a>
     <span class="k">def</span> <span class="nf">set_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the reference for the analyzer based on the input array</span>
@@ -1214,7 +1182,6 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span> <span class="o">=</span> <span class="n">reference_position</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reference_fit</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">reference_position</span><span class="p">)]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">has_reference</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">1</span></div>
-</div>
 
 
 
@@ -1314,8 +1281,6 @@ document.write(`
         <span class="p">)</span>
         <span class="k">yield from</span> <span class="n">param_store</span>
 
-<div class="viewcode-block" id="MaxScoreOverRotations.__call__">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.MaxScoreOverRotations.__call__.html#tme.analyzer.MaxScoreOverRotations.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1348,11 +1313,8 @@ document.write(`
             <span class="p">)</span>
             <span class="n">indices</span> <span class="o">=</span> <span class="n">score_space</span> <span class="o">&gt;</span> <span class="n">internal_scores</span>
             <span class="n">internal_scores</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">score_space</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
-            <span class="n">internal_rotations</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotation_index</span></div>
+            <span class="n">internal_rotations</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotation_index</span>
 
-
-<div class="viewcode-block" id="MaxScoreOverRotations.merge">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.MaxScoreOverRotations.merge.html#tme.analyzer.MaxScoreOverRotations.merge">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">param_stores</span><span class="o">=</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1485,7 +1447,6 @@ document.write(`
             <span class="n">rotations_out</span><span class="p">,</span>
             <span class="n">new_rotation_mapping</span><span class="p">,</span>
         <span class="p">)</span></div>
-</div>
 
 
 
@@ -1533,8 +1494,6 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="n">indices</span>
 
-<div class="viewcode-block" id="MemmapHandler.__call__">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.MemmapHandler.__call__.html#tme.analyzer.MemmapHandler.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1556,24 +1515,18 @@ document.write(`
         <span class="c1"># Does not really need a lock because processes operate on different rotations</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
             <span class="n">array</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">]</span> <span class="o">+=</span> <span class="n">score_space</span>
-            <span class="n">array</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
-
+            <span class="n">array</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="MemmapHandler.merge">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.MemmapHandler.merge.html#tme.analyzer.MemmapHandler.merge">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Placeholder merge method. Does nothing.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+        <span class="k">return</span> <span class="kc">None</span>
 
-
-<div class="viewcode-block" id="MemmapHandler.update_indices">
-<a class="viewcode-back" href="../../reference/api/tme.analyzer.MemmapHandler.update_indices.html#tme.analyzer.MemmapHandler.update_indices">[docs]</a>
     <span class="k">def</span> <span class="nf">update_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Change which parts of the memmap array will be updated.</span>
@@ -1584,8 +1537,7 @@ document.write(`
 <span class="sd">            Slices specifying which parts of the memmap array will be</span>
 <span class="sd">            updated by `__call__`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="n">indices</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="n">indices</span>
 
     <span class="k">def</span> <span class="nf">_rotation_matrix_to_filepath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

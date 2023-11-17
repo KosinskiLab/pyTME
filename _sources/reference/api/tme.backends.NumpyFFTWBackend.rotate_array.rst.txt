@@ -1,6 +1,0 @@
-NumpyFFTWBackend.rotate\_array
-==========================================
-
-.. currentmodule:: tme.backends
-
-.. automethod:: NumpyFFTWBackend.rotate_array

@@ -1,6 +1,0 @@
-NumpyFFTWBackend.astype
-===================================================
-
-.. currentmodule:: tme.backends.npfftw_backend
-
-.. automethod:: NumpyFFTWBackend.astype

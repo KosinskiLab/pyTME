@@ -1,6 +1,0 @@
-MatchingBackend.flip
-=================================
-
-.. currentmodule:: tme.backends
-
-.. automethod:: MatchingBackend.flip

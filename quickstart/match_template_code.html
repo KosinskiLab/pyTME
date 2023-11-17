@@ -795,7 +795,7 @@ document.write(`
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Resampling template to </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Resampling template to </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="si">}</span><span class="s2">. &quot;</span>
             <span class="s2">&quot;Consider providing a template with the same sampling rate as the target.&quot;</span>
         <span class="p">)</span>
         <span class="n">template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
@@ -875,7 +875,7 @@ document.write(`
                 <span class="o">-</span><span class="n">tilt_start</span><span class="p">,</span> <span class="n">tilt_stop</span> <span class="o">+</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span>
             <span class="p">)</span>
             <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">tilt_angles</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
-            <span class="n">angles</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">tilt_angles</span>
+            <span class="n">angles</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">tilt_angles</span>
             <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;wedge_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;tilt_angles&quot;</span><span class="p">:</span> <span class="n">angles</span><span class="p">,</span>
                 <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span><span class="p">,</span>
@@ -967,6 +967,10 @@ document.write(`
     <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">pad_fourier</span><span class="p">:</span>
         <span class="n">template_box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">template_box</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
+    <span class="n">callback_class</span> <span class="o">=</span> <span class="n">MaxScoreOverRotations</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">peak_calling</span><span class="p">:</span>
+        <span class="n">callback_class</span> <span class="o">=</span> <span class="n">PeakCallerMaximumFilter</span>
+
     <span class="n">splits</span><span class="p">,</span> <span class="n">schedule</span> <span class="o">=</span> <span class="n">compute_parallelization_schedule</span><span class="p">(</span>
         <span class="n">shape1</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
         <span class="n">shape2</span><span class="o">=</span><span class="n">template_box</span><span class="p">,</span>
@@ -975,7 +979,7 @@ document.write(`
         <span class="n">max_ram</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">ram</span><span class="p">,</span>
         <span class="n">split_only_outer</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">use_gpu</span><span class="p">,</span>
         <span class="n">matching_method</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">score</span><span class="p">,</span>
-        <span class="n">analyzer_method</span><span class="o">=</span><span class="s2">&quot;MaxScoreOverRotations&quot;</span><span class="p">,</span>
+        <span class="n">analyzer_method</span><span class="o">=</span><span class="n">callback_class</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
         <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_backend_name</span><span class="p">,</span>
         <span class="n">float_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype</span><span class="p">),</span>
         <span class="n">complex_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span><span class="p">),</span>
@@ -997,16 +1001,12 @@ document.write(`
     <span class="p">}</span>
 
     <span class="n">matching_setup</span><span class="p">,</span> <span class="n">matching_score</span> <span class="o">=</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">score</span><span class="p">]</span>
-    <span class="n">callback_class</span> <span class="o">=</span> <span class="n">MaxScoreOverRotations</span>
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">peak_calling</span><span class="p">:</span>
-        <span class="n">callback_class</span> <span class="o">=</span> <span class="n">PeakCallerMaximumFilter</span>
-
     <span class="n">matching_data</span> <span class="o">=</span> <span class="n">MatchingData</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
     <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">get_rotation_matrices</span><span class="p">(</span>
         <span class="n">angular_sampling</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span>
     <span class="p">)</span>
-    <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span>
 
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span>
     <span class="k">if</span> <span class="n">target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">matching_data</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">target_mask</span>
     <span class="k">if</span> <span class="n">template_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

@@ -1,4 +1,4 @@
-Preprocessor.bandpass\_filter
+﻿Preprocessor.bandpass\_filter
 =============================================
 
 .. currentmodule:: tme.preprocessor

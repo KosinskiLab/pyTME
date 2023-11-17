@@ -1,5 +1,5 @@
-﻿tme.matching\_memory.FLCMemoryUsage
-===================================
+﻿FLCMemoryUsage
+==============
 
 .. currentmodule:: tme.matching_memory
 
@@ -7,15 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      FLCMemoryUsage.base_usage
-      FLCMemoryUsage.per_fork
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~FLCMemoryUsage.base_usage
+      
+      
+        ~FLCMemoryUsage.per_fork
+      
+   
+   

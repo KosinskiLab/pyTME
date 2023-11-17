@@ -1,5 +1,5 @@
-﻿tme.matching\_optimization.FitRefinement
-========================================
+﻿FitRefinement
+=============
 
 .. currentmodule:: tme.matching_optimization
 
@@ -7,16 +7,24 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      FitRefinement.array_from_coordinates
-      FitRefinement.map_coordinates_to_array
-      FitRefinement.refine
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~FitRefinement.array_from_coordinates
+      
+      
+        ~FitRefinement.map_coordinates_to_array
+      
+      
+        ~FitRefinement.refine
+      
+   
+   

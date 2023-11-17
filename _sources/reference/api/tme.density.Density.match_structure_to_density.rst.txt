@@ -1,4 +1,4 @@
-Density.match\_structure\_to\_density
+﻿Density.match\_structure\_to\_density
 ==============================================
 
 .. currentmodule:: tme.density

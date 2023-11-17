@@ -1,5 +1,5 @@
-﻿tme.matching\_data.MatchingData
-===============================
+﻿MatchingData
+============
 
 .. currentmodule:: tme.matching_data
 
@@ -7,27 +7,44 @@
 
    
 
+   
+   
+   .. rubric:: Attributes
 
    .. autosummary::
-      :toctree:
+   
       
-      MatchingData.subset_array
-      MatchingData.subset_by_slice
-      MatchingData.to_backend
-
-
-
-
+        ~MatchingData.rotations
+      
+      
+        ~MatchingData.target
+      
+      
+        ~MatchingData.target_mask
+      
+      
+        ~MatchingData.template
+      
+      
+        ~MatchingData.template_mask
+      
+   
    
 
+   
+   .. rubric:: Methods
 
    .. autosummary::
-      :toctree:
+   
       
-      MatchingData.rotations
-      MatchingData.target
-      MatchingData.target_mask
-      MatchingData.template
-      MatchingData.template_mask
-
-
+      
+        ~MatchingData.subset_array
+      
+      
+        ~MatchingData.subset_by_slice
+      
+      
+        ~MatchingData.to_backend
+      
+   
+   

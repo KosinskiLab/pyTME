@@ -1,4 +1,4 @@
-Structure.charge
+﻿Structure.charge
 ==============================
 
 .. currentmodule:: tme.structure

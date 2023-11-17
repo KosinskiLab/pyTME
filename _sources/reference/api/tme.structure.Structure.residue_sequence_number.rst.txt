@@ -1,4 +1,4 @@
-Structure.residue\_sequence\_number
+﻿Structure.residue\_sequence\_number
 ===============================================
 
 .. currentmodule:: tme.structure

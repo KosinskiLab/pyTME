@@ -1,5 +1,5 @@
-﻿tme.matching\_optimization.NormalVectorScore
-============================================
+﻿NormalVectorScore
+=================
 
 .. currentmodule:: tme.matching_optimization
 
@@ -7,15 +7,18 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      NormalVectorScore.__call__
-      NormalVectorScore.scoring_function
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~NormalVectorScore.scoring_function
+      
+   
+   

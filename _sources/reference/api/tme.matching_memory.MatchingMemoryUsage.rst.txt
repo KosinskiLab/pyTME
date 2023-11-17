@@ -1,5 +1,5 @@
-﻿tme.matching\_memory.MatchingMemoryUsage
-========================================
+﻿MatchingMemoryUsage
+===================
 
 .. currentmodule:: tme.matching_memory
 
@@ -7,15 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      MatchingMemoryUsage.base_usage
-      MatchingMemoryUsage.per_fork
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~MatchingMemoryUsage.base_usage
+      
+      
+        ~MatchingMemoryUsage.per_fork
+      
+   
+   

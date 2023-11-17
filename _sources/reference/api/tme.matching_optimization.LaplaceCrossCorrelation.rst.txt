@@ -1,5 +1,5 @@
-﻿tme.matching\_optimization.LaplaceCrossCorrelation
-==================================================
+﻿LaplaceCrossCorrelation
+=======================
 
 .. currentmodule:: tme.matching_optimization
 
@@ -7,15 +7,18 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      LaplaceCrossCorrelation.__call__
-      LaplaceCrossCorrelation.scoring_function
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~LaplaceCrossCorrelation.scoring_function
+      
+   
+   

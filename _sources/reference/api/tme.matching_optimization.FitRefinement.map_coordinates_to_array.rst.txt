@@ -1,4 +1,4 @@
-FitRefinement.map\_coordinates\_to\_array
+﻿FitRefinement.map\_coordinates\_to\_array
 ================================================================
 
 .. currentmodule:: tme.matching_optimization

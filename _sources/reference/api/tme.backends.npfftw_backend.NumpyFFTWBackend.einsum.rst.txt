@@ -1,6 +1,0 @@
-NumpyFFTWBackend.einsum
-===================================================
-
-.. currentmodule:: tme.backends.npfftw_backend
-
-.. automethod:: NumpyFFTWBackend.einsum

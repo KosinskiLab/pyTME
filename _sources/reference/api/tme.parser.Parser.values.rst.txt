@@ -1,4 +1,4 @@
-Parser.values
+﻿Parser.values
 ========================
 
 .. currentmodule:: tme.parser

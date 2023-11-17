@@ -1,6 +1,0 @@
-PytorchBackend.preallocate\_array
-=============================================
-
-.. currentmodule:: tme.backends
-
-.. automethod:: PytorchBackend.preallocate_array

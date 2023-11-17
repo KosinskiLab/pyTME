@@ -1,4 +1,4 @@
-Structure.from\_file
+﻿Structure.from\_file
 =================================
 
 .. currentmodule:: tme.structure

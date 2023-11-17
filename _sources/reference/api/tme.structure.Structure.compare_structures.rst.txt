@@ -1,4 +1,4 @@
-Structure.compare\_structures
+﻿Structure.compare\_structures
 ==========================================
 
 .. currentmodule:: tme.structure

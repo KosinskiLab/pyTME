@@ -1,4 +1,4 @@
-MatchingData.template
+﻿MatchingData.template
 =======================================
 
 .. currentmodule:: tme.matching_data

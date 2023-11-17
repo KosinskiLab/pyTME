@@ -1,4 +1,4 @@
-Structure.atom\_coordinate
+﻿Structure.atom\_coordinate
 =======================================
 
 .. currentmodule:: tme.structure

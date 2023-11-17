@@ -1,6 +1,0 @@
-ScoreStatistics.\_\_call\_\_
-=====================================
-
-.. currentmodule:: tme.analyzer
-
-.. automethod:: ScoreStatistics.__call__

@@ -1,4 +1,4 @@
-Structure.temperature\_factor
+﻿Structure.temperature\_factor
 ==========================================
 
 .. currentmodule:: tme.structure

@@ -1,4 +1,4 @@
-Structure.centered
+﻿Structure.centered
 ================================
 
 .. currentmodule:: tme.structure

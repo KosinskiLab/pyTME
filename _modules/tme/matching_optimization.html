@@ -458,8 +458,6 @@ document.write(`
                 <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
             <span class="p">)</span>
 
-<div class="viewcode-block" id="MatchCoordinatesToDensity.__call__">
-<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MatchCoordinatesToDensity.__call__.html#tme.matching_optimization.MatchCoordinatesToDensity.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the score for a given transformation.</span>
@@ -500,11 +498,8 @@ document.write(`
             <span class="n">transformed_coordinates_mask</span><span class="o">=</span><span class="n">mapping</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
             <span class="n">in_volume</span><span class="o">=</span><span class="n">mapping</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
             <span class="n">in_volume_mask</span><span class="o">=</span><span class="n">mapping</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-
-<div class="viewcode-block" id="MatchCoordinatesToDensity.scoring_function">
-<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MatchCoordinatesToDensity.scoring_function.html#tme.matching_optimization.MatchCoordinatesToDensity.scoring_function">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -514,7 +509,6 @@ document.write(`
 <span class="sd">        defined by classes inheriting from :py:class:`MatchCoordinatesToDensity`</span>
 <span class="sd">        to parse a given file format.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
-</div>
 
 
 
@@ -624,14 +618,13 @@ document.write(`
 <span class="sd">    .. math::</span>
 
 <span class="sd">        \\text{score} = \\text{target_weights} \\cdot \\text{template_weights}</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">denominator</span> <span class="o">=</span> <span class="mi">1</span>
 
-<div class="viewcode-block" id="CrossCorrelation.scoring_function">
-<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.CrossCorrelation.scoring_function.html#tme.matching_optimization.CrossCorrelation.scoring_function">[docs]</a>
     <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -665,7 +658,6 @@ document.write(`
         <span class="p">)</span>
         <span class="n">score</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">denominator</span>
         <span class="k">return</span> <span class="n">score</span></div>
-</div>
 
 
 
@@ -682,6 +674,7 @@ document.write(`
 
 <span class="sd">        \\text{score} = \\nabla^{2} \\text{target_weights} \\cdot</span>
 <span class="sd">                        \\nabla^{2} \\text{template_weights}</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -830,8 +823,6 @@ document.write(`
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MaskedCrossCorrelation.scoring_function">
-<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MaskedCrossCorrelation.scoring_function.html#tme.matching_optimization.MaskedCrossCorrelation.scoring_function">[docs]</a>
     <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -901,7 +892,6 @@ document.write(`
 
         <span class="n">score</span> <span class="o">=</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>
         <span class="k">return</span> <span class="n">score</span></div>
-</div>
 
 
 
@@ -928,8 +918,6 @@ document.write(`
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="PartialLeastSquareDifference.scoring_function">
-<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.PartialLeastSquareDifference.scoring_function.html#tme.matching_optimization.PartialLeastSquareDifference.scoring_function">[docs]</a>
     <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -972,7 +960,6 @@ document.write(`
         <span class="n">score</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">in_volume</span><span class="p">)]))</span>
 
         <span class="k">return</span> <span class="o">-</span><span class="n">score</span></div>
-</div>
 
 
 
@@ -1000,8 +987,6 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_tree</span> <span class="o">=</span> <span class="n">KDTree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_coordinates</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Chamfer.scoring_function">
-<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.Chamfer.scoring_function.html#tme.matching_optimization.Chamfer.scoring_function">[docs]</a>
     <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -1024,11 +1009,11 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        float</span>
 <span class="sd">            The negative of the Chamfer distance score.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dist</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_tree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates_rotated</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
         <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">score</span></div>
-</div>
 
 
 
@@ -1049,13 +1034,12 @@ document.write(`
 <span class="sd">    .. [1]  Daven Vasishtan and Maya Topf, &quot;Scoring functions for cryoEM density</span>
 <span class="sd">            fitting&quot;, Journal of Structural Biology, vol. 174, no. 2,</span>
 <span class="sd">            pp. 333--343, 2011. DOI: https://doi.org/10.1016/j.jsb.2011.01.012</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MutualInformation.scoring_function">
-<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.MutualInformation.scoring_function.html#tme.matching_optimization.MutualInformation.scoring_function">[docs]</a>
     <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -1101,7 +1085,6 @@ document.write(`
         <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">p_xy</span> <span class="o">*</span> <span class="n">logprob</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">score</span></div>
-</div>
 
 
 
@@ -1132,8 +1115,6 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">target_density_absent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_density</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Envelope.scoring_function">
-<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.Envelope.scoring_function.html#tme.matching_optimization.Envelope.scoring_function">[docs]</a>
     <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -1173,7 +1154,6 @@ document.write(`
         <span class="n">score</span> <span class="o">=</span> <span class="p">(</span><span class="n">score</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">min_score</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_density_present</span> <span class="o">-</span> <span class="n">min_score</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">score</span></div>
-</div>
 
 
 
@@ -1199,13 +1179,12 @@ document.write(`
 <span class="sd">    .. [1]  Daven Vasishtan and Maya Topf, &quot;Scoring functions for cryoEM density</span>
 <span class="sd">            fitting&quot;, Journal of Structural Biology, vol. 174, no. 2,</span>
 <span class="sd">            pp. 333--343, 2011. DOI: https://doi.org/10.1016/j.jsb.2011.01.012</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="NormalVectorScore.scoring_function">
-<a class="viewcode-back" href="../../reference/api/tme.matching_optimization.NormalVectorScore.scoring_function.html#tme.matching_optimization.NormalVectorScore.scoring_function">[docs]</a>
     <span class="k">def</span> <span class="nf">scoring_function</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">transformed_coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
@@ -1235,7 +1214,6 @@ document.write(`
         <span class="n">denominator</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_coordinates</span><span class="p">)</span>
         <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">score</span></div>
-</div>
 
 
 

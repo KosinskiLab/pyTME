@@ -1,4 +1,4 @@
-Preprocessor.edge\_gaussian\_filter
+﻿Preprocessor.edge\_gaussian\_filter
 ==================================================
 
 .. currentmodule:: tme.preprocessor

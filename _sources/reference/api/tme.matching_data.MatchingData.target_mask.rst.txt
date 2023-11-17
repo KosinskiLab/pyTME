@@ -1,4 +1,4 @@
-MatchingData.target\_mask
+﻿MatchingData.target\_mask
 ==========================================
 
 .. currentmodule:: tme.matching_data

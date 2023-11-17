@@ -1,5 +1,5 @@
-﻿tme.analyzer.PeakCallerScipy
-============================
+﻿PeakCallerScipy
+===============
 
 .. currentmodule:: tme.analyzer
 
@@ -7,16 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      PeakCallerScipy.__call__
-      PeakCallerScipy.call_peaks
-      PeakCallerScipy.merge
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~PeakCallerScipy.call_peaks
+      
+      
+        ~PeakCallerScipy.merge
+      
+   
+   

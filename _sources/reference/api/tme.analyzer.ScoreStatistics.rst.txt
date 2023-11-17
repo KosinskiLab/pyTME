@@ -1,5 +1,5 @@
-﻿tme.analyzer.ScoreStatistics
-============================
+﻿ScoreStatistics
+===============
 
 .. currentmodule:: tme.analyzer
 
@@ -7,17 +7,24 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      ScoreStatistics.__call__
-      ScoreStatistics.call_peaks
-      ScoreStatistics.merge
-      ScoreStatistics.set_reference
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~ScoreStatistics.call_peaks
+      
+      
+        ~ScoreStatistics.merge
+      
+      
+        ~ScoreStatistics.set_reference
+      
+   
+   

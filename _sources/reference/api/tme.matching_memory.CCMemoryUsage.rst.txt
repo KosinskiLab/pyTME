@@ -1,5 +1,5 @@
-﻿tme.matching\_memory.CCMemoryUsage
-==================================
+﻿CCMemoryUsage
+=============
 
 .. currentmodule:: tme.matching_memory
 
@@ -7,15 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      CCMemoryUsage.base_usage
-      CCMemoryUsage.per_fork
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~CCMemoryUsage.base_usage
+      
+      
+        ~CCMemoryUsage.per_fork
+      
+   
+   

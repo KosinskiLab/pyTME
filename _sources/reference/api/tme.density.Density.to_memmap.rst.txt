@@ -1,4 +1,4 @@
-Density.to\_memmap
+﻿Density.to\_memmap
 =============================
 
 .. currentmodule:: tme.density

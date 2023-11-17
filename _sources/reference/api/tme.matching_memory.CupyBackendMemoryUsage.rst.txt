@@ -1,5 +1,5 @@
-﻿tme.matching\_memory.CupyBackendMemoryUsage
-===========================================
+﻿CupyBackendMemoryUsage
+======================
 
 .. currentmodule:: tme.matching_memory
 
@@ -7,15 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      CupyBackendMemoryUsage.base_usage
-      CupyBackendMemoryUsage.per_fork
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~CupyBackendMemoryUsage.base_usage
+      
+      
+        ~CupyBackendMemoryUsage.per_fork
+      
+   
+   

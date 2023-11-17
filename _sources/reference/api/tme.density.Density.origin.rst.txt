@@ -1,4 +1,4 @@
-Density.origin
+﻿Density.origin
 ==========================
 
 .. currentmodule:: tme.density

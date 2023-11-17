@@ -1,6 +1,0 @@
-NumpyFFTWBackend.divide
-===================================================
-
-.. currentmodule:: tme.backends.npfftw_backend
-
-.. automethod:: NumpyFFTWBackend.divide

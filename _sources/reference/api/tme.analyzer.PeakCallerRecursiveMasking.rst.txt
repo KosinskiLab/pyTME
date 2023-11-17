@@ -1,5 +1,5 @@
-﻿tme.analyzer.PeakCallerRecursiveMasking
-=======================================
+﻿PeakCallerRecursiveMasking
+==========================
 
 .. currentmodule:: tme.analyzer
 
@@ -7,16 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      PeakCallerRecursiveMasking.__call__
-      PeakCallerRecursiveMasking.call_peaks
-      PeakCallerRecursiveMasking.merge
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~PeakCallerRecursiveMasking.call_peaks
+      
+      
+        ~PeakCallerRecursiveMasking.merge
+      
+   
+   

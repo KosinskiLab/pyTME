@@ -1,4 +1,4 @@
-MatchingData.subset\_array
+﻿MatchingData.subset\_array
 ===========================================
 
 .. currentmodule:: tme.matching_data

@@ -1,6 +1,0 @@
-LaplaceCrossCorrelation.scoring\_function
-==================================================================
-
-.. currentmodule:: tme.matching_optimization
-
-.. automethod:: LaplaceCrossCorrelation.scoring_function

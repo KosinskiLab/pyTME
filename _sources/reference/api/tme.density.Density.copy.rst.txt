@@ -1,4 +1,4 @@
-Density.copy
+﻿Density.copy
 ========================
 
 .. currentmodule:: tme.density

@@ -1,4 +1,4 @@
-Structure.segment\_identifier
+﻿Structure.segment\_identifier
 ==========================================
 
 .. currentmodule:: tme.structure

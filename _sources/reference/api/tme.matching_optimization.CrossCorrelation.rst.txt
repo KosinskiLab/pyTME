@@ -1,5 +1,5 @@
-﻿tme.matching\_optimization.CrossCorrelation
-===========================================
+﻿CrossCorrelation
+================
 
 .. currentmodule:: tme.matching_optimization
 
@@ -7,15 +7,18 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      CrossCorrelation.__call__
-      CrossCorrelation.scoring_function
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~CrossCorrelation.scoring_function
+      
+   
+   

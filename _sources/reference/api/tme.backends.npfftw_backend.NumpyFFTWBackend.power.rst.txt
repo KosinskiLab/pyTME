@@ -1,6 +1,0 @@
-NumpyFFTWBackend.power
-==================================================
-
-.. currentmodule:: tme.backends.npfftw_backend
-
-.. automethod:: NumpyFFTWBackend.power

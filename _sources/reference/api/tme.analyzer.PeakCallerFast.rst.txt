@@ -1,5 +1,5 @@
-﻿tme.analyzer.PeakCallerFast
-===========================
+﻿PeakCallerFast
+==============
 
 .. currentmodule:: tme.analyzer
 
@@ -7,16 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      PeakCallerFast.__call__
-      PeakCallerFast.call_peaks
-      PeakCallerFast.merge
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~PeakCallerFast.call_peaks
+      
+      
+        ~PeakCallerFast.merge
+      
+   
+   

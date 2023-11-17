@@ -1,6 +1,0 @@
-NumpyFFTWBackend.arange
-===================================================
-
-.. currentmodule:: tme.backends.npfftw_backend
-
-.. automethod:: NumpyFFTWBackend.arange

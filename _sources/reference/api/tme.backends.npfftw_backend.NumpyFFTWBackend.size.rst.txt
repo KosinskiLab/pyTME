@@ -1,6 +1,0 @@
-NumpyFFTWBackend.size
-=================================================
-
-.. currentmodule:: tme.backends.npfftw_backend
-
-.. automethod:: NumpyFFTWBackend.size

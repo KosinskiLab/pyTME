@@ -487,8 +487,6 @@ document.write(`
         <span class="n">base_attributes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">base_attributes</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MatchingBackend.free_sharedarr">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.free_sharedarr.html#tme.backends.MatchingBackend.free_sharedarr">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">free_sharedarr</span><span class="p">(</span><span class="n">link</span><span class="p">:</span> <span class="n">shared_memory</span><span class="o">.</span><span class="n">SharedMemory</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -506,11 +504,8 @@ document.write(`
             <span class="n">link</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
         <span class="c1"># Shared memory has been freed already</span>
         <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-            <span class="k">pass</span></div>
+            <span class="k">pass</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.to_backend_array">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.to_backend_array.html#tme.backends.MatchingBackend.to_backend_array">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">to_backend_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -530,11 +525,8 @@ document.write(`
 <span class="sd">        --------</span>
 <span class="sd">        :py:meth:`MatchingBackend.to_cpu_array`</span>
 <span class="sd">        :py:meth:`MatchingBackend.to_numpy_array`</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.to_numpy_array">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.to_numpy_array.html#tme.backends.MatchingBackend.to_numpy_array">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">to_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -554,11 +546,8 @@ document.write(`
 <span class="sd">        --------</span>
 <span class="sd">        :py:meth:`MatchingBackend.to_cpu_array`</span>
 <span class="sd">        :py:meth:`MatchingBackend.to_backend_array`</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.to_cpu_array">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.to_cpu_array.html#tme.backends.MatchingBackend.to_cpu_array">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">to_cpu_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -578,20 +567,14 @@ document.write(`
 <span class="sd">        --------</span>
 <span class="sd">        :py:meth:`MatchingBackend.to_numpy_array`</span>
 <span class="sd">        :py:meth:`MatchingBackend.to_backend_array`</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.free_cache">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.free_cache.html#tme.backends.MatchingBackend.free_cache">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">free_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Free cached objects allocated by backend.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.add">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.add.html#tme.backends.MatchingBackend.add">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr1</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">arr2</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -611,11 +594,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Element-wise sum of the input arrays.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.subtract">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.subtract.html#tme.backends.MatchingBackend.subtract">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">subtract</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr1</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">arr2</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="kc">None</span>
@@ -637,11 +617,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Element-wise difference of the input arrays.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.multiply">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.multiply.html#tme.backends.MatchingBackend.multiply">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr1</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">arr2</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="kc">None</span>
@@ -663,11 +640,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Element-wise product of the input arrays.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.divide">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.divide.html#tme.backends.MatchingBackend.divide">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr1</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">arr2</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="kc">None</span>
@@ -689,11 +663,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Element-wise quotient of the input arrays.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.mod">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.mod.html#tme.backends.MatchingBackend.mod">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">mod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr1</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">arr2</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -713,11 +684,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Element-wise modulus of the input arrays.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.sum">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.sum.html#tme.backends.MatchingBackend.sum">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -732,11 +700,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        Scalar</span>
 <span class="sd">            Sum of the arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.einsum">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.einsum.html#tme.backends.MatchingBackend.einsum">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">einsum</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr1</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">arr2</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="kc">None</span>
@@ -761,11 +726,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Element-wise sum of the input arrays.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.mean">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.mean.html#tme.backends.MatchingBackend.mean">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -780,11 +742,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        Scalar</span>
 <span class="sd">            Mean value of the arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.std">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.std.html#tme.backends.MatchingBackend.std">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -799,11 +758,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        Scalar</span>
 <span class="sd">            The standard deviation of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.max">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.max.html#tme.backends.MatchingBackend.max">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -818,11 +774,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        Scalar</span>
 <span class="sd">            The maximum of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.min">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.min.html#tme.backends.MatchingBackend.min">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -837,11 +790,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        Scalar</span>
 <span class="sd">            The maximum of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.maximum">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.maximum.html#tme.backends.MatchingBackend.maximum">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">maximum</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr1</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">arr2</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="kc">None</span>
@@ -860,11 +810,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Element wise maximum of arr1 and arr2.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.minimum">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.minimum.html#tme.backends.MatchingBackend.minimum">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">minimum</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr1</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">arr2</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="kc">None</span>
@@ -883,11 +830,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Element wise minimum of arr1 and arr2.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.sqrt">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.sqrt.html#tme.backends.MatchingBackend.sqrt">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -902,11 +846,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            The squared root of the array.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.square">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.square.html#tme.backends.MatchingBackend.square">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">square</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -921,11 +862,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            The squared arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.abs">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.abs.html#tme.backends.MatchingBackend.abs">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">abs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -940,11 +878,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            The absolute of the array.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.transpose">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.transpose.html#tme.backends.MatchingBackend.transpose">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -959,11 +894,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            The transpose of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.power">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.power.html#tme.backends.MatchingBackend.power">[docs]</a>
     <span class="k">def</span> <span class="nf">power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the n-th power of an array.</span>
@@ -972,11 +904,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            The n-th power of the array</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.tobytes">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.tobytes.html#tme.backends.MatchingBackend.tobytes">[docs]</a>
     <span class="k">def</span> <span class="nf">tobytes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the bytestring representation of arr.</span>
@@ -990,11 +919,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
 <span class="sd">            Bytestring representation of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.size">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.size.html#tme.backends.MatchingBackend.size">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1009,11 +935,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        int</span>
 <span class="sd">            The number of elements in arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.fill">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.fill.html#tme.backends.MatchingBackend.fill">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1030,11 +953,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            The array filled with the given value.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.zeros">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.zeros.html#tme.backends.MatchingBackend.zeros">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">zeros</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1051,11 +971,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Byte-aligned array of zeros with specified shape and dtype.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.full">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.full.html#tme.backends.MatchingBackend.full">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">full</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1072,11 +989,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Byte-aligned array of zeros with specified shape and dtype.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.eps">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.eps.html#tme.backends.MatchingBackend.eps">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">eps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1092,11 +1006,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        Scalar</span>
 <span class="sd">            The eps for the given data type</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.datatype_bytes">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.datatype_bytes.html#tme.backends.MatchingBackend.datatype_bytes">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">datatype_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1117,11 +1028,8 @@ document.write(`
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; MatchingBackend.datatype_bytes(np.float32)</span>
 <span class="sd">        4</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.clip">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.clip.html#tme.backends.MatchingBackend.clip">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">clip</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">a_min</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">a_max</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1144,11 +1052,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Clipped arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.flip">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.flip.html#tme.backends.MatchingBackend.flip">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">flip</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">a_min</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">a_max</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1165,11 +1070,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Flipped version of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.astype">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.astype.html#tme.backends.MatchingBackend.astype">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">astype</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1186,11 +1088,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Flipped version of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.arange">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.arange.html#tme.backends.MatchingBackend.arange">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">arange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1207,11 +1106,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Flipped version of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.stack">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.stack.html#tme.backends.MatchingBackend.stack">[docs]</a>
     <span class="k">def</span> <span class="nf">stack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Join a sequence of ArrayLike objects along a specified axis.</span>
@@ -1220,11 +1116,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            The joined input objects.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.concatenate">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.concatenate.html#tme.backends.MatchingBackend.concatenate">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">concatenate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1239,11 +1132,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Concatenated input arrays</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.repeat">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.repeat.html#tme.backends.MatchingBackend.repeat">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1258,11 +1148,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Repeated input array</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.topk_indices">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.topk_indices.html#tme.backends.MatchingBackend.topk_indices">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">topk_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1279,11 +1166,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Flipped version of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.indices">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.indices.html#tme.backends.MatchingBackend.indices">[docs]</a>
     <span class="k">def</span> <span class="nf">indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates an array representing the index grid of an input.</span>
@@ -1292,11 +1176,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            The index grid.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.roll">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.roll.html#tme.backends.MatchingBackend.roll">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">roll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1324,11 +1205,8 @@ document.write(`
 <span class="sd">        &gt;&gt;&gt; x = np.array([1, 2, 3, 4, 5])</span>
 <span class="sd">        &gt;&gt;&gt; np.roll(x, 2)</span>
 <span class="sd">        array([4, 5, 1, 2, 3])</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.unique">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.unique.html#tme.backends.MatchingBackend.unique">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">unique</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1359,11 +1237,8 @@ document.write(`
 <span class="sd">        &gt;&gt;&gt; x = np.array([1, 2, 3, 2, 3, 4])</span>
 <span class="sd">        &gt;&gt;&gt; np.unique(x)</span>
 <span class="sd">        array([1, 2, 3, 4])</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.argsort">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.argsort.html#tme.backends.MatchingBackend.argsort">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">argsort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1380,11 +1255,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Flipped version of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.unravel_index">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.unravel_index.html#tme.backends.MatchingBackend.unravel_index">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">unravel_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1401,11 +1273,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Flipped version of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.tril_indices">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.tril_indices.html#tme.backends.MatchingBackend.tril_indices">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">tril_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1422,11 +1291,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Flipped version of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.max_filter_coordinates">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.max_filter_coordinates.html#tme.backends.MatchingBackend.max_filter_coordinates">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">max_filter_coordinates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
@@ -1445,11 +1311,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Identified local maxima.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.preallocate_array">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.preallocate_array.html#tme.backends.MatchingBackend.preallocate_array">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">preallocate_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1466,11 +1329,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Byte-aligned array of zeros with specified shape and dtype.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.sharedarr_to_arr">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.sharedarr_to_arr.html#tme.backends.MatchingBackend.sharedarr_to_arr">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">sharedarr_to_arr</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shm</span><span class="p">:</span> <span class="n">shared_memory</span><span class="o">.</span><span class="n">SharedMemory</span>
@@ -1491,11 +1351,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Array of the specified shape and dtype from the shared memory location.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.arr_to_sharedarr">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.arr_to_sharedarr.html#tme.backends.MatchingBackend.arr_to_sharedarr">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">arr_to_sharedarr</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1514,11 +1371,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        shared_memory.SharedMemory</span>
 <span class="sd">            The shared memory object containing the numpy array.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.topleft_pad">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.topleft_pad.html#tme.backends.MatchingBackend.topleft_pad">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">topleft_pad</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">padval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1540,11 +1394,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Array that has been padded to the specified shape.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.build_fft">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.build_fft.html#tme.backends.MatchingBackend.build_fft">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">build_fft</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1581,11 +1432,8 @@ document.write(`
 <span class="sd">        tuple</span>
 <span class="sd">            Tuple containing function pointers for forward and inverse real</span>
 <span class="sd">            fourier transform</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.extract_center">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.extract_center.html#tme.backends.MatchingBackend.extract_center">[docs]</a>
     <span class="k">def</span> <span class="nf">extract_center</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">newshape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Extract the centered portion of an array based on a new shape.</span>
@@ -1601,11 +1449,8 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Central portion of the array with shape `newshape`.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.compute_convolution_shapes">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.compute_convolution_shapes.html#tme.backends.MatchingBackend.compute_convolution_shapes">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">compute_convolution_shapes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">arr1_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">arr2_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
@@ -1626,11 +1471,8 @@ document.write(`
 <span class="sd">            Tuple with regular convolution shape, convolution shape optimized for faster</span>
 <span class="sd">            fourier transform, shape of the forward fourier transform</span>
 <span class="sd">            (see :py:meth:`build_fft`).</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.rotate_array">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.rotate_array.html#tme.backends.MatchingBackend.rotate_array">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">rotate_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1645,22 +1487,16 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Transformed version of arr.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.get_available_memory">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.get_available_memory.html#tme.backends.MatchingBackend.get_available_memory">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_available_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the available memory available for computations in bytes. For CPU</span>
 <span class="sd">        operations this corresponds to available RAM. For GPU operations the function</span>
 <span class="sd">        is expected to return the available GPU memory.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.reverse">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.reverse.html#tme.backends.MatchingBackend.reverse">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">reverse</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1675,26 +1511,19 @@ document.write(`
 <span class="sd">        -------</span>
 <span class="sd">        ArrayLike</span>
 <span class="sd">            Reversed array.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.set_device">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.set_device.html#tme.backends.MatchingBackend.set_device">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">set_device</span><span class="p">(</span><span class="n">device_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the active device context and operate as context manager for it</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="MatchingBackend.device_count">
-<a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.device_count.html#tme.backends.MatchingBackend.device_count">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">device_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the number of available compute devices.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
-</div>
 
 </pre></div>
 

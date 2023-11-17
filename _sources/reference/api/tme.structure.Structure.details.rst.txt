@@ -1,4 +1,4 @@
-Structure.details
+﻿Structure.details
 ===============================
 
 .. currentmodule:: tme.structure

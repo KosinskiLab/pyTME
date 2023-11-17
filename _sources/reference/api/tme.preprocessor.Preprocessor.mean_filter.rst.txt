@@ -1,4 +1,4 @@
-Preprocessor.mean\_filter
+﻿Preprocessor.mean\_filter
 =========================================
 
 .. currentmodule:: tme.preprocessor

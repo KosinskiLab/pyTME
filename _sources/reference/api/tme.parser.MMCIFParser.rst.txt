@@ -1,5 +1,5 @@
-﻿tme.parser.MMCIFParser
-======================
+﻿MMCIFParser
+===========
 
 .. currentmodule:: tme.parser
 
@@ -7,18 +7,30 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      MMCIFParser.get
-      MMCIFParser.items
-      MMCIFParser.keys
-      MMCIFParser.parse_input
-      MMCIFParser.values
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~MMCIFParser.get
+      
+      
+        ~MMCIFParser.items
+      
+      
+        ~MMCIFParser.keys
+      
+      
+        ~MMCIFParser.parse_input
+      
+      
+        ~MMCIFParser.values
+      
+   
+   

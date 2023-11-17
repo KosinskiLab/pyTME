@@ -1,4 +1,4 @@
-Density.from\_file
+﻿Density.from\_file
 =============================
 
 .. currentmodule:: tme.density

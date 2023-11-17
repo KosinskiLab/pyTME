@@ -1,5 +1,5 @@
-﻿tme.analyzer.MemmapHandler
-==========================
+﻿MemmapHandler
+=============
 
 .. currentmodule:: tme.analyzer
 
@@ -7,16 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      MemmapHandler.__call__
-      MemmapHandler.merge
-      MemmapHandler.update_indices
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~MemmapHandler.merge
+      
+      
+        ~MemmapHandler.update_indices
+      
+   
+   

@@ -1,5 +1,5 @@
-﻿tme.matching\_memory.CAMMemoryUsage
-===================================
+﻿CAMMemoryUsage
+==============
 
 .. currentmodule:: tme.matching_memory
 
@@ -7,15 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      CAMMemoryUsage.base_usage
-      CAMMemoryUsage.per_fork
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~CAMMemoryUsage.base_usage
+      
+      
+        ~CAMMemoryUsage.per_fork
+      
+   
+   

@@ -1,6 +1,0 @@
-CupyBackend.free\_sharedarr
-=======================================
-
-.. currentmodule:: tme.backends
-
-.. automethod:: CupyBackend.free_sharedarr

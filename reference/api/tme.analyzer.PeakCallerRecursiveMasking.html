@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>tme.analyzer.PeakCallerRecursiveMasking &#8212; pytme 0.1 documentation</title>
+    <title>PeakCallerRecursiveMasking &#8212; pytme 0.1 documentation</title>
   
   
   
@@ -48,8 +48,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/tme.analyzer.PeakCallerRecursiveMasking';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="PeakCallerRecursiveMasking.__call__" href="tme.analyzer.PeakCallerRecursiveMasking.__call__.html" />
-    <link rel="prev" title="PeakCallerFast.merge" href="tme.analyzer.PeakCallerFast.merge.html" />
+    <link rel="next" title="PeakCallerScipy" href="tme.analyzer.PeakCallerScipy.html" />
+    <link rel="prev" title="PeakCallerFast" href="tme.analyzer.PeakCallerFast.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -325,7 +325,7 @@ document.write(`
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../data_structure.html">Data structures</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../density.html">Density</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.density.Density.html">tme.density.Density</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.density.Density.html">Density</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.density.Density.data.html">Density.data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.density.Density.origin.html">Density.origin</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.density.Density.sampling_rate.html">Density.sampling_rate</a></li>
@@ -360,7 +360,7 @@ document.write(`
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../structure.html">Structure</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.structure.Structure.html">tme.structure.Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.structure.Structure.html">Structure</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.structure.Structure.record_type.html">Structure.record_type</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.structure.Structure.atom_serial_number.html">Structure.atom_serial_number</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.structure.Structure.atom_name.html">Structure.atom_name</a></li>
@@ -391,7 +391,7 @@ document.write(`
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../matching_data.html">MatchingData</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_data.MatchingData.html">tme.matching_data.MatchingData</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_data.MatchingData.html">MatchingData</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_data.MatchingData.to_backend.html">MatchingData.to_backend</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_data.MatchingData.target.html">MatchingData.target</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_data.MatchingData.template.html">MatchingData.template</a></li>
@@ -406,7 +406,7 @@ document.write(`
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../preprocessing.html">Preprocessing</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../preprocessor.html">Preprocessor</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.html">tme.preprocessor.Preprocessor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.html">Preprocessor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.wedge_mask.html">Preprocessor.wedge_mask</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.continuous_wedge_mask.html">Preprocessor.continuous_wedge_mask</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.gaussian_filter.html">Preprocessor.gaussian_filter</a></li>
@@ -434,21 +434,21 @@ document.write(`
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../template_matching.html">Template matching</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../matching_optimization.html">Non-exhaustive</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FitRefinement.html">tme.matching_optimization.FitRefinement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FitRefinement.html">FitRefinement</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FitRefinement.refine.html">FitRefinement.refine</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FitRefinement.array_from_coordinates.html">FitRefinement.array_from_coordinates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FitRefinement.map_coordinates_to_array.html">FitRefinement.map_coordinates_to_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.CrossCorrelation.html">tme.matching_optimization.CrossCorrelation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.LaplaceCrossCorrelation.html">tme.matching_optimization.LaplaceCrossCorrelation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.NormalizedCrossCorrelation.html">tme.matching_optimization.NormalizedCrossCorrelation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.NormalizedCrossCorrelationMean.html">tme.matching_optimization.NormalizedCrossCorrelationMean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.MaskedCrossCorrelation.html">tme.matching_optimization.MaskedCrossCorrelation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.PartialLeastSquareDifference.html">tme.matching_optimization.PartialLeastSquareDifference</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.Chamfer.html">tme.matching_optimization.Chamfer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.MutualInformation.html">tme.matching_optimization.MutualInformation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.Envelope.html">tme.matching_optimization.Envelope</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.NormalVectorScore.html">tme.matching_optimization.NormalVectorScore</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.MatchCoordinatesToDensity.html">tme.matching_optimization.MatchCoordinatesToDensity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.CrossCorrelation.html">CrossCorrelation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.LaplaceCrossCorrelation.html">LaplaceCrossCorrelation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.NormalizedCrossCorrelation.html">NormalizedCrossCorrelation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.NormalizedCrossCorrelationMean.html">NormalizedCrossCorrelationMean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.MaskedCrossCorrelation.html">MaskedCrossCorrelation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.PartialLeastSquareDifference.html">PartialLeastSquareDifference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.Chamfer.html">Chamfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.MutualInformation.html">MutualInformation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.Envelope.html">Envelope</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.MatchCoordinatesToDensity.html">MatchCoordinatesToDensity</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../matching_exhaustive.html">Exhaustive</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -490,609 +490,55 @@ document.write(`
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../matching_memory.html">Memory Usage</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.estimate_ram_usage.html">estimate_ram_usage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.MatchingMemoryUsage.html">tme.matching_memory.MatchingMemoryUsage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.CCMemoryUsage.html">tme.matching_memory.CCMemoryUsage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.LCCMemoryUsage.html">tme.matching_memory.LCCMemoryUsage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.CORRMemoryUsage.html">tme.matching_memory.CORRMemoryUsage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.CAMMemoryUsage.html">tme.matching_memory.CAMMemoryUsage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.FLCSphericalMaskMemoryUsage.html">tme.matching_memory.FLCSphericalMaskMemoryUsage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.FLCMemoryUsage.html">tme.matching_memory.FLCMemoryUsage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.MCCMemoryUsage.html">tme.matching_memory.MCCMemoryUsage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.MaxScoreOverRotationsMemoryUsage.html">tme.matching_memory.MaxScoreOverRotationsMemoryUsage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.PeakCallerMaximumFilterMemoryUsage.html">tme.matching_memory.PeakCallerMaximumFilterMemoryUsage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.CupyBackendMemoryUsage.html">tme.matching_memory.CupyBackendMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.MatchingMemoryUsage.html">MatchingMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.CCMemoryUsage.html">CCMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.LCCMemoryUsage.html">LCCMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.CORRMemoryUsage.html">CORRMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.CAMMemoryUsage.html">CAMMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.FLCSphericalMaskMemoryUsage.html">FLCSphericalMaskMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.FLCMemoryUsage.html">FLCMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.MCCMemoryUsage.html">MCCMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.MaxScoreOverRotationsMemoryUsage.html">MaxScoreOverRotationsMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.PeakCallerMaximumFilterMemoryUsage.html">PeakCallerMaximumFilterMemoryUsage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.CupyBackendMemoryUsage.html">CupyBackendMemoryUsage</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../analyzer.html">Template matching score analysis</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.MemmapHandler.html">tme.analyzer.MemmapHandler</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MemmapHandler.__call__.html">MemmapHandler.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MemmapHandler.merge.html">MemmapHandler.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MemmapHandler.update_indices.html">MemmapHandler.update_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MemmapHandler.__call__.html">MemmapHandler.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MemmapHandler.merge.html">MemmapHandler.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MemmapHandler.update_indices.html">MemmapHandler.update_indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.analyzer.MemmapHandler.html">MemmapHandler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.html">MaxScoreOverRotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.analyzer.PeakCaller.html">PeakCaller</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.analyzer.PeakCallerSort.html">PeakCallerSort</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.html">PeakCallerMaximumFilter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.analyzer.PeakCallerFast.html">PeakCallerFast</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">PeakCallerRecursiveMasking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.html">PeakCallerScipy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.analyzer.ScoreStatistics.html">ScoreStatistics</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.html">tme.analyzer.MaxScoreOverRotations</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.__call__.html">MaxScoreOverRotations.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.merge.html">MaxScoreOverRotations.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.__call__.html">MaxScoreOverRotations.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.merge.html">MaxScoreOverRotations.merge</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCaller.html">tme.analyzer.PeakCaller</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.__call__.html">PeakCaller.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.call_peaks.html">PeakCaller.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.merge.html">PeakCaller.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.__call__.html">PeakCaller.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.call_peaks.html">PeakCaller.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.merge.html">PeakCaller.merge</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerSort.html">tme.analyzer.PeakCallerSort</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.__call__.html">PeakCallerSort.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.call_peaks.html">PeakCallerSort.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.merge.html">PeakCallerSort.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.__call__.html">PeakCallerSort.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.call_peaks.html">PeakCallerSort.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.merge.html">PeakCallerSort.merge</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.html">tme.analyzer.PeakCallerMaximumFilter</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.__call__.html">PeakCallerMaximumFilter.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.call_peaks.html">PeakCallerMaximumFilter.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.merge.html">PeakCallerMaximumFilter.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.__call__.html">PeakCallerMaximumFilter.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.call_peaks.html">PeakCallerMaximumFilter.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.merge.html">PeakCallerMaximumFilter.merge</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerFast.html">tme.analyzer.PeakCallerFast</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.__call__.html">PeakCallerFast.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.call_peaks.html">PeakCallerFast.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.merge.html">PeakCallerFast.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.__call__.html">PeakCallerFast.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.call_peaks.html">PeakCallerFast.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.merge.html">PeakCallerFast.merge</a></li>
-</ul>
-</li>
-<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">tme.analyzer.PeakCallerRecursiveMasking</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.__call__.html">PeakCallerRecursiveMasking.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.call_peaks.html">PeakCallerRecursiveMasking.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.merge.html">PeakCallerRecursiveMasking.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.__call__.html">PeakCallerRecursiveMasking.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.call_peaks.html">PeakCallerRecursiveMasking.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.merge.html">PeakCallerRecursiveMasking.merge</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.html">tme.analyzer.PeakCallerScipy</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.__call__.html">PeakCallerScipy.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.call_peaks.html">PeakCallerScipy.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.merge.html">PeakCallerScipy.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.__call__.html">PeakCallerScipy.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.call_peaks.html">PeakCallerScipy.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.merge.html">PeakCallerScipy.merge</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.ScoreStatistics.html">tme.analyzer.ScoreStatistics</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.__call__.html">ScoreStatistics.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.call_peaks.html">ScoreStatistics.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.merge.html">ScoreStatistics.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.set_reference.html">ScoreStatistics.set_reference</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.__call__.html">ScoreStatistics.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.call_peaks.html">ScoreStatistics.call_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.merge.html">ScoreStatistics.merge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.set_reference.html">ScoreStatistics.set_reference</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../utilities.html">Utilities</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-22"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../utilities.html">Utilities</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../helpers.html">Helpers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../extensions.html">Extensions</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../parser.html">Parser</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-23"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.parser.Parser.html">tme.parser.Parser</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../parser.html">Parser</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="tme.parser.Parser.html">Parser</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.parser.Parser.get.html">Parser.get</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.parser.Parser.keys.html">Parser.keys</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.parser.Parser.values.html">Parser.values</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.parser.Parser.items.html">Parser.items</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.parser.Parser.parse_input.html">Parser.parse_input</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.parser.PDBParser.html">tme.parser.PDBParser</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.parser.MMCIFParser.html">tme.parser.MMCIFParser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.parser.PDBParser.html">PDBParser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.parser.MMCIFParser.html">MMCIFParser</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../backends.html">Backends</a><input class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-24"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.BackendManager.html">tme.backends.BackendManager</a><input class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-25"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.BackendManager.add_backend.html">BackendManager.add_backend</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.BackendManager.change_backend.html">BackendManager.change_backend</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.BackendManager.add_backend.html">BackendManager.add_backend</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.BackendManager.change_backend.html">BackendManager.change_backend</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.MatchingBackend.html">tme.backends.MatchingBackend</a><input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-26"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.abs.html">MatchingBackend.abs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.add.html">MatchingBackend.add</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.arange.html">MatchingBackend.arange</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.argsort.html">MatchingBackend.argsort</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.arr_to_sharedarr.html">MatchingBackend.arr_to_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.astype.html">MatchingBackend.astype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.build_fft.html">MatchingBackend.build_fft</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.clip.html">MatchingBackend.clip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.compute_convolution_shapes.html">MatchingBackend.compute_convolution_shapes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.concatenate.html">MatchingBackend.concatenate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.datatype_bytes.html">MatchingBackend.datatype_bytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.device_count.html">MatchingBackend.device_count</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.divide.html">MatchingBackend.divide</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.einsum.html">MatchingBackend.einsum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.eps.html">MatchingBackend.eps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.extract_center.html">MatchingBackend.extract_center</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.fill.html">MatchingBackend.fill</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.flip.html">MatchingBackend.flip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.free_cache.html">MatchingBackend.free_cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.free_sharedarr.html">MatchingBackend.free_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.full.html">MatchingBackend.full</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.get_available_memory.html">MatchingBackend.get_available_memory</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.indices.html">MatchingBackend.indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.max.html">MatchingBackend.max</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.max_filter_coordinates.html">MatchingBackend.max_filter_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.maximum.html">MatchingBackend.maximum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.mean.html">MatchingBackend.mean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.min.html">MatchingBackend.min</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.minimum.html">MatchingBackend.minimum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.mod.html">MatchingBackend.mod</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.multiply.html">MatchingBackend.multiply</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.power.html">MatchingBackend.power</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.preallocate_array.html">MatchingBackend.preallocate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.repeat.html">MatchingBackend.repeat</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.reverse.html">MatchingBackend.reverse</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.roll.html">MatchingBackend.roll</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.rotate_array.html">MatchingBackend.rotate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.set_device.html">MatchingBackend.set_device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.sharedarr_to_arr.html">MatchingBackend.sharedarr_to_arr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.size.html">MatchingBackend.size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.sqrt.html">MatchingBackend.sqrt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.square.html">MatchingBackend.square</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.stack.html">MatchingBackend.stack</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.std.html">MatchingBackend.std</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.subtract.html">MatchingBackend.subtract</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.sum.html">MatchingBackend.sum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.to_backend_array.html">MatchingBackend.to_backend_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.to_cpu_array.html">MatchingBackend.to_cpu_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.to_numpy_array.html">MatchingBackend.to_numpy_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.tobytes.html">MatchingBackend.tobytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.topk_indices.html">MatchingBackend.topk_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.topleft_pad.html">MatchingBackend.topleft_pad</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.transpose.html">MatchingBackend.transpose</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.tril_indices.html">MatchingBackend.tril_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.unique.html">MatchingBackend.unique</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.unravel_index.html">MatchingBackend.unravel_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.zeros.html">MatchingBackend.zeros</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.abs.html">MatchingBackend.abs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.add.html">MatchingBackend.add</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.arange.html">MatchingBackend.arange</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.argsort.html">MatchingBackend.argsort</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.arr_to_sharedarr.html">MatchingBackend.arr_to_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.astype.html">MatchingBackend.astype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.build_fft.html">MatchingBackend.build_fft</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.clip.html">MatchingBackend.clip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.compute_convolution_shapes.html">MatchingBackend.compute_convolution_shapes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.concatenate.html">MatchingBackend.concatenate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.datatype_bytes.html">MatchingBackend.datatype_bytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.device_count.html">MatchingBackend.device_count</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.divide.html">MatchingBackend.divide</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.einsum.html">MatchingBackend.einsum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.eps.html">MatchingBackend.eps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.extract_center.html">MatchingBackend.extract_center</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.fill.html">MatchingBackend.fill</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.flip.html">MatchingBackend.flip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.free_cache.html">MatchingBackend.free_cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.free_sharedarr.html">MatchingBackend.free_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.full.html">MatchingBackend.full</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.get_available_memory.html">MatchingBackend.get_available_memory</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.indices.html">MatchingBackend.indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.max.html">MatchingBackend.max</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.max_filter_coordinates.html">MatchingBackend.max_filter_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.maximum.html">MatchingBackend.maximum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.mean.html">MatchingBackend.mean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.min.html">MatchingBackend.min</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.minimum.html">MatchingBackend.minimum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.mod.html">MatchingBackend.mod</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.multiply.html">MatchingBackend.multiply</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.power.html">MatchingBackend.power</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.preallocate_array.html">MatchingBackend.preallocate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.repeat.html">MatchingBackend.repeat</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.reverse.html">MatchingBackend.reverse</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.roll.html">MatchingBackend.roll</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.rotate_array.html">MatchingBackend.rotate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.set_device.html">MatchingBackend.set_device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.sharedarr_to_arr.html">MatchingBackend.sharedarr_to_arr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.size.html">MatchingBackend.size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.sqrt.html">MatchingBackend.sqrt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.square.html">MatchingBackend.square</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.stack.html">MatchingBackend.stack</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.std.html">MatchingBackend.std</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.subtract.html">MatchingBackend.subtract</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.sum.html">MatchingBackend.sum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.to_backend_array.html">MatchingBackend.to_backend_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.to_cpu_array.html">MatchingBackend.to_cpu_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.to_numpy_array.html">MatchingBackend.to_numpy_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.tobytes.html">MatchingBackend.tobytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.topk_indices.html">MatchingBackend.topk_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.topleft_pad.html">MatchingBackend.topleft_pad</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.transpose.html">MatchingBackend.transpose</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.tril_indices.html">MatchingBackend.tril_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.unique.html">MatchingBackend.unique</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.unravel_index.html">MatchingBackend.unravel_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.zeros.html">MatchingBackend.zeros</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.html">tme.backends.NumpyFFTWBackend</a><input class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-27"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.abs.html">NumpyFFTWBackend.abs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.add.html">NumpyFFTWBackend.add</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.arange.html">NumpyFFTWBackend.arange</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.argsort.html">NumpyFFTWBackend.argsort</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.arr_to_sharedarr.html">NumpyFFTWBackend.arr_to_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.astype.html">NumpyFFTWBackend.astype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.build_fft.html">NumpyFFTWBackend.build_fft</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.center_of_mass.html">NumpyFFTWBackend.center_of_mass</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.clip.html">NumpyFFTWBackend.clip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.compute_convolution_shapes.html">NumpyFFTWBackend.compute_convolution_shapes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.concatenate.html">NumpyFFTWBackend.concatenate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.datatype_bytes.html">NumpyFFTWBackend.datatype_bytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.device_count.html">NumpyFFTWBackend.device_count</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.divide.html">NumpyFFTWBackend.divide</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.einsum.html">NumpyFFTWBackend.einsum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.eps.html">NumpyFFTWBackend.eps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.extract_center.html">NumpyFFTWBackend.extract_center</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.fill.html">NumpyFFTWBackend.fill</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.flip.html">NumpyFFTWBackend.flip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.free_cache.html">NumpyFFTWBackend.free_cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.free_sharedarr.html">NumpyFFTWBackend.free_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.full.html">NumpyFFTWBackend.full</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_available_memory.html">NumpyFFTWBackend.get_available_memory</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.maximum.html">NumpyFFTWBackend.maximum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.mean.html">NumpyFFTWBackend.mean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.min.html">NumpyFFTWBackend.min</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.minimum.html">NumpyFFTWBackend.minimum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.mod.html">NumpyFFTWBackend.mod</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.multiply.html">NumpyFFTWBackend.multiply</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.power.html">NumpyFFTWBackend.power</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.preallocate_array.html">NumpyFFTWBackend.preallocate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.repeat.html">NumpyFFTWBackend.repeat</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.reverse.html">NumpyFFTWBackend.reverse</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.roll.html">NumpyFFTWBackend.roll</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.rotate_array.html">NumpyFFTWBackend.rotate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.rotate_array_coordinates.html">NumpyFFTWBackend.rotate_array_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.set_device.html">NumpyFFTWBackend.set_device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.sharedarr_to_arr.html">NumpyFFTWBackend.sharedarr_to_arr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.size.html">NumpyFFTWBackend.size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.sqrt.html">NumpyFFTWBackend.sqrt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.square.html">NumpyFFTWBackend.square</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.stack.html">NumpyFFTWBackend.stack</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.std.html">NumpyFFTWBackend.std</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.subtract.html">NumpyFFTWBackend.subtract</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.sum.html">NumpyFFTWBackend.sum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.to_backend_array.html">NumpyFFTWBackend.to_backend_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.to_cpu_array.html">NumpyFFTWBackend.to_cpu_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.to_numpy_array.html">NumpyFFTWBackend.to_numpy_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.tobytes.html">NumpyFFTWBackend.tobytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.topk_indices.html">NumpyFFTWBackend.topk_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.topleft_pad.html">NumpyFFTWBackend.topleft_pad</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.transpose.html">NumpyFFTWBackend.transpose</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.tril_indices.html">NumpyFFTWBackend.tril_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.unique.html">NumpyFFTWBackend.unique</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.unravel_index.html">NumpyFFTWBackend.unravel_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.zeros.html">NumpyFFTWBackend.zeros</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.abs.html">NumpyFFTWBackend.abs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.add.html">NumpyFFTWBackend.add</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.arange.html">NumpyFFTWBackend.arange</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.argsort.html">NumpyFFTWBackend.argsort</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.arr_to_sharedarr.html">NumpyFFTWBackend.arr_to_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.astype.html">NumpyFFTWBackend.astype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.build_fft.html">NumpyFFTWBackend.build_fft</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.center_of_mass.html">NumpyFFTWBackend.center_of_mass</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.clip.html">NumpyFFTWBackend.clip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.compute_convolution_shapes.html">NumpyFFTWBackend.compute_convolution_shapes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.concatenate.html">NumpyFFTWBackend.concatenate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.datatype_bytes.html">NumpyFFTWBackend.datatype_bytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.device_count.html">NumpyFFTWBackend.device_count</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.divide.html">NumpyFFTWBackend.divide</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.einsum.html">NumpyFFTWBackend.einsum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.eps.html">NumpyFFTWBackend.eps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.extract_center.html">NumpyFFTWBackend.extract_center</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.fill.html">NumpyFFTWBackend.fill</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.flip.html">NumpyFFTWBackend.flip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.free_cache.html">NumpyFFTWBackend.free_cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.free_sharedarr.html">NumpyFFTWBackend.free_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.full.html">NumpyFFTWBackend.full</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_available_memory.html">NumpyFFTWBackend.get_available_memory</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.maximum.html">NumpyFFTWBackend.maximum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.mean.html">NumpyFFTWBackend.mean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.min.html">NumpyFFTWBackend.min</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.minimum.html">NumpyFFTWBackend.minimum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.mod.html">NumpyFFTWBackend.mod</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.multiply.html">NumpyFFTWBackend.multiply</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.power.html">NumpyFFTWBackend.power</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.preallocate_array.html">NumpyFFTWBackend.preallocate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.repeat.html">NumpyFFTWBackend.repeat</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.reverse.html">NumpyFFTWBackend.reverse</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.roll.html">NumpyFFTWBackend.roll</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.rotate_array.html">NumpyFFTWBackend.rotate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.rotate_array_coordinates.html">NumpyFFTWBackend.rotate_array_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.set_device.html">NumpyFFTWBackend.set_device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.sharedarr_to_arr.html">NumpyFFTWBackend.sharedarr_to_arr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.size.html">NumpyFFTWBackend.size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.sqrt.html">NumpyFFTWBackend.sqrt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.square.html">NumpyFFTWBackend.square</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.stack.html">NumpyFFTWBackend.stack</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.std.html">NumpyFFTWBackend.std</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.subtract.html">NumpyFFTWBackend.subtract</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.sum.html">NumpyFFTWBackend.sum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.to_backend_array.html">NumpyFFTWBackend.to_backend_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.to_cpu_array.html">NumpyFFTWBackend.to_cpu_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.to_numpy_array.html">NumpyFFTWBackend.to_numpy_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.tobytes.html">NumpyFFTWBackend.tobytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.topk_indices.html">NumpyFFTWBackend.topk_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.topleft_pad.html">NumpyFFTWBackend.topleft_pad</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.transpose.html">NumpyFFTWBackend.transpose</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.tril_indices.html">NumpyFFTWBackend.tril_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.unique.html">NumpyFFTWBackend.unique</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.unravel_index.html">NumpyFFTWBackend.unravel_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.zeros.html">NumpyFFTWBackend.zeros</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.PytorchBackend.html">tme.backends.PytorchBackend</a><input class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-28"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.abs.html">PytorchBackend.abs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.add.html">PytorchBackend.add</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.arange.html">PytorchBackend.arange</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.argsort.html">PytorchBackend.argsort</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.arr_to_sharedarr.html">PytorchBackend.arr_to_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.astype.html">PytorchBackend.astype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.build_fft.html">PytorchBackend.build_fft</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.center_of_mass.html">PytorchBackend.center_of_mass</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.clip.html">PytorchBackend.clip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.compute_convolution_shapes.html">PytorchBackend.compute_convolution_shapes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.concatenate.html">PytorchBackend.concatenate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.datatype_bytes.html">PytorchBackend.datatype_bytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.device_count.html">PytorchBackend.device_count</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.divide.html">PytorchBackend.divide</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.einsum.html">PytorchBackend.einsum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.eps.html">PytorchBackend.eps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.extract_center.html">PytorchBackend.extract_center</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.fill.html">PytorchBackend.fill</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.flip.html">PytorchBackend.flip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.free_cache.html">PytorchBackend.free_cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.free_sharedarr.html">PytorchBackend.free_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.full.html">PytorchBackend.full</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_available_memory.html">PytorchBackend.get_available_memory</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.indices.html">PytorchBackend.indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max.html">PytorchBackend.max</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max_filter_coordinates.html">PytorchBackend.max_filter_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.maximum.html">PytorchBackend.maximum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.mean.html">PytorchBackend.mean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.min.html">PytorchBackend.min</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.minimum.html">PytorchBackend.minimum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.mod.html">PytorchBackend.mod</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.multiply.html">PytorchBackend.multiply</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.power.html">PytorchBackend.power</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.preallocate_array.html">PytorchBackend.preallocate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.repeat.html">PytorchBackend.repeat</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.reverse.html">PytorchBackend.reverse</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.roll.html">PytorchBackend.roll</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.rotate_array.html">PytorchBackend.rotate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.rotate_array_coordinates.html">PytorchBackend.rotate_array_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.set_device.html">PytorchBackend.set_device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.sharedarr_to_arr.html">PytorchBackend.sharedarr_to_arr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.size.html">PytorchBackend.size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.sqrt.html">PytorchBackend.sqrt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.square.html">PytorchBackend.square</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.stack.html">PytorchBackend.stack</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.std.html">PytorchBackend.std</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.subtract.html">PytorchBackend.subtract</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.sum.html">PytorchBackend.sum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.to_backend_array.html">PytorchBackend.to_backend_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.to_cpu_array.html">PytorchBackend.to_cpu_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.to_numpy_array.html">PytorchBackend.to_numpy_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.tobytes.html">PytorchBackend.tobytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.topk_indices.html">PytorchBackend.topk_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.topleft_pad.html">PytorchBackend.topleft_pad</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.transpose.html">PytorchBackend.transpose</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.tril_indices.html">PytorchBackend.tril_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.unique.html">PytorchBackend.unique</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.unravel_index.html">PytorchBackend.unravel_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.zeros.html">PytorchBackend.zeros</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.abs.html">PytorchBackend.abs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.add.html">PytorchBackend.add</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.arange.html">PytorchBackend.arange</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.argsort.html">PytorchBackend.argsort</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.arr_to_sharedarr.html">PytorchBackend.arr_to_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.astype.html">PytorchBackend.astype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.build_fft.html">PytorchBackend.build_fft</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.center_of_mass.html">PytorchBackend.center_of_mass</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.clip.html">PytorchBackend.clip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.compute_convolution_shapes.html">PytorchBackend.compute_convolution_shapes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.concatenate.html">PytorchBackend.concatenate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.datatype_bytes.html">PytorchBackend.datatype_bytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.device_count.html">PytorchBackend.device_count</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.divide.html">PytorchBackend.divide</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.einsum.html">PytorchBackend.einsum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.eps.html">PytorchBackend.eps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.extract_center.html">PytorchBackend.extract_center</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.fill.html">PytorchBackend.fill</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.flip.html">PytorchBackend.flip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.free_cache.html">PytorchBackend.free_cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.free_sharedarr.html">PytorchBackend.free_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.full.html">PytorchBackend.full</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_available_memory.html">PytorchBackend.get_available_memory</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.indices.html">PytorchBackend.indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max.html">PytorchBackend.max</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max_filter_coordinates.html">PytorchBackend.max_filter_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.maximum.html">PytorchBackend.maximum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.mean.html">PytorchBackend.mean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.min.html">PytorchBackend.min</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.minimum.html">PytorchBackend.minimum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.mod.html">PytorchBackend.mod</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.multiply.html">PytorchBackend.multiply</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.power.html">PytorchBackend.power</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.preallocate_array.html">PytorchBackend.preallocate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.repeat.html">PytorchBackend.repeat</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.reverse.html">PytorchBackend.reverse</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.roll.html">PytorchBackend.roll</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.rotate_array.html">PytorchBackend.rotate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.rotate_array_coordinates.html">PytorchBackend.rotate_array_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.set_device.html">PytorchBackend.set_device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.sharedarr_to_arr.html">PytorchBackend.sharedarr_to_arr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.size.html">PytorchBackend.size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.sqrt.html">PytorchBackend.sqrt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.square.html">PytorchBackend.square</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.stack.html">PytorchBackend.stack</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.std.html">PytorchBackend.std</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.subtract.html">PytorchBackend.subtract</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.sum.html">PytorchBackend.sum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.to_backend_array.html">PytorchBackend.to_backend_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.to_cpu_array.html">PytorchBackend.to_cpu_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.to_numpy_array.html">PytorchBackend.to_numpy_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.tobytes.html">PytorchBackend.tobytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.topk_indices.html">PytorchBackend.topk_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.topleft_pad.html">PytorchBackend.topleft_pad</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.transpose.html">PytorchBackend.transpose</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.tril_indices.html">PytorchBackend.tril_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.unique.html">PytorchBackend.unique</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.unravel_index.html">PytorchBackend.unravel_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.zeros.html">PytorchBackend.zeros</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.CupyBackend.html">tme.backends.CupyBackend</a><input class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-29"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.abs.html">CupyBackend.abs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.add.html">CupyBackend.add</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.arange.html">CupyBackend.arange</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.argsort.html">CupyBackend.argsort</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.arr_to_sharedarr.html">CupyBackend.arr_to_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.astype.html">CupyBackend.astype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.build_fft.html">CupyBackend.build_fft</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.center_of_mass.html">CupyBackend.center_of_mass</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.clip.html">CupyBackend.clip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.compute_convolution_shapes.html">CupyBackend.compute_convolution_shapes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.concatenate.html">CupyBackend.concatenate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.datatype_bytes.html">CupyBackend.datatype_bytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.device_count.html">CupyBackend.device_count</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.divide.html">CupyBackend.divide</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.einsum.html">CupyBackend.einsum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.eps.html">CupyBackend.eps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.extract_center.html">CupyBackend.extract_center</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.fill.html">CupyBackend.fill</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.flip.html">CupyBackend.flip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.free_cache.html">CupyBackend.free_cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.free_sharedarr.html">CupyBackend.free_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.full.html">CupyBackend.full</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_available_memory.html">CupyBackend.get_available_memory</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.indices.html">CupyBackend.indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max.html">CupyBackend.max</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max_filter_coordinates.html">CupyBackend.max_filter_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.maximum.html">CupyBackend.maximum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.mean.html">CupyBackend.mean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.min.html">CupyBackend.min</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.minimum.html">CupyBackend.minimum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.mod.html">CupyBackend.mod</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.multiply.html">CupyBackend.multiply</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.power.html">CupyBackend.power</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.preallocate_array.html">CupyBackend.preallocate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.repeat.html">CupyBackend.repeat</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.reverse.html">CupyBackend.reverse</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.roll.html">CupyBackend.roll</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.rotate_array.html">CupyBackend.rotate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.rotate_array_coordinates.html">CupyBackend.rotate_array_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.set_device.html">CupyBackend.set_device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.sharedarr_to_arr.html">CupyBackend.sharedarr_to_arr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.size.html">CupyBackend.size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.sqrt.html">CupyBackend.sqrt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.square.html">CupyBackend.square</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.stack.html">CupyBackend.stack</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.std.html">CupyBackend.std</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.subtract.html">CupyBackend.subtract</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.sum.html">CupyBackend.sum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.to_backend_array.html">CupyBackend.to_backend_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.to_cpu_array.html">CupyBackend.to_cpu_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.to_numpy_array.html">CupyBackend.to_numpy_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.tobytes.html">CupyBackend.tobytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.topk_indices.html">CupyBackend.topk_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.topleft_pad.html">CupyBackend.topleft_pad</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.transpose.html">CupyBackend.transpose</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.tril_indices.html">CupyBackend.tril_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.unique.html">CupyBackend.unique</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.unravel_index.html">CupyBackend.unravel_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.zeros.html">CupyBackend.zeros</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.abs.html">CupyBackend.abs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.add.html">CupyBackend.add</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.arange.html">CupyBackend.arange</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.argsort.html">CupyBackend.argsort</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.arr_to_sharedarr.html">CupyBackend.arr_to_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.astype.html">CupyBackend.astype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.build_fft.html">CupyBackend.build_fft</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.center_of_mass.html">CupyBackend.center_of_mass</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.clip.html">CupyBackend.clip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.compute_convolution_shapes.html">CupyBackend.compute_convolution_shapes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.concatenate.html">CupyBackend.concatenate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.datatype_bytes.html">CupyBackend.datatype_bytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.device_count.html">CupyBackend.device_count</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.divide.html">CupyBackend.divide</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.einsum.html">CupyBackend.einsum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.eps.html">CupyBackend.eps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.extract_center.html">CupyBackend.extract_center</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.fill.html">CupyBackend.fill</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.flip.html">CupyBackend.flip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.free_cache.html">CupyBackend.free_cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.free_sharedarr.html">CupyBackend.free_sharedarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.full.html">CupyBackend.full</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_available_memory.html">CupyBackend.get_available_memory</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.indices.html">CupyBackend.indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max.html">CupyBackend.max</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max_filter_coordinates.html">CupyBackend.max_filter_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.maximum.html">CupyBackend.maximum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.mean.html">CupyBackend.mean</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.min.html">CupyBackend.min</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.minimum.html">CupyBackend.minimum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.mod.html">CupyBackend.mod</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.multiply.html">CupyBackend.multiply</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.power.html">CupyBackend.power</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.preallocate_array.html">CupyBackend.preallocate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.repeat.html">CupyBackend.repeat</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.reverse.html">CupyBackend.reverse</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.roll.html">CupyBackend.roll</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.rotate_array.html">CupyBackend.rotate_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.rotate_array_coordinates.html">CupyBackend.rotate_array_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.set_device.html">CupyBackend.set_device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.sharedarr_to_arr.html">CupyBackend.sharedarr_to_arr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.size.html">CupyBackend.size</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.sqrt.html">CupyBackend.sqrt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.square.html">CupyBackend.square</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.stack.html">CupyBackend.stack</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.std.html">CupyBackend.std</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.subtract.html">CupyBackend.subtract</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.sum.html">CupyBackend.sum</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.to_backend_array.html">CupyBackend.to_backend_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.to_cpu_array.html">CupyBackend.to_cpu_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.to_numpy_array.html">CupyBackend.to_numpy_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.tobytes.html">CupyBackend.tobytes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.topk_indices.html">CupyBackend.topk_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.topleft_pad.html">CupyBackend.topleft_pad</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.transpose.html">CupyBackend.transpose</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.tril_indices.html">CupyBackend.tril_indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.unique.html">CupyBackend.unique</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.unravel_index.html">CupyBackend.unravel_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.zeros.html">CupyBackend.zeros</a></li>
-</ul>
-</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../backends.html">Backends</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tme.backends.BackendManager.html">BackendManager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.backends.MatchingBackend.html">MatchingBackend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.html">NumpyFFTWBackend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.backends.PytorchBackend.html">PytorchBackend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tme.backends.CupyBackend.html">CupyBackend</a></li>
 </ul>
 </li>
 </ul>
@@ -1138,7 +584,7 @@ document.write(`
     
     <li class="breadcrumb-item"><a href="../analyzer.html" class="nav-link">Template matching score analysis</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">tme.analyzer...</li>
+    <li class="breadcrumb-item active" aria-current="page">PeakCallerRe...</li>
   </ul>
 </nav>
 </div>
@@ -1155,8 +601,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="tme-analyzer-peakcallerrecursivemasking">
-<h1>tme.analyzer.PeakCallerRecursiveMasking<a class="headerlink" href="#tme-analyzer-peakcallerrecursivemasking" title="Link to this heading">#</a></h1>
+  <section id="peakcallerrecursivemasking">
+<h1>PeakCallerRecursiveMasking<a class="headerlink" href="#peakcallerrecursivemasking" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="tme.analyzer.PeakCallerRecursiveMasking">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PeakCallerRecursiveMasking</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_peaks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/analyzer.html#PeakCallerRecursiveMasking"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.analyzer.PeakCallerRecursiveMasking" title="Link to this definition">#</a></dt>
@@ -1165,26 +611,10 @@ a region around it.</p>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.__call__.html#tme.analyzer.PeakCallerRecursiveMasking.__call__" title="tme.analyzer.PeakCallerRecursiveMasking.__call__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code></a>(score_space, rotation_matrix, **kwargs)</p></td>
-<td><p>Update the internal parameter store based on input array.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.call_peaks.html#tme.analyzer.PeakCallerRecursiveMasking.call_peaks" title="tme.analyzer.PeakCallerRecursiveMasking.call_peaks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call_peaks</span></code></a>(score_space, rotation_matrix, ...)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">call_peaks</span></code>(score_space, rotation_matrix, ...)</p></td>
 <td><p>Call peaks in the score space.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.merge.html#tme.analyzer.PeakCallerRecursiveMasking.merge" title="tme.analyzer.PeakCallerRecursiveMasking.merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge</span></code></a>([candidates])</p></td>
-<td><p>Merge multiple instances of <a class="reference internal" href="tme.analyzer.PeakCaller.html#tme.analyzer.PeakCaller" title="tme.analyzer.PeakCaller"><code class="xref py py-class docutils literal notranslate"><span class="pre">PeakCaller</span></code></a>.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.__call__.html#tme.analyzer.PeakCallerRecursiveMasking.__call__" title="tme.analyzer.PeakCallerRecursiveMasking.__call__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PeakCallerRecursiveMasking.__call__</span></code></a>(...)</p></td>
-<td><p>Update the internal parameter store based on input array.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.call_peaks.html#tme.analyzer.PeakCallerRecursiveMasking.call_peaks" title="tme.analyzer.PeakCallerRecursiveMasking.call_peaks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PeakCallerRecursiveMasking.call_peaks</span></code></a>(...)</p></td>
-<td><p>Call peaks in the score space.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.merge.html#tme.analyzer.PeakCallerRecursiveMasking.merge" title="tme.analyzer.PeakCallerRecursiveMasking.merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PeakCallerRecursiveMasking.merge</span></code></a>([candidates])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge</span></code>([candidates])</p></td>
 <td><p>Merge multiple instances of <a class="reference internal" href="tme.analyzer.PeakCaller.html#tme.analyzer.PeakCaller" title="tme.analyzer.PeakCaller"><code class="xref py py-class docutils literal notranslate"><span class="pre">PeakCaller</span></code></a>.</p></td>
 </tr>
 </tbody>
@@ -1204,20 +634,20 @@ a region around it.</p>
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="tme.analyzer.PeakCallerFast.merge.html"
+       href="tme.analyzer.PeakCallerFast.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">PeakCallerFast.merge</p>
+        <p class="prev-next-title">PeakCallerFast</p>
       </div>
     </a>
     <a class="right-next"
-       href="tme.analyzer.PeakCallerRecursiveMasking.__call__.html"
+       href="tme.analyzer.PeakCallerScipy.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">PeakCallerRecursiveMasking.__call__</p>
+        <p class="prev-next-title">PeakCallerScipy</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

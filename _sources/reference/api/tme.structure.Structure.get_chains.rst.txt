@@ -1,4 +1,4 @@
-Structure.get\_chains
+﻿Structure.get\_chains
 ==================================
 
 .. currentmodule:: tme.structure

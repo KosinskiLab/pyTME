@@ -1,5 +1,5 @@
-﻿tme.matching\_memory.CORRMemoryUsage
-====================================
+﻿CORRMemoryUsage
+===============
 
 .. currentmodule:: tme.matching_memory
 
@@ -7,15 +7,21 @@
 
    
 
-
-   .. autosummary::
-      :toctree:
-      
-      CORRMemoryUsage.base_usage
-      CORRMemoryUsage.per_fork
-
-
-
-
+   
+   
    
 
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      
+      
+        ~CORRMemoryUsage.base_usage
+      
+      
+        ~CORRMemoryUsage.per_fork
+      
+   
+   

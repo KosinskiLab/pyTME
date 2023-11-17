@@ -1532,7 +1532,6 @@ document.write(`
             <span class="n">mask_overlap</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span>
         <span class="p">)</span>
         <span class="n">temp</span><span class="p">[</span><span class="n">mask_overlap</span> <span class="o">&lt;</span> <span class="n">number_px_threshold</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-
         <span class="n">convolution_mode</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;convolution_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;full&quot;</span><span class="p">)</span>
         <span class="n">score</span> <span class="o">=</span> <span class="n">apply_convolution_mode</span><span class="p">(</span>
             <span class="n">temp</span><span class="p">,</span> <span class="n">convolution_mode</span><span class="o">=</span><span class="n">convolution_mode</span><span class="p">,</span> <span class="n">s1</span><span class="o">=</span><span class="n">targetshape</span><span class="p">,</span> <span class="n">s2</span><span class="o">=</span><span class="n">templateshape</span>
@@ -1562,7 +1561,6 @@ document.write(`
                     <span class="n">return_value</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">smh</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span>
             <span class="n">last_type</span><span class="p">,</span> <span class="n">last_value</span><span class="p">,</span> <span class="n">last_traceback</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">handle_traceback</span><span class="p">(</span><span class="n">last_type</span><span class="p">,</span> <span class="n">last_value</span><span class="p">,</span> <span class="n">last_traceback</span><span class="p">)</span>

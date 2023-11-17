@@ -1,6 +1,0 @@
-CORRMemoryUsage.base\_usage
-==============================================
-
-.. currentmodule:: tme.matching_memory
-
-.. automethod:: CORRMemoryUsage.base_usage

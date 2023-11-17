@@ -1,6 +1,0 @@
-ScoreStatistics.set\_reference
-==========================================
-
-.. currentmodule:: tme.analyzer
-
-.. automethod:: ScoreStatistics.set_reference

@@ -1,4 +1,4 @@
-Density.normal\_vectors
+﻿Density.normal\_vectors
 ==================================
 
 .. currentmodule:: tme.density

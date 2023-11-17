@@ -1,6 +1,0 @@
-Density.rotate\_array\_coordinates
-============================================
-
-.. currentmodule:: tme.density
-
-.. automethod:: Density.rotate_array_coordinates

@@ -1,4 +1,4 @@
-FitRefinement.refine
+﻿FitRefinement.refine
 ==============================================
 
 .. currentmodule:: tme.matching_optimization
