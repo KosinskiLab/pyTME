@@ -189,11 +189,11 @@ class Structure:
 
         min_atom = np.min(self.atom_serial_number)
         max_atom = np.max(self.atom_serial_number)
-        n_atom = max_atom - min_atom + 1
+        n_atom = self.atom_serial_number.size
 
         min_residue = np.min(self.residue_sequence_number)
         max_residue = np.max(self.residue_sequence_number)
-        n_residue = max_residue - min_residue + 1
+        n_residue = self.residue_sequence_number.size
 
         repr_str = (
             f"Structure object at {id(self)}\n"
@@ -669,14 +669,16 @@ class Structure:
         Parameters
         ----------
         chain : str, optional
-            The chain identifier. If None, all chains are returned. Default is None.
+            The chain identifier. If multiple chains should be selected they need
+            to be a comma separated string, e.g. 'A,B,CE'. If chain None,
+            all chains are returned. Default is None.
 
         Returns
         -------
         Structure
             A subset of the original structure containing only the specified chain.
         """
-        chain = np.unique(self.chain_identifier) if chain is None else chain
+        chain = np.unique(self.chain_identifier) if chain is None else chain.split(",")
         keep = np.in1d(self.chain_identifier, chain)
         return self[keep]
 
@@ -698,7 +700,9 @@ class Structure:
             The ending residue sequence number.
 
         chain : str, optional
-            The chain identifier. If None, all chains are considered. Default is None.
+            The chain identifier. If multiple chains should be selected they need
+            to be a comma separated string, e.g. 'A,B,CE'. If chain None,
+            all chains are returned. Default is None.
 
         Returns
         -------
@@ -806,23 +810,19 @@ class Structure:
             The origin of the coordinate system.
 
         chain : str
-            The protein chain that should be considered.
-
+            The chain identifier. If multiple chains should be selected they need
+            to be a comma separated string, e.g. 'A,B,CE'.
         Returns
         -------
         Tuple[NDArray, List[str], Tuple[int, ], float, Tuple[float,]]
             Returns positions, atom_types, shape, sampling_rate, and origin.
         """
+        temp = self.subset_by_chain(chain)
         coordinates = self.atom_coordinate.copy()
         atom_types = self.element_symbol.copy()
 
         # positions are in x, y, z map is z, y, x
         coordinates = coordinates[:, ::-1]
-
-        if chain is not None:
-            idx = np.in1d(self.chain_identifier, chain)
-            coordinates = coordinates[idx]
-            atom_types = atom_types[idx]
 
         sampling_rate = 1 if sampling_rate is None else sampling_rate
         adjust_origin = origin is not None and shape is None
@@ -1039,7 +1039,9 @@ class Structure:
             Origin of the coordinate system. If origin is given its expected to be
             in z, y, x form.
         chain : str, optional
-            Protein chain that should be considered. Default None uses all.
+            The chain identifier. If multiple chains should be selected they need
+            to be a comma separated string, e.g. 'A,B,CE'. If chain None,
+            all chains are returned. Default is None.
         weight_type : str, optional
             Which weight should be given to individual atoms.
         scattering_args : dict, optional

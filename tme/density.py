@@ -46,10 +46,10 @@ class Density:
     ----------
     data : NDArray
         Electron density data.
-    origin : NDArray
-        Origin of the coordinate system.
-    sampling_rate : NDArray
-        Sampling rate along data axis.
+    origin : NDArray, optional
+        Origin of the coordinate system. Defaults to zero.
+    sampling_rate : NDArray, optional
+        Sampling rate along data axis. Defaults to one.
     metadata : dict, optional
         Dictionary with metadata information, empty by default.
 
@@ -62,16 +62,18 @@ class Density:
     --------
     >>> import numpy as np
     >>> data = np.random.rand(50,50,50)
-    >>> Density(data = data, origin = (0, 0, 0), sampling_rate = (0, 0, 0))
+    >>> Density(data = data, origin = (0, 0, 0), sampling_rate = (1, 1, 1))
     """
 
     def __init__(
         self,
         data: NDArray,
-        origin: NDArray,
-        sampling_rate: NDArray,
+        origin: NDArray = None,
+        sampling_rate: NDArray = None,
         metadata: Dict = {},
     ):
+        origin = 0 if origin is None else origin
+        sampling_rate = 1 if sampling_rate is None else sampling_rate
         sampling_rate, origin = np.asarray(sampling_rate), np.asarray(origin)
         sampling_rate = np.repeat(sampling_rate, data.ndim // sampling_rate.size)
 
@@ -127,7 +129,7 @@ class Density:
 
         Examples
         --------
-        >>> density = Density.from_file("/path/to/mrc")
+        >>> density = Density.from_file("/path/to/file")
 
         Notes
         -----
@@ -548,8 +550,9 @@ class Density:
             Which weight should be given to individual atoms. For valid values
             see :py:meth:`Structure.from_file`.
         chain : str, optional
-            Which chain of the protein should be considered. Default value
-            corresponds to using all chains.
+            The chain identifier. If multiple chains should be selected they need
+            to be a comma separated string, e.g. 'A,B,CE'. If chain None,
+            all chains are returned. Default is None.
         filter_by_elements : set, optional
             Set of atomic elements to keep. Default is all atoms.
         filter_by_residues : set, optional

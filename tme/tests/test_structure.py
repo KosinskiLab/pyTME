@@ -119,11 +119,11 @@ class TestStructure:
 
         min_atom = np.min(self.structure.atom_serial_number)
         max_atom = np.max(self.structure.atom_serial_number)
-        n_atom = max_atom - min_atom + 1
+        n_atom = self.structure.atom_serial_number.size
 
         min_residue = np.min(self.structure.residue_sequence_number)
         max_residue = np.max(self.structure.residue_sequence_number)
-        n_residue = max_residue - min_residue + 1
+        n_residue = self.structure.residue_sequence_number.size
 
         repr_str = (
             f"Structure object at {id(self.structure)}\n"
