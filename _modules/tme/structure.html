@@ -1189,7 +1189,6 @@ document.write(`
         <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
         <span class="n">sampling_rate</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
         <span class="n">origin</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
-        <span class="n">chain</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Converts coordinates to positions.</span>
@@ -1204,16 +1203,11 @@ document.write(`
 
 <span class="sd">        origin : Tuple[float,]</span>
 <span class="sd">            The origin of the coordinate system.</span>
-
-<span class="sd">        chain : str</span>
-<span class="sd">            The chain identifier. If multiple chains should be selected they need</span>
-<span class="sd">            to be a comma separated string, e.g. &#39;A,B,CE&#39;.</span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Tuple[NDArray, List[str], Tuple[int, ], float, Tuple[float,]]</span>
 <span class="sd">            Returns positions, atom_types, shape, sampling_rate, and origin.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_by_chain</span><span class="p">(</span><span class="n">chain</span><span class="p">)</span>
         <span class="n">coordinates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_coordinate</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">atom_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_symbol</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -1284,7 +1278,6 @@ document.write(`
                 <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
                 <span class="n">vdw_rad</span><span class="p">[</span><span class="n">atom_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">atom_vdwr</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">atom_vdwr</span><span class="p">)</span>
                 <span class="n">atom_slice</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="o">-</span><span class="n">k</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">atom_vdwr</span><span class="p">)</span>
                 <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
@@ -1474,8 +1467,11 @@ document.write(`
         <span class="k">if</span> <span class="s2">&quot;source&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">scattering_args</span><span class="p">:</span>
             <span class="n">scattering_args</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;peng1995&quot;</span>
 
+        <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_by_chain</span><span class="p">(</span><span class="n">chain</span> <span class="o">=</span> <span class="n">chain</span><span class="p">)</span>
+
         <span class="n">positions</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coordinate_to_position</span><span class="p">(</span>
-            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="n">chain</span><span class="o">=</span><span class="n">chain</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span>
         <span class="p">)</span>
         <span class="n">volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">weight_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;atomic_weight&quot;</span><span class="p">,</span> <span class="s2">&quot;atomic_number&quot;</span><span class="p">):</span>
@@ -1502,6 +1498,7 @@ document.write(`
                 <span class="o">**</span><span class="n">scattering_args</span><span class="p">,</span>
             <span class="p">)</span>
 
+        <span class="bp">self</span> <span class="o">=</span> <span class="n">temp</span>
         <span class="k">return</span> <span class="n">volume</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span></div>
 
 
@@ -1635,10 +1632,10 @@ document.write(`
         <span class="n">query</span> <span class="o">=</span> <span class="n">structure2</span><span class="o">.</span><span class="n">atom_coordinate</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">sampling_rate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">reference</span><span class="p">,</span> <span class="n">atoms1</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">structure1</span><span class="o">.</span><span class="n">_coordinate_to_position</span><span class="p">(</span>
-                <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="n">chain</span><span class="o">=</span><span class="kc">None</span>
+                <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span>
             <span class="p">)</span>
             <span class="n">query</span><span class="p">,</span> <span class="n">atoms2</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">structure2</span><span class="o">.</span><span class="n">_coordinate_to_position</span><span class="p">(</span>
-                <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="n">chain</span><span class="o">=</span><span class="kc">None</span>
+                <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span>
             <span class="p">)</span>
 
         <span class="n">reference_mean</span> <span class="o">=</span> <span class="n">reference</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>

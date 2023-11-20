@@ -56,8 +56,6 @@ This section provides instructions on how to install the |project| library. Depe
 
             pip install git+https://github.com/KosinskiLab/pyTME.git
 
-      In the future, |project| will be available for installation directly from the Python Package Index (PyPI). This method provides a simpler and more convenient way to install |project|.
-
       2. **Install from PyPI**:
 
          Once available on PyPI, the installation is a single command.
@@ -68,7 +66,8 @@ This section provides instructions on how to install the |project| library. Depe
 
       .. note::
 
-         Keep an eye on the project's official channels or documentation for announcements regarding availability on PyPI.
+         The Python Package Index (PyPI) provides a simple and convenient way to install |project|, however, installing from source fetches the most recent version of the code base.
+
 
    .. tab:: Source
 
