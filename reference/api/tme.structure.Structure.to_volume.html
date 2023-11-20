@@ -906,7 +906,9 @@ in z, y, x form.</p>
 <dt><strong>origin</strong><span class="classifier">Tuple[float, …], optional</span></dt><dd><p>Origin of the coordinate system. If origin is given its expected to be
 in z, y, x form.</p>
 </dd>
-<dt><strong>chain</strong><span class="classifier">str, optional</span></dt><dd><p>Protein chain that should be considered. Default None uses all.</p>
+<dt><strong>chain</strong><span class="classifier">str, optional</span></dt><dd><p>The chain identifier. If multiple chains should be selected they need
+to be a comma separated string, e.g. ‘A,B,CE’. If chain None,
+all chains are returned. Default is None.</p>
 </dd>
 <dt><strong>weight_type</strong><span class="classifier">str, optional</span></dt><dd><p>Which weight should be given to individual atoms.</p>
 </dd>

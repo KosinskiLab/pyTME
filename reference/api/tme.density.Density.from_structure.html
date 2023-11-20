@@ -911,8 +911,9 @@ between minimal coordinate and coordinate system origin.</p>
 <dt><strong>weight_type</strong><span class="classifier">str, optional</span></dt><dd><p>Which weight should be given to individual atoms. For valid values
 see <code class="xref py py-meth docutils literal notranslate"><span class="pre">Structure.from_file()</span></code>.</p>
 </dd>
-<dt><strong>chain</strong><span class="classifier">str, optional</span></dt><dd><p>Which chain of the protein should be considered. Default value
-corresponds to using all chains.</p>
+<dt><strong>chain</strong><span class="classifier">str, optional</span></dt><dd><p>The chain identifier. If multiple chains should be selected they need
+to be a comma separated string, e.g. ‘A,B,CE’. If chain None,
+all chains are returned. Default is None.</p>
 </dd>
 <dt><strong>filter_by_elements</strong><span class="classifier">set, optional</span></dt><dd><p>Set of atomic elements to keep. Default is all atoms.</p>
 </dd>

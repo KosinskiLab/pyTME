@@ -558,11 +558,11 @@ document.write(`
 
         <span class="n">min_atom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_serial_number</span><span class="p">)</span>
         <span class="n">max_atom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_serial_number</span><span class="p">)</span>
-        <span class="n">n_atom</span> <span class="o">=</span> <span class="n">max_atom</span> <span class="o">-</span> <span class="n">min_atom</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">n_atom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_serial_number</span><span class="o">.</span><span class="n">size</span>
 
         <span class="n">min_residue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residue_sequence_number</span><span class="p">)</span>
         <span class="n">max_residue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residue_sequence_number</span><span class="p">)</span>
-        <span class="n">n_residue</span> <span class="o">=</span> <span class="n">max_residue</span> <span class="o">-</span> <span class="n">min_residue</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">n_residue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residue_sequence_number</span><span class="o">.</span><span class="n">size</span>
 
         <span class="n">repr_str</span> <span class="o">=</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Structure object at </span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -1052,14 +1052,16 @@ document.write(`
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        chain : str, optional</span>
-<span class="sd">            The chain identifier. If None, all chains are returned. Default is None.</span>
+<span class="sd">            The chain identifier. If multiple chains should be selected they need</span>
+<span class="sd">            to be a comma separated string, e.g. &#39;A,B,CE&#39;. If chain None,</span>
+<span class="sd">            all chains are returned. Default is None.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Structure</span>
 <span class="sd">            A subset of the original structure containing only the specified chain.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">chain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chain_identifier</span><span class="p">)</span> <span class="k">if</span> <span class="n">chain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">chain</span>
+        <span class="n">chain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chain_identifier</span><span class="p">)</span> <span class="k">if</span> <span class="n">chain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">chain</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
         <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">in1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chain_identifier</span><span class="p">,</span> <span class="n">chain</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span></div>
 
@@ -1084,7 +1086,9 @@ document.write(`
 <span class="sd">            The ending residue sequence number.</span>
 
 <span class="sd">        chain : str, optional</span>
-<span class="sd">            The chain identifier. If None, all chains are considered. Default is None.</span>
+<span class="sd">            The chain identifier. If multiple chains should be selected they need</span>
+<span class="sd">            to be a comma separated string, e.g. &#39;A,B,CE&#39;. If chain None,</span>
+<span class="sd">            all chains are returned. Default is None.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1202,23 +1206,19 @@ document.write(`
 <span class="sd">            The origin of the coordinate system.</span>
 
 <span class="sd">        chain : str</span>
-<span class="sd">            The protein chain that should be considered.</span>
-
+<span class="sd">            The chain identifier. If multiple chains should be selected they need</span>
+<span class="sd">            to be a comma separated string, e.g. &#39;A,B,CE&#39;.</span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Tuple[NDArray, List[str], Tuple[int, ], float, Tuple[float,]]</span>
 <span class="sd">            Returns positions, atom_types, shape, sampling_rate, and origin.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_by_chain</span><span class="p">(</span><span class="n">chain</span><span class="p">)</span>
         <span class="n">coordinates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_coordinate</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">atom_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_symbol</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="c1"># positions are in x, y, z map is z, y, x</span>
         <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">chain</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">in1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chain_identifier</span><span class="p">,</span> <span class="n">chain</span><span class="p">)</span>
-            <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-            <span class="n">atom_types</span> <span class="o">=</span> <span class="n">atom_types</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 
         <span class="n">sampling_rate</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">sampling_rate</span>
         <span class="n">adjust_origin</span> <span class="o">=</span> <span class="n">origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span>
@@ -1437,7 +1437,9 @@ document.write(`
 <span class="sd">            Origin of the coordinate system. If origin is given its expected to be</span>
 <span class="sd">            in z, y, x form.</span>
 <span class="sd">        chain : str, optional</span>
-<span class="sd">            Protein chain that should be considered. Default None uses all.</span>
+<span class="sd">            The chain identifier. If multiple chains should be selected they need</span>
+<span class="sd">            to be a comma separated string, e.g. &#39;A,B,CE&#39;. If chain None,</span>
+<span class="sd">            all chains are returned. Default is None.</span>
 <span class="sd">        weight_type : str, optional</span>
 <span class="sd">            Which weight should be given to individual atoms.</span>
 <span class="sd">        scattering_args : dict, optional</span>
