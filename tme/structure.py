@@ -793,7 +793,6 @@ class Structure:
         shape: Tuple[int],
         sampling_rate: Tuple[float],
         origin: Tuple[float],
-        chain: str,
     ) -> (NDArray, Tuple[str], Tuple[int], float, Tuple[float]):
         """
         Converts coordinates to positions.
@@ -808,16 +807,11 @@ class Structure:
 
         origin : Tuple[float,]
             The origin of the coordinate system.
-
-        chain : str
-            The chain identifier. If multiple chains should be selected they need
-            to be a comma separated string, e.g. 'A,B,CE'.
         Returns
         -------
         Tuple[NDArray, List[str], Tuple[int, ], float, Tuple[float,]]
             Returns positions, atom_types, shape, sampling_rate, and origin.
         """
-        temp = self.subset_by_chain(chain)
         coordinates = self.atom_coordinate.copy()
         atom_types = self.element_symbol.copy()
 
@@ -888,7 +882,6 @@ class Structure:
                 ).astype(int)
 
                 vdw_rad[atom_type] = atom_vdwr
-                print(atom_vdwr)
                 atom_slice = tuple(slice(-k, k + 1) for k in atom_vdwr)
                 distances = np.linalg.norm(
                     np.divide(
@@ -1076,8 +1069,11 @@ class Structure:
         if "source" not in scattering_args:
             scattering_args["source"] = "peng1995"
 
+        temp = self.copy()
+        self = self.subset_by_chain(chain = chain)
+
         positions, atoms, shape, sampling_rate, origin = self._coordinate_to_position(
-            shape=shape, sampling_rate=sampling_rate, origin=origin, chain=chain
+            shape=shape, sampling_rate=sampling_rate, origin=origin
         )
         volume = np.zeros(shape, dtype=np.float32)
         if weight_type in ("atomic_weight", "atomic_number"):
@@ -1104,6 +1100,7 @@ class Structure:
                 **scattering_args,
             )
 
+        self = temp
         return volume, origin, sampling_rate
 
     @classmethod
@@ -1231,10 +1228,10 @@ class Structure:
         query = structure2.atom_coordinate.copy()
         if sampling_rate is not None:
             reference, atoms1, shape, _, _ = structure1._coordinate_to_position(
-                shape=None, sampling_rate=sampling_rate, origin=origin, chain=None
+                shape=None, sampling_rate=sampling_rate, origin=origin
             )
             query, atoms2, shape, _, _ = structure2._coordinate_to_position(
-                shape=None, sampling_rate=sampling_rate, origin=origin, chain=None
+                shape=None, sampling_rate=sampling_rate, origin=origin
             )
 
         reference_mean = reference.mean(axis=0)
