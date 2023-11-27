@@ -94,7 +94,7 @@ def main():
                 number_of_peaks=args.number_of_peaks, min_distance=args.min_distance
             )
             peak_caller(scores, rotation_matrix=np.eye(3))
-            candidates = tuple(peak_caller)
+            candidates = peak_caller.merge([tuple(peak_caller)])
             for translation, _, score, detail in zip(*candidates):
                 angles = rotation_mapping[rotations[tuple(translation)]]
                 orientations.append((translation, angles, score, detail))

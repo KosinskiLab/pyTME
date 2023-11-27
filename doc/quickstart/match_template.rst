@@ -270,10 +270,6 @@ Command-Line Options
 
 .. option:: --use_gpu
 
-    Whether to perform computations on the GPU.
-
-.. option:: --use_gpu
-
     Comma separated list of GPU devices to use, e.g. 0,1. If not provided and --use_gpu is set, the environment variable CUDA_VISIBLE_DEVICES will be respected.
 
 .. option:: --no_edge_padding

@@ -118,15 +118,6 @@ class PeakCaller(ABC):
         if peak_positions.shape[0] == 0:
             return None
 
-        fourier_shift = kwargs.get(
-            "fourier_shift", backend.zeros(peak_positions.shape[1], dtype=int)
-        )
-        if backend.sum(fourier_shift != 0) != 0:
-            peak_positions = backend.mod(
-                backend.add(peak_positions, fourier_shift), score_space.shape
-            )
-            peak_positions = backend.astype(peak_positions, int)
-
         if peak_details is None:
             peak_details = backend.to_backend_array([-1] * peak_positions.shape[0])
 
@@ -240,7 +231,9 @@ class PeakCaller(ABC):
         backend.add(peak_positions, translation_offset, out=peak_positions)
         if not len(self.peak_list):
             self.peak_list = [peak_positions, rotations, peak_scores, peak_details]
-            return None
+            peak_scores, peak_details, dim = (), (), peak_positions.shape[1]
+            rotations = backend.zeros((0, dim, dim), rotations.dtype)
+            peak_positions = backend.zeros((0, dim), peak_positions.dtype)
 
         peaks = backend.concatenate((self.peak_list[0], peak_positions))
         rotations = backend.concatenate((self.peak_list[1], rotations))
@@ -404,7 +397,6 @@ class PeakCallerFast(PeakCaller):
 
         starts = backend.maximum(peaks - self.min_distance, 0)
         stops = backend.minimum(peaks + self.min_distance, score_space.shape)
-
         slices_list = [
             tuple(slice(*coord) for coord in zip(start_row, stop_row))
             for start_row, stop_row in zip(starts, stops)
@@ -967,11 +959,6 @@ class MaxScoreOverRotations:
             return None
 
         base_max = tuple(int(x) for x in base_max)
-        fourier_shift = kwargs.get(
-            "fourier_shift", backend.zeros(len(base_max), dtype=int)
-        )
-        fourier_shift = backend.to_numpy_array(fourier_shift)
-
         use_memmap = kwargs.get("use_memmap", False)
         if use_memmap:
             scores_out_filename = generate_tempfile_name()
@@ -1007,16 +994,9 @@ class MaxScoreOverRotations:
                     shape=base_max,
                     dtype=rotations_out_dtype,
                 )
-            scores_temp, offset, rotations_temp, rotation_mapping = param_stores[i]
-            stops = np.add(offset, scores_temp.shape).astype(int)
+            score_space, offset, rotations, rotation_mapping = param_stores[i]
+            stops = np.add(offset, score_space.shape).astype(int)
             indices = tuple(slice(*pos) for pos in zip(offset, stops))
-
-            if np.any(fourier_shift) != 0:
-                axis = tuple(range(scores_temp.ndim))
-                score_space = np.roll(scores_temp, shift=fourier_shift, axis=axis)
-                rotations = np.roll(rotations_temp, shift=fourier_shift, axis=axis)
-            else:
-                score_space, rotations = scores_temp, rotations_temp
 
             indices_update = score_space > scores_out[indices]
             scores_out[indices][indices_update] = score_space[indices_update]
@@ -1032,8 +1012,8 @@ class MaxScoreOverRotations:
                 rotations_out[indices][indices_update] = lookup_table[updated_rotations]
 
             if use_memmap:
-                scores_temp._mmap.close()
-                rotations_temp._mmap.close()
+                score_space._mmap.close()
+                rotations._mmap.close()
                 scores_out.flush()
                 rotations_out.flush()
                 scores_out, rotations_out = None, None

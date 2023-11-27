@@ -462,8 +462,7 @@ def apply_convolution_mode(
     .. [1] https://github.com/scipy/scipy/blob/v1.11.2/scipy/signal/_signaltools.py#L519
     """
     # This removes padding to next fast fourier length
-    shape = [slice(s1[i] + s2[i] - 1) for i in range(len(s1))]
-    arr = arr[tuple(shape)]
+    arr = arr[tuple(slice(s1[i] + s2[i] - 1) for i in range(len(s1)))]
 
     if convolution_mode not in ("full", "same", "valid"):
         raise ValueError("Supported convolution_mode are 'full', 'same' and 'valid'.")
@@ -894,9 +893,9 @@ def _format_mmcif_colunns(subdict: Dict) -> Dict:
     """
     subdict = {k: [_format_string(s) for s in v] for k, v in subdict.items()}
     key_length = {
-        key: max(value, key=lambda x: len(x)) for key, value in subdict.items()
+        key: len(max(value, key=lambda x: len(x), default=""))
+        for key, value in subdict.items()
     }
-    key_length = {k: len(v) for k, v in key_length.items()}
     padded_subdict = {
         key: [s.ljust(key_length[key] + 1) for s in values]
         for key, values in subdict.items()

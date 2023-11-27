@@ -30,13 +30,10 @@ numpydoc_show_class_members = False
 numpydoc_show_inherited_class_members = False
 
 autodoc_typehints_format = "short"
-
 autodoc_typehints = "none"
-
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
-
 
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
@@ -50,15 +47,15 @@ html_context = {
     "doc_path": "docs",
 }
 html_theme_options = {
-    "use_edit_page_button": False,
-    "navigation_depth": 3,
-    "show_nav_level": 0,
+    "header_links_before_dropdown": 4,
     "icon_links": [
         {
             "name": "GitHub",
             "url": "https://github.com/KosinskiLab/pyTME",
-            "icon": "fa-brands fa-square-github",
-            "type": "fontawesome",
+            "icon": "fa-brands fa-github",
         },
     ],
+    "use_edit_page_button": False,
+    "navigation_depth": 3,
+    "show_toc_level": 1,
 }

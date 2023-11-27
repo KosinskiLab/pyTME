@@ -178,8 +178,8 @@ class NumpyFFTWBackend(MatchingBackend):
     def clip(self, *args, **kwargs) -> NDArray:
         return self._array_backend.clip(*args, **kwargs)
 
-    def flip(self, *args, **kwargs):
-        return self._array_backend.flip(*args, **kwargs)
+    def flip(self, a, axis, **kwargs):
+        return self._array_backend.flip(a, axis, **kwargs)
 
     @staticmethod
     def astype(arr, dtype):
@@ -207,8 +207,13 @@ class NumpyFFTWBackend(MatchingBackend):
     def indices(self, *args, **kwargs) -> NDArray:
         return self._array_backend.indices(*args, **kwargs)
 
-    def roll(self, *args, **kwargs):
-        return self._array_backend.roll(*args, **kwargs)
+    def roll(self, a, shift, axis, **kwargs):
+        return self._array_backend.roll(
+            a,
+            shift=shift,
+            axis=axis,
+            **kwargs,
+        )
 
     def unique(self, *args, **kwargs):
         return self._array_backend.unique(*args, **kwargs)

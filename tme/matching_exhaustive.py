@@ -130,13 +130,13 @@ def lcc_setup(**kwargs) -> Dict:
 
     .. math::
 
-        \\mathcal{F}^{-1}(\\mathcal{F}(f) \\cdot \\mathcal{F}(\\nabla^{2} g)^*)
+        \\mathcal{F}^{-1}(\\mathcal{F}(\\nabla^{2}f) \\cdot \\mathcal{F}(\\nabla^{2} g)^*)
 
 
     See Also
     --------
     :py:meth:`corr_scoring`
-    :py:class:`tme.matching_optimization.CrossCorrelation`
+    :py:class:`tme.matching_optimization.LaplaceCrossCorrelation`
     """
     kwargs["target"] = laplace(kwargs["target"], mode="wrap")
     kwargs["template"] = laplace(kwargs["template"], mode="wrap")
@@ -773,6 +773,12 @@ def corr_scoring(
     norm_func_denominator = conditional_execute(backend.multiply, norm_denominator)
     template_filter_func = conditional_execute(backend.multiply, filter_template)
 
+    axis = tuple(range(arr.ndim))
+    fourier_shift = callback_class_args.get(
+        "fourier_shift", backend.zeros(arr.ndim)
+    )
+    fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
+
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
         backend.fill(arr, 0)
@@ -792,9 +798,13 @@ def corr_scoring(
         norm_func_numerator(arr, numerator2, out=arr)
         norm_func_denominator(arr, inv_denominator, out=arr)
 
+        if fourier_shift_scores:
+            arr = backend.roll(arr, shift = fourier_shift, axis = axis)
+
         score = apply_convolution_mode(
             arr, convolution_mode=convolution_mode, s1=targetshape, s2=templateshape
         )
+
         if callback_class is not None:
             callback(
                 score,
@@ -897,6 +907,12 @@ def flc_scoring(
     filter_template = backend.size(template_filter) != 0
     template_filter_func = conditional_execute(backend.multiply, filter_template)
 
+    axis = tuple(range(arr.ndim))
+    fourier_shift = callback_class_args.get(
+        "fourier_shift", backend.zeros(arr.ndim)
+    )
+    fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
+
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
         backend.fill(arr, 0)
@@ -939,6 +955,10 @@ def flc_scoring(
         temp2[nonzero_indices] = arr[nonzero_indices] / temp[nonzero_indices]
 
         convolution_mode = kwargs.get("convolution_mode", "full")
+
+        if fourier_shift_scores:
+            temp2 = backend.roll(temp2, shift = fourier_shift, axis = axis)
+
         score = apply_convolution_mode(
             temp2, convolution_mode=convolution_mode, s1=targetshape, s2=templateshape
         )
@@ -1060,6 +1080,12 @@ def mcc_scoring(
     filter_template = backend.size(template_filter) != 0
     template_filter_func = conditional_execute(backend.multiply, filter_template)
 
+    axis = tuple(range(template.ndim))
+    fourier_shift = callback_class_args.get(
+        "fourier_shift", backend.zeros(template.ndim)
+    )
+    fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
+
     # Calculate scores across all rotations
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
@@ -1137,6 +1163,10 @@ def mcc_scoring(
         )
         temp[mask_overlap < number_px_threshold] = 0.0
         convolution_mode = kwargs.get("convolution_mode", "full")
+
+        if fourier_shift_scores:
+            temp = backend.roll(temp, shift = fourier_shift, axis = axis)
+
         score = apply_convolution_mode(
             temp, convolution_mode=convolution_mode, s1=targetshape, s2=templateshape
         )
@@ -1226,14 +1256,21 @@ def scan(
     fourier_shift = backend.zeros(len(fourier_pad))
     if not pad_fourier:
         fourier_pad = backend.full(shape=fourier_shift.shape, fill_value=1, dtype=int)
+
+    convolution_shape, fast_shape, fast_ft_shape = backend.compute_convolution_shapes(
+        matching_data._target.shape, fourier_pad
+    )
+    if not pad_fourier:
         fourier_shift = 1 - backend.astype(
             backend.divide(matching_data._templateshape, 2), int
         )
-        callback_class_args["fourier_shift"] = fourier_shift
+        fourier_shift -= backend.mod(matching_data._templateshape, 2)
+        fourier_shift = backend.flip(fourier_shift, axis = (0,))
+        shape_diff = backend.subtract(fast_shape, convolution_shape)
+        shape_diff = backend.astype(backend.divide(shape_diff, 2), int)
+        backend.add(fourier_shift, shape_diff, out = fourier_shift)
 
-    _, fast_shape, fast_ft_shape = backend.compute_convolution_shapes(
-        matching_data._target.shape, fourier_pad
-    )
+    callback_class_args["fourier_shift"] = fourier_shift
     rfftn, irfftn = backend.build_fft(
         fast_shape=fast_shape,
         fast_ft_shape=fast_ft_shape,

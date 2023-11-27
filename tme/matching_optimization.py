@@ -275,6 +275,7 @@ class CrossCorrelation(MatchCoordinatesToDensity):
         in_volume_mask : NDArray
             Binary mask indicating which ``transformed_coordinates`` are in the
             target mask volume.
+
         Returns
         -------
         float

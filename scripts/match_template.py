@@ -225,11 +225,20 @@ def parse_args():
     parser.add_argument(
         "-r",
         "--ram",
-        dest="ram",
+        dest="memory",
         required=False,
         type=int,
         default=None,
-        help="Amount of RAM that can be used in bytes.",
+        help="Amount of memory that can be used in bytes.",
+    )
+    parser.add_argument(
+        "--memory_scaling",
+        dest="memory_scaling",
+        required=False,
+        type=check_positive,
+        default=0.85,
+        help="Fraction of available memory that can be used."
+        "Defaults to 0.85. Ignored if --ram is set",
     )
     parser.add_argument(
         "-a",
@@ -551,9 +560,9 @@ def main():
     if args.scramble_phases:
         template.data = scramble_phases(template.data, noise_proportion=1.0)
 
-    available_memory, ram_scaling = backend.get_available_memory(), 1.0
+    available_memory = backend.get_available_memory()
     if args.use_gpu:
-        args.cores, ram_scaling = len(args.gpu_indices), 0.85
+        args.cores = len(args.gpu_indices)
         has_torch = importlib.util.find_spec("torch") is not None
         has_cupy = importlib.util.find_spec("cupy") is not None
 
@@ -587,8 +596,8 @@ def main():
                 )
         available_memory = backend.get_available_memory() * args.cores
 
-    if args.ram is None:
-        args.ram = int(ram_scaling * available_memory)
+    if args.memory is None:
+        args.memory = int(args.memory_scaling * available_memory)
 
     target_padding = np.zeros_like(template.shape)
     if args.pad_target_edges:
@@ -607,7 +616,7 @@ def main():
         shape2=template_box,
         shape1_padding=target_padding,
         max_cores=args.cores,
-        max_ram=args.ram,
+        max_ram=args.memory,
         split_only_outer=args.use_gpu,
         matching_method=args.score,
         analyzer_method=callback_class.__name__,
@@ -625,7 +634,7 @@ def main():
         exit(-1)
 
     analyzer_args = {
-        "score_threshold": 0.2,
+        "score_threshold": 0.0,
         "number_of_peaks": 1000,
         "convolution_mode": "valid",
         "use_memmap": args.use_memmap,
@@ -652,7 +661,7 @@ def main():
         "CPU Cores": args.cores,
         "Run on GPU": f"{args.use_gpu} [N={gpus_used}]",
         "Use Mixed Precision": args.use_mixed_precision,
-        "Assigned Memory [MB]": f"{args.ram // 1e6} [out of {available_memory//1e6}]",
+        "Assigned Memory [MB]": f"{args.memory // 1e6} [out of {available_memory//1e6}]",
         "Temporary Directory": args.temp_directory,
         "Extend Fourier Grid": not args.no_fourier_padding,
         "Extend Target Edges": not args.no_edge_padding,

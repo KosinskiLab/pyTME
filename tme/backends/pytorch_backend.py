@@ -144,8 +144,8 @@ class PytorchBackend(NumpyFFTWBackend):
     def astype(self, arr, dtype):
         return arr.to(dtype)
 
-    def flip(self, *args, **kwargs):
-        return self._array_backend.flip(*args, **kwargs)
+    def flip(self, a, axis, **kwargs):
+        return self._array_backend.flip(input = a, dims = axis, **kwargs)
 
     def arange(self, *args, **kwargs):
         return self._array_backend.arange(*args, **kwargs, device=self.device)
@@ -180,8 +180,9 @@ class PytorchBackend(NumpyFFTWBackend):
         else:
             return tuple(unraveled_coords.T)
 
-    def roll(self, *args, **kwargs):
-        return self._array_backend.roll(*args, **kwargs)
+    def roll(self, a, shift, axis, **kwargs):
+        shift = tuple(shift)
+        return self._array_backend.roll(input=a, shifts=shift, dims=axis, **kwargs)
 
     def unique(
         self,

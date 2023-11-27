@@ -72,7 +72,7 @@ class Density:
         sampling_rate: NDArray = None,
         metadata: Dict = {},
     ):
-        origin = 0 if origin is None else origin
+        origin = np.zeros(data.ndim) if origin is None else origin
         sampling_rate = 1 if sampling_rate is None else sampling_rate
         sampling_rate, origin = np.asarray(sampling_rate), np.asarray(origin)
         sampling_rate = np.repeat(sampling_rate, data.ndim // sampling_rate.size)

@@ -1016,7 +1016,7 @@ class Structure:
         chain: str = None,
         weight_type: str = "atomic_weight",
         scattering_args: Dict = dict(),
-    ) -> (NDArray, Tuple[int], float):
+    ) -> Tuple[NDArray, Tuple[int], NDArray]:
         """
         Converts atom coordinates of shape [n x 3] x, y, z to a volume with
         index z, y, x.
@@ -1042,7 +1042,7 @@ class Structure:
 
         Returns
         -------
-        Tuple[NDArray, Tuple[int, ...], float]
+        Tuple[NDArray, Tuple[int], NDArray]
             The volume, its origin and the voxel size in Ångstrom.
         """
         _weight_types = {
@@ -1069,15 +1069,14 @@ class Structure:
         if "source" not in scattering_args:
             scattering_args["source"] = "peng1995"
 
-        temp = self.copy()
-        self = self.subset_by_chain(chain = chain)
+        temp = self.subset_by_chain(chain=chain)
 
-        positions, atoms, shape, sampling_rate, origin = self._coordinate_to_position(
+        positions, atoms, shape, sampling_rate, origin = temp._coordinate_to_position(
             shape=shape, sampling_rate=sampling_rate, origin=origin
         )
         volume = np.zeros(shape, dtype=np.float32)
         if weight_type in ("atomic_weight", "atomic_number"):
-            weights = self._get_atom_weights(atoms=atoms, weight_type=weight_type)
+            weights = temp._get_atom_weights(atoms=atoms, weight_type=weight_type)
             np.add.at(volume, tuple(positions.T), weights)
         elif weight_type == "van_der_waals_radius":
             self._position_to_vdw_sphere(positions, atoms, sampling_rate, volume)
@@ -1100,7 +1099,7 @@ class Structure:
                 **scattering_args,
             )
 
-        self = temp
+        self.details.update(temp.details)
         return volume, origin, sampling_rate
 
     @classmethod
@@ -1141,10 +1140,7 @@ class Structure:
             Root Mean Square Deviation (RMSD)
         """
         if origin is None:
-            origin = np.minimum(
-                structure1.atom_coordinate.min(axis=0),
-                structure2.atom_coordinate.min(axis=0),
-            ).astype(int)
+            origin = np.zeros(structure1.atom_coordinate.shape[1])
 
         coordinates1 = structure1.atom_coordinate
         coordinates2 = structure2.atom_coordinate
@@ -1180,13 +1176,13 @@ class Structure:
         origin: NDArray = None,
         sampling_rate: float = None,
         weighted: bool = False,
-    ) -> float:
+    ) -> Tuple["Structure", float]:
         """
         Align the atom coordinates of structure2 to structure1 using
         the Kabsch algorithm.
 
         Both structures need to have the same number of atoms. In practice, this means
-        that *structure2* is a transformed version of *structure1*
+        that *structure2* is a subset of *structure1*
 
         Parameters
         ----------
@@ -1207,6 +1203,8 @@ class Structure:
 
         Returns
         -------
+        Structure
+            *structure2* aligned to *structure1*.
         float
             Root Mean Square Error (RMSE)
         """

@@ -66,7 +66,7 @@ This section provides instructions on how to install the |project| library. Depe
 
       .. note::
 
-         The Python Package Index (PyPI) provides a simple and convenient way to install |project|, however, installing from source fetches the most recent version of the code base.
+         The Python Package Index (PyPI) provides a simple and convenient way to install |project|. However, installing from github fetches the most recent version of the code base.
 
 
    .. tab:: Source
