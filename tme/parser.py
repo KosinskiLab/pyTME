@@ -286,10 +286,10 @@ class MMCIFParser(Parser):
                     string.append(lines.popleft())
                 lines.popleft()
                 new_lines[-1] += ' "{}"'.format(
-                    " ".join(string).replace('"', "").replace("'", "\'")
+                    " ".join(string).replace('"', "").replace("'", "'")
                 )
             else:
-                new_lines.append(line.replace('"', "").replace("'", "\'"))
+                new_lines.append(line.replace('"', "").replace("'", "'"))
         return new_lines
 
     @staticmethod

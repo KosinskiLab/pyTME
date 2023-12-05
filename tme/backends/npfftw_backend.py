@@ -522,7 +522,7 @@ class NumpyFFTWBackend(MatchingBackend):
         transformed_center = rotation_matrix_inverted @ center.reshape(-1, 1)
         transformed_center = transformed_center.reshape(-1)
         base_offset = np.subtract(center, transformed_center)
-        offset = np.subtract(base_offset, translation, center)
+        offset = np.subtract(base_offset, translation)
 
         out = np.zeros_like(arr) if out is None else out
         out_slice = tuple(slice(0, stop) for stop in arr.shape)

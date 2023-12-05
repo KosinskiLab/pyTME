@@ -185,8 +185,12 @@ class Structure:
         str
             The string representation.
         """
-        unique_chains = ",".join(np.unique(self.chain_identifier))
-
+        unique_chains = "-".join(
+            [
+                ",".join([str(x) for x in entity])
+                for entity in self.details["unique_chains"]
+            ]
+        )
         min_atom = np.min(self.atom_serial_number)
         max_atom = np.max(self.atom_serial_number)
         n_atom = self.atom_serial_number.size
@@ -575,7 +579,7 @@ class Structure:
         Returns
         -------
         list
-            List containing MMCIF file coordine lines.
+            List containing MMCIF file coordinate lines.
         """
         model_num, entity_id = 1, 1
         data = {

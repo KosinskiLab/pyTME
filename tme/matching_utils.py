@@ -602,19 +602,19 @@ def get_rotation_matrices(
         k = int((360 / angular_sampling) ** num_rotations)
         As = np.random.randn(k, dim, dim)
         ret, _ = np.linalg.qr(As)
-        sign_dets = np.sign(np.linalg.det(ret))[:, np.newaxis, np.newaxis]
-        ret *= sign_dets
+        dets = np.linalg.det(ret)
+        neg_dets = dets < 0
+        ret[neg_dets, :, -1] *= -1
     return ret
 
 
 def minimum_enclosing_box(
     coordinates: NDArray,
-    cutoff: float = 0,
     margin: NDArray = None,
     use_geometric_center: bool = False,
 ) -> Tuple[int]:
     """
-    Computes a minimal enclosing box around arr plus margin.
+    Computes the minimal enclosing box around coordinates with margin.
 
     Parameters
     ----------
@@ -640,8 +640,9 @@ def minimum_enclosing_box(
     margin = np.asarray(margin).astype(int)
 
     norm_cloud = point_cloud - point_cloud.mean(axis=1)[:, None]
+    # Adding one avoids clipping during scipy.ndimage.affine_transform
     shape = np.repeat(
-        np.ceil(2 * np.linalg.norm(norm_cloud, axis=0).max()), dim
+        np.ceil(2 * np.linalg.norm(norm_cloud, axis=0).max()) + 1, dim
     ).astype(int)
     if use_geometric_center:
         hull = ConvexHull(point_cloud.T)

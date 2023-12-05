@@ -159,14 +159,14 @@ def parse_args():
         type=str,
         required=True,
         help="Path to a target in CCP4/MRC format.",
-    ),
+    )
     parser.add_argument(
         "--target_mask",
         dest="target_mask",
         type=str,
         required=False,
         help="Path to a mask for the target target in CCP4/MRC format.",
-    ),
+    )
     parser.add_argument(
         "--cutoff_target",
         dest="cutoff_target",
@@ -174,7 +174,7 @@ def parse_args():
         required=False,
         help="Target contour level (used for cropping).",
         default=None,
-    ),
+    )
     parser.add_argument(
         "--cutoff_template",
         dest="cutoff_template",
@@ -182,7 +182,7 @@ def parse_args():
         required=False,
         help="Template contour level (used for cropping).",
         default=None,
-    ),
+    )
     parser.add_argument(
         "-i",
         "--template",
@@ -190,14 +190,14 @@ def parse_args():
         type=str,
         required=True,
         help="Path to a template in PDB/MMCIF or CCP4/MRC format.",
-    ),
+    )
     parser.add_argument(
         "--template_mask",
         dest="template_mask",
         type=str,
         required=False,
         help="Path to a mask for the template in CCP4/MRC format.",
-    ),
+    )
     parser.add_argument(
         "-o",
         dest="output",
@@ -210,7 +210,7 @@ def parse_args():
         "-s",
         dest="score",
         type=str,
-        default="CC",
+        default="FLCSphericalMask",
         help="Template matching scoring function.",
         choices=MATCHING_EXHAUSTIVE_REGISTER.keys(),
     )
@@ -273,6 +273,17 @@ def parse_args():
         " be respected.",
     )
     parser.add_argument(
+        "--invert_target_contrast",
+        dest="invert_target_contrast",
+        action="store_true",
+        default=False,
+        help="Invert the target contrast via multiplication with negative one and"
+        " linear rescaling between zero and one. Note that this might lead to"
+        " different baseline scores of individual target splits when using"
+        " unnormalized scores. This option is intended for targets, where the"
+        " object to-be-matched has negative values, i.e. tomograms.",
+    )
+    parser.add_argument(
         "--no_edge_padding",
         dest="no_edge_padding",
         action="store_true",
@@ -286,7 +297,8 @@ def parse_args():
         action="store_true",
         default=False,
         help="Whether input arrays should be zero-padded to the full convolution shape"
-        " for numerical stability.",
+        " for numerical stability. When working with very large targets such as"
+        " tomograms it is safe to use this flag and benefit from the performance gain.",
     )
     parser.add_argument(
         "--scramble_phases",
@@ -332,7 +344,6 @@ def parse_args():
         required=False,
         help="Sigma parameter for Gaussian filtering the template.",
     )
-
     parser.add_argument(
         "--bandpass_band",
         dest="bandpass_band",
@@ -404,9 +415,6 @@ def parse_args():
     if args.use_gpu:
         gpu_devices = os.environ.get("CUDA_VISIBLE_DEVICES", None)
         if gpu_devices is None:
-            # raise ValueError(
-            #     "No GPU indices provided and CUDA_VISIBLE_DEVICES is not set."
-            # )
             print(
                 "No GPU indices provided and CUDA_VISIBLE_DEVICES is not set.",
                 "Assuming device 0.",
@@ -647,6 +655,7 @@ def main():
     )
 
     matching_data.template_filter = template_filter
+    matching_data._invert_target = args.invert_target_contrast
     if target_mask is not None:
         matching_data.target_mask = target_mask
     if template_mask is not None:
@@ -711,6 +720,8 @@ def main():
 
     candidates = list(candidates) if candidates is not None else []
     if callback_class == MaxScoreOverRotations:
+        if target_mask is not None and args.score != "MCC":
+            candidates[0] *= target_mask.data
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=UserWarning)
             candidates[3] = {

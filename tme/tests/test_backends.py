@@ -145,8 +145,8 @@ class TestBackends:
     @pytest.mark.parametrize("shift", (-5, 0, 10))
     @pytest.mark.parametrize("axis", (0, 1))
     def test_roll(self, backend, shift, axis):
-        base = self.backend.roll(self.x1, (shift, ), (axis, ))
-        other = backend.roll(backend.to_backend_array(self.x1), (shift, ), (axis, ))
+        base = self.backend.roll(self.x1, (shift,), (axis,))
+        other = backend.roll(backend.to_backend_array(self.x1), (shift,), (axis,))
         assert np.allclose(base, backend.to_numpy_array(other), rtol=0.01)
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)

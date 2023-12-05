@@ -45,6 +45,8 @@ class MatchingData:
         self.template_filter = {}
         self.target_filter = {}
 
+        self._invert_target = False
+
     @staticmethod
     def _shape_to_slice(shape: Tuple[int]):
         return tuple(slice(0, dim) for dim in shape)
@@ -150,6 +152,7 @@ class MatchingData:
         template_slice: Tuple[slice] = None,
         target_pad: NDArray = None,
         template_pad: NDArray = None,
+        invert_target: bool = False,
     ) -> "MatchingData":
         """
         Slice the instance arrays based on the provided slices.
@@ -195,6 +198,10 @@ class MatchingData:
         target_subset = self.subset_array(
             arr=self._target, arr_slice=target_slice, padding=target_pad
         )
+        if self._invert_target:
+            target_subset *= -1
+            target_min, target_max = target_subset.min(), target_subset.max()
+            target_subset = (target_subset - target_min) / (target_max - target_min)
         template_subset = self.subset_array(
             arr=self._template,
             arr_slice=template_slice,
@@ -210,6 +217,7 @@ class MatchingData:
 
         ret.rotations, ret.indices = self.rotations, indices
         ret._target_pad, ret._template_pad = target_pad, template_pad
+        ret._invert_target = self._invert_target
 
         if self._target_mask is not None:
             ret.target_mask = self.subset_array(

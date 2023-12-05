@@ -380,23 +380,34 @@ class TestDensity:
                 origin=self.density.origin,
                 sampling_rate=self.density.sampling_rate,
             )
-            ret_mask.pad(out_mask.shape, center=True)
-            assert np.allclose(ret_mask.data, out_mask, rtol=0.5)
+            out_mask = Density(
+                out_mask,
+                origin=self.density.origin,
+                sampling_rate=self.density.sampling_rate,
+            )
+            ret_mask.adjust_box(ret_mask.trim_box(0))
+            out_mask.adjust_box(out_mask.trim_box(0))
+            assert np.allclose(ret_mask.data, out_mask.data, rtol=0.5)
+            assert np.allclose(out, out2)
 
             extra = Density(
                 extra,
                 origin=self.density.origin,
                 sampling_rate=self.density.sampling_rate,
             )
-            extra.pad(out_mask.shape, center=False)
-            assert np.allclose(out, out2)
+            extra.adjust_box(extra.trim_box(0))
+            ret_mask.adjust_box(ret_mask.trim_box(0))
             assert np.allclose(ret_mask.data, extra.data)
 
         ret = Density(
             ret, origin=self.density.origin, sampling_rate=self.density.sampling_rate
         )
-        ret.pad(out.shape, center=True)
-        assert np.allclose(ret.data, out)
+        out = Density(
+            out, origin=self.density.origin, sampling_rate=self.density.sampling_rate
+        )
+        ret.adjust_box(ret.trim_box(0))
+        out.adjust_box(out.trim_box(0))
+        assert np.allclose(ret.data, out.data)
 
     @pytest.mark.parametrize("use_geometric_center", (False, True))
     @pytest.mark.parametrize("create_mask", (False, True))
@@ -468,24 +479,35 @@ class TestDensity:
                 origin=self.density.origin,
                 sampling_rate=self.density.sampling_rate,
             )
-            ret_mask.pad(out_mask.shape, center=True)
+            out_mask = Density(
+                out_mask,
+                origin=self.density.origin,
+                sampling_rate=self.density.sampling_rate,
+            )
+            ret_mask.adjust_box(ret_mask.trim_box(0))
+            out_mask.adjust_box(out_mask.trim_box(0))
 
-            assert np.allclose(ret_mask.data, out_mask)
+            assert np.allclose(ret_mask.data, out_mask.data)
+            assert np.allclose(out, out2)
 
             extra = Density(
                 extra,
                 origin=self.density.origin,
                 sampling_rate=self.density.sampling_rate,
             )
-            extra.pad(out_mask.shape, center=False)
-            assert np.allclose(out, out2)
+            extra.adjust_box(extra.trim_box(0))
+            ret_mask.adjust_box(ret_mask.trim_box(0))
             assert np.allclose(ret_mask.data, extra.data)
 
         ret = Density(
             ret, origin=self.density.origin, sampling_rate=self.density.sampling_rate
         )
-        ret.pad(out.shape, center=True)
-        assert np.allclose(ret.data, out)
+        out = Density(
+            out, origin=self.density.origin, sampling_rate=self.density.sampling_rate
+        )
+        ret.adjust_box(ret.trim_box(0))
+        out.adjust_box(out.trim_box(0))
+        assert np.allclose(ret.data, out.data)
 
     @pytest.mark.parametrize("use_geometric_center", (True, False))
     def test_rigid_transform(self, use_geometric_center: bool):

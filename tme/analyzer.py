@@ -174,7 +174,7 @@ class PeakCaller(ABC):
             Obtained by invoking list on the generator returned by __iter__.
         param_stores : list of tuples, optional
             List of parameter stores. Each tuple contains candidate data and number
-             of candidates.
+            of candidates.
         **kwargs
             Additional keyword arguments.
 

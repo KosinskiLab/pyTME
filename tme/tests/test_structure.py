@@ -115,7 +115,12 @@ class TestStructure:
         assert np.all(ret.element_symbol == "C")
 
     def test__repr__(self):
-        unique_chains = ",".join(np.unique(self.structure.chain_identifier))
+        unique_chains = "-".join(
+            [
+                ",".join([str(x) for x in entity])
+                for entity in self.structure.details["unique_chains"]
+            ]
+        )
 
         min_atom = np.min(self.structure.atom_serial_number)
         max_atom = np.max(self.structure.atom_serial_number)

@@ -60,9 +60,28 @@ class Density:
 
     Examples
     --------
+    The following achieves the minimal definition of a :py:class:`Density` instance.
+
     >>> import numpy as np
-    >>> data = np.random.rand(50,50,50)
-    >>> Density(data = data, origin = (0, 0, 0), sampling_rate = (1, 1, 1))
+    >>> from tme import Density
+    >>> data = np.random.rand(50,70,40)
+    >>> Density(data = data)
+
+    Optional parameters are :py:attr:`Density.origin` and
+    :py:attr:`Density.sampling_rate` that correspond to the coordinate system
+    reference and the physical volume occupied by each voxel. By default,
+    :py:attr:`Density.origin` is set to zero and :py:attr:`Density.sampling_rate`
+    to 1. If provided, origin or sampling_rate either need to be a single value:
+
+    >>> Density(data = data, origin = 0, sampling_rate = 1)
+
+    Be specified along each data axis:
+
+    >>> Density(data = data, origin = (0, 0, 0), sampling_rate = (1.5, 1.1, 1.2))
+
+    Or a combination of both:
+
+    >>> Density(data = data, origin = 0, sampling_rate = (1.5, 1.1, 1.2))
     """
 
     def __init__(
@@ -74,7 +93,8 @@ class Density:
     ):
         origin = np.zeros(data.ndim) if origin is None else origin
         sampling_rate = 1 if sampling_rate is None else sampling_rate
-        sampling_rate, origin = np.asarray(sampling_rate), np.asarray(origin)
+        origin, sampling_rate = np.asarray(origin), np.asarray(sampling_rate)
+        origin = np.repeat(origin, data.ndim // origin.size)
         sampling_rate = np.repeat(sampling_rate, data.ndim // sampling_rate.size)
 
         if sampling_rate.size != data.ndim:
@@ -106,11 +126,11 @@ class Density:
         """
         Reads in a file and converts it into :py:class:`Density` instance.
 
-
         Parameters
         ----------
         filename : str
-            Path to a file in CCP4/MRC, EM or a format supported by skimage.io.imread
+            Path to a file in CCP4/MRC, EM or a format supported by skimage.io.imread.
+            The file can be gzip compressed.
         subset : tuple of slices, optional
             Slices representing the desired subset along each dimension.
         use_memmap : bool, optional
@@ -129,7 +149,39 @@ class Density:
 
         Examples
         --------
-        >>> density = Density.from_file("/path/to/file")
+        :py:meth:`Density.from_file` reads files in  CCP4/MRC, EM, or a format supported
+        by skimage.io.imread and converts them into a :py:class:`Density` instance. The
+        following how to read a file in the CCP4/MRC format [1]_:
+
+        >>> from tme import Density
+        >>> Density.from_file("/path/to/file.mrc")
+
+        In some cases, you might want to read only a specific subset of the data.
+        This can be achieved by passing a tuple of slices to the `subset` parameter.
+        For example, to read only the first 50 voxels along each dimension:
+
+        >>> subset_slices = (slice(0, 50), slice(0, 50), slice(0, 50))
+        >>> Density.from_file("/path/to/file.mrc", subset=subset_slices)
+
+        For large density maps, memory mapping can be used to read the file directly
+        from disk without loading it entirely into memory. This is particularly useful
+        for large datasets or when working with limited memory resources:
+
+        >>> Density.from_file("/path/to/large_file.mrc", use_memmap=True)
+
+        Note that use_memmap will be ignored if the file is gzip compressed.
+
+        If the input file has an `.em` or `.em.gz` extension, it will automatically
+        be parsed as EM file [2]_.
+
+        >>> Density.from_file("/path/to/file.em")
+        >>> Density.from_file("/path/to/file.em.gz")
+
+        If the file format is not CCP4/MRC or EM, :py:meth:`Density.from_file` attempts
+        to use skimage.io.imread to read the file [3]_. This fallback does not extract
+        origin or sampling_rate information from the file:
+
+        >>> Density.from_file("/path/to/other_format.tif")
 
         Notes
         -----
@@ -137,6 +189,11 @@ class Density:
         Otherwise it defaults to the CCP4/MRC format and on failure, defaults to
         skimage.io.imread regardless of the extension. Currently, the later does not
         extract origin or sampling_rate information from the file.
+
+        See Also
+        --------
+        :py:meth:`Density.to_file`
+
         """
         try:
             func = cls._load_mrc
@@ -541,14 +598,14 @@ class Density:
             Shape of the map volume. By default computes the minimum box
             holding all atoms.
         sampling_rate : float, optional
-            Ångstroms per voxel of the output array, ones by default.
+            Ångstroms per voxel of the output array. Defaults to one.
         origin : tuple of float, optional
             Origin of the coordinate system. If origin is given its expected
             to be in z, y, x form. By default, computes origin as distance
             between minimal coordinate and coordinate system origin.
         weight_type : str, optional
             Which weight should be given to individual atoms. For valid values
-            see :py:meth:`Structure.from_file`.
+            see :py:meth:`tme.structure.Structure.to_volume`.
         chain : str, optional
             The chain identifier. If multiple chains should be selected they need
             to be a comma separated string, e.g. 'A,B,CE'. If chain None,
@@ -563,11 +620,80 @@ class Density:
         Returns
         -------
         Density
-            An instance of :class:`Density`.
+            An instance of class :class:`Density`.
+
+        References
+        ----------
+        .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8–20.
 
         Examples
         --------
-        >>> density = Density.from_structure("/path/to/structure")
+        The following is the minimal amount of parameters needed to read in an
+        atomic structure and convert it into a :py:class:`Density` instance. For
+        specification on supported formats refer to
+        :py:meth:`tme.structure.Structure.from_file`.
+
+        >>> path_to_structure = "/path/to/structure.cif"
+        >>> density = Density.from_structure(path_to_structure)
+
+        :py:meth:`Density.from_structure` will automatically determine the appropriate
+        volume dimensions based on the structure. The origin will be computed as
+        minimal distance required to move the closest atom of the structure to the
+        coordinate system origin. Furthermore, all chains will be used and the atom
+        densities will be represented by their atomic weight and accumulated
+        on a per-voxel basis.
+
+        The following will read in chain A of an atomic structure and discretize
+        it on a grid of dimension 100 x 100 x 100 using a sampling rate of
+        2.5 Angstrom per voxel.
+
+        >>> density = Density.from_structure(
+        >>>    filename_or_structure = path_to_structure,
+        >>>    shape = (100, 100, 100),
+        >>>    sampling_rate = 2.5,
+        >>>    chain = "A"
+        >>> )
+
+        We can restrict the generated :class:`Density` instance to only contain
+        specific elements like carbon and nitrogen:
+
+        >>> density = Density.from_structure(
+        >>>    filename_or_structure = path_to_structure,
+        >>>    filter_by_elements = {"C", "N"}
+        >>> )
+
+        or specified residues such as polar amino acids:
+
+        >>> density = Density.from_structure(
+        >>>    filename_or_structure = path_to_structure,
+        >>>    filter_by_residues = {"SER", "THR", "CYS", "ASN", "GLN", "TYR"}
+        >>> )
+
+        :py:meth:`Density.from_structure` supports a variety of methods to convert
+        atoms into densities. In additino to 'atomic_weight', 'atomic_number',
+        'van_der_waals_radius' its possible to use experimentally determined scattering
+        factors from various sources:
+
+        >>> density = Density.from_structure(
+        >>>    filename_or_structure = path_to_structure,
+        >>>    weight_type = "scattering_factors",
+        >>>    scattering_args={"source": "dt1969"}
+        >>> )
+
+        or a lowpass filtered representation introduced in [1]_:
+
+        >>> density = Density.from_structure(
+        >>>    filename_or_structure = path_to_structure,
+        >>>    weight_type = "lowpass_scattering_factors",
+        >>>    scattering_args={"source": "dt1969"}
+        >>> )
+
+        See Also
+        --------
+        :py:meth:`tme.structure.Structure.from_file`
+        :py:meth:`tme.structure.Structure.to_volume`
         """
         structure = filename_or_structure
         if type(filename_or_structure) == str:
@@ -605,16 +731,36 @@ class Density:
             If True, the output will be gzip compressed and "gz" will be added
             to the filename if not already present. By default False.
 
-        Examples
-        --------
-        >>> Density.to_file("/path/to/output.mrc")
-        >>> Density.to_file("/path/to/output.mrc", gzip=True)
-
         References
         ----------
         .. [1] Burnley T et al., Acta Cryst. D, 2017
         .. [2] Nickell S. et al, Journal of Structural Biology, 2005
         .. [3] https://scikit-image.org/docs/stable/api/skimage.io.html
+
+        Examples
+        --------
+        The following creates a density with random values and writes it to disk:
+
+        >>> import numpy as np
+        >>> from tme import Density
+        >>> data = np.random.rand(50,50,50)
+        >>> dens = Density(data = data, origin = (0, 0, 0), sampling_rate = (1, 1, 1))
+        >>> dens.to_file("example.mrc")
+
+        The output file can also be directly gzip compressed. The corresponding
+        ".gz" extension will be automatically added if absent [1]_.
+
+        >>> dens.to_file("example.mrc", gzip=True)
+
+        The :py:meth:`Density.to_file` method also supports writing EM files [2]_:
+
+        >>> dens.to_file("example.em")
+
+        In addition, a variety of image file formats are supported [3]_:
+
+        >>> data = np.random.rand(50,50)
+        >>> dens = Density(data = data, origin = (0, 0), sampling_rate = (1, 1))
+        >>> dens.to_file("example.tiff")
 
         Notes
         -----
@@ -726,6 +872,15 @@ class Density:
     def empty(self) -> "Density":
         """
         Returns a copy of the current class instance with all voxels set to zero.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from tme import Density
+        >>> original_density = Density.from_file("/path/to/file.mrc")
+        >>> empty_density = original_density.empty
+        >>> np.all(empty_density.data == 0)
+        True
         """
         return Density(
             data=np.zeros_like(self.data),
@@ -736,6 +891,14 @@ class Density:
     def copy(self) -> "Density":
         """
         Returns a copy of the current class instance.
+
+        Examples
+        --------
+        >>> from tme import Density
+        >>> original_density = Density.from_file("/path/to/file.mrc")
+        >>> copied_density = original_density.copy
+        >>> np.all(copied_density.data == original_density.data)
+        True
         """
         return Density(
             data=self.data.copy(),
@@ -746,8 +909,16 @@ class Density:
 
     def to_memmap(self) -> None:
         """
-        Converts the internal electron density volume to a np.memmap
-        (see :py:meth:`Density.to_numpy`).
+        Converts the internal electron density volume to a np.memmap.
+
+        Examples
+        --------
+        >>> large_density = Density.from_file("/path/to/large_file.mrc")
+        >>> large_density.to_memmap()
+
+        See Also
+        --------
+        :py:meth:`Density.to_numpy`
         """
         if type(self.data) == np.memmap:
             return None
@@ -762,6 +933,16 @@ class Density:
         """
         Converts the internal electron density volume to an in memory
         numpy array (see :py:meth:`Density.to_memmap`).
+
+        Examples
+        --------
+        >>> density = Density.from_file("/path/to/large_file.mrc")
+        >>> density.to_memmap()  # Convert to memory-mapped array first
+        >>> density.to_numpy()   # Now, convert back to an in-memory array
+
+        See Also
+        --------
+        :py:meth:`Density.to_memmap`
         """
         self.data = memmap_to_array(self.data)
 
@@ -858,7 +1039,7 @@ class Density:
         """
         return np.array(np.where(self.data > threshold))
 
-    def _pad_slice(self, box: Tuple[slice]) -> NDArray:
+    def _pad_slice(self, box: Tuple[slice], pad_kwargs: Dict = {}) -> NDArray:
         """
         Pads the internal data array according to box.
 
@@ -870,6 +1051,8 @@ class Density:
         ----------
         box : tuple of slice
             Tuple of slice objects that define the box dimensions.
+        pad_kwargs: dict, optional
+            Parameter dictionary passed to numpy pad.
 
         Returns
         -------
@@ -885,10 +1068,10 @@ class Density:
         right_pad = np.maximum(right_pad, np.zeros_like(right_pad))
         padding = tuple((left, right) for left, right in zip(left_pad, right_pad))
 
-        ret = np.pad(self.data, padding)
+        ret = np.pad(self.data, padding, **pad_kwargs)
         return ret
 
-    def adjust_box(self, box: Tuple[slice]) -> None:
+    def adjust_box(self, box: Tuple[slice], pad_kwargs: Dict = {}) -> None:
         """
         Adjusts the internal data array and origin of the current class instance
         according to the provided box.
@@ -899,6 +1082,44 @@ class Density:
             A tuple of slices describing how each axis of the volume array
             should be sliced. See :py:meth:`Density.trim_box` on how to produce
             such an object.
+        pad_kwargs: dict, optional
+            Parameter dictionary passed to numpy pad.
+
+        See Also
+        --------
+        :py:meth:`Density.trim_box`
+
+        Examples
+        --------
+        The following demonstrates the ability of :py:meth:`Density.adjust_box`
+        to extract a subdensity from the current :py:class:`Density` instance.
+        :py:meth:`Density.adjust_box` not only operats on :py:attr:`Density.data`,
+        but also modifies :py:attr:`Density.origin` according to ``box``.
+
+        >>> import numpy as np
+        >>> from tme import Density
+        >>> dens = Density(np.ones((5, 5)))
+        >>> box = (slice(1, 4), slice(2, 5))
+        >>> dens.adjust_box(box)
+        >>> dens
+        Origin: (1.0, 2.0), sampling_rate: (1, 1), Shape: (3, 3)
+
+        :py:meth:`Density.adjust_box` can also extend the box of the current
+        :py:class:`Density` instance. This is achieved by negative start or
+        stops that exceed the dimension of the current :py:attr:`Density.data` array.
+
+        >>> box = (slice(-1, 10), slice(2, 10))
+        >>> dens.adjust_box(box)
+        >>> dens
+        Origin: (0.0, 4.0), sampling_rate: (1, 1), Shape: (11, 8)
+
+        However, do note that only the start coordinate of each slice in ``box``
+        can be negative.
+
+        >>> box = (slice(-1, 10), slice(2, -10))
+        >>> dens.adjust_box(box)
+        >>> dens
+        Origin: (-1.0, 6.0), sampling_rate: (1, 1), Shape: (11, 0)
         """
         crop_box = tuple(
             slice(max(b.start, 0), min(b.stop, shape))
@@ -907,7 +1128,7 @@ class Density:
         self.data = self.data[crop_box].copy()
 
         # In case the box is larger than the current map
-        self.data = self._pad_slice(box)
+        self.data = self._pad_slice(box, pad_kwargs=pad_kwargs)
 
         # Adjust the origin
         left_shift = np.array([-1 * box[i].start for i in range(len(box))])
@@ -938,6 +1159,24 @@ class Density:
         ------
         ValueError
             If the cutoff is larger than or equal to the maximum density value.
+
+        Examples
+        --------
+        The following will compute the bounding box that encloses all values
+        in the example array that are larger than zero:
+
+        >>> import numpy as np
+        >>> from tme import Density
+        >>> dens = Density(np.array([0,1,1,1,0]))
+        >>> dens.trim_box(0)
+        (slice(1, 4, None),)
+
+        The resulting tuple can be passed to :py:meth:`Density.adjust_box` to trim the
+        current :py:class:`Density` instance:
+
+        >>> dens.adjust_box(dens.trim_box(0))
+        >>> dens.data.shape
+        (3,)
 
         See Also
         --------
@@ -983,6 +1222,7 @@ class Density:
         See Also
         --------
         :py:meth:`Density.adjust_box`
+        :py:meth:`tme.matching_utils.minimum_enclosing_box`
         """
         coordinates = self.to_pointcloud(threshold=cutoff)
         starts, stops = coordinates.min(axis=1), coordinates.max(axis=1)
@@ -1003,23 +1243,55 @@ class Density:
 
         return tuple(enclosing_box)
 
-    def pad(self, new_shape: Tuple[int], center: bool = True) -> None:
+    def pad(
+        self, new_shape: Tuple[int], center: bool = True, padding_value: float = 0
+    ) -> None:
         """
-        Places the internal data array in a box of size new shape and updates
-        the origin attribute accordingly.
+        :py:meth:`Density.pad` extends the internal :py:attr:`Density.data`
+        array of the current :py:class:`Density` instance to ``new_shape`` and
+        adapts :py:attr:`Density.origin` accordingly:
 
         Parameters
         ----------
         new_shape : tuple of int
             The desired shape for the new volume.
-        new_shape : bool, optional
-            Whether the data should be centered in the new box
+        center : bool, optional
+            Whether the data should be centered in the new box. Default is True.
+        padding_value : float, optional
+            Value to pad the data array with. Default is zero.
 
         Raises
         ------
         ValueError
             If the length of `new_shape` does not match the dimensionality of the
             internal data array.
+
+        Examples
+        --------
+        The following demonstrates the functionality of :py:meth:`Density.pad` on
+        a one-dimensional array:
+
+        >>> import numpy as np
+        >>> from tme import Density
+        >>> dens = Density(np.array([1,1,1]))
+        >>> dens.pad(new_shape = (5,), center = True)
+        >>> dens.data
+        array([0, 1, 1, 1, 0])
+
+        It's also possible to pass a user-defined ``padding_value``:
+
+        >>> dens = Density(np.array([1,1,1]))
+        >>> dens.pad(new_shape = (5,), center = True, padding_value = -1)
+        >>> dens.data
+        array([-1, 1, 1, 1, -1])
+
+        If ``center`` is set to False, the padding values will be appended:
+
+        >>> dens = Density(np.array([1,1,1]))
+        >>> dens.pad(new_shape = (5,), center = False)
+        >>> dens.data
+        array([1, 1, 1, 0, 0])
+
         """
         if len(new_shape) != self.data.ndim:
             raise ValueError(
@@ -1035,7 +1307,7 @@ class Density:
             right = np.add(self.shape, padding + overhang % 2)
             new_box = tuple(slice(*box) for box in zip(left, right))
 
-        self.adjust_box(new_box)
+        self.adjust_box(new_box, pad_kwargs={"constant_values": padding_value})
 
     def centered(self, cutoff: float = 0) -> Tuple["Density", NDArray]:
         """
@@ -1068,6 +1340,54 @@ class Density:
         --------
         :py:meth:`Density.trim_box`
         :py:meth:`Density.minimum_enclosing_box`
+
+
+        Examples
+        --------
+        :py:meth:`Density.centered` returns a tuple containing a centered version
+        of the current :py:class:`Density` instance, as well as an array with
+        translations. The translation corresponds to the shift that was used to
+        center the current :py:class:`Density` instance.
+
+        >>> import numpy as np
+        >>> from tme import Density
+        >>> dens = Density(np.ones((5,5)))
+        >>> centered_dens, translation = dens.centered(0)
+        >>> translation
+        array([-4.4408921e-16,  4.4408921e-16])
+
+        :py:meth:`Density.centered` extended the :py:attr:`Density.data` attribute
+        of the current :py:class:`Density` instance and modified
+        :py:attr:`Density.origin` accordingly.
+
+        >>> centered_dens
+        Origin: (-1.0, -1.0), sampling_rate: (1, 1), Shape: (7, 7)
+
+        :py:meth:`Density.centered` achieves centering via zero-padding the
+        internal :py:attr:`Density.data` attribute:
+
+        >>> centered_dens.data
+        array([[0., 0., 0., 0., 0., 0.],
+               [0., 1., 1., 1., 1., 1.],
+               [0., 1., 1., 1., 1., 1.],
+               [0., 1., 1., 1., 1., 1.],
+               [0., 1., 1., 1., 1., 1.],
+               [0., 1., 1., 1., 1., 1.]])
+
+        `centered_dens` is sufficiently large to represent all rotations that
+        could be applied to the :py:attr:`Density.data` attribute. Lets look
+        at a random rotation obtained from
+        :py:meth:`tme.matching_utils.get_rotation_matrices`.
+
+        >>> from tme.matching_utils import get_rotation_matrices
+        >>> rotation_matrix = get_rotation_matrices(dim = 2 ,angular_sampling = 10)[0]
+        >>> rotated_centered_dens = centered_dens.rigid_transform(
+        >>>     rotation_matrix = rotation_matrix,
+        >>>     order = None
+        >>> )
+        >>> print(centered_dens.data.sum(), rotated_centered_dens.data.sum())
+        25.000000000000007 25.000000000000007
+
         """
         ret = self.copy()
 
@@ -1426,11 +1746,11 @@ class Density:
 
         See Also
         --------
-        :py:class:`tme.matching_exhaustive.NormalVectorScore`
-        :py:class:`tme.matching_exhaustive.PartialLeastSquareDifference`
-        :py:class:`tme.matching_exhaustive.MutualInformation`
-        :py:class:`tme.matching_exhaustive.Envelope`
-        :py:class:`tme.matching_exhaustive.Chamfer`
+        :py:class:`tme.matching_optimization.NormalVectorScore`
+        :py:class:`tme.matching_optimization.PartialLeastSquareDifference`
+        :py:class:`tme.matching_optimization.MutualInformation`
+        :py:class:`tme.matching_optimization.Envelope`
+        :py:class:`tme.matching_optimization.Chamfer`
         """
         available_methods = ["ConvexHull", "Weight", "Sobel", "Laplace", "Minimum"]
 

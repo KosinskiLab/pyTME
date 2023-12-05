@@ -774,9 +774,7 @@ def corr_scoring(
     template_filter_func = conditional_execute(backend.multiply, filter_template)
 
     axis = tuple(range(arr.ndim))
-    fourier_shift = callback_class_args.get(
-        "fourier_shift", backend.zeros(arr.ndim)
-    )
+    fourier_shift = callback_class_args.get("fourier_shift", backend.zeros(arr.ndim))
     fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
 
     for index in range(rotations.shape[0]):
@@ -799,7 +797,7 @@ def corr_scoring(
         norm_func_denominator(arr, inv_denominator, out=arr)
 
         if fourier_shift_scores:
-            arr = backend.roll(arr, shift = fourier_shift, axis = axis)
+            arr = backend.roll(arr, shift=fourier_shift, axis=axis)
 
         score = apply_convolution_mode(
             arr, convolution_mode=convolution_mode, s1=targetshape, s2=templateshape
@@ -908,9 +906,7 @@ def flc_scoring(
     template_filter_func = conditional_execute(backend.multiply, filter_template)
 
     axis = tuple(range(arr.ndim))
-    fourier_shift = callback_class_args.get(
-        "fourier_shift", backend.zeros(arr.ndim)
-    )
+    fourier_shift = callback_class_args.get("fourier_shift", backend.zeros(arr.ndim))
     fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
 
     for index in range(rotations.shape[0]):
@@ -957,7 +953,7 @@ def flc_scoring(
         convolution_mode = kwargs.get("convolution_mode", "full")
 
         if fourier_shift_scores:
-            temp2 = backend.roll(temp2, shift = fourier_shift, axis = axis)
+            temp2 = backend.roll(temp2, shift=fourier_shift, axis=axis)
 
         score = apply_convolution_mode(
             temp2, convolution_mode=convolution_mode, s1=targetshape, s2=templateshape
@@ -1165,7 +1161,7 @@ def mcc_scoring(
         convolution_mode = kwargs.get("convolution_mode", "full")
 
         if fourier_shift_scores:
-            temp = backend.roll(temp, shift = fourier_shift, axis = axis)
+            temp = backend.roll(temp, shift=fourier_shift, axis=axis)
 
         score = apply_convolution_mode(
             temp, convolution_mode=convolution_mode, s1=targetshape, s2=templateshape
@@ -1265,10 +1261,10 @@ def scan(
             backend.divide(matching_data._templateshape, 2), int
         )
         fourier_shift -= backend.mod(matching_data._templateshape, 2)
-        fourier_shift = backend.flip(fourier_shift, axis = (0,))
+        fourier_shift = backend.flip(fourier_shift, axis=(0,))
         shape_diff = backend.subtract(fast_shape, convolution_shape)
         shape_diff = backend.astype(backend.divide(shape_diff, 2), int)
-        backend.add(fourier_shift, shape_diff, out = fourier_shift)
+        backend.add(fourier_shift, shape_diff, out=fourier_shift)
 
     callback_class_args["fourier_shift"] = fourier_shift
     rfftn, irfftn = backend.build_fft(

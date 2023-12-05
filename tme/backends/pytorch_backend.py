@@ -145,7 +145,7 @@ class PytorchBackend(NumpyFFTWBackend):
         return arr.to(dtype)
 
     def flip(self, a, axis, **kwargs):
-        return self._array_backend.flip(input = a, dims = axis, **kwargs)
+        return self._array_backend.flip(input=a, dims=axis, **kwargs)
 
     def arange(self, *args, **kwargs):
         return self._array_backend.arange(*args, **kwargs, device=self.device)
