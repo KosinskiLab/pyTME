@@ -900,15 +900,18 @@ document.write(`
 <h1>Density.pad<a class="headerlink" href="#density-pad" title="Link to this heading">#</a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="tme.density.Density.pad">
-<span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">pad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/density.html#Density.pad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.density.Density.pad" title="Link to this definition">#</a></dt>
-<dd><p>Places the internal data array in a box of size new shape and updates
-the origin attribute accordingly.</p>
+<span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">pad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/density.html#Density.pad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.density.Density.pad" title="Link to this definition">#</a></dt>
+<dd><p><a class="reference internal" href="#tme.density.Density.pad" title="tme.density.Density.pad"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.pad()</span></code></a> extends the internal <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a>
+array of the current <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance to <code class="docutils literal notranslate"><span class="pre">new_shape</span></code> and
+adapts <a class="reference internal" href="tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.origin</span></code></a> accordingly:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>new_shape</strong><span class="classifier">tuple of int</span></dt><dd><p>The desired shape for the new volume.</p>
 </dd>
-<dt><strong>new_shape</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether the data should be centered in the new box</p>
+<dt><strong>center</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether the data should be centered in the new box. Default is True.</p>
+</dd>
+<dt><strong>padding_value</strong><span class="classifier">float, optional</span></dt><dd><p>Value to pad the data array with. Default is zero.</p>
 </dd>
 </dl>
 </dd>
@@ -920,6 +923,31 @@ internal data array.</p>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>The following demonstrates the functionality of <a class="reference internal" href="#tme.density.Density.pad" title="tme.density.Density.pad"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.pad()</span></code></a> on
+a one-dimensional array:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">new_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,),</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">data</span>
+<span class="go">array([0, 1, 1, 1, 0])</span>
+</pre></div>
+</div>
+<p>It’s also possible to pass a user-defined <code class="docutils literal notranslate"><span class="pre">padding_value</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">new_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,),</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">padding_value</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">data</span>
+<span class="go">array([-1, 1, 1, 1, -1])</span>
+</pre></div>
+</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">center</span></code> is set to False, the padding values will be appended:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">new_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,),</span> <span class="n">center</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">data</span>
+<span class="go">array([1, 1, 1, 0, 0])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

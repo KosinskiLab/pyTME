@@ -901,8 +901,18 @@ document.write(`
 <dl class="py method">
 <dt class="sig sig-object py" id="tme.density.Density.to_memmap">
 <span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">to_memmap</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/density.html#Density.to_memmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.density.Density.to_memmap" title="Link to this definition">#</a></dt>
-<dd><p>Converts the internal electron density volume to a np.memmap
-(see <a class="reference internal" href="tme.density.Density.to_numpy.html#tme.density.Density.to_numpy" title="tme.density.Density.to_numpy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_numpy()</span></code></a>).</p>
+<dd><p>Converts the internal electron density volume to a np.memmap.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="tme.density.Density.to_numpy.html#tme.density.Density.to_numpy" title="tme.density.Density.to_numpy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_numpy()</span></code></a></dt><dd></dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">large_density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/large_file.mrc&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">large_density</span><span class="o">.</span><span class="n">to_memmap</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

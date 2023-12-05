@@ -561,8 +561,12 @@ document.write(`
 <span class="sd">        str</span>
 <span class="sd">            The string representation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">unique_chains</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chain_identifier</span><span class="p">))</span>
-
+        <span class="n">unique_chains</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">entity</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">&quot;unique_chains&quot;</span><span class="p">]</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
         <span class="n">min_atom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_serial_number</span><span class="p">)</span>
         <span class="n">max_atom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_serial_number</span><span class="p">)</span>
         <span class="n">n_atom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_serial_number</span><span class="o">.</span><span class="n">size</span>
@@ -963,7 +967,7 @@ document.write(`
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        list</span>
-<span class="sd">            List containing MMCIF file coordine lines.</span>
+<span class="sd">            List containing MMCIF file coordinate lines.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">model_num</span><span class="p">,</span> <span class="n">entity_id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>

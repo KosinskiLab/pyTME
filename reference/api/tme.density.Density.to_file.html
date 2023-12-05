@@ -920,21 +920,40 @@ to <cite>skimage.io.imsave</cite>.</p>
 <p class="rubric">References</p>
 <div role="list" class="citation-list">
 <div class="citation" id="reb10528198a6-1" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">1</a><span class="fn-bracket">]</span></span>
 <p>Burnley T et al., Acta Cryst. D, 2017</p>
 </div>
 <div class="citation" id="reb10528198a6-2" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">2</a><span class="fn-bracket">]</span></span>
 <p>Nickell S. et al, Journal of Structural Biology, 2005</p>
 </div>
 <div class="citation" id="reb10528198a6-3" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">3</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://scikit-image.org/docs/stable/api/skimage.io.html">https://scikit-image.org/docs/stable/api/skimage.io.html</a></p>
 </div>
 </div>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;/path/to/output.mrc&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;/path/to/output.mrc&quot;</span><span class="p">,</span> <span class="n">gzip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<p>The following creates a density with random values and writes it to disk:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;example.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output file can also be directly gzip compressed. The corresponding
+“.gz” extension will be automatically added if absent <a class="reference internal" href="#reb10528198a6-1" id="id4">[1]</a>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;example.mrc&quot;</span><span class="p">,</span> <span class="n">gzip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="#tme.density.Density.to_file" title="tme.density.Density.to_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_file()</span></code></a> method also supports writing EM files <a class="reference internal" href="#reb10528198a6-2" id="id5">[2]</a>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;example.em&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In addition, a variety of image file formats are supported <a class="reference internal" href="#reb10528198a6-3" id="id6">[3]</a>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;example.tiff&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

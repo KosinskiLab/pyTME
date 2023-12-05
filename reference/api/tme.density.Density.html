@@ -923,9 +923,27 @@ document.write(`
 </dd>
 </dl>
 <p class="rubric">Examples</p>
+<p>The following achieves the minimal definition of a <a class="reference internal" href="#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">70</span><span class="p">,</span><span class="mi">40</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Optional parameters are <a class="reference internal" href="tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.origin</span></code></a> and
+<a class="reference internal" href="tme.density.Density.sampling_rate.html#tme.density.Density.sampling_rate" title="tme.density.Density.sampling_rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.sampling_rate</span></code></a> that correspond to the coordinate system
+reference and the physical volume occupied by each voxel. By default,
+<a class="reference internal" href="tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.origin</span></code></a> is set to zero and <a class="reference internal" href="tme.density.Density.sampling_rate.html#tme.density.Density.sampling_rate" title="tme.density.Density.sampling_rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.sampling_rate</span></code></a>
+to 1. If provided, origin or sampling_rate either need to be a single value:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Be specified along each data axis:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Or a combination of both:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="rubric">Attributes</p>
@@ -954,7 +972,7 @@ document.write(`
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.density.Density.adjust_box.html#tme.density.Density.adjust_box" title="tme.density.Density.adjust_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.adjust_box</span></code></a>(box)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.density.Density.adjust_box.html#tme.density.Density.adjust_box" title="tme.density.Density.adjust_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.adjust_box</span></code></a>(box[, pad_kwargs])</p></td>
 <td><p>Adjusts the internal data array and origin of the current class instance according to the provided box.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="tme.density.Density.align_coordinate_systems.html#tme.density.Density.align_coordinate_systems" title="tme.density.Density.align_coordinate_systems"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.align_coordinate_systems</span></code></a>(target, ...)</p></td>
@@ -999,8 +1017,8 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="tme.density.Density.normal_vectors.html#tme.density.Density.normal_vectors" title="tme.density.Density.normal_vectors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.normal_vectors</span></code></a>(coordinates)</p></td>
 <td><p>Calculates the normal vectors for the given coordinates on the densities of the current class instance.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.density.Density.pad.html#tme.density.Density.pad" title="tme.density.Density.pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.pad</span></code></a>(new_shape[, center])</p></td>
-<td><p>Places the internal data array in a box of size new shape and updates the origin attribute accordingly.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.density.Density.pad.html#tme.density.Density.pad" title="tme.density.Density.pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.pad</span></code></a>(new_shape[, center, padding_value])</p></td>
+<td><p><a class="reference internal" href="tme.density.Density.pad.html#tme.density.Density.pad" title="tme.density.Density.pad"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.pad()</span></code></a> extends the internal <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> array of the current <a class="reference internal" href="#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance to <code class="docutils literal notranslate"><span class="pre">new_shape</span></code> and adapts <a class="reference internal" href="tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.origin</span></code></a> accordingly:</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="tme.density.Density.resample.html#tme.density.Density.resample" title="tme.density.Density.resample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.resample</span></code></a>(new_sampling_rate[, order])</p></td>
 <td><p>Resamples the current class instance to <code class="docutils literal notranslate"><span class="pre">new_sampling_rate</span></code> using spline interpolation of order <code class="docutils literal notranslate"><span class="pre">order</span></code>.</p></td>
@@ -1021,7 +1039,7 @@ document.write(`
 <td><p>Writes current class instance to disk.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="tme.density.Density.to_memmap.html#tme.density.Density.to_memmap" title="tme.density.Density.to_memmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.to_memmap</span></code></a>()</p></td>
-<td><p>Converts the internal electron density volume to a np.memmap (see <a class="reference internal" href="tme.density.Density.to_numpy.html#tme.density.Density.to_numpy" title="tme.density.Density.to_numpy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_numpy()</span></code></a>).</p></td>
+<td><p>Converts the internal electron density volume to a np.memmap.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="tme.density.Density.to_numpy.html#tme.density.Density.to_numpy" title="tme.density.Density.to_numpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.to_numpy</span></code></a>()</p></td>
 <td><p>Converts the internal electron density volume to an in memory numpy array (see <a class="reference internal" href="tme.density.Density.to_memmap.html#tme.density.Density.to_memmap" title="tme.density.Density.to_memmap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_memmap()</span></code></a>).</p></td>

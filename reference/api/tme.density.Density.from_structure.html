@@ -910,14 +910,14 @@ document.write(`
 <dt><strong>shape</strong><span class="classifier">tuple of int, optional</span></dt><dd><p>Shape of the map volume. By default computes the minimum box
 holding all atoms.</p>
 </dd>
-<dt><strong>sampling_rate</strong><span class="classifier">float, optional</span></dt><dd><p>Ångstroms per voxel of the output array, ones by default.</p>
+<dt><strong>sampling_rate</strong><span class="classifier">float, optional</span></dt><dd><p>Ångstroms per voxel of the output array. Defaults to one.</p>
 </dd>
 <dt><strong>origin</strong><span class="classifier">tuple of float, optional</span></dt><dd><p>Origin of the coordinate system. If origin is given its expected
 to be in z, y, x form. By default, computes origin as distance
 between minimal coordinate and coordinate system origin.</p>
 </dd>
 <dt><strong>weight_type</strong><span class="classifier">str, optional</span></dt><dd><p>Which weight should be given to individual atoms. For valid values
-see <code class="xref py py-meth docutils literal notranslate"><span class="pre">Structure.from_file()</span></code>.</p>
+see <a class="reference internal" href="tme.structure.Structure.to_volume.html#tme.structure.Structure.to_volume" title="tme.structure.Structure.to_volume"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.structure.Structure.to_volume()</span></code></a>.</p>
 </dd>
 <dt><strong>chain</strong><span class="classifier">str, optional</span></dt><dd><p>The chain identifier. If multiple chains should be selected they need
 to be a comma separated string, e.g. ‘A,B,CE’. If chain None,
@@ -933,13 +933,85 @@ all chains are returned. Default is None.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt>Density</dt><dd><p>An instance of <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a>.</p>
+<dt>Density</dt><dd><p>An instance of class <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a>.</p>
 </dd>
 </dl>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="tme.structure.Structure.from_file.html#tme.structure.Structure.from_file" title="tme.structure.Structure.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.structure.Structure.from_file()</span></code></a></dt><dd></dd>
+<dt><a class="reference internal" href="tme.structure.Structure.to_volume.html#tme.structure.Structure.to_volume" title="tme.structure.Structure.to_volume"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.structure.Structure.to_volume()</span></code></a></dt><dd></dd>
+</dl>
+</div>
+<p class="rubric">References</p>
+<div role="list" class="citation-list">
+<div class="citation" id="rc0af76196fe4-1" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">1</a><span class="fn-bracket">]</span></span>
+<p>Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+of atomic models into electron density maps. AIMS Biophysics
+2, 8–20.</p>
+</div>
+</div>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span><span class="s2">&quot;/path/to/structure&quot;</span><span class="p">)</span>
+<p>The following is the minimal amount of parameters needed to read in an
+atomic structure and convert it into a <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance. For
+specification on supported formats refer to
+<a class="reference internal" href="tme.structure.Structure.from_file.html#tme.structure.Structure.from_file" title="tme.structure.Structure.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.structure.Structure.from_file()</span></code></a>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_to_structure</span> <span class="o">=</span> <span class="s2">&quot;/path/to/structure.cif&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span><span class="n">path_to_structure</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#tme.density.Density.from_structure" title="tme.density.Density.from_structure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.from_structure()</span></code></a> will automatically determine the appropriate
+volume dimensions based on the structure. The origin will be computed as
+minimal distance required to move the closest atom of the structure to the
+coordinate system origin. Furthermore, all chains will be used and the atom
+densities will be represented by their atomic weight and accumulated
+on a per-voxel basis.</p>
+<p>The following will read in chain A of an atomic structure and discretize
+it on a grid of dimension 100 x 100 x 100 using a sampling rate of
+2.5 Angstrom per voxel.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">filename_or_structure</span> <span class="o">=</span> <span class="n">path_to_structure</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">sampling_rate</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">chain</span> <span class="o">=</span> <span class="s2">&quot;A&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can restrict the generated <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance to only contain
+specific elements like carbon and nitrogen:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">filename_or_structure</span> <span class="o">=</span> <span class="n">path_to_structure</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">filter_by_elements</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or specified residues such as polar amino acids:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">filename_or_structure</span> <span class="o">=</span> <span class="n">path_to_structure</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">filter_by_residues</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;SER&quot;</span><span class="p">,</span> <span class="s2">&quot;THR&quot;</span><span class="p">,</span> <span class="s2">&quot;CYS&quot;</span><span class="p">,</span> <span class="s2">&quot;ASN&quot;</span><span class="p">,</span> <span class="s2">&quot;GLN&quot;</span><span class="p">,</span> <span class="s2">&quot;TYR&quot;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#tme.density.Density.from_structure" title="tme.density.Density.from_structure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.from_structure()</span></code></a> supports a variety of methods to convert
+atoms into densities. In additino to ‘atomic_weight’, ‘atomic_number’,
+‘van_der_waals_radius’ its possible to use experimentally determined scattering
+factors from various sources:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">filename_or_structure</span> <span class="o">=</span> <span class="n">path_to_structure</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">weight_type</span> <span class="o">=</span> <span class="s2">&quot;scattering_factors&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">scattering_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;dt1969&quot;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or a lowpass filtered representation introduced in <a class="reference internal" href="#rc0af76196fe4-1" id="id2">[1]</a>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">filename_or_structure</span> <span class="o">=</span> <span class="n">path_to_structure</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">weight_type</span> <span class="o">=</span> <span class="s2">&quot;lowpass_scattering_factors&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">scattering_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;dt1969&quot;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

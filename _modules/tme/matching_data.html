@@ -421,6 +421,8 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_filter</span> <span class="o">=</span> <span class="p">{}</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="kc">False</span>
+
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_shape_to_slice</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">)</span>
@@ -531,6 +533,7 @@ document.write(`
         <span class="n">template_slice</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">target_pad</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">template_pad</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">invert_target</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;MatchingData&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Slice the instance arrays based on the provided slices.</span>
@@ -576,6 +579,10 @@ document.write(`
         <span class="n">target_subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_array</span><span class="p">(</span>
             <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">,</span> <span class="n">arr_slice</span><span class="o">=</span><span class="n">target_slice</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">target_pad</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span><span class="p">:</span>
+            <span class="n">target_subset</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">target_min</span><span class="p">,</span> <span class="n">target_max</span> <span class="o">=</span> <span class="n">target_subset</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">target_subset</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">target_subset</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_subset</span> <span class="o">-</span> <span class="n">target_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">target_max</span> <span class="o">-</span> <span class="n">target_min</span><span class="p">)</span>
         <span class="n">template_subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_array</span><span class="p">(</span>
             <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">,</span>
             <span class="n">arr_slice</span><span class="o">=</span><span class="n">template_slice</span><span class="p">,</span>
@@ -591,6 +598,7 @@ document.write(`
 
         <span class="n">ret</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span> <span class="n">indices</span>
         <span class="n">ret</span><span class="o">.</span><span class="n">_target_pad</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">_template_pad</span> <span class="o">=</span> <span class="n">target_pad</span><span class="p">,</span> <span class="n">template_pad</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ret</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_array</span><span class="p">(</span>

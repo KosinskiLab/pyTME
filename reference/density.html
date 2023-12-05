@@ -955,7 +955,7 @@ document.write(`
 <td><p>Converts the internal electron density volume to an in memory numpy array (see <a class="reference internal" href="api/tme.density.Density.to_memmap.html#tme.density.Density.to_memmap" title="tme.density.Density.to_memmap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_memmap()</span></code></a>).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/tme.density.Density.to_memmap.html#tme.density.Density.to_memmap" title="tme.density.Density.to_memmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.to_memmap</span></code></a>()</p></td>
-<td><p>Converts the internal electron density volume to a np.memmap (see <a class="reference internal" href="api/tme.density.Density.to_numpy.html#tme.density.Density.to_numpy" title="tme.density.Density.to_numpy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_numpy()</span></code></a>).</p></td>
+<td><p>Converts the internal electron density volume to a np.memmap.</p></td>
 </tr>
 </tbody>
 </table>
@@ -964,8 +964,8 @@ document.write(`
 <h2>Subsetting<a class="headerlink" href="#subsetting" title="Link to this heading">#</a></h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.density.Density.pad.html#tme.density.Density.pad" title="tme.density.Density.pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.pad</span></code></a>(new_shape[, center])</p></td>
-<td><p>Places the internal data array in a box of size new shape and updates the origin attribute accordingly.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.density.Density.pad.html#tme.density.Density.pad" title="tme.density.Density.pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.pad</span></code></a>(new_shape[, center, padding_value])</p></td>
+<td><p><a class="reference internal" href="api/tme.density.Density.pad.html#tme.density.Density.pad" title="tme.density.Density.pad"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.pad()</span></code></a> extends the internal <a class="reference internal" href="api/tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> array of the current <a class="reference internal" href="api/tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance to <code class="docutils literal notranslate"><span class="pre">new_shape</span></code> and adapts <a class="reference internal" href="api/tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.origin</span></code></a> accordingly:</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/tme.density.Density.trim_box.html#tme.density.Density.trim_box" title="tme.density.Density.trim_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.trim_box</span></code></a>(cutoff[, margin])</p></td>
 <td><p>Computes a rectangle with sufficient dimension that encloses all values of the internal data array larger than the specified cutoff, expanded by the specified margin.</p></td>
@@ -973,7 +973,7 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="api/tme.density.Density.centered.html#tme.density.Density.centered" title="tme.density.Density.centered"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.centered</span></code></a>([cutoff])</p></td>
 <td><p>Shifts the data center of mass to the center of the data array.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.density.Density.adjust_box.html#tme.density.Density.adjust_box" title="tme.density.Density.adjust_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.adjust_box</span></code></a>(box)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.density.Density.adjust_box.html#tme.density.Density.adjust_box" title="tme.density.Density.adjust_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.adjust_box</span></code></a>(box[, pad_kwargs])</p></td>
 <td><p>Adjusts the internal data array and origin of the current class instance according to the provided box.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/tme.density.Density.minimum_enclosing_box.html#tme.density.Density.minimum_enclosing_box" title="tme.density.Density.minimum_enclosing_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.minimum_enclosing_box</span></code></a>(cutoff[, ...])</p></td>

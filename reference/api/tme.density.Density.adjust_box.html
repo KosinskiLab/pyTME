@@ -900,7 +900,7 @@ document.write(`
 <h1>Density.adjust_box<a class="headerlink" href="#density-adjust-box" title="Link to this heading">#</a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="tme.density.Density.adjust_box">
-<span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">adjust_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/density.html#Density.adjust_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.density.Density.adjust_box" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">adjust_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/density.html#Density.adjust_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.density.Density.adjust_box" title="Link to this definition">#</a></dt>
 <dd><p>Adjusts the internal data array and origin of the current class instance
 according to the provided box.</p>
 <dl class="field-list simple">
@@ -910,9 +910,48 @@ according to the provided box.</p>
 should be sliced. See <a class="reference internal" href="tme.density.Density.trim_box.html#tme.density.Density.trim_box" title="tme.density.Density.trim_box"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.trim_box()</span></code></a> on how to produce
 such an object.</p>
 </dd>
+<dt><strong>pad_kwargs: dict, optional</strong></dt><dd><p>Parameter dictionary passed to numpy pad.</p>
+</dd>
 </dl>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="tme.density.Density.trim_box.html#tme.density.Density.trim_box" title="tme.density.Density.trim_box"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.trim_box()</span></code></a></dt><dd></dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>The following demonstrates the ability of <a class="reference internal" href="#tme.density.Density.adjust_box" title="tme.density.Density.adjust_box"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.adjust_box()</span></code></a>
+to extract a subdensity from the current <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance.
+<a class="reference internal" href="#tme.density.Density.adjust_box" title="tme.density.Density.adjust_box"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.adjust_box()</span></code></a> not only operats on <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a>,
+but also modifies <a class="reference internal" href="tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.origin</span></code></a> according to <code class="docutils literal notranslate"><span class="pre">box</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">box</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">adjust_box</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span>
+<span class="go">Origin: (1.0, 2.0), sampling_rate: (1, 1), Shape: (3, 3)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#tme.density.Density.adjust_box" title="tme.density.Density.adjust_box"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.adjust_box()</span></code></a> can also extend the box of the current
+<a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance. This is achieved by negative start or
+stops that exceed the dimension of the current <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> array.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">box</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">adjust_box</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span>
+<span class="go">Origin: (0.0, 4.0), sampling_rate: (1, 1), Shape: (11, 8)</span>
+</pre></div>
+</div>
+<p>However, do note that only the start coordinate of each slice in <code class="docutils literal notranslate"><span class="pre">box</span></code>
+can be negative.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">box</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">adjust_box</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span>
+<span class="go">Origin: (-1.0, 6.0), sampling_rate: (1, 1), Shape: (11, 0)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

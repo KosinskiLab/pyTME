@@ -934,6 +934,51 @@ center of the data array.</p>
 value of <a class="reference internal" href="tme.density.Density.minimum_enclosing_box.html#tme.density.Density.minimum_enclosing_box" title="tme.density.Density.minimum_enclosing_box"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.minimum_enclosing_box()</span></code></a>, the size of the internal
 data array is adapted to avoid array elements larger than cutoff to fall
 outside the data array.</p>
+<p class="rubric">Examples</p>
+<p><a class="reference internal" href="#tme.density.Density.centered" title="tme.density.Density.centered"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.centered()</span></code></a> returns a tuple containing a centered version
+of the current <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance, as well as an array with
+translations. The translation corresponds to the shift that was used to
+center the current <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">centered_dens</span><span class="p">,</span> <span class="n">translation</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">centered</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">translation</span>
+<span class="go">array([-4.4408921e-16,  4.4408921e-16])</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#tme.density.Density.centered" title="tme.density.Density.centered"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.centered()</span></code></a> extended the <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute
+of the current <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance and modified
+<a class="reference internal" href="tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.origin</span></code></a> accordingly.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">centered_dens</span>
+<span class="go">Origin: (-1.0, -1.0), sampling_rate: (1, 1), Shape: (7, 7)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#tme.density.Density.centered" title="tme.density.Density.centered"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.centered()</span></code></a> achieves centering via zero-padding the
+internal <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">centered_dens</span><span class="o">.</span><span class="n">data</span>
+<span class="go">array([[0., 0., 0., 0., 0., 0.],</span>
+<span class="go">       [0., 1., 1., 1., 1., 1.],</span>
+<span class="go">       [0., 1., 1., 1., 1., 1.],</span>
+<span class="go">       [0., 1., 1., 1., 1., 1.],</span>
+<span class="go">       [0., 1., 1., 1., 1., 1.],</span>
+<span class="go">       [0., 1., 1., 1., 1., 1.]])</span>
+</pre></div>
+</div>
+<p><cite>centered_dens</cite> is sufficiently large to represent all rotations that
+could be applied to the <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute. Lets look
+at a random rotation obtained from
+<a class="reference internal" href="tme.matching_utils.get_rotation_matrices.html#tme.matching_utils.get_rotation_matrices" title="tme.matching_utils.get_rotation_matrices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.get_rotation_matrices()</span></code></a>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="n">get_rotation_matrices</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">get_rotation_matrices</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">2</span> <span class="p">,</span><span class="n">angular_sampling</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rotated_centered_dens</span> <span class="o">=</span> <span class="n">centered_dens</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">order</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">centered_dens</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">rotated_centered_dens</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="go">25.000000000000007 25.000000000000007</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

@@ -905,7 +905,8 @@ document.write(`
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>Path to a file in CCP4/MRC, EM or a format supported by skimage.io.imread</p>
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>Path to a file in CCP4/MRC, EM or a format supported by skimage.io.imread.
+The file can be gzip compressed.</p>
 </dd>
 <dt><strong>subset</strong><span class="classifier">tuple of slices, optional</span></dt><dd><p>Slices representing the desired subset along each dimension.</p>
 </dd>
@@ -920,6 +921,12 @@ document.write(`
 </dl>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="tme.density.Density.to_file.html#tme.density.Density.to_file" title="tme.density.Density.to_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_file()</span></code></a></dt><dd></dd>
+</dl>
+</div>
 <p class="rubric">Notes</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">filename</span></code> ends with “.em” or “.em.gz” the method will parse it as EM file.
 Otherwise it defaults to the CCP4/MRC format and on failure, defaults to
@@ -928,20 +935,50 @@ extract origin or sampling_rate information from the file.</p>
 <p class="rubric">References</p>
 <div role="list" class="citation-list">
 <div class="citation" id="r53faf50b85c6-1" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">1</a><span class="fn-bracket">]</span></span>
 <p>Burnley T et al., Acta Cryst. D, 2017</p>
 </div>
 <div class="citation" id="r53faf50b85c6-2" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">2</a><span class="fn-bracket">]</span></span>
 <p>Nickell S. et al, Journal of Structural Biology, 2005.</p>
 </div>
 <div class="citation" id="r53faf50b85c6-3" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">3</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://scikit-image.org/docs/stable/api/skimage.io.html">https://scikit-image.org/docs/stable/api/skimage.io.html</a></p>
 </div>
 </div>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/file&quot;</span><span class="p">)</span>
+<p><a class="reference internal" href="#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.from_file()</span></code></a> reads files in  CCP4/MRC, EM, or a format supported
+by skimage.io.imread and converts them into a <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance. The
+following how to read a file in the CCP4/MRC format <a class="reference internal" href="#r53faf50b85c6-1" id="id4">[1]</a>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/file.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In some cases, you might want to read only a specific subset of the data.
+This can be achieved by passing a tuple of slices to the <cite>subset</cite> parameter.
+For example, to read only the first 50 voxels along each dimension:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">subset_slices</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/file.mrc&quot;</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="n">subset_slices</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For large density maps, memory mapping can be used to read the file directly
+from disk without loading it entirely into memory. This is particularly useful
+for large datasets or when working with limited memory resources:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/large_file.mrc&quot;</span><span class="p">,</span> <span class="n">use_memmap</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that use_memmap will be ignored if the file is gzip compressed.</p>
+<p>If the input file has an <cite>.em</cite> or <cite>.em.gz</cite> extension, it will automatically
+be parsed as EM file <a class="reference internal" href="#r53faf50b85c6-2" id="id5">[2]</a>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/file.em&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/file.em.gz&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If the file format is not CCP4/MRC or EM, <a class="reference internal" href="#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.from_file()</span></code></a> attempts
+to use skimage.io.imread to read the file <a class="reference internal" href="#r53faf50b85c6-3" id="id6">[3]</a>. This fallback does not extract
+origin or sampling_rate information from the file:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/other_format.tif&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

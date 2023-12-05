@@ -535,14 +535,14 @@ document.write(`
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a target in CCP4/MRC format.&quot;</span><span class="p">,</span>
-    <span class="p">),</span>
+    <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--target_mask&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;target_mask&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a mask for the target target in CCP4/MRC format.&quot;</span><span class="p">,</span>
-    <span class="p">),</span>
+    <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--cutoff_target&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;cutoff_target&quot;</span><span class="p">,</span>
@@ -550,7 +550,7 @@ document.write(`
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Target contour level (used for cropping).&quot;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="p">),</span>
+    <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--cutoff_template&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;cutoff_template&quot;</span><span class="p">,</span>
@@ -558,7 +558,7 @@ document.write(`
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Template contour level (used for cropping).&quot;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="p">),</span>
+    <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--template&quot;</span><span class="p">,</span>
@@ -566,14 +566,14 @@ document.write(`
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a template in PDB/MMCIF or CCP4/MRC format.&quot;</span><span class="p">,</span>
-    <span class="p">),</span>
+    <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--template_mask&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;template_mask&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a mask for the template in CCP4/MRC format.&quot;</span><span class="p">,</span>
-    <span class="p">),</span>
+    <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">,</span>
@@ -586,7 +586,7 @@ document.write(`
         <span class="s2">&quot;-s&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;score&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;CC&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;FLCSphericalMask&quot;</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Template matching scoring function.&quot;</span><span class="p">,</span>
         <span class="n">choices</span><span class="o">=</span><span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
     <span class="p">)</span>
@@ -649,6 +649,17 @@ document.write(`
         <span class="s2">&quot; be respected.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--invert_target_contrast&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;invert_target_contrast&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Invert the target contrast via multiplication with negative one and&quot;</span>
+        <span class="s2">&quot; linear rescaling between zero and one. Note that this might lead to&quot;</span>
+        <span class="s2">&quot; different baseline scores of individual target splits when using&quot;</span>
+        <span class="s2">&quot; unnormalized scores. This option is intended for targets, where the&quot;</span>
+        <span class="s2">&quot; object to-be-matched has negative values, i.e. tomograms.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--no_edge_padding&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;no_edge_padding&quot;</span><span class="p">,</span>
         <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
@@ -662,7 +673,8 @@ document.write(`
         <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Whether input arrays should be zero-padded to the full convolution shape&quot;</span>
-        <span class="s2">&quot; for numerical stability.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot; for numerical stability. When working with very large targets such as&quot;</span>
+        <span class="s2">&quot; tomograms it is safe to use this flag and benefit from the performance gain.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--scramble_phases&quot;</span><span class="p">,</span>
@@ -708,7 +720,6 @@ document.write(`
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Sigma parameter for Gaussian filtering the template.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--bandpass_band&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;bandpass_band&quot;</span><span class="p">,</span>
@@ -780,9 +791,6 @@ document.write(`
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">use_gpu</span><span class="p">:</span>
         <span class="n">gpu_devices</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">gpu_devices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># raise ValueError(</span>
-            <span class="c1">#     &quot;No GPU indices provided and CUDA_VISIBLE_DEVICES is not set.&quot;</span>
-            <span class="c1"># )</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="s2">&quot;No GPU indices provided and CUDA_VISIBLE_DEVICES is not set.&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;Assuming device 0.&quot;</span><span class="p">,</span>
@@ -1023,6 +1031,7 @@ document.write(`
     <span class="p">)</span>
 
     <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">invert_target_contrast</span>
     <span class="k">if</span> <span class="n">target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">matching_data</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">target_mask</span>
     <span class="k">if</span> <span class="n">template_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1087,6 +1096,8 @@ document.write(`
 
     <span class="n">candidates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="k">if</span> <span class="n">candidates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">callback_class</span> <span class="o">==</span> <span class="n">MaxScoreOverRotations</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">score</span> <span class="o">!=</span> <span class="s2">&quot;MCC&quot;</span><span class="p">:</span>
+            <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="n">target_mask</span><span class="o">.</span><span class="n">data</span>
         <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
             <span class="n">candidates</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
