@@ -907,8 +907,22 @@ different matching methods. Users should subclass it and implement the
 <cite>base_usage</cite> and <cite>per_fork</cite> methods to specify custom memory usage
 estimates.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>fast_shape</strong><span class="classifier">tuple of int</span></dt><dd><p>Shape of the real array.</p>
+</dd>
+<dt><strong>ft_shape</strong><span class="classifier">tuple of int</span></dt><dd><p>Shape of the complex array.</p>
+</dd>
+<dt><strong>float_nbytes</strong><span class="classifier">int</span></dt><dd><p>Number of bytes of the used float, e.g. 4 for float32.</p>
+</dd>
+<dt><strong>complex_nbytes</strong><span class="classifier">int</span></dt><dd><p>Number of bytes of the used complex, e.g. 8 for complex64.</p>
+</dd>
+<dt><strong>integer_nbytes</strong><span class="classifier">int</span></dt><dd><p>Number of bytes of the used integer, e.g. 4 for int32.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>real_array_size</strong><span class="classifier">int</span></dt><dd><p>Number of elements in real array.</p>
 </dd>
 <dt><strong>complex_array_size</strong><span class="classifier">int</span></dt><dd><p>Number of elements in complex array.</p>
