@@ -21,8 +21,8 @@ class MatchingMemoryUsage(ABC):
     `base_usage` and `per_fork` methods to specify custom memory usage
     estimates.
 
-    Parameteres
-    -----------
+    Parameters
+    ----------
     fast_shape : tuple of int
         Shape of the real array.
     ft_shape : tuple of int
