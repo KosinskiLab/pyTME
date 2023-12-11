@@ -168,6 +168,11 @@ def main():
         template = Structure.from_file(cli_args.template)
         center_of_mass = template.center_of_mass()[::-1]
 
+    template_mask = template.empty
+    template_mask.data[:] = 1
+    if cli_args.template_mask is not None:
+        template_mask = Density.from_file(cli_args.template_mask)
+
     if args.output_format == "extraction":
         target = Density.from_file(cli_args.target)
 
@@ -235,11 +240,13 @@ def main():
             observations[idx][obs_slice] = target.data[cand_slice]
 
         for index in range(observations.shape[0]):
-            Density(
+            out_density = Density(
                 data=observations[index],
                 sampling_rate=sampling_rate,
                 origin=candidate_starts[index] * sampling_rate,
-            ).to_file(f"{args.output_prefix}{index}.mrc")
+            )
+            out_density.data = out_density.data * template_mask.data
+            out_density.to_file(f"{args.output_prefix}{index}.mrc")
         exit(0)
 
     for translation, angles, *_ in orientations:

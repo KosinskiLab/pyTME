@@ -31,11 +31,11 @@ classifiers = [
 ]
 
 [project.scripts]
-match-template = "tme.scripts:match_template"
-estimate-ram-usage = "tme.scripts:estimate_ram_usage"
-preprocessor-gui = "tme.scripts:preprocessor_gui"
-preprocess = "tme.scripts:preprocess"
-postprocess = "tme.scripts:postprocess"
+match_template = "scripts:match_template.main"
+estimate_ram_usage = "scripts:estimate_ram_usage.main"
+preprocessor_gui = "scripts:preprocessor_gui.main"
+preprocess = "scripts:preprocess.main"
+postprocess = "scripts:postprocess.main"
 
 [project.urls]
 "Homepage" = "https://github.com/KosinskiLab/pyTME"

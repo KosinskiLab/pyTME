@@ -30,3 +30,15 @@ docker build \
 🔗 For more on the Docker container, visit the [Docker Hub page](https://hub.docker.com).
 
 ---
+
+### Publication
+
+The pyTME publication is available on [bioRxiv](https://www.biorxiv.org/content/10.1101/2023.10.23.563472v1).
+
+```
+@article{Maurer2023.10.23.563472,
+	author = {Valentin J. Maurer and Marc Siggel and Jan Kosinski},
+	journal = {bioRxiv},
+	title = {PyTME (Python Template Matching Engine): A fast, flexible, and multi-purpose template matching library for cryogenic electron microscopy data},
+	year = {2023}}
+```

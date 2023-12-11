@@ -17,7 +17,7 @@ The ``match_template.py`` command-line tool facilitates template matching using 
 
 .. note::
 
-    ``match_template.py`` expects high densities to have positive, low densities to have negative values. Therefore, input tomograms typically need to be inverted by multiplication with negative one.
+    ``match_template.py`` expects high densities to have positive, low densities to have negative values. Therefore, input tomograms typically need to be inverted by multiplication with negative one. Version 0.1.4 introduced the ``--invert_target_contrast`` flag, which automatically performs the inversion for you.
 
 Background
 ^^^^^^^^^^

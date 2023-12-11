@@ -17,6 +17,7 @@ extensions = [
     "sphinx_design",
     "sphinx_copybutton",
     "sphinx_tabs.tabs",
+    "sphinx.ext.intersphinx"
 ]
 copybutton_prompt_text = ">>> "
 copybutton_prompt_is_regexp = False
@@ -58,4 +59,8 @@ html_theme_options = {
     "use_edit_page_button": False,
     "navigation_depth": 3,
     "show_toc_level": 1,
+}
+
+intersphinx_mapping = {
+    'numpy': ('https://numpy.org/doc/stable/', None),
 }

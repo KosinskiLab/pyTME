@@ -462,7 +462,7 @@ def main():
     print_block(
         name="Target",
         data={
-            "Inital Shape": initial_shape,
+            "Initial Shape": initial_shape,
             "Sampling Rate": tuple(np.round(target.sampling_rate, 2)),
             "Final Shape": target.shape,
         },
@@ -477,7 +477,7 @@ def main():
             print_block(
                 name="Target Mask",
                 data={
-                    "Inital Shape": initial_shape,
+                    "Initial Shape": initial_shape,
                     "Sampling Rate": tuple(np.round(target_mask.sampling_rate, 2)),
                     "Final Shape": target_mask.shape,
                 },
@@ -489,7 +489,7 @@ def main():
     print_block(
         name="Template",
         data={
-            "Inital Shape": initial_shape,
+            "Initial Shape": initial_shape,
             "Sampling Rate": tuple(np.round(template.sampling_rate, 2)),
             "Final Shape": template.shape,
         },

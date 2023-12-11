@@ -67,9 +67,9 @@ class Density:
     >>> data = np.random.rand(50,70,40)
     >>> Density(data = data)
 
-    Optional parameters are :py:attr:`Density.origin` and
-    :py:attr:`Density.sampling_rate` that correspond to the coordinate system
-    reference and the physical volume occupied by each voxel. By default,
+    Optional parameters are ``origin`` and ``sampling_rate`` that correspond
+    to the coordinate system reference and the edge length per axis element,
+    as well as the ``metadata`` dictionary. By default,
     :py:attr:`Density.origin` is set to zero and :py:attr:`Density.sampling_rate`
     to 1. If provided, origin or sampling_rate either need to be a single value:
 
@@ -151,13 +151,13 @@ class Density:
         --------
         :py:meth:`Density.from_file` reads files in  CCP4/MRC, EM, or a format supported
         by skimage.io.imread and converts them into a :py:class:`Density` instance. The
-        following how to read a file in the CCP4/MRC format [1]_:
+        following outlines how to read a file in the CCP4/MRC format [1]_:
 
         >>> from tme import Density
         >>> Density.from_file("/path/to/file.mrc")
 
         In some cases, you might want to read only a specific subset of the data.
-        This can be achieved by passing a tuple of slices to the `subset` parameter.
+        This can be achieved by passing a tuple of slices to the ``subset`` parameter.
         For example, to read only the first 50 voxels along each dimension:
 
         >>> subset_slices = (slice(0, 50), slice(0, 50), slice(0, 50))
@@ -247,6 +247,11 @@ class Density:
             If the mrcfile is malformatted.
             If the subset starts below zero, exceeds the data dimension or does not
             have the same length as the data dimensions.
+
+        See Also
+        --------
+        :py:meth:`Density.from_file`
+
         """
         with mrcfile.open(filename, header_only=True) as mrc:
             data_shape = mrc.header.nz, mrc.header.ny, mrc.header.nx
@@ -375,6 +380,10 @@ class Density:
         -----
         A pixel size of zero will be treated as missing value and changed to one. This
         function does not yet extract an origin like :py:meth:`Density._load_mrc`.
+
+        See Also
+        --------
+        :py:meth:`Density.from_file`
         """
         DATA_TYPE_CODING = {
             1: np.byte,
@@ -505,6 +514,11 @@ class Density:
         ------
         NotImplementedError
             If the data is not three dimensional.
+
+        See Also
+        --------
+        :py:meth:`Density._load_mrc`
+        :py:meth:`Density._load_em`
         """
         n_dims = len(data_shape)
         if n_dims != 3:
@@ -562,6 +576,10 @@ class Density:
         Warns
         -----
             Warns that origin and sampling_rate are not yet extracted from ``filename``.
+
+        See Also
+        --------
+        :py:meth:`Density.from_file`
         """
         swap = filename
         if is_gzipped(filename):
@@ -588,28 +606,34 @@ class Density:
         filter_by_residues: Set = None,
     ) -> "Density":
         """
-        Reads in an atomic structure and converts it into a :class:`Density` instance.
+        Reads in an atomic structure and converts it into a :py:class:`Density`
+        instance.
 
         Parameters
         ----------
-        filename_or_structure : str
-            Either Structure instance or path to structure file.
+        filename_or_structure : str or :py:class:`tme.structure.Structure`
+            Either :py:class:`tme.structure.Structure` instance or path to
+            structure file that can be read by
+            :py:meth:`tme.structure.Structure.from_file`.
         shape : tuple of int, optional
-            Shape of the map volume. By default computes the minimum box
-            holding all atoms.
+            Shape of the new :py:class:`Density` instance. By default,
+            computes the minimum 3D box holding all atoms.
         sampling_rate : float, optional
-            Ångstroms per voxel of the output array. Defaults to one.
+            Sampling rate of the output array along each axis, in the same unit
+            as the atoms in the structure. Defaults to one Ångstroms
+            per axis unit.
         origin : tuple of float, optional
-            Origin of the coordinate system. If origin is given its expected
-            to be in z, y, x form. By default, computes origin as distance
-            between minimal coordinate and coordinate system origin.
+            Origin of the coordinate system. If provided, its expected to be in
+            z, y, x form in the same unit as the atoms in the structure.
+            By default, computes origin as distance between minimal coordinate
+            and coordinate system origin.
         weight_type : str, optional
             Which weight should be given to individual atoms. For valid values
             see :py:meth:`tme.structure.Structure.to_volume`.
         chain : str, optional
-            The chain identifier. If multiple chains should be selected they need
-            to be a comma separated string, e.g. 'A,B,CE'. If chain None,
-            all chains are returned. Default is None.
+            The chain that should be extracted from the structure. If multiple chains
+            should be selected, they needto be a comma separated string,
+            e.g. 'A,B,CE'. If chain None, all chains are returned. Default is None.
         filter_by_elements : set, optional
             Set of atomic elements to keep. Default is all atoms.
         filter_by_residues : set, optional
@@ -619,8 +643,8 @@ class Density:
 
         Returns
         -------
-        Density
-            An instance of class :class:`Density`.
+        :py:class:`Density`
+            Newly created :py:class:`Density` instance.
 
         References
         ----------
@@ -630,7 +654,7 @@ class Density:
 
         Examples
         --------
-        The following is the minimal amount of parameters needed to read in an
+        The following outlines the minimal parameters needed to read in an
         atomic structure and convert it into a :py:class:`Density` instance. For
         specification on supported formats refer to
         :py:meth:`tme.structure.Structure.from_file`.
@@ -639,7 +663,7 @@ class Density:
         >>> density = Density.from_structure(path_to_structure)
 
         :py:meth:`Density.from_structure` will automatically determine the appropriate
-        volume dimensions based on the structure. The origin will be computed as
+        density dimensions based on the structure. The origin will be computed as
         minimal distance required to move the closest atom of the structure to the
         coordinate system origin. Furthermore, all chains will be used and the atom
         densities will be represented by their atomic weight and accumulated
@@ -656,7 +680,7 @@ class Density:
         >>>    chain = "A"
         >>> )
 
-        We can restrict the generated :class:`Density` instance to only contain
+        We can restrict the generated py:class:`Density` instance to only contain
         specific elements like carbon and nitrogen:
 
         >>> density = Density.from_structure(
@@ -739,7 +763,8 @@ class Density:
 
         Examples
         --------
-        The following creates a density with random values and writes it to disk:
+        The following creates a :py:class:`Density` instance `dens` holding
+        random data values and writes it to disk:
 
         >>> import numpy as np
         >>> from tme import Density
@@ -747,7 +772,7 @@ class Density:
         >>> dens = Density(data = data, origin = (0, 0, 0), sampling_rate = (1, 1, 1))
         >>> dens.to_file("example.mrc")
 
-        The output file can also be directly gzip compressed. The corresponding
+        The output file can also be directly ``gzip`` compressed. The corresponding
         ".gz" extension will be automatically added if absent [1]_.
 
         >>> dens.to_file("example.mrc", gzip=True)
@@ -767,6 +792,10 @@ class Density:
         If ``filename`` ends with ".em" or ".em.gz", the method will create an EM file.
         Otherwise, it defaults to the CCP4/MRC format, and on failure, it falls back
         to `skimage.io.imsave`.
+
+        See Also
+        --------
+        :py:meth:`Density.from_file`
         """
         if gzip:
             filename = filename if filename.endswith(".gz") else f"{filename}.gz"
@@ -789,6 +818,10 @@ class Density:
             Path to write to.
         gzip : bool, optional
             If True, the output will be gzip compressed.
+
+        References
+        ----------
+        .. [1] Burnley T et al., Acta Cryst. D, 2017
         """
         compression = "gzip" if gzip else None
         with mrcfile.new(filename, overwrite=True, compression=compression) as mrc:
@@ -871,7 +904,10 @@ class Density:
     @property
     def empty(self) -> "Density":
         """
-        Returns a copy of the current class instance with all voxels set to zero.
+        Returns a copy of the current class instance with all elements in
+        :py:attr:`Density.data` set to zero. :py:attr:`Density.origin` and
+        :py:attr:`Density.sampling_rate` will be copied, while
+        :py:attr:`Density.metadata` will be initialized to an empty dictionary.
 
         Examples
         --------
@@ -890,7 +926,7 @@ class Density:
 
     def copy(self) -> "Density":
         """
-        Returns a copy of the current class instance.
+        Returns a copy of the current :py:class:`Density` instance.
 
         Examples
         --------
@@ -909,12 +945,27 @@ class Density:
 
     def to_memmap(self) -> None:
         """
-        Converts the internal electron density volume to a np.memmap.
+        Converts the current class instance's :py:attr:`Density.data` attribute to
+        a :obj:`numpy.memmap` instance.
 
         Examples
         --------
+        The following outlines how to use the :py:meth:`Density.to_memmap` method.
+
+        >>> from tme import Density
         >>> large_density = Density.from_file("/path/to/large_file.mrc")
         >>> large_density.to_memmap()
+
+        A more efficient solution to achieve the result outlined above is to
+        provide the ``use_memmap`` flag in :py:meth:`Density.from_file`.
+
+        >>> Density.from_file("/path/to/large_file.mrc", use_memmap = True)
+
+        In practice, the :py:meth:`Density.to_memmap` method finds application, if a
+        large number of :py:class:`Density` instances need to be in memory at once,
+        without occupying the full phyiscal memory required to store
+        :py:attr:`Density.data`.
+
 
         See Also
         --------
@@ -931,11 +982,12 @@ class Density:
 
     def to_numpy(self) -> None:
         """
-        Converts the internal electron density volume to an in memory
-        numpy array (see :py:meth:`Density.to_memmap`).
+        Converts the current class instance's :py:attr:`Density.data` attribute to
+        an in-memory :obj:`numpy.ndarray`.
 
         Examples
         --------
+        >>> from tme import Density
         >>> density = Density.from_file("/path/to/large_file.mrc")
         >>> density.to_memmap()  # Convert to memory-mapped array first
         >>> density.to_numpy()   # Now, convert back to an in-memory array
@@ -949,33 +1001,77 @@ class Density:
     @property
     def shape(self) -> Tuple[int]:
         """
-        Returns the shape of internal data array..
+        Returns the dimensions of current instance's :py:attr:`Density.data`
+        attribute.
 
         Returns
         -------
         tuple
-            The shape of the array.
+            The dimensions of :py:attr:`Density.data`.
+
+        Examples
+        --------
+        The following outlines the usage of :py:attr:`Density.shape`:
+
+        >>> import numpy as np
+        >>> from tme import Density
+        >>> dens = Density(np.array([0, 1, 1, 1, 0]))
+        >>> dens.shape
+        (5,)
         """
         return self.data.shape
 
     @property
     def data(self) -> NDArray:
         """
-        Returns numpy array with electron densities.
+        Returns the value of the current instance's :py:attr:`Density.data`
+        attribute.
+
+        Returns
+        -------
+        NDArray
+            Value of the current instance's :py:attr:`Density.data` attribute.
+
+        Examples
+        --------
+        The following outlines the usage of :py:attr:`Density.data`:
+
+        >>> import numpy as np
+        >>> from tme import Density
+        >>> dens = Density(np.array([0, 1, 1, 1, 0]))
+        >>> dens.data
+        array([0, 1, 1, 1, 0])
+
         """
         return self._data
 
     @data.setter
     def data(self, data: NDArray) -> None:
         """
-        Sets the data of the class instance
+        Sets the value of the current instance's :py:attr:`Density.data` attribute.
         """
         self._data = data
 
     @property
     def origin(self) -> NDArray:
         """
-        Returns numpy array with origin of the coordinate system.
+        Returns the value of the current instance's :py:attr:`Density.origin`
+        attribute.
+
+        Returns
+        -------
+        NDArray
+            Value of the current instance's :py:attr:`Density.origin` attribute.
+
+        Examples
+        --------
+        The following outlines the usage of :py:attr:`Density.origin`:
+
+        >>> import numpy as np
+        >>> from tme import Density
+        >>> dens = Density(np.array([0, 1, 1, 1, 0]))
+        >>> dens.origin
+        array([0.])
         """
         return self._origin
 

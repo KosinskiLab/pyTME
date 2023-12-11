@@ -21,7 +21,20 @@ class MatchingMemoryUsage(ABC):
     `base_usage` and `per_fork` methods to specify custom memory usage
     estimates.
 
-    Parameters
+    Parameteres
+    -----------
+    fast_shape : tuple of int
+        Shape of the real array.
+    ft_shape : tuple of int
+        Shape of the complex array.
+    float_nbytes : int
+        Number of bytes of the used float, e.g. 4 for float32.
+    complex_nbytes : int
+        Number of bytes of the used complex, e.g. 8 for complex64.
+    integer_nbytes : int
+        Number of bytes of the used integer, e.g. 4 for int32.
+
+    Attributes
     ----------
     real_array_size : int
         Number of elements in real array.
