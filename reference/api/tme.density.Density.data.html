@@ -901,7 +901,25 @@ document.write(`
 <dl class="py property">
 <dt class="sig sig-object py" id="tme.density.Density.data">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#tme.density.Density.data" title="Link to this definition">#</a></dt>
-<dd><p>Returns numpy array with electron densities.</p>
+<dd><p>Returns the value of the current instance’s <a class="reference internal" href="#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a>
+attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>NDArray</dt><dd><p>Value of the current instance’s <a class="reference internal" href="#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>The following outlines the usage of <a class="reference internal" href="#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">data</span>
+<span class="go">array([0, 1, 1, 1, 0])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

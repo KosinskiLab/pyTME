@@ -950,13 +950,13 @@ extract origin or sampling_rate information from the file.</p>
 <p class="rubric">Examples</p>
 <p><a class="reference internal" href="#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.from_file()</span></code></a> reads files in  CCP4/MRC, EM, or a format supported
 by skimage.io.imread and converts them into a <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance. The
-following how to read a file in the CCP4/MRC format <a class="reference internal" href="#r53faf50b85c6-1" id="id4">[1]</a>:</p>
+following outlines how to read a file in the CCP4/MRC format <a class="reference internal" href="#r53faf50b85c6-1" id="id4">[1]</a>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/file.mrc&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In some cases, you might want to read only a specific subset of the data.
-This can be achieved by passing a tuple of slices to the <cite>subset</cite> parameter.
+This can be achieved by passing a tuple of slices to the <code class="docutils literal notranslate"><span class="pre">subset</span></code> parameter.
 For example, to read only the first 50 voxels along each dimension:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">subset_slices</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/file.mrc&quot;</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="n">subset_slices</span><span class="p">)</span>

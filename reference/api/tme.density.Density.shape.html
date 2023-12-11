@@ -901,15 +901,25 @@ document.write(`
 <dl class="py property">
 <dt class="sig sig-object py" id="tme.density.Density.shape">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#tme.density.Density.shape" title="Link to this definition">#</a></dt>
-<dd><p>Returns the shape of internal data array..</p>
+<dd><p>Returns the dimensions of current instance’s <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a>
+attribute.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt>tuple</dt><dd><p>The shape of the array.</p>
+<dt>tuple</dt><dd><p>The dimensions of <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a>.</p>
 </dd>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>The following outlines the usage of <a class="reference internal" href="#tme.density.Density.shape" title="tme.density.Density.shape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.shape</span></code></a>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(5,)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

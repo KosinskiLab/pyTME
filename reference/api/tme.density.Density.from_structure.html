@@ -901,27 +901,33 @@ document.write(`
 <dl class="py method">
 <dt class="sig sig-object py" id="tme.density.Density.from_structure">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">from_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename_or_structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([1.])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'atomic_weight'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scattering_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_by_elements</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_by_residues</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/density.html#Density.from_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.density.Density.from_structure" title="Link to this definition">#</a></dt>
-<dd><p>Reads in an atomic structure and converts it into a <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance.</p>
-<dl class="field-list simple">
+<dd><p>Reads in an atomic structure and converts it into a <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a>
+instance.</p>
+<dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>filename_or_structure</strong><span class="classifier">str</span></dt><dd><p>Either Structure instance or path to structure file.</p>
+<dd class="field-odd"><dl>
+<dt><strong>filename_or_structure</strong><span class="classifier">str or <a class="reference internal" href="tme.structure.Structure.html#tme.structure.Structure" title="tme.structure.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.structure.Structure</span></code></a></span></dt><dd><p>Either <a class="reference internal" href="tme.structure.Structure.html#tme.structure.Structure" title="tme.structure.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.structure.Structure</span></code></a> instance or path to
+structure file that can be read by
+<a class="reference internal" href="tme.structure.Structure.from_file.html#tme.structure.Structure.from_file" title="tme.structure.Structure.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.structure.Structure.from_file()</span></code></a>.</p>
 </dd>
-<dt><strong>shape</strong><span class="classifier">tuple of int, optional</span></dt><dd><p>Shape of the map volume. By default computes the minimum box
-holding all atoms.</p>
+<dt><strong>shape</strong><span class="classifier">tuple of int, optional</span></dt><dd><p>Shape of the new <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance. By default,
+computes the minimum 3D box holding all atoms.</p>
 </dd>
-<dt><strong>sampling_rate</strong><span class="classifier">float, optional</span></dt><dd><p>Ångstroms per voxel of the output array. Defaults to one.</p>
+<dt><strong>sampling_rate</strong><span class="classifier">float, optional</span></dt><dd><p>Sampling rate of the output array along each axis, in the same unit
+as the atoms in the structure. Defaults to one Ångstroms
+per axis unit.</p>
 </dd>
-<dt><strong>origin</strong><span class="classifier">tuple of float, optional</span></dt><dd><p>Origin of the coordinate system. If origin is given its expected
-to be in z, y, x form. By default, computes origin as distance
-between minimal coordinate and coordinate system origin.</p>
+<dt><strong>origin</strong><span class="classifier">tuple of float, optional</span></dt><dd><p>Origin of the coordinate system. If provided, its expected to be in
+z, y, x form in the same unit as the atoms in the structure.
+By default, computes origin as distance between minimal coordinate
+and coordinate system origin.</p>
 </dd>
 <dt><strong>weight_type</strong><span class="classifier">str, optional</span></dt><dd><p>Which weight should be given to individual atoms. For valid values
 see <a class="reference internal" href="tme.structure.Structure.to_volume.html#tme.structure.Structure.to_volume" title="tme.structure.Structure.to_volume"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.structure.Structure.to_volume()</span></code></a>.</p>
 </dd>
-<dt><strong>chain</strong><span class="classifier">str, optional</span></dt><dd><p>The chain identifier. If multiple chains should be selected they need
-to be a comma separated string, e.g. ‘A,B,CE’. If chain None,
-all chains are returned. Default is None.</p>
+<dt><strong>chain</strong><span class="classifier">str, optional</span></dt><dd><p>The chain that should be extracted from the structure. If multiple chains
+should be selected, they needto be a comma separated string,
+e.g. ‘A,B,CE’. If chain None, all chains are returned. Default is None.</p>
 </dd>
 <dt><strong>filter_by_elements</strong><span class="classifier">set, optional</span></dt><dd><p>Set of atomic elements to keep. Default is all atoms.</p>
 </dd>
@@ -933,7 +939,7 @@ all chains are returned. Default is None.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt>Density</dt><dd><p>An instance of class <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a>.</p>
+<dt><a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a></dt><dd><p>Newly created <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance.</p>
 </dd>
 </dl>
 </dd>
@@ -955,7 +961,7 @@ of atomic models into electron density maps. AIMS Biophysics
 </div>
 </div>
 <p class="rubric">Examples</p>
-<p>The following is the minimal amount of parameters needed to read in an
+<p>The following outlines the minimal parameters needed to read in an
 atomic structure and convert it into a <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance. For
 specification on supported formats refer to
 <a class="reference internal" href="tme.structure.Structure.from_file.html#tme.structure.Structure.from_file" title="tme.structure.Structure.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.structure.Structure.from_file()</span></code></a>.</p>
@@ -964,7 +970,7 @@ specification on supported formats refer to
 </pre></div>
 </div>
 <p><a class="reference internal" href="#tme.density.Density.from_structure" title="tme.density.Density.from_structure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.from_structure()</span></code></a> will automatically determine the appropriate
-volume dimensions based on the structure. The origin will be computed as
+density dimensions based on the structure. The origin will be computed as
 minimal distance required to move the closest atom of the structure to the
 coordinate system origin. Furthermore, all chains will be used and the atom
 densities will be represented by their atomic weight and accumulated
@@ -980,7 +986,7 @@ it on a grid of dimension 100 x 100 x 100 using a sampling rate of
 <span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We can restrict the generated <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance to only contain
+<p>We can restrict the generated py:class:<cite>Density</cite> instance to only contain
 specific elements like carbon and nitrogen:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span>
 <span class="gp">&gt;&gt;&gt; </span>   <span class="n">filename_or_structure</span> <span class="o">=</span> <span class="n">path_to_structure</span><span class="p">,</span>

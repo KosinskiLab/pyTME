@@ -901,7 +901,8 @@ document.write(`
 <dl class="py method">
 <dt class="sig sig-object py" id="tme.density.Density.to_memmap">
 <span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">to_memmap</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/density.html#Density.to_memmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.density.Density.to_memmap" title="Link to this definition">#</a></dt>
-<dd><p>Converts the internal electron density volume to a np.memmap.</p>
+<dd><p>Converts the current class instance’s <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute to
+a <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.memmap.html#numpy.memmap" title="(in NumPy v1.26)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.memmap</span></code></a> instance.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
@@ -909,10 +910,21 @@ document.write(`
 </dl>
 </div>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">large_density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/large_file.mrc&quot;</span><span class="p">)</span>
+<p>The following outlines how to use the <a class="reference internal" href="#tme.density.Density.to_memmap" title="tme.density.Density.to_memmap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_memmap()</span></code></a> method.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">large_density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/large_file.mrc&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">large_density</span><span class="o">.</span><span class="n">to_memmap</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>A more efficient solution to achieve the result outlined above is to
+provide the <code class="docutils literal notranslate"><span class="pre">use_memmap</span></code> flag in <a class="reference internal" href="tme.density.Density.from_file.html#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.from_file()</span></code></a>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/large_file.mrc&quot;</span><span class="p">,</span> <span class="n">use_memmap</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In practice, the <a class="reference internal" href="#tme.density.Density.to_memmap" title="tme.density.Density.to_memmap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_memmap()</span></code></a> method finds application, if a
+large number of <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instances need to be in memory at once,
+without occupying the full phyiscal memory required to store
+<a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a>.</p>
 </dd></dl>
 
 </section>

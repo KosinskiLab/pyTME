@@ -901,7 +901,10 @@ document.write(`
 <dl class="py property">
 <dt class="sig sig-object py" id="tme.density.Density.empty">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">empty</span></span><a class="headerlink" href="#tme.density.Density.empty" title="Link to this definition">#</a></dt>
-<dd><p>Returns a copy of the current class instance with all voxels set to zero.</p>
+<dd><p>Returns a copy of the current class instance with all elements in
+<a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> set to zero. <a class="reference internal" href="tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.origin</span></code></a> and
+<a class="reference internal" href="tme.density.Density.sampling_rate.html#tme.density.Density.sampling_rate" title="tme.density.Density.sampling_rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.sampling_rate</span></code></a> will be copied, while
+<a class="reference internal" href="tme.density.Density.metadata.html#tme.density.Density.metadata" title="tme.density.Density.metadata"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.metadata</span></code></a> will be initialized to an empty dictionary.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>

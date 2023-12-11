@@ -908,10 +908,10 @@ document.write(`
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.data</span></code></a></p></td>
-<td><p>Returns numpy array with electron densities.</p></td>
+<td><p>Returns the value of the current instance's <a class="reference internal" href="api/tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.origin</span></code></a></p></td>
-<td><p>Returns numpy array with origin of the coordinate system.</p></td>
+<td><p>Returns the value of the current instance's <a class="reference internal" href="api/tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.origin</span></code></a> attribute.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/tme.density.Density.sampling_rate.html#tme.density.Density.sampling_rate" title="tme.density.Density.sampling_rate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.sampling_rate</span></code></a></p></td>
 <td><p>Returns sampling rate along data axis.</p></td>
@@ -920,10 +920,10 @@ document.write(`
 <td><p>Returns dictionary with metadata information, empty by default.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/tme.density.Density.shape.html#tme.density.Density.shape" title="tme.density.Density.shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.shape</span></code></a></p></td>
-<td><p>Returns the shape of internal data array..</p></td>
+<td><p>Returns the dimensions of current instance's <a class="reference internal" href="api/tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/tme.density.Density.empty.html#tme.density.Density.empty" title="tme.density.Density.empty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.empty</span></code></a></p></td>
-<td><p>Returns a copy of the current class instance with all voxels set to zero.</p></td>
+<td><p>Returns a copy of the current class instance with all elements in <a class="reference internal" href="api/tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> set to zero.</p></td>
 </tr>
 </tbody>
 </table>
@@ -949,13 +949,13 @@ document.write(`
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/tme.density.Density.copy.html#tme.density.Density.copy" title="tme.density.Density.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.copy</span></code></a>()</p></td>
-<td><p>Returns a copy of the current class instance.</p></td>
+<td><p>Returns a copy of the current <a class="reference internal" href="api/tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/tme.density.Density.to_numpy.html#tme.density.Density.to_numpy" title="tme.density.Density.to_numpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.to_numpy</span></code></a>()</p></td>
-<td><p>Converts the internal electron density volume to an in memory numpy array (see <a class="reference internal" href="api/tme.density.Density.to_memmap.html#tme.density.Density.to_memmap" title="tme.density.Density.to_memmap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_memmap()</span></code></a>).</p></td>
+<td><p>Converts the current class instance's <a class="reference internal" href="api/tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute to an in-memory <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/tme.density.Density.to_memmap.html#tme.density.Density.to_memmap" title="tme.density.Density.to_memmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Density.to_memmap</span></code></a>()</p></td>
-<td><p>Converts the internal electron density volume to a np.memmap.</p></td>
+<td><p>Converts the current class instance's <a class="reference internal" href="api/tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute to a <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.memmap.html#numpy.memmap" title="(in NumPy v1.26)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.memmap</span></code></a> instance.</p></td>
 </tr>
 </tbody>
 </table>

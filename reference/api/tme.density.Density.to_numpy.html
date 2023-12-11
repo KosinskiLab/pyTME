@@ -901,8 +901,8 @@ document.write(`
 <dl class="py method">
 <dt class="sig sig-object py" id="tme.density.Density.to_numpy">
 <span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">to_numpy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/density.html#Density.to_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.density.Density.to_numpy" title="Link to this definition">#</a></dt>
-<dd><p>Converts the internal electron density volume to an in memory
-numpy array (see <a class="reference internal" href="tme.density.Density.to_memmap.html#tme.density.Density.to_memmap" title="tme.density.Density.to_memmap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.to_memmap()</span></code></a>).</p>
+<dd><p>Converts the current class instance’s <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute to
+an in-memory <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
@@ -910,7 +910,8 @@ numpy array (see <a class="reference internal" href="tme.density.Density.to_memm
 </dl>
 </div>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/large_file.mrc&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;/path/to/large_file.mrc&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">density</span><span class="o">.</span><span class="n">to_memmap</span><span class="p">()</span>  <span class="c1"># Convert to memory-mapped array first</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">density</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>   <span class="c1"># Now, convert back to an in-memory array</span>
 </pre></div>

@@ -397,7 +397,20 @@ document.write(`
 <span class="sd">    `base_usage` and `per_fork` methods to specify custom memory usage</span>
 <span class="sd">    estimates.</span>
 
-<span class="sd">    Parameters</span>
+<span class="sd">    Parameteres</span>
+<span class="sd">    -----------</span>
+<span class="sd">    fast_shape : tuple of int</span>
+<span class="sd">        Shape of the real array.</span>
+<span class="sd">    ft_shape : tuple of int</span>
+<span class="sd">        Shape of the complex array.</span>
+<span class="sd">    float_nbytes : int</span>
+<span class="sd">        Number of bytes of the used float, e.g. 4 for float32.</span>
+<span class="sd">    complex_nbytes : int</span>
+<span class="sd">        Number of bytes of the used complex, e.g. 8 for complex64.</span>
+<span class="sd">    integer_nbytes : int</span>
+<span class="sd">        Number of bytes of the used integer, e.g. 4 for int32.</span>
+
+<span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    real_array_size : int</span>
 <span class="sd">        Number of elements in real array.</span>
