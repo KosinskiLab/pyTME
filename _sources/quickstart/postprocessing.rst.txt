@@ -13,9 +13,9 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
 
     postprocess.py --help
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: Extract Orientations
+    .. tab-item:: Extract Orientations
 
         Executing the following code will generate a tab-separated file named `output.tsv` with eight columns. The z, y and x column correspond to the translation, the euler_z, euler_y and euler_x column to the rotation used to obtain the column score. The detail column provides some additional information based on the process with which the peaks were generated.
 
@@ -30,7 +30,7 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
                 --min_distance 20 \
                 --number_of_peaks 1000
 
-    .. tab:: Extract Alignments
+    .. tab-item:: Extract Alignments
 
         Executing the following code will align the template to the target used in ``match_template.py`` based on high-scoring orientations. These high-scoring orientations are written to disk, either as atomic structure or density depending on which was used as input for ``match_template.py``. The generated files follow the naming pattern {output_prefix}.{index}.{extension}. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on. Extension corresponds to the file extension of the template used in ``match_template.py``.
 
@@ -45,7 +45,7 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
                 --output_format alignment \
                 --number_of_peaks 10
 
-    .. tab:: Extract Particles
+    .. tab-item:: Extract Particles
 
         Executing the following code will extract regions from the target with the dimension of the template used in ``match_template.py``. The output can be used for alignment and or averaging. The generated files follow the naming pattern {output_prefix}.{index}.mrc. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on.
 
@@ -135,9 +135,9 @@ Usage Examples
 
 The following outlines how to use ``output.tsv`` for the previous section's :ref:`Usage Examples <cli-match_template>`.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: Particle Picking
+    .. tab-item:: Particle Picking
 
         In the case of particle picking its usually sufficient to look at the rotations in a viewer like `IMOD <https://bio3d.colorado.edu/imod/>`_. The following assumes that you have IMOD installed and its command line tools linked.
 
@@ -152,7 +152,7 @@ The following outlines how to use ``output.tsv`` for the previous section's :ref
             point2model -inp coordinates.tsv -ou coordinates.mod -ci 10
 
 
-    .. tab:: Fit Atomic Structure
+    .. tab-item:: Fit Atomic Structure
 
         For this case, its common to inspect the positioning of the initial structure after translation and rotation in the electron density. The following transforms the initial structure and writes the top ten highest scoring candidates to disk.
 
@@ -205,7 +205,7 @@ The following outlines how to use ``output.tsv`` for the previous section's :ref
                 transformed_structure.to_file(f"{i}.pdb")
 
 
-    .. tab:: Alignment of Densities
+    .. tab-item:: Alignment of Densities
 
         The following transforms the initial density and writes the top ten highest scoring candidates to disk.
 

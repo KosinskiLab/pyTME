@@ -44,7 +44,6 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=4ea706d9"></script>
-    <script src="../_static/tabs.js?v=3030b3cb"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart/postprocessing';</script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -408,8 +407,11 @@ document.write(`
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span>--help
 </pre></div>
 </div>
-<div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">Extract Orientations</button><button aria-controls="panel-0-0-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-1" name="0-1" role="tab" tabindex="-1">Extract Alignments</button><button aria-controls="panel-0-0-2" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-2" name="0-2" role="tab" tabindex="-1">Extract Particles</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><p>Executing the following code will generate a tab-separated file named <cite>output.tsv</cite> with eight columns. The z, y and x column correspond to the translation, the euler_z, euler_y and euler_x column to the rotation used to obtain the column score. The detail column provides some additional information based on the process with which the peaks were generated.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-0">
+Extract Orientations</label><div class="sd-tab-content docutils">
+<p>Executing the following code will generate a tab-separated file named <cite>output.tsv</cite> with eight columns. The z, y and x column correspond to the translation, the euler_z, euler_y and euler_x column to the rotation used to obtain the column score. The detail column provides some additional information based on the process with which the peaks were generated.</p>
 <p>The peaks are separated by 20 voxels and no more than 1,000 peaks will be written to disk.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--input_file<span class="w"> </span>output.pickle<span class="w"> </span><span class="se">\</span>
@@ -419,7 +421,11 @@ document.write(`
 <span class="w">    </span>--number_of_peaks<span class="w"> </span><span class="m">1000</span>
 </pre></div>
 </div>
-</div><div aria-labelledby="tab-0-0-1" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-1" name="0-1" role="tabpanel" tabindex="0"><p>Executing the following code will align the template to the target used in <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> based on high-scoring orientations. These high-scoring orientations are written to disk, either as atomic structure or density depending on which was used as input for <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>. The generated files follow the naming pattern {output_prefix}.{index}.{extension}. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on. Extension corresponds to the file extension of the template used in <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>.</p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-1">
+Extract Alignments</label><div class="sd-tab-content docutils">
+<p>Executing the following code will align the template to the target used in <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> based on high-scoring orientations. These high-scoring orientations are written to disk, either as atomic structure or density depending on which was used as input for <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>. The generated files follow the naming pattern {output_prefix}.{index}.{extension}. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on. Extension corresponds to the file extension of the template used in <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>.</p>
 <p>The following will write no more than ten top scoring alignments
 to disk.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
@@ -429,7 +435,11 @@ to disk.</p>
 <span class="w">    </span>--number_of_peaks<span class="w"> </span><span class="m">10</span>
 </pre></div>
 </div>
-</div><div aria-labelledby="tab-0-0-2" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-2" name="0-2" role="tabpanel" tabindex="0"><p>Executing the following code will extract regions from the target with the dimension of the template used in <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>. The output can be used for alignment and or averaging. The generated files follow the naming pattern {output_prefix}.{index}.mrc. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on.</p>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-2">
+Extract Particles</label><div class="sd-tab-content docutils">
+<p>Executing the following code will extract regions from the target with the dimension of the template used in <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>. The output can be used for alignment and or averaging. The generated files follow the naming pattern {output_prefix}.{index}.mrc. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on.</p>
 <p>The following will write no more than 500 top scoring particles separated by a distance of 20 voxel that have been identified using <a class="reference internal" href="../reference/api/tme.analyzer.PeakCallerMaximumFilter.html#tme.analyzer.PeakCallerMaximumFilter" title="tme.analyzer.PeakCallerMaximumFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.analyzer.PeakCallerMaximumFilter</span></code></a> to disk.</p>
 <p>to disk.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
@@ -441,7 +451,8 @@ to disk.</p>
 <span class="w">    </span>--peak_caller<span class="w"> </span>PeakCallerMaximumFilter
 </pre></div>
 </div>
-</div></div>
+</div>
+</div>
 </section>
 <section id="template-matching-result">
 <h2>Template Matching Result<a class="headerlink" href="#template-matching-result" title="Link to this heading">#</a></h2>
@@ -503,8 +514,11 @@ to disk.</p>
 <section id="usage-examples">
 <h3>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading">#</a></h3>
 <p>The following outlines how to use <code class="docutils literal notranslate"><span class="pre">output.tsv</span></code> for the previous section’s <a class="reference internal" href="match_template.html#cli-match-template"><span class="std std-ref">Usage Examples</span></a>.</p>
-<div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-1-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-1-1-0" name="1-0" role="tab" tabindex="0">Particle Picking</button><button aria-controls="panel-1-1-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-1-1-1" name="1-1" role="tab" tabindex="-1">Fit Atomic Structure</button><button aria-controls="panel-1-1-2" aria-selected="false" class="sphinx-tabs-tab" id="tab-1-1-2" name="1-2" role="tab" tabindex="-1">Alignment of Densities</button></div><div aria-labelledby="tab-1-1-0" class="sphinx-tabs-panel" id="panel-1-1-0" name="1-0" role="tabpanel" tabindex="0"><p>In the case of particle picking its usually sufficient to look at the rotations in a viewer like <a class="reference external" href="https://bio3d.colorado.edu/imod/">IMOD</a>. The following assumes that you have IMOD installed and its command line tools linked.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-3">
+Particle Picking</label><div class="sd-tab-content docutils">
+<p>In the case of particle picking its usually sufficient to look at the rotations in a viewer like <a class="reference external" href="https://bio3d.colorado.edu/imod/">IMOD</a>. The following assumes that you have IMOD installed and its command line tools linked.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>awk<span class="w"> </span>-F<span class="s1">&#39;\t&#39;</span><span class="w"> </span><span class="s1">&#39;</span>
 <span class="s1">    BEGIN {OFS=&quot;\t&quot;}</span>
 <span class="s1">    NR==1 {next}</span>
@@ -514,7 +528,11 @@ to disk.</p>
 point2model<span class="w"> </span>-inp<span class="w"> </span>coordinates.tsv<span class="w"> </span>-ou<span class="w"> </span>coordinates.mod<span class="w"> </span>-ci<span class="w"> </span><span class="m">10</span>
 </pre></div>
 </div>
-</div><div aria-labelledby="tab-1-1-1" class="sphinx-tabs-panel" hidden="true" id="panel-1-1-1" name="1-1" role="tabpanel" tabindex="0"><p>For this case, its common to inspect the positioning of the initial structure after translation and rotation in the electron density. The following transforms the initial structure and writes the top ten highest scoring candidates to disk.</p>
+</div>
+<input id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-4">
+Fit Atomic Structure</label><div class="sd-tab-content docutils">
+<p>For this case, its common to inspect the positioning of the initial structure after translation and rotation in the electron density. The following transforms the initial structure and writes the top ten highest scoring candidates to disk.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -562,7 +580,11 @@ point2model<span class="w"> </span>-inp<span class="w"> </span>coordinates.tsv<s
     <span class="n">transformed_structure</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.pdb&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div><div aria-labelledby="tab-1-1-2" class="sphinx-tabs-panel" hidden="true" id="panel-1-1-2" name="1-2" role="tabpanel" tabindex="0"><p>The following transforms the initial density and writes the top ten highest scoring candidates to disk.</p>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-5">
+Alignment of Densities</label><div class="sd-tab-content docutils">
+<p>The following transforms the initial density and writes the top ten highest scoring candidates to disk.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -607,7 +629,8 @@ point2model<span class="w"> </span>-inp<span class="w"> </span>coordinates.tsv<s
     <span class="n">transformed_density</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.mrc&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div></div>
+</div>
+</div>
 </section>
 </section>
 <section id="coordinate-system-convention">

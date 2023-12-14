@@ -44,7 +44,6 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=4ea706d9"></script>
-    <script src="../_static/tabs.js?v=3030b3cb"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart/installation';</script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -403,8 +402,11 @@ document.write(`
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
 <p>This section provides instructions on how to install the tme library. Depending on your preferred method or system setup, you can choose between the installation with Conda, Pip, or from source. Click on the tabs below to view the instructions for each method.</p>
-<div class="sphinx-tabs docutils container" id="installation-section">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">Conda</button><button aria-controls="panel-0-0-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-1" name="0-1" role="tab" tabindex="-1">Pip</button><button aria-controls="panel-0-0-2" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-2" name="0-2" role="tab" tabindex="-1">Source</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><p>Conda provides an isolated environment, helps avoid conflicts with other packages, and installs necessary dependencies.</p>
+<div class="sd-tab-set docutils" id="installation-section">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-0">
+Conda</label><div class="sd-tab-content docutils">
+<p>Conda provides an isolated environment, helps avoid conflicts with other packages, and installs necessary dependencies.</p>
 <ol class="arabic">
 <li><p><strong>Create a New Conda Environment and Install Dependencies</strong>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
@@ -429,7 +431,11 @@ document.write(`
 </div>
 </li>
 </ol>
-</div><div aria-labelledby="tab-0-0-1" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-1" name="0-1" role="tabpanel" tabindex="0"><p>Pip will fetch the required packages from an online repository and install them on your system.</p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-1">
+Pip</label><div class="sd-tab-content docutils">
+<p>Pip will fetch the required packages from an online repository and install them on your system.</p>
 <p><strong>Prerequisite</strong>:</p>
 <p>Ensure you have Python 3.11 or higher installed on your system:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>--version
@@ -452,7 +458,11 @@ document.write(`
 <p class="admonition-title">Note</p>
 <p>The Python Package Index (PyPI) provides a simple and convenient way to install tme. However, installing from github fetches the most recent version of the code base.</p>
 </div>
-</div><div aria-labelledby="tab-0-0-2" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-2" name="0-2" role="tabpanel" tabindex="0"><p>Installing from source ensures you get the latest, unreleased changes. You’ll be compiling and setting up the project directly from its source code.</p>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-2">
+Source</label><div class="sd-tab-content docutils">
+<p>Installing from source ensures you get the latest, unreleased changes. You’ll be compiling and setting up the project directly from its source code.</p>
 <p><strong>Prerequisite</strong>:</p>
 <p>Ensure you have Python 3.11 or higher installed on your system:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>--version
@@ -481,7 +491,8 @@ document.write(`
 <p class="admonition-title">Note</p>
 <p>After installing from source, navigate out of the source directory before using tme. This ensures the built extensions are properly loaded from the installed library, avoiding potential issues.</p>
 </div>
-</div></div>
+</div>
+</div>
 <section id="optional-gui-setup">
 <h2>Optional GUI Setup<a class="headerlink" href="#optional-gui-setup" title="Link to this heading">#</a></h2>
 <p>To utilize the optional preprocessing GUI provided by tme, you’ll need to install several additional librarys:</p>
@@ -500,18 +511,26 @@ pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com
 </div>
 <p>Look for the CUDA version in the output; it’s usually displayed in the top right corner.</p>
 <p>After determining your CUDA version, you can proceed to install one of the following GPU-accelerated libraries: PyTorch or CuPy. While both are supported, CuPy is the recommended choice.</p>
-<div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-1-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-1-1-0" name="1-0" role="tab" tabindex="0">CuPy (Recommended)</button><button aria-controls="panel-1-1-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-1-1-1" name="1-1" role="tab" tabindex="-1">PyTorch</button></div><div aria-labelledby="tab-1-1-0" class="sphinx-tabs-panel" id="panel-1-1-0" name="1-0" role="tabpanel" tabindex="0"><p>If you have CUDA version 12 or upwards, install CuPy using:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-3">
+CuPy (Recommended)</label><div class="sd-tab-content docutils">
+<p>If you have CUDA version 12 or upwards, install CuPy using:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>cupy-cuda12x
 </pre></div>
 </div>
 <p>If your CUDA version is different or you encounter any issues, please refer to CuPy’s official <a class="reference external" href="https://docs.cupy.dev/en/stable/install.html">installation guide</a> for a version tailored to your system and detailed instructions.</p>
-</div><div aria-labelledby="tab-1-1-1" class="sphinx-tabs-panel" hidden="true" id="panel-1-1-1" name="1-1" role="tabpanel" tabindex="0"><p>Alternatively, you can use PyTorch for GPU computations:</p>
+</div>
+<input id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-4">
+PyTorch</label><div class="sd-tab-content docutils">
+<p>Alternatively, you can use PyTorch for GPU computations:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>torchvision
 </pre></div>
 </div>
 <p>PyTorch’s installation might vary based on your system and the specific GPU in use. Consult the official <a class="reference external" href="https://pytorch.org/">PyTorch website</a> for detailed installation options tailored for your environment.</p>
-</div></div>
+</div>
+</div>
 </section>
 <section id="testing-the-installation">
 <h2>Testing the Installation<a class="headerlink" href="#testing-the-installation" title="Link to this heading">#</a></h2>
