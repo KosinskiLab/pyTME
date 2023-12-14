@@ -157,6 +157,7 @@ def main():
 
     target_origin, _, sampling_rate, cli_args = meta
 
+    template_mask = Density(np.ones(1))
     template_is_density, index = True, 0
     _, template_extension = splitext(cli_args.template)
     try:
@@ -168,13 +169,15 @@ def main():
         template = Structure.from_file(cli_args.template)
         center_of_mass = template.center_of_mass()[::-1]
 
-    template_mask = template.empty
-    template_mask.data[:] = 1
     if cli_args.template_mask is not None:
         template_mask = Density.from_file(cli_args.template_mask)
 
     if args.output_format == "extraction":
         target = Density.from_file(cli_args.target)
+        if type(template) == Structure:
+            template = Density.from_structure(
+                template, sampling_rate = target.sampling_rate
+            )
 
         if not np.all(np.divide(target.shape, template.shape) > 2):
             print(

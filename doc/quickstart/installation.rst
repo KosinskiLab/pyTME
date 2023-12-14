@@ -7,9 +7,9 @@ This section provides instructions on how to install the |project| library. Depe
 
 .. _installation-section:
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: Conda
+   .. tab-item:: Conda
 
       Conda provides an isolated environment, helps avoid conflicts with other packages, and installs necessary dependencies.
 
@@ -38,7 +38,7 @@ This section provides instructions on how to install the |project| library. Depe
 
             pip install git+https://github.com/KosinskiLab/pyTME.git
 
-   .. tab:: Pip
+   .. tab-item:: Pip
 
       Pip will fetch the required packages from an online repository and install them on your system.
 
@@ -69,7 +69,7 @@ This section provides instructions on how to install the |project| library. Depe
          The Python Package Index (PyPI) provides a simple and convenient way to install |project|. However, installing from github fetches the most recent version of the code base.
 
 
-   .. tab:: Source
+   .. tab-item:: Source
 
       Installing from source ensures you get the latest, unreleased changes. You'll be compiling and setting up the project directly from its source code.
 
@@ -139,9 +139,9 @@ Look for the CUDA version in the output; it's usually displayed in the top right
 After determining your CUDA version, you can proceed to install one of the following GPU-accelerated libraries: PyTorch or CuPy. While both are supported, CuPy is the recommended choice.
 
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: CuPy (Recommended)
+   .. tab-item:: CuPy (Recommended)
 
       If you have CUDA version 12 or upwards, install CuPy using:
 
@@ -151,7 +151,7 @@ After determining your CUDA version, you can proceed to install one of the follo
 
       If your CUDA version is different or you encounter any issues, please refer to CuPy's official `installation guide <https://docs.cupy.dev/en/stable/install.html>`_ for a version tailored to your system and detailed instructions.
 
-   .. tab:: PyTorch
+   .. tab-item:: PyTorch
 
       Alternatively, you can use PyTorch for GPU computations:
 

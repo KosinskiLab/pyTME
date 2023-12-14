@@ -74,9 +74,9 @@ Usage Examples
 
 The following outlines some typical use cases of ``match_template.py``.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: Particle Picking
+    .. tab-item:: Particle Picking
 
         When performing particle picking, the goal is to identify and isolate specific particles (in this case, ribosomes) from a larger dataset (tomogram). By using a known structure as a template, ``match_template.py`` can scan the tomogram to find locations where this structure is likely to appear.
 
@@ -118,7 +118,7 @@ The following outlines some typical use cases of ``match_template.py``.
               -a 60
 
 
-    .. tab:: Fit Atomic Structure
+    .. tab-item:: Fit Atomic Structure
 
         When fitting an atomic structure, the objective is to position a structure or a structure subunit within another density. This method determines the optimal orientation and positioning of the atomic structure within the given density.
 
@@ -157,7 +157,7 @@ The following outlines some typical use cases of ``match_template.py``.
                 --no_edge_padding
 
 
-    .. tab:: Alignment of Densities
+    .. tab-item:: Alignment of Densities
 
         For density alignment, the aim is to find the best fit between two densities. This involves determining the optimal orientation and alignment that allows one density to closely match and overlap with another.
 
