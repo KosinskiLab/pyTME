@@ -449,7 +449,9 @@ class NumpyFFTWBackend(MatchingBackend):
             fourier transform, shape of the forward fourier transform
             (see :py:meth:`build_fft`).
         """
-        convolution_shape = [x + y - 1 for x, y in zip(arr1_shape, arr2_shape)]
+        convolution_shape = [
+            int(x) + int(y) - 1 for x, y in zip(arr1_shape, arr2_shape)
+        ]
         fast_shape = [next_fast_len(x) for x in convolution_shape]
         fast_ft_shape = list(fast_shape[:-1]) + [fast_shape[-1] // 2 + 1]
 
