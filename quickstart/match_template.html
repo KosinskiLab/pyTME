@@ -453,7 +453,7 @@ document.write(`
 <section id="accuracy">
 <h3>Accuracy<a class="headerlink" href="#accuracy" title="Link to this heading">#</a></h3>
 <ul class="simple">
-<li><p><strong>score</strong>: The choice of the scoring function plays a pivotal role in the accuracy of results. Users can select from a variety of options, as detailed in the section <a class="reference internal" href="../reference/matching_exhaustive.html"><span class="doc">exhaustive template matching</span></a>. Note, that if your mask is not symmetric nor encompasses all possible rotations of the template you have to use a scoring method that also rotates the mask, such as FLCF (<a class="reference internal" href="../reference/api/tme.matching_exhaustive.flc_scoring.html#tme.matching_exhaustive.flc_scoring" title="tme.matching_exhaustive.flc_scoring"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.flc_scoring()</span></code></a>).</p></li>
+<li><p><strong>score</strong>: The choice of the scoring function plays a pivotal role in the accuracy of results. Users can select from a variety of options, as detailed in the section <a class="reference internal" href="../reference/matching_exhaustive.html"><span class="doc">exhaustive template matching</span></a>. Note, that if your mask is not symmetric nor encompasses all possible rotations of the template you have to use a scoring method that also rotates the mask, such as FLCF (<a class="reference internal" href="../reference/api/tme.matching_exhaustive.flc_scoring.html#tme.matching_exhaustive.flc_scoring" title="tme.matching_exhaustive.flc_scoring"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.flc_scoring()</span></code></a>) or MCC (<a class="reference internal" href="../reference/api/tme.matching_exhaustive.mcc_scoring.html#tme.matching_exhaustive.mcc_scoring" title="tme.matching_exhaustive.mcc_scoring"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.mcc_scoring()</span></code></a>).</p></li>
 <li><p><strong>angular_sampling</strong>: Determines the granularity of the angular sampling for fitting. A finer sampling (lower value) will be more exhaustive, potentially yielding more accurate results but at a computational cost.</p></li>
 <li><p><strong>scramble_phases</strong>: This option scrambles the phases of the templates to simulate a noise background, aiding in refining the score space.</p></li>
 </ul>
@@ -642,7 +642,7 @@ Alignment of Densities</label><div class="sd-tab-content docutils">
 </div>
 <section id="cpu-execution">
 <h4>CPU Execution<a class="headerlink" href="#cpu-execution" title="Link to this heading">#</a></h4>
-<p>The sbatch file below is sufficient to perform template matching on a bin 4 tomogram with rough shape 500, 900, 900. This job will request 10 CPU cores and 150 GB of RAM for 16 hours on the partition htc-el8. Make sure to replace all variables in curly brackets to your local path to use this template.</p>
+<p>The sbatch file below is sufficient to perform template matching on a bin 4 tomogram with rough shape 500, 900, 900. This job will request 10 CPU cores and 150 GB of RAM for 16 hours on the partition htc-el8. Make sure to replace all variables in curly brackets with your local paths to use this template.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
 <span class="c1">#SBATCH -N 1</span>
