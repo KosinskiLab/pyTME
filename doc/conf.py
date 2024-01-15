@@ -7,7 +7,7 @@ sys.path.insert(1, os.path.abspath("../scripts"))
 project = "pytme"
 copyright = "2023 European Molecular Biology Laboratory"
 author = "Valentin Maurer"
-release = "0.1"
+release = "0.1.6"
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -17,7 +17,8 @@ extensions = [
     "sphinx_design",
     "sphinx_copybutton",
     "sphinx_tabs.tabs",
-    "sphinx.ext.intersphinx"
+    "sphinx.ext.intersphinx",
+    "matplotlib.sphinxext.plot_directive",
 ]
 copybutton_prompt_text = ">>> "
 copybutton_prompt_is_regexp = False
@@ -62,5 +63,25 @@ html_theme_options = {
 }
 
 intersphinx_mapping = {
-    'numpy': ('https://numpy.org/doc/stable/', None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
 }
+
+plot_html_show_source_link = True
+plot_html_show_formats = True
+
+plot_rcparams = {
+    "figure.facecolor": "none",
+    "axes.facecolor": "none",
+    "savefig.transparent": True,
+    "font.size": 12,
+    "axes.spines.top": False,
+    "axes.spines.left": False,
+    "axes.spines.bottom": False,
+    "axes.spines.right": False,
+    "figure.autolayout": True,
+    "xtick.bottom": False,
+    "xtick.labelbottom": False,
+    "ytick.left": False,
+    "ytick.labelleft": False,
+}
+plot_apply_rcparams = True

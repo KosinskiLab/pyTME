@@ -3,7 +3,7 @@
 Installation
 ============
 
-This section provides instructions on how to install the |project| library. Depending on your preferred method or system setup, you can choose between the installation with Conda, Pip, or from source. Click on the tabs below to view the instructions for each method.
+This section provides instructions on how to install the |project| library. Depending on your preferred method or system setup, you can choose between the installation with Conda, PyPI, or from source. Click on the tabs below to view the instructions for each method.
 
 .. _installation-section:
 
@@ -34,27 +34,23 @@ This section provides instructions on how to install the |project| library. Depe
 
       3. **Install from Source**:
 
+         The following will download and install the newest version of |project|.
+
          .. code-block:: bash
 
             pip install git+https://github.com/KosinskiLab/pyTME.git
 
-   .. tab-item:: Pip
+   .. tab-item:: PyPI
 
-      Pip will fetch the required packages from an online repository and install them on your system.
+      Pip will fetch the required packages from PyPI and install them on your system.
 
-      **Prerequisite**:
+      1. **Prerequisite**:
 
       Ensure you have Python 3.11 or higher installed on your system:
 
       .. code-block:: bash
 
          python --version
-
-      1. **Install from Source**:
-
-         .. code-block:: bash
-
-            pip install git+https://github.com/KosinskiLab/pyTME.git
 
       2. **Install from PyPI**:
 
@@ -66,49 +62,64 @@ This section provides instructions on how to install the |project| library. Depe
 
       .. note::
 
-         The Python Package Index (PyPI) provides a simple and convenient way to install |project|. However, installing from github fetches the most recent version of the code base.
+         The Python Package Index (PyPI) provides a simple and convenient way to install |project|. However, installing from Conda or source fetches the most recent version of the code base.
 
 
    .. tab-item:: Source
 
-      Installing from source ensures you get the latest, unreleased changes. You'll be compiling and setting up the project directly from its source code.
+      Installing from source is ideal for developers and contributors who need access to the latest, unreleased changes and plan to modify the code. This method involves cloning the repository and setting up a local development environment.
 
-      **Prerequisite**:
+      For detailed information on contributing to the project, see our :doc:`contribution`.
 
-      Ensure you have Python 3.11 or higher installed on your system:
+      1. **Prerequisite**:
 
-      .. code-block:: bash
+         Ensure you have Python 3.11 or higher and Git installed on your system:
 
-         python --version
+         .. code-block:: bash
 
-      1. **Clone the Repository**:
+            python --version
+            git --version
 
-         First, clone the |project| repository:
+      2. **Clone the Repository**:
+
+         First, clone the |project| repository and navigate into it:
 
          .. code-block:: bash
 
             git clone https://github.com/KosinskiLab/pyTME.git
-
-         Navigate to the cloned repository's directory:
-
-         .. code-block:: bash
-
             cd pytme
 
-      2. **Install the Package**:
+      3. **Set Up a Development Environment**:
 
-         Use `pip` to install the library:
+         It's recommended to create a virtual environment:
 
          .. code-block:: bash
 
-            pip install .
+            python -m venv pytme
+            source pytme/bin/activate
 
-         This will automatically install all required dependencies for |project|.
+      4. **Install the Package in Editable Mode**:
+
+         Install the library in editable mode with `pip`. This allows you to modify the source code and see changes immediately:
+
+         .. code-block:: bash
+
+            pip install -e .
+
+         This will automatically install all required dependencies for |project|. Remember to navigate out of the source directory before using |project|. This ensures the built extensions are properly loaded from the installed library, avoiding potential issues.
 
       .. note::
 
-         After installing from source, navigate out of the source directory before using |project|. This ensures the built extensions are properly loaded from the installed library, avoiding potential issues.
+         The above method is suited for development purposes. If you simply want to install the latest version of the package without cloning, you can use:
 
+         .. code-block:: bash
+
+            pip install git+https://github.com/KosinskiLab/pyTME.git
+
+         This method installs the package directly from the repository without the need for cloning and is suitable for users who don't plan to modify the source code.
+
+
+.. _gui-installation:
 
 Optional GUI Setup
 ------------------
@@ -189,4 +200,4 @@ The installation of `pyFFTW <https://github.com/pyFFTW/pyFFTW>`_ via pip has bee
 Support
 -------
 
-For issues, questions, or contributions, please refer to the |project| repository `repository <https://github.com/KosinskiLab/pyTME.git>`_.
+For issues, questions, or contributions, please open an issue or pull request in the |project| `repository <https://github.com/KosinskiLab/pyTME.git>`_.
