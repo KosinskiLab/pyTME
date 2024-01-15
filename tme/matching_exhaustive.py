@@ -1,9 +1,4 @@
-""" Implements template matching based on different metrics. The functions
-    implemented here are equivalent to what is implemented in `Fitter`,
-    but removing them out of the Fitter classes reduces the time it takes
-    when initializing the multiprocessing framework. This is useful in cases,
-    where the number of sampled rotations is low, but the number of input
-    arrays is high, e.g. split fitting and evaluating different templates.
+""" Implements cross-correlation based template matching using different metrics.
 
     Copyright (c) 2023 European Molecular Biology Laboratory
 
@@ -11,6 +6,7 @@
 """
 import os
 import sys
+import warnings
 from copy import deepcopy
 from itertools import product
 from typing import Callable, Tuple, Dict
@@ -471,7 +467,7 @@ def flcSphericalMask_setup(
     numerator2 = backend.preallocate_array(1, real_dtype)
 
     eps = backend.eps(real_dtype)
-    n_observations = backend.sum(template_mask_pad)
+    n_observations = backend.sum(template_mask_pad > np.exp(-2))
     rfftn(template_mask_pad, ft_template_mask)
 
     # Variance part denominator
@@ -499,7 +495,7 @@ def flcSphericalMask_setup(
     backend.fill(temp2, 0)
     temp2[nonzero_indices] = 1 / temp[nonzero_indices]
 
-    template_mask = template_mask > 0
+    template_mask = template_mask > np.exp(-2)
     template_mean = backend.mean(template[template_mask])
     template_std = backend.std(template[template_mask])
 
@@ -1247,8 +1243,18 @@ def scan(
     Tuple
         The merged results from callback_class if provided otherwise None.
     """
+    shape_diff = backend.subtract(
+        matching_data.target.shape, matching_data._template.shape
+    )
+    if backend.sum(shape_diff < 0) and not pad_fourier:
+        warnings.warn(
+            "Target is larger than template and Fourier padding is turned off."
+            " This can lead to shifted results. You can swap template and target, or"
+            " zero-pad the target."
+        )
+
     matching_data.to_backend()
-    fourier_pad = matching_data._templateshape
+    fourier_pad = matching_data.template.shape
     fourier_shift = backend.zeros(len(fourier_pad))
     if not pad_fourier:
         fourier_pad = backend.full(shape=fourier_shift.shape, fill_value=1, dtype=int)
@@ -1258,10 +1264,9 @@ def scan(
     )
     if not pad_fourier:
         fourier_shift = 1 - backend.astype(
-            backend.divide(matching_data._templateshape, 2), int
+            backend.divide(matching_data._template.shape, 2), int
         )
-        fourier_shift -= backend.mod(matching_data._templateshape, 2)
-        fourier_shift = backend.flip(fourier_shift, axis=(0,))
+        fourier_shift -= backend.mod(matching_data._template.shape, 2)
         shape_diff = backend.subtract(fast_shape, convolution_shape)
         shape_diff = backend.astype(backend.divide(shape_diff, 2), int)
         backend.add(fourier_shift, shape_diff, out=fourier_shift)
@@ -1457,13 +1462,13 @@ def scan_subsets(
         matching_data.target.shape, splits=target_splits
     )
     template_splits = split_numpy_array_slices(
-        matching_data._templateshape, splits=template_splits
+        matching_data._template.shape, splits=template_splits
     )
 
     target_pad = np.zeros(len(matching_data.target.shape), dtype=int)
     if pad_target_edges:
         target_pad = np.subtract(
-            matching_data._templateshape, np.mod(matching_data._templateshape, 2)
+            matching_data._template.shape, np.mod(matching_data._template.shape, 2)
         )
     outer_jobs, inner_jobs = job_schedule
     results = Parallel(n_jobs=outer_jobs)(

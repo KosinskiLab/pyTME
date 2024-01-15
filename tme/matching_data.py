@@ -287,20 +287,24 @@ class MatchingData:
     @template.setter
     def template(self, template: NDArray):
         """
-        Set the template array.
+        Set the template array. If not already defined, also initializes
+        :py:attr:`MatchingData.template_mask` to an uninformative mask filled with
+        ones.
 
         Parameters
         ----------
         template : NDArray
             Array to set as the template.
         """
+        self._templateshape = template.shape[::-1]
+        if self._template_mask is None:
+            self._template_mask = backend.full(
+                shape=template.shape, dtype=float, fill_value=1
+            )
+
         if type(template) == Density:
-            template.data = template.data.astype(self._default_dtype, copy=False)
-            self._template = template
-            self._templateshape = self._template.shape[::-1]
-            return None
+            template = template.data
         self._template = template.astype(self._default_dtype, copy=False)
-        self._templateshape = self._template.shape[::-1]
 
     @property
     def target_mask(self):
@@ -340,7 +344,7 @@ class MatchingData:
     @template_mask.setter
     def template_mask(self, mask: NDArray):
         """Returns the reversed template mask NDArray."""
-        if not np.all(self._template.shape == mask.shape):
+        if not np.all(self._templateshape[::-1] == mask.shape):
             raise ValueError("Target and its mask have to have the same shape.")
 
         if type(mask) == Density:
