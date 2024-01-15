@@ -372,7 +372,7 @@ The most insightful piece of information for troubleshooting are the computed sc
     Density(scores).to_file("scores.mrc")
     Density(rotations).to_file("rotations.mrc")
 
-Executing the code above will generated two CCP4/MRC files ``scores.mrc`` and ``rotations.mrc``, that you can open in the napari GUI shipped with |project| or a macromolecular viewer of your choice. For reference, you can have a look at the :ref:`preprocessing section <preprocess-filtering>`. to assess whether your results are reminiscent of examples there.
+Executing the code above will generated two CCP4/MRC files ``scores.mrc`` and ``rotations.mrc``, that you can open in the napari GUI shipped with |project| or a macromolecular viewer of your choice. For reference, you can have a look at the :ref:`preprocessing section <preprocess-filtering>` to assess whether your results are reminiscent of examples there.
 
 If no examples match your particular case, please feel free to open an issue in the |project| `repository <https://github.com/KosinskiLab/pyTME.git>`_.
 

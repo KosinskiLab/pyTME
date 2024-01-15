@@ -88,7 +88,7 @@ Performance
 Accuracy
 --------
 
-- **score**: The choice of the scoring function plays a pivotal role in the accuracy of results. Users can select from a variety of options, as detailed in the section :doc:`exhaustive template matching <../reference/matching_exhaustive>`. Note, that if your mask is not symmetric nor encompasses all possible rotations of the template you have to use a scoring method that also rotates the mask, such as FLCF (:py:meth:`tme.matching_exhaustive.flc_scoring`).
+- **score**: The choice of the scoring function plays a pivotal role in the accuracy of results. Users can select from a variety of options, as detailed in the section :doc:`exhaustive template matching <../reference/matching_exhaustive>`. Note, that if your mask is not symmetric nor encompasses all possible rotations of the template you have to use a scoring method that also rotates the mask, such as FLCF (:py:meth:`tme.matching_exhaustive.flc_scoring`) or MCC (:py:meth:`tme.matching_exhaustive.mcc_scoring`).
 
 - **angular_sampling**: Determines the granularity of the angular sampling for fitting. A finer sampling (lower value) will be more exhaustive, potentially yielding more accurate results but at a computational cost.
 
@@ -327,7 +327,7 @@ by:
 CPU Execution
 ^^^^^^^^^^^^^
 
-The sbatch file below is sufficient to perform template matching on a bin 4 tomogram with rough shape 500, 900, 900. This job will request 10 CPU cores and 150 GB of RAM for 16 hours on the partition htc-el8. Make sure to replace all variables in curly brackets to your local path to use this template.
+The sbatch file below is sufficient to perform template matching on a bin 4 tomogram with rough shape 500, 900, 900. This job will request 10 CPU cores and 150 GB of RAM for 16 hours on the partition htc-el8. Make sure to replace all variables in curly brackets with your local paths to use this template.
 
 .. code-block:: bash
 
