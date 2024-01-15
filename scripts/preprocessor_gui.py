@@ -8,6 +8,7 @@
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 import inspect
+import argparse
 from typing import Tuple, Callable, List
 from typing_extensions import Annotated
 
@@ -112,25 +113,50 @@ def wedge(
     template: NDArray,
     tilt_start: float,
     tilt_stop: float,
-    gaussian_sigma: float,
+    tilt_step: float = 0,
+    opening_axis: int = 0,
     tilt_axis: int = 1,
-    infinite_plane: bool = True,
+    gaussian_sigma: float = 0,
+    omit_negative_frequencies: bool = True,
     extrude_plane: bool = True,
+    infinite_plane: bool = True,
 ):
     template_ft = np.fft.rfftn(template)
-    wedge_mask = preprocessor.continuous_wedge_mask(
-        start_tilt=tilt_start,
-        stop_tilt=tilt_stop,
-        tilt_axis=tilt_axis,
+
+    if tilt_step <= 0:
+        wedge_mask = preprocessor.continuous_wedge_mask(
+            start_tilt=tilt_start,
+            stop_tilt=tilt_stop,
+            tilt_axis=tilt_axis,
+            opening_axis=opening_axis,
+            shape=template.shape,
+            sigma=gaussian_sigma,
+            omit_negative_frequencies=omit_negative_frequencies,
+            extrude_plane=extrude_plane,
+            infinite_plane=infinite_plane,
+        )
+        np.multiply(template_ft, wedge_mask, out=template_ft)
+        template = np.real(np.fft.irfftn(template_ft))
+        return template
+
+    tilt_angles = np.arange(-tilt_start, tilt_stop, tilt_step)
+    angles = np.zeros((template.ndim, tilt_angles.size))
+    angles[tilt_axis, :] = tilt_angles
+
+    wedge_mask = preprocessor.wedge_mask(
+        tilt_angles=angles,
         shape=template.shape,
         sigma=gaussian_sigma,
-        omit_negative_frequencies=True,
-        infinite_plane=infinite_plane,
-        extrude_plane=extrude_plane,
+        opening_axes=opening_axis,
+        omit_negative_frequencies=omit_negative_frequencies,
     )
     np.multiply(template_ft, wedge_mask, out=template_ft)
     template = np.real(np.fft.irfftn(template_ft))
     return template
+
+
+def compute_power_spectrum(template: NDArray):
+    return np.fft.fftshift(np.log(np.abs(np.fft.fftn(template))))
 
 
 def widgets_from_function(function: Callable, exclude_params: List = ["self"]):
@@ -192,7 +218,8 @@ WRAPPED_FUNCTIONS = {
     "local_gaussian_filter": local_gaussian_filter,
     "difference_of_gaussian_filter": difference_of_gaussian_filter,
     "mean_filter": mean,
-    "continuous_wedge_mask": wedge,
+    "wedge_filter": wedge,
+    "power_spectrum": compute_power_spectrum,
 }
 
 EXCLUDED_FUNCTIONS = [
@@ -204,7 +231,7 @@ EXCLUDED_FUNCTIONS = [
     "interpolate_box",
     "molmap",
     "local_gaussian_alignment_filter",
-    # "continuous_wedge_mask",
+    "continuous_wedge_mask",
     "wedge_mask",
     "bandpass_mask",
 ]
@@ -245,9 +272,12 @@ class FilterWidget(widgets.Container):
             for name, member in inspect.getmembers(self.preprocessor, inspect.ismethod)
             if not name.startswith("_") and name not in EXCLUDED_FUNCTIONS
         ]
+        method_names.extend(list(WRAPPED_FUNCTIONS.keys()))
+        method_names = list(set(method_names))
 
         sanitized_names = [self._sanitize_name(name) for name in method_names]
         self.name_mapping.update(dict(zip(sanitized_names, method_names)))
+        sanitized_names.sort()
 
         return sanitized_names
 
@@ -394,26 +424,59 @@ def tube_mask(
 
 def wedge_mask(
     template: NDArray,
-    tilt_start: float,
-    tilt_stop: float,
-    gaussian_sigma: float,
-    tilt_axis: int = 1,
-    omit_negative_frequencies: bool = True,
+    tilt_start: float = 40.0,
+    tilt_stop: float = 40.0,
+    tilt_step: float = 0,
+    opening_axis: int = 0,
+    tilt_axis: int = 2,
+    gaussian_sigma: float = 0,
+    omit_negative_frequencies: bool = False,
     extrude_plane: bool = True,
     infinite_plane: bool = True,
 ):
-    wedge_mask = preprocessor.continuous_wedge_mask(
-        start_tilt=tilt_start,
-        stop_tilt=tilt_stop,
-        tilt_axis=tilt_axis,
+    if tilt_step <= 0:
+        wedge_mask = preprocessor.continuous_wedge_mask(
+            start_tilt=tilt_start,
+            stop_tilt=tilt_stop,
+            tilt_axis=tilt_axis,
+            opening_axis=opening_axis,
+            shape=template.shape,
+            sigma=gaussian_sigma,
+            omit_negative_frequencies=omit_negative_frequencies,
+            extrude_plane=extrude_plane,
+            infinite_plane=infinite_plane,
+        )
+        wedge_mask = np.fft.fftshift(wedge_mask)
+        return wedge_mask
+
+    tilt_angles = np.arange(-tilt_start, tilt_stop + tilt_step, tilt_step)
+    angles = np.zeros((template.ndim, tilt_angles.size))
+
+    angles[tilt_axis, :] = tilt_angles
+
+    wedge_mask = preprocessor.wedge_mask(
+        tilt_angles=angles,
         shape=template.shape,
         sigma=gaussian_sigma,
+        opening_axes=opening_axis,
         omit_negative_frequencies=omit_negative_frequencies,
-        extrude_plane=extrude_plane,
-        infinite_plane=infinite_plane,
     )
     wedge_mask = np.fft.fftshift(wedge_mask)
     return wedge_mask
+
+
+def threshold_mask(
+    template: NDArray, standard_deviation: float = 5.0, invert: bool = False
+):
+    template_mean = template.mean()
+    template_deviation = standard_deviation * template.std()
+    upper = template_mean + template_deviation
+    lower = template_mean - template_deviation
+    mask = np.logical_and(template > lower, template < upper)
+    if invert:
+        np.invert(mask, out=mask)
+
+    return mask
 
 
 class MaskWidget(widgets.Container):
@@ -432,12 +495,17 @@ class MaskWidget(widgets.Container):
             "Tube": tube_mask,
             "Box": box_mask,
             "Wedge": wedge_mask,
+            "Threshold": threshold_mask,
         }
 
         self.method_dropdown = widgets.ComboBox(
             name="Choose Mask", choices=list(self.methods.keys())
         )
         self.method_dropdown.changed.connect(self._on_method_changed)
+
+        self.percentile_range_edit = widgets.FloatSpinBox(
+            name="Data Quantile", min=0, max=100, value=0, step=2
+        )
 
         self.adapt_button = widgets.PushButton(text="Adapt to layer", enabled=False)
         self.adapt_button.changed.connect(self._update_initial_values)
@@ -452,6 +520,7 @@ class MaskWidget(widgets.Container):
         # self.density_field.value = f"Positive Density in Mask: {0:.2f}%"
 
         self.append(self.method_dropdown)
+        self.append(self.percentile_range_edit)
         self.append(self.adapt_button)
         self.append(self.align_button)
         self.append(self.action_button)
@@ -499,8 +568,13 @@ class MaskWidget(widgets.Container):
 
     def _update_initial_values(self, event=None):
         active_layer = self.viewer.layers.selection.active
-        center_of_mass = Density.center_of_mass(np.abs(active_layer.data), 0)
-        coordinates = np.array(np.where(active_layer.data > 0))
+
+        data = active_layer.data.copy()
+        cutoff = np.quantile(data, self.percentile_range_edit.value / 100)
+        data[data < cutoff] = 0
+
+        center_of_mass = Density.center_of_mass(np.abs(data), 0)
+        coordinates = np.array(np.where(data > 0))
         coordinates_min = coordinates.min(axis=1)
         coordinates_max = coordinates.max(axis=1)
         coordinates_heights = coordinates_max - coordinates_min
@@ -687,7 +761,22 @@ class PointCloudWidget(widgets.Container):
         dataframe = pd.read_csv(filename, sep="\t")
         points = dataframe[["z", "y", "x"]].values
         layer_name = filename.split("/")[-1]
-        self.viewer.add_points(points, size=10, name=layer_name)
+        point_properties = {
+            "score": np.array(dataframe["score"].values),
+            "detail": np.array(dataframe["detail"].values),
+        }
+        point_properties["score_scaled"] = np.log1p(
+            point_properties["score"] - point_properties["score"].min()
+        )
+
+        self.viewer.add_points(
+            points,
+            size=10,
+            properties=point_properties,
+            face_color="score_scaled",
+            face_colormap="turbo",
+            name=layer_name,
+        )
         self.dataframes[layer_name] = dataframe
 
 
@@ -708,5 +797,13 @@ def main():
     napari.run()
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="GUI for preparing and analyzing template matching runs."
+    )
+    args = parser.parse_args()
+    return args
+
 if __name__ == "__main__":
+    parse_args()
     main()

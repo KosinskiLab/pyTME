@@ -184,6 +184,12 @@ def parse_args():
         default=None,
     )
     parser.add_argument(
+        "--no_centering",
+        dest="no_centering",
+        action="store_true",
+        help="If set, assumes the template is centered and omits centering.",
+    )
+    parser.add_argument(
         "-i",
         "--template",
         dest="template",
@@ -360,7 +366,6 @@ def parse_args():
         default=None,
         help="Smooth parameter for the bandpass filter.",
     )
-
     parser.add_argument(
         "--tilt_range",
         dest="tilt_range",
@@ -377,6 +382,15 @@ def parse_args():
         default=None,
         help="Step size between tilts, e.g. '5'. When set a more accurate"
         " wedge mask will be computed.",
+    )
+    parser.add_argument(
+        "--wedge_axes",
+        dest="wedge_axes",
+        type=str,
+        required=False,
+        default="0,2",
+        help="Axis index of wedge opening and tilt axis, e.g. 0,2 for a wedge that is open in"
+        " z and tilted over x.",
     )
     parser.add_argument(
         "--wedge_smooth",
@@ -485,7 +499,10 @@ def main():
 
     initial_shape = template.shape
     _ = crop_data(data=template, data_mask=template_mask, cutoff=args.cutoff_template)
-    template, translation = template.centered(0)
+
+    translation = np.zeros(len(template.shape), dtype=np.float32)
+    if not args.no_centering:
+        template, translation = template.centered(0)
     print_block(
         name="Template",
         data={
@@ -517,30 +534,37 @@ def main():
     if args.tilt_range is not None:
         args.wedge_smooth if args.wedge_smooth is not None else 0
         tilt_start, tilt_stop = [float(x) for x in args.tilt_range.split(",")]
+        opening_axis, tilt_axis = [int(x) for x in args.wedge_axes.split(",")]
 
         if args.tilt_step is not None:
             tilt_angles = np.arange(
                 -tilt_start, tilt_stop + args.tilt_step, args.tilt_step
             )
             angles = np.zeros((template.data.ndim, tilt_angles.size))
-            angles[2, :] = tilt_angles
+            angles[tilt_axis, :] = tilt_angles
             template_filter["wedge_mask"] = {
                 "tilt_angles": angles,
                 "sigma": args.wedge_smooth,
+                "opening_axes": opening_axis,
             }
         else:
             template_filter["continuous_wedge_mask"] = {
                 "start_tilt": tilt_start,
                 "stop_tilt": tilt_stop,
-                "tilt_axis": 1,
+                "tilt_axis": tilt_axis,
+                "opening_axis": opening_axis,
                 "infinite_plane": True,
                 "sigma": args.wedge_smooth,
             }
 
     if template_mask is None:
-        enclosing_box = template.minimum_enclosing_box(0, use_geometric_center=False)
         template_mask = template.empty
-        template_mask.adjust_box(enclosing_box)
+        if not args.no_centering:
+            enclosing_box = template.minimum_enclosing_box(
+                0, use_geometric_center=False
+            )
+            template_mask.adjust_box(enclosing_box)
+
         template_mask.data[:] = 1
         translation = np.zeros_like(translation)
 
@@ -603,6 +627,8 @@ def main():
                     default_dtype_int=backend._array_backend.int16,
                 )
         available_memory = backend.get_available_memory() * args.cores
+        if preferred_backend == "pytorch" and args.interpolation_order == 3:
+            args.interpolation_order = 1
 
     if args.memory is None:
         args.memory = int(args.memory_scaling * available_memory)
@@ -653,6 +679,9 @@ def main():
     matching_data.rotations = get_rotation_matrices(
         angular_sampling=args.angular_sampling, dim=target.data.ndim
     )
+    if args.angular_sampling >= 180:
+        ndim = target.data.ndim
+        matching_data.rotations = np.eye(ndim).reshape(1, ndim, ndim)
 
     matching_data.template_filter = template_filter
     matching_data._invert_target = args.invert_target_contrast
