@@ -66,6 +66,6 @@ global-exclude tme/matching_backend.py
 prune doc/_build
 prune doc/reference/api
 global-exclude tme/scoring.py
-global-exclude tme/packaging.py
+global-exclude tme/package.py
 global-exclude tme/tests/test_packaging.py
 global-exclude scripts/match_template_devel.py

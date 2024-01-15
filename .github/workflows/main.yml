@@ -62,7 +62,14 @@ jobs:
       - name: Build Docs
         run: |
           python -mpip install .
-          python -mpip install Sphinx pydata-sphinx-theme sphinx_design numpydoc sphinx_copybutton sphinx-tabs
+          python -mpip install \
+            Sphinx \
+            pydata-sphinx-theme \
+            sphinx_design \
+            numpydoc \
+            sphinx_copybutton \
+            sphinx-tabs \
+            matplotlib
           cd doc
           make clean
           make html
