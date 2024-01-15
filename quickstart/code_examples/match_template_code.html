@@ -1,0 +1,1236 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>match_template.py &#8212; pytme 0.1.6 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=3fd87a63" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=bd9e20870c6007c4c509" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509" />
+  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=bd9e20870c6007c4c509"></script>
+
+    <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart/code_examples/match_template_code';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <header>
+  
+    <div class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.1.6 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav class="navbar-nav">
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        Quickstart
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../reference/index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../genindex.html">
+                        Index
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </div>
+  
+  </header>
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item">
+<nav class="navbar-nav">
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        Quickstart
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../reference/index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../genindex.html">
+                        Index
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">match_template.py</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="match-template-py">
+<h1>match_template.py<a class="headerlink" href="#match-template-py" title="Link to this heading">#</a></h1>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!python3</span>
+<span class="sd">&quot;&quot;&quot; CLI interface for basic pyTME template matching functions.</span>
+
+<span class="sd">    Copyright (c) 2023 European Molecular Biology Laboratory</span>
+
+<span class="sd">    Author: Valentin Maurer &lt;valentin.maurer@embl-hamburg.de&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">importlib.util</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">exit</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">abspath</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span><span class="p">,</span> <span class="n">Preprocessor</span><span class="p">,</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_rotation_matrices</span><span class="p">,</span>
+    <span class="n">compute_parallelization_schedule</span><span class="p">,</span>
+    <span class="n">euler_from_rotationmatrix</span><span class="p">,</span>
+    <span class="n">scramble_phases</span><span class="p">,</span>
+    <span class="n">generate_tempfile_name</span><span class="p">,</span>
+    <span class="n">write_pickle</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">tme.matching_exhaustive</span> <span class="kn">import</span> <span class="n">scan_subsets</span><span class="p">,</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span>
+<span class="kn">from</span> <span class="nn">tme.matching_data</span> <span class="kn">import</span> <span class="n">MatchingData</span>
+<span class="kn">from</span> <span class="nn">tme.analyzer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MaxScoreOverRotations</span><span class="p">,</span>
+    <span class="n">PeakCallerMaximumFilter</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">tme.backends</span> <span class="kn">import</span> <span class="n">backend</span>
+
+
+<span class="k">def</span> <span class="nf">get_func_fullname</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the full name of the given function, including its module.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;function &#39;</span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__module__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39;&gt;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">print_block</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">label_width</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prints a formatted block of information.&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&gt; </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">formatted_value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - </span><span class="si">{</span><span class="n">key</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">&#39;:&#39;</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">label_width</span><span class="si">}}</span><span class="s2"> </span><span class="si">{</span><span class="n">formatted_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">print_entry</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="mi">80</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; pyTME v</span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2"> &quot;</span>
+    <span class="n">padding_total</span> <span class="o">=</span> <span class="n">width</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+    <span class="n">padding_left</span> <span class="o">=</span> <span class="n">padding_total</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">padding_right</span> <span class="o">=</span> <span class="n">padding_total</span> <span class="o">-</span> <span class="n">padding_left</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;*</span><span class="si">{</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">padding_left</span><span class="w"> </span><span class="si">}{</span><span class="n">text</span><span class="si">}{</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">padding_right</span><span class="w"> </span><span class="si">}</span><span class="s2">*&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">check_positive</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="n">ivalue</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ivalue</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is an invalid positive float.&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ivalue</span>
+
+
+<span class="k">def</span> <span class="nf">load_and_validate_mask</span><span class="p">(</span><span class="n">mask_target</span><span class="p">:</span> <span class="s2">&quot;Density&quot;</span><span class="p">,</span> <span class="n">mask_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loadsa mask in CCP4/MRC format and assess whether the sampling_rate</span>
+<span class="sd">    and shape matches its target.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mask_target : Density</span>
+<span class="sd">        Object the mask should be applied to</span>
+<span class="sd">    mask_path : str</span>
+<span class="sd">        Path to the mask in CCP4/MRC format.</span>
+<span class="sd">    kwargs : dict, optional</span>
+<span class="sd">        Keyword arguments passed to :py:meth:`tme.density.Density.from_file`.</span>
+<span class="sd">    Raise</span>
+<span class="sd">    -----</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If shape or sampling rate do not match between mask_target and mask</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Density</span>
+<span class="sd">        A density instance if the mask was validated and loaded otherwise None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">mask_path</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">mask</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">mask_target</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">mask_target</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected shape of </span><span class="si">{</span><span class="n">mask_path</span><span class="si">}</span><span class="s2"> was </span><span class="si">{</span><span class="n">mask_target</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">,&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; got f</span><span class="si">{</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">mask_target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected sampling_rate of </span><span class="si">{</span><span class="n">mask_path</span><span class="si">}</span><span class="s2"> was </span><span class="si">{</span><span class="n">mask_target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;, got f</span><span class="si">{</span><span class="n">mask</span><span class="o">.</span><span class="n">sampling_rate</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">mask</span>
+
+
+<span class="k">def</span> <span class="nf">crop_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Density</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">data_mask</span><span class="p">:</span> <span class="n">Density</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Crop the provided data and mask to a smaller box based on a cutoff value.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : Density</span>
+<span class="sd">        The data that should be cropped.</span>
+<span class="sd">    cutoff : float</span>
+<span class="sd">        The threshold value to determine which parts of the data should be kept.</span>
+<span class="sd">    data_mask : Density, optional</span>
+<span class="sd">        A mask for the data that should be cropped.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        Returns True if the data was adjusted (cropped), otherwise returns False.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Cropping is performed in place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">cutoff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">box</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">trim_box</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">)</span>
+    <span class="n">box_mask</span> <span class="o">=</span> <span class="n">box</span>
+    <span class="k">if</span> <span class="n">data_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">box_mask</span> <span class="o">=</span> <span class="n">data_mask</span><span class="o">.</span><span class="n">trim_box</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">)</span>
+    <span class="n">box</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="nb">slice</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">mask</span><span class="o">.</span><span class="n">start</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span> <span class="n">mask</span><span class="o">.</span><span class="n">stop</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">arr</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">box_mask</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">box</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">data</span><span class="o">.</span><span class="n">adjust_box</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">data_mask</span><span class="p">:</span>
+        <span class="n">data_mask</span><span class="o">.</span><span class="n">adjust_box</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span> <span class="nf">parse_args</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Perform template matching.&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--target&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a target in CCP4/MRC format.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--target_mask&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;target_mask&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a mask for the target target in CCP4/MRC format.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--cutoff_target&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;cutoff_target&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Target contour level (used for cropping).&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--cutoff_template&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;cutoff_template&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Template contour level (used for cropping).&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--no_centering&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;no_centering&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;If set, assumes the template is centered and omits centering.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--template&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;template&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a template in PDB/MMCIF or CCP4/MRC format.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--template_mask&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;template_mask&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a mask for the template in CCP4/MRC format.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;output.pickle&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to output pickle file.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-s&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;score&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;FLCSphericalMask&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Template matching scoring function.&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-n&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;cores&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Number of cores used for template matching.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-r&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--ram&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;memory&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Amount of memory that can be used in bytes.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--memory_scaling&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;memory_scaling&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">check_positive</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Fraction of available memory that can be used.&quot;</span>
+        <span class="s2">&quot;Defaults to 0.85. Ignored if --ram is set&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-a&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;angular_sampling&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">check_positive</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Angular sampling rate for template matching. &quot;</span>
+        <span class="s2">&quot;A lower number yields more rotations.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-p&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;peak_calling&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;When set perform peak calling instead of score aggregation.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--use_gpu&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;use_gpu&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Whether to perform computations on the GPU.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--gpu_indices&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;gpu_indices&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Comma-separated list of GPU indices to use. For example,&quot;</span>
+        <span class="s2">&quot; 0,1 for the first and second GPU. Only used if --use_gpu is set.&quot;</span>
+        <span class="s2">&quot; If not provided but --use_gpu is set, CUDA_VISIBLE_DEVICES will&quot;</span>
+        <span class="s2">&quot; be respected.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--invert_target_contrast&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;invert_target_contrast&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Invert the target contrast via multiplication with negative one and&quot;</span>
+        <span class="s2">&quot; linear rescaling between zero and one. Note that this might lead to&quot;</span>
+        <span class="s2">&quot; different baseline scores of individual target splits when using&quot;</span>
+        <span class="s2">&quot; unnormalized scores. This option is intended for targets, where the&quot;</span>
+        <span class="s2">&quot; object to-be-matched has negative values, i.e. tomograms.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--no_edge_padding&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;no_edge_padding&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Whether to pad the edges of the target. This is useful, if the target&quot;</span>
+        <span class="s2">&quot; has a well defined bounding box, e.g. a density map.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--no_fourier_padding&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;no_fourier_padding&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Whether input arrays should be zero-padded to the full convolution shape&quot;</span>
+        <span class="s2">&quot; for numerical stability. When working with very large targets such as&quot;</span>
+        <span class="s2">&quot; tomograms it is safe to use this flag and benefit from the performance gain.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--scramble_phases&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;scramble_phases&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Whether to phase scramble the template for subsequent normalization.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--interpolation_order&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;interpolation_order&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Spline interpolation used during rotations. If less than zero&quot;</span>
+        <span class="s2">&quot; no interpolation is performed.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--use_mixed_precision&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;use_mixed_precision&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use float16 for real values operations where possible.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--use_memmap&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;use_memmap&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use memmaps to offload large data objects to disk. This is&quot;</span>
+        <span class="s2">&quot; particularly useful for large inputs when using --use_gpu..&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--temp_directory&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;temp_directory&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Directory for temporary objects. Faster I/O typically improves runtime.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--gaussian_sigma&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;gaussian_sigma&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Sigma parameter for Gaussian filtering the template.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--bandpass_band&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;bandpass_band&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Comma separated start and stop frequency for bandpass filtering the&quot;</span>
+        <span class="s2">&quot; template, e.g. 0.1, 0.5&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--bandpass_smooth&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;bandpass_smooth&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Smooth parameter for the bandpass filter.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--tilt_range&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;tilt_range&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Comma separated start and stop stage tilt angle, e.g. &#39;50,45&#39;. Used&quot;</span>
+        <span class="s2">&quot; to create a wedge mask to be applied to the template.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--tilt_step&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;tilt_step&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Step size between tilts, e.g. &#39;5&#39;. When set a more accurate&quot;</span>
+        <span class="s2">&quot; wedge mask will be computed.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--wedge_axes&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;wedge_axes&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;0,2&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Axis index of wedge opening and tilt axis, e.g. 0,2 for a wedge that is open in&quot;</span>
+        <span class="s2">&quot; z and tilted over x.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--wedge_smooth&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;wedge_smooth&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Gaussian sigma used to smooth the wedge mask.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">temp_directory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TMPDIR&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">default</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TMPDIR&quot;</span><span class="p">)</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">temp_directory</span> <span class="o">=</span> <span class="n">default</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TMPDIR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">temp_directory</span>
+
+    <span class="n">args</span><span class="o">.</span><span class="n">pad_target_edges</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_edge_padding</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">pad_fourier</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_fourier_padding</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">score</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;score has to be one of </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">gpu_devices</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">gpu_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">gpu_indices</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">use_gpu</span><span class="p">:</span>
+        <span class="n">gpu_devices</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">gpu_devices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;No GPU indices provided and CUDA_VISIBLE_DEVICES is not set.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Assuming device 0.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">gpu_indices</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">args</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">print_entry</span><span class="p">()</span>
+
+    <span class="n">target</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">use_memmap</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">template</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span>
+            <span class="n">filename_or_structure</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">template</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Resampling template to </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="s2">&quot;Consider providing a template with the same sampling rate as the target.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">template_mask</span> <span class="o">=</span> <span class="n">load_and_validate_mask</span><span class="p">(</span>
+        <span class="n">mask_target</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">mask_path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">template_mask</span>
+    <span class="p">)</span>
+    <span class="n">target_mask</span> <span class="o">=</span> <span class="n">load_and_validate_mask</span><span class="p">(</span>
+        <span class="n">mask_target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">mask_path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">target_mask</span><span class="p">,</span> <span class="n">use_memmap</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+    <span class="n">initial_shape</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">is_cropped</span> <span class="o">=</span> <span class="n">crop_data</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">data_mask</span><span class="o">=</span><span class="n">target_mask</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cutoff_target</span>
+    <span class="p">)</span>
+    <span class="n">print_block</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Target&quot;</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;Initial Shape&quot;</span><span class="p">:</span> <span class="n">initial_shape</span><span class="p">,</span>
+            <span class="s2">&quot;Sampling Rate&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+            <span class="s2">&quot;Final Shape&quot;</span><span class="p">:</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_cropped</span><span class="p">:</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">generate_tempfile_name</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.mrc&quot;</span><span class="p">)</span>
+        <span class="n">target</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">target_mask</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">generate_tempfile_name</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.mrc&quot;</span><span class="p">)</span>
+            <span class="n">target_mask</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">target_mask</span><span class="p">)</span>
+            <span class="n">print_block</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Target Mask&quot;</span><span class="p">,</span>
+                <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;Initial Shape&quot;</span><span class="p">:</span> <span class="n">initial_shape</span><span class="p">,</span>
+                    <span class="s2">&quot;Sampling Rate&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">target_mask</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+                    <span class="s2">&quot;Final Shape&quot;</span><span class="p">:</span> <span class="n">target_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+
+    <span class="n">initial_shape</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">crop_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">data_mask</span><span class="o">=</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cutoff_template</span><span class="p">)</span>
+
+    <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_centering</span><span class="p">:</span>
+        <span class="n">template</span><span class="p">,</span> <span class="n">translation</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">centered</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">print_block</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Template&quot;</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;Initial Shape&quot;</span><span class="p">:</span> <span class="n">initial_shape</span><span class="p">,</span>
+            <span class="s2">&quot;Sampling Rate&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+            <span class="s2">&quot;Final Shape&quot;</span><span class="p">:</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="n">template_filter</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">gaussian_sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="p">()</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span>
+            <span class="n">sigma</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">gaussian_sigma</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">data</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">bandpass_band</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bandpass_start</span><span class="p">,</span> <span class="n">bandpass_stop</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">bandpass_band</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">bandpass_smooth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">bandpass_smooth</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;bandpass_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;minimum_frequency&quot;</span><span class="p">:</span> <span class="n">bandpass_start</span><span class="p">,</span>
+            <span class="s2">&quot;maximum_frequency&quot;</span><span class="p">:</span> <span class="n">bandpass_stop</span><span class="p">,</span>
+            <span class="s2">&quot;gaussian_sigma&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">bandpass_smooth</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">tilt_start</span><span class="p">,</span> <span class="n">tilt_stop</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_range</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+        <span class="n">opening_axis</span><span class="p">,</span> <span class="n">tilt_axis</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tilt_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+                <span class="o">-</span><span class="n">tilt_start</span><span class="p">,</span> <span class="n">tilt_stop</span> <span class="o">+</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span>
+            <span class="p">)</span>
+            <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">tilt_angles</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+            <span class="n">angles</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">tilt_angles</span>
+            <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;wedge_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;tilt_angles&quot;</span><span class="p">:</span> <span class="n">angles</span><span class="p">,</span>
+                <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span><span class="p">,</span>
+                <span class="s2">&quot;opening_axes&quot;</span><span class="p">:</span> <span class="n">opening_axis</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;continuous_wedge_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;start_tilt&quot;</span><span class="p">:</span> <span class="n">tilt_start</span><span class="p">,</span>
+                <span class="s2">&quot;stop_tilt&quot;</span><span class="p">:</span> <span class="n">tilt_stop</span><span class="p">,</span>
+                <span class="s2">&quot;tilt_axis&quot;</span><span class="p">:</span> <span class="n">tilt_axis</span><span class="p">,</span>
+                <span class="s2">&quot;opening_axis&quot;</span><span class="p">:</span> <span class="n">opening_axis</span><span class="p">,</span>
+                <span class="s2">&quot;infinite_plane&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span><span class="p">,</span>
+            <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">template_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">template_mask</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">empty</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_centering</span><span class="p">:</span>
+            <span class="n">enclosing_box</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">minimum_enclosing_box</span><span class="p">(</span>
+                <span class="mi">0</span><span class="p">,</span> <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="n">template_mask</span><span class="o">.</span><span class="n">adjust_box</span><span class="p">(</span><span class="n">enclosing_box</span><span class="p">)</span>
+
+        <span class="n">template_mask</span><span class="o">.</span><span class="n">data</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">translation</span><span class="p">)</span>
+
+    <span class="n">template_mask</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">origin_translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">template_mask</span><span class="o">.</span><span class="n">origin</span><span class="p">),</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span>
+    <span class="p">)</span>
+    <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">origin_translation</span><span class="p">)</span>
+
+    <span class="n">template_mask</span> <span class="o">=</span> <span class="n">template_mask</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
+        <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">template_mask</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span>
+        <span class="n">translation</span><span class="o">=-</span><span class="n">translation</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">print_block</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Template Mask&quot;</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;Inital Shape&quot;</span><span class="p">:</span> <span class="n">initial_shape</span><span class="p">,</span>
+            <span class="s2">&quot;Sampling Rate&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">template_mask</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+            <span class="s2">&quot;Final Shape&quot;</span><span class="p">:</span> <span class="n">template_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">scramble_phases</span><span class="p">:</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">scramble_phases</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">noise_proportion</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="n">available_memory</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">get_available_memory</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">use_gpu</span><span class="p">:</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">gpu_indices</span><span class="p">)</span>
+        <span class="n">has_torch</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;torch&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">has_cupy</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;cupy&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_torch</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">has_cupy</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Found neither CuPy nor PyTorch installation. You need to install&quot;</span>
+                <span class="s2">&quot; either to enable GPU support.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">peak_calling</span><span class="p">:</span>
+            <span class="n">preferred_backend</span> <span class="o">=</span> <span class="s2">&quot;pytorch&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">has_torch</span><span class="p">:</span>
+                <span class="n">preferred_backend</span> <span class="o">=</span> <span class="s2">&quot;cupy&quot;</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">change_backend</span><span class="p">(</span><span class="n">backend_name</span><span class="o">=</span><span class="n">preferred_backend</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">preferred_backend</span> <span class="o">=</span> <span class="s2">&quot;cupy&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">has_cupy</span><span class="p">:</span>
+                <span class="n">preferred_backend</span> <span class="o">=</span> <span class="s2">&quot;pytorch&quot;</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">change_backend</span><span class="p">(</span><span class="n">backend_name</span><span class="o">=</span><span class="n">preferred_backend</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">use_mixed_precision</span> <span class="ow">and</span> <span class="n">preferred_backend</span> <span class="o">==</span> <span class="s2">&quot;pytorch&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                    <span class="s2">&quot;pytorch backend does not yet support mixed precision.&quot;</span>
+                    <span class="s2">&quot; Consider installing CuPy to enable this feature.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">use_mixed_precision</span><span class="p">:</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">change_backend</span><span class="p">(</span>
+                    <span class="n">backend_name</span><span class="o">=</span><span class="s2">&quot;cupy&quot;</span><span class="p">,</span>
+                    <span class="n">default_dtype</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">float16</span><span class="p">,</span>
+                    <span class="n">complex_dtype</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">complex64</span><span class="p">,</span>
+                    <span class="n">default_dtype_int</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">int16</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="n">available_memory</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">get_available_memory</span><span class="p">()</span> <span class="o">*</span> <span class="n">args</span><span class="o">.</span><span class="n">cores</span>
+        <span class="k">if</span> <span class="n">preferred_backend</span> <span class="o">==</span> <span class="s2">&quot;pytorch&quot;</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">memory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">memory_scaling</span> <span class="o">*</span> <span class="n">available_memory</span><span class="p">)</span>
+
+    <span class="n">target_padding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">pad_target_edges</span><span class="p">:</span>
+        <span class="n">target_padding</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">template_box</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">pad_fourier</span><span class="p">:</span>
+        <span class="n">template_box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">template_box</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">callback_class</span> <span class="o">=</span> <span class="n">MaxScoreOverRotations</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">peak_calling</span><span class="p">:</span>
+        <span class="n">callback_class</span> <span class="o">=</span> <span class="n">PeakCallerMaximumFilter</span>
+
+    <span class="n">splits</span><span class="p">,</span> <span class="n">schedule</span> <span class="o">=</span> <span class="n">compute_parallelization_schedule</span><span class="p">(</span>
+        <span class="n">shape1</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+        <span class="n">shape2</span><span class="o">=</span><span class="n">template_box</span><span class="p">,</span>
+        <span class="n">shape1_padding</span><span class="o">=</span><span class="n">target_padding</span><span class="p">,</span>
+        <span class="n">max_cores</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span>
+        <span class="n">max_ram</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">memory</span><span class="p">,</span>
+        <span class="n">split_only_outer</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">use_gpu</span><span class="p">,</span>
+        <span class="n">matching_method</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">score</span><span class="p">,</span>
+        <span class="n">analyzer_method</span><span class="o">=</span><span class="n">callback_class</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_backend_name</span><span class="p">,</span>
+        <span class="n">float_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype</span><span class="p">),</span>
+        <span class="n">complex_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span><span class="p">),</span>
+        <span class="n">integer_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype_int</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">splits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;Found no suitable parallelization schedule. Consider increasing&quot;</span>
+            <span class="s2">&quot; available RAM or decreasing number of cores.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">analyzer_args</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;score_threshold&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;number_of_peaks&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="s2">&quot;convolution_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;use_memmap&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">use_memmap</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">matching_setup</span><span class="p">,</span> <span class="n">matching_score</span> <span class="o">=</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">score</span><span class="p">]</span>
+    <span class="n">matching_data</span> <span class="o">=</span> <span class="n">MatchingData</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">get_rotation_matrices</span><span class="p">(</span>
+        <span class="n">angular_sampling</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span> <span class="o">&gt;=</span> <span class="mi">180</span><span class="p">:</span>
+        <span class="n">ndim</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span>
+        <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
+
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">invert_target_contrast</span>
+    <span class="k">if</span> <span class="n">target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">matching_data</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">target_mask</span>
+    <span class="k">if</span> <span class="n">template_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">matching_data</span><span class="o">.</span><span class="n">template_mask</span> <span class="o">=</span> <span class="n">template_mask</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="n">n_splits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">splits</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+    <span class="n">target_split</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">axis</span><span class="p">])</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">splits</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+    <span class="p">)</span>
+    <span class="n">gpus_used</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">gpu_indices</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">gpu_indices</span><span class="p">)</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;CPU Cores&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span>
+        <span class="s2">&quot;Run on GPU&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">use_gpu</span><span class="si">}</span><span class="s2"> [N=</span><span class="si">{</span><span class="n">gpus_used</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Use Mixed Precision&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">use_mixed_precision</span><span class="p">,</span>
+        <span class="s2">&quot;Assigned Memory [MB]&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">memory</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="mf">1e6</span><span class="si">}</span><span class="s2"> [out of </span><span class="si">{</span><span class="n">available_memory</span><span class="o">//</span><span class="mf">1e6</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Temporary Directory&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">temp_directory</span><span class="p">,</span>
+        <span class="s2">&quot;Extend Fourier Grid&quot;</span><span class="p">:</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_fourier_padding</span><span class="p">,</span>
+        <span class="s2">&quot;Extend Target Edges&quot;</span><span class="p">:</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_edge_padding</span><span class="p">,</span>
+        <span class="s2">&quot;Interpolation Order&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span><span class="p">,</span>
+        <span class="s2">&quot;Score&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">score</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Setup Function&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">get_func_fullname</span><span class="p">(</span><span class="n">matching_setup</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Scoring Function&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">get_func_fullname</span><span class="p">(</span><span class="n">matching_score</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Angular Sampling&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot; [</span><span class="si">{</span><span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> rotations]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Scramble Template&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">scramble_phases</span><span class="p">,</span>
+        <span class="s2">&quot;Target Splits&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target_split</span><span class="si">}</span><span class="s2"> [N=</span><span class="si">{</span><span class="n">n_splits</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">print_block</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Template Matching Options&quot;</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+        <span class="n">label_width</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Analyzer&quot;</span><span class="p">:</span> <span class="n">callback_class</span><span class="p">,</span> <span class="o">**</span><span class="n">analyzer_args</span><span class="p">}</span>
+    <span class="n">print_block</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Score Analysis Options&quot;</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+        <span class="n">label_width</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+
+    <span class="n">outer_jobs</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">schedule</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> job</span><span class="si">{</span><span class="s1">&#39;s&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">schedule</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">inner_jobs</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">schedule</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> core</span><span class="si">{</span><span class="s1">&#39;s&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">schedule</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">n_splits</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_splits</span><span class="si">}</span><span class="s2"> split</span><span class="si">{</span><span class="s1">&#39;s&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">n_splits</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Distributing </span><span class="si">{</span><span class="n">n_splits</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">outer_jobs</span><span class="si">}</span><span class="s2"> each using </span><span class="si">{</span><span class="n">inner_jobs</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running Template Matching. This might take a while ...&quot;</span><span class="p">)</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="n">scan_subsets</span><span class="p">(</span>
+        <span class="n">matching_data</span><span class="o">=</span><span class="n">matching_data</span><span class="p">,</span>
+        <span class="n">job_schedule</span><span class="o">=</span><span class="n">schedule</span><span class="p">,</span>
+        <span class="n">matching_score</span><span class="o">=</span><span class="n">matching_score</span><span class="p">,</span>
+        <span class="n">matching_setup</span><span class="o">=</span><span class="n">matching_setup</span><span class="p">,</span>
+        <span class="n">callback_class</span><span class="o">=</span><span class="n">callback_class</span><span class="p">,</span>
+        <span class="n">callback_class_args</span><span class="o">=</span><span class="n">analyzer_args</span><span class="p">,</span>
+        <span class="n">target_splits</span><span class="o">=</span><span class="n">splits</span><span class="p">,</span>
+        <span class="n">pad_target_edges</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">pad_target_edges</span><span class="p">,</span>
+        <span class="n">pad_fourier</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">pad_fourier</span><span class="p">,</span>
+        <span class="n">interpolation_order</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">candidates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="k">if</span> <span class="n">candidates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">callback_class</span> <span class="o">==</span> <span class="n">MaxScoreOverRotations</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">score</span> <span class="o">!=</span> <span class="s2">&quot;MCC&quot;</span><span class="p">:</span>
+            <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="n">target_mask</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+            <span class="n">candidates</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">x</span><span class="p">:</span> <span class="n">euler_from_rotationmatrix</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                        <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+
+    <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">target</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+    <span class="n">write_pickle</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">candidates</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+
+    <span class="n">runtime</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Runtime real: </span><span class="si">{</span><span class="n">runtime</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s user: </span><span class="si">{</span><span class="p">(</span><span class="n">runtime</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">args</span><span class="o">.</span><span class="n">cores</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s.&quot;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/quickstart/code_examples/match_template_code.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=bd9e20870c6007c4c509"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023 European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

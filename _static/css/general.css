@@ -89,3 +89,12 @@ html[data-theme=dark] h1 {
 html[data-theme=dark] h3 {
   color: #0a6774;
 }
+
+img {
+    background-color: transparent;
+}
+
+html[data-theme=dark] .bd-content img:not(.only-dark):not(.dark-light) {
+    background: transparent;
+    background-color: transparent;
+}

@@ -70,6 +70,9 @@
            Preprocessor.mean_filter
          
          
+           Preprocessor.median_filter
+         
+         
            Preprocessor.method_to_id
          
          

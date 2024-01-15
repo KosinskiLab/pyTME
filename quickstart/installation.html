@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Installation &#8212; pytme 0.1 documentation</title>
+    <title>Installation &#8212; pytme 0.1.6 documentation</title>
   
   
   
@@ -18,28 +18,29 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=e68c333d" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=3fd87a63" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=bd9e20870c6007c4c509" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509" />
+  <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=bd9e20870c6007c4c509"></script>
 
-    <script src="../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../_static/documentation_options.js?v=6e0256f3"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +60,7 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
   
   <div id="pst-scroll-pixel-helper"></div>
 
@@ -102,8 +103,10 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
+
+  <header>
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    <div class="bd-header navbar navbar-expand-lg bd-navbar">
 <div class="bd-header__inner bd-page-width">
   <label class="sidebar-toggle primary-toggle" for="__primary">
     <span class="fa-solid fa-bars"></span>
@@ -123,7 +126,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1 documentation</p>
+    <p class="title logo__title">pytme 0.1.6 documentation</p>
   
 </a></div>
     
@@ -135,12 +138,6 @@
       
         <div class="navbar-item">
 <nav class="navbar-nav">
-  <p class="sidebar-header-items__title"
-     role="heading"
-     aria-level="1"
-     aria-label="Site Navigation">
-    Site Navigation
-  </p>
   <ul class="bd-navbar-elements navbar-nav">
     
                     <li class="nav-item current active">
@@ -240,10 +237,14 @@ document.write(`
   
 </div>
 
-    </nav>
+    </div>
   
+  </header>
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -256,12 +257,6 @@ document.write(`
         
           <div class="navbar-item">
 <nav class="navbar-nav">
-  <p class="sidebar-header-items__title"
-     role="heading"
-     aria-level="1"
-     aria-label="Site Navigation">
-    Site Navigation
-  </p>
   <ul class="bd-navbar-elements navbar-nav">
     
                     <li class="nav-item current active">
@@ -333,7 +328,6 @@ document.write(`
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
-
 <li class="toctree-l1"><a class="reference internal" href="match_template.html">Template matching</a></li>
 <li class="toctree-l1"><a class="reference internal" href="postprocessing.html">Postprocessing</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/index.html">Using the API</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -397,11 +391,11 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
-<p>This section provides instructions on how to install the tme library. Depending on your preferred method or system setup, you can choose between the installation with Conda, Pip, or from source. Click on the tabs below to view the instructions for each method.</p>
+<p>This section provides instructions on how to install the tme library. Depending on your preferred method or system setup, you can choose between the installation with Conda, PyPI, or from source. Click on the tabs below to view the instructions for each method.</p>
 <div class="sd-tab-set docutils" id="installation-section">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
 </input><label class="sd-tab-label" for="sd-tab-item-0">
@@ -426,6 +420,7 @@ Conda</label><div class="sd-tab-content docutils">
 </div>
 </li>
 <li><p><strong>Install from Source</strong>:</p>
+<p>The following will download and install the newest version of tme.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/KosinskiLab/pyTME.git
 </pre></div>
 </div>
@@ -434,19 +429,16 @@ Conda</label><div class="sd-tab-content docutils">
 </div>
 <input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
 </input><label class="sd-tab-label" for="sd-tab-item-1">
-Pip</label><div class="sd-tab-content docutils">
-<p>Pip will fetch the required packages from an online repository and install them on your system.</p>
-<p><strong>Prerequisite</strong>:</p>
+PyPI</label><div class="sd-tab-content docutils">
+<p>Pip will fetch the required packages from PyPI and install them on your system.</p>
+<ol class="arabic simple">
+<li><p><strong>Prerequisite</strong>:</p></li>
+</ol>
 <p>Ensure you have Python 3.11 or higher installed on your system:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>--version
 </pre></div>
 </div>
-<ol class="arabic">
-<li><p><strong>Install from Source</strong>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/KosinskiLab/pyTME.git
-</pre></div>
-</div>
-</li>
+<ol class="arabic" start="2">
 <li><p><strong>Install from PyPI</strong>:</p>
 <p>Once available on PyPI, the installation is a single command.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pytme
@@ -456,45 +448,56 @@ Pip</label><div class="sd-tab-content docutils">
 </ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The Python Package Index (PyPI) provides a simple and convenient way to install tme. However, installing from github fetches the most recent version of the code base.</p>
+<p>The Python Package Index (PyPI) provides a simple and convenient way to install tme. However, installing from Conda or source fetches the most recent version of the code base.</p>
 </div>
 </div>
 <input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
 </input><label class="sd-tab-label" for="sd-tab-item-2">
 Source</label><div class="sd-tab-content docutils">
-<p>Installing from source ensures you get the latest, unreleased changes. You’ll be compiling and setting up the project directly from its source code.</p>
-<p><strong>Prerequisite</strong>:</p>
-<p>Ensure you have Python 3.11 or higher installed on your system:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>--version
-</pre></div>
-</div>
+<p>Installing from source is ideal for developers and contributors who need access to the latest, unreleased changes and plan to modify the code. This method involves cloning the repository and setting up a local development environment.</p>
+<p>For detailed information on contributing to the project, see our <a class="reference internal" href="contribution.html"><span class="doc">Contributor’s Guide</span></a>.</p>
 <ol class="arabic">
-<li><p><strong>Clone the Repository</strong>:</p>
-<p>First, clone the tme repository:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/KosinskiLab/pyTME.git
-</pre></div>
-</div>
-<p>Navigate to the cloned repository’s directory:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>pytme
+<li><p><strong>Prerequisite</strong>:</p>
+<p>Ensure you have Python 3.11 or higher and Git installed on your system:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>--version
+git<span class="w"> </span>--version
 </pre></div>
 </div>
 </li>
-<li><p><strong>Install the Package</strong>:</p>
-<p>Use <cite>pip</cite> to install the library:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>.
+<li><p><strong>Clone the Repository</strong>:</p>
+<p>First, clone the tme repository and navigate into it:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/KosinskiLab/pyTME.git
+<span class="nb">cd</span><span class="w"> </span>pytme
 </pre></div>
 </div>
-<p>This will automatically install all required dependencies for tme.</p>
+</li>
+<li><p><strong>Set Up a Development Environment</strong>:</p>
+<p>It’s recommended to create a virtual environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>pytme
+<span class="nb">source</span><span class="w"> </span>pytme/bin/activate
+</pre></div>
+</div>
+</li>
+<li><p><strong>Install the Package in Editable Mode</strong>:</p>
+<p>Install the library in editable mode with <cite>pip</cite>. This allows you to modify the source code and see changes immediately:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<p>This will automatically install all required dependencies for tme. Remember to navigate out of the source directory before using tme. This ensures the built extensions are properly loaded from the installed library, avoiding potential issues.</p>
 </li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>After installing from source, navigate out of the source directory before using tme. This ensures the built extensions are properly loaded from the installed library, avoiding potential issues.</p>
+<p>The above method is suited for development purposes. If you simply want to install the latest version of the package without cloning, you can use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/KosinskiLab/pyTME.git
+</pre></div>
+</div>
+<p>This method installs the package directly from the repository without the need for cloning and is suitable for users who don’t plan to modify the source code.</p>
 </div>
 </div>
 </div>
 <section id="optional-gui-setup">
-<h2>Optional GUI Setup<a class="headerlink" href="#optional-gui-setup" title="Link to this heading">#</a></h2>
+<span id="gui-installation"></span><h2>Optional GUI Setup<a class="headerlink" href="#optional-gui-setup" title="Link to this heading">#</a></h2>
 <p>To utilize the optional preprocessing GUI provided by tme, you’ll need to install several additional librarys:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>napari<span class="w"> </span>magicgui<span class="w"> </span>pyqt5
 pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/maurerv/napari-density-io.git
@@ -550,7 +553,7 @@ PyTorch</label><div class="sd-tab-content docutils">
 </section>
 <section id="support">
 <h2>Support<a class="headerlink" href="#support" title="Link to this heading">#</a></h2>
-<p>For issues, questions, or contributions, please refer to the tme repository <a class="reference external" href="https://github.com/KosinskiLab/pyTME.git">repository</a>.</p>
+<p>For issues, questions, or contributions, please open an issue or pull request in the tme <a class="reference external" href="https://github.com/KosinskiLab/pyTME.git">repository</a>.</p>
 </section>
 </section>
 
@@ -591,12 +594,14 @@ PyTorch</label><div class="sd-tab-content docutils">
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
-  <div class="sidebar-secondary-item">
 
-  <div class="page-toc tocsection onthispage">
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> On this page
   </div>
-  <nav class="bd-toc-nav page-toc">
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-gui-setup">Optional GUI Setup</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-support">GPU Support</a></li>
@@ -628,8 +633,8 @@ PyTorch</label><div class="sd-tab-content docutils">
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=bd9e20870c6007c4c509"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -662,7 +667,7 @@ PyTorch</label><div class="sd-tab-content docutils">
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.4.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.1.
 </p></div>
       
     </div>

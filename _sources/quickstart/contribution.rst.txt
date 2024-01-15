@@ -9,17 +9,17 @@ We greatly appreciate community contributions to our project. If you're thinking
 Code Style and Guidelines
 --------------------------
 
-1. **Code Formatting**: We follow PEP 8, the style guide for Python code. We recommend using tools like `black` to check your code for PEP 8 compliance.
+1. **Code Formatting**: We follow PEP 8, the style guide for Python code. We recommend using tools like `Black <https://github.com/psf/black>`_ to check your code for PEP 8 compliance.
 
-2. **Docstrings**: All functions, classes, and methods should have numpydoc-compliant docstrings. This ensures that our documentation remains consistent and readable. See the `numpydoc` guide for reference.
+2. **Docstrings**: All functions, classes, and methods should have numpydoc-compliant docstrings. This ensures that our documentation remains consistent and readable. See the `numpydoc guide <https://numpydoc.readthedocs.io/en/latest/format.html>`_ for reference.
 
-3. **No Unnecessary Getters and Setters**: Avoid using getters and setters unless they provide clear value, such as data validation or computed properties. Direct attribute access is more Pythonic.
+3. **Minimize Line Count**: While it's important to write clear code, also aim for brevity. Don't use five lines of code when one will do. But remember, clarity should not be sacrificed for brevity.
 
-4. **Minimize Line Count**: While it's important to write clear code, also aim for brevity. Don't use five lines of code when one will do. But remember, clarity should not be sacrificed for brevity.
+4. **Testing**: Write tests for any new features or bug fixes. Ensure that all tests pass before submitting a pull request.
 
-5. **Commit Messages**: Write meaningful commit messages. A good rule of thumb is to make the commit message complete the sentence "If applied, this commit will..."
+5. **No Unnecessary Getters and Setters**: Avoid using getters and setters unless they provide clear value, such as data validation or computed properties.
 
-6. **Testing**: Write tests for any new features or bug fixes. Ensure that all tests pass before submitting a pull request.
+6. **Commit Messages**: Write meaningful commit messages that describe the implications of your changes.
 
 7. **Stay Updated**: Make sure your fork and local copies are updated regularly from the main branch to avoid merge conflicts.
 
@@ -62,4 +62,3 @@ Once you've submitted your pull request:
 3. **Merging**: Once approved, your pull request will be merged into the main branch.
 
 Thank you for considering contributing to our project! Your time and effort help improve |project| for everyone.
-
