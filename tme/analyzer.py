@@ -56,6 +56,8 @@ class PeakCaller(ABC):
         Number of candidate peaks to consider.
     min_distance : int, optional
         Minimum distance between peaks.
+    min_boundary_distance : int, optional
+        Minimum distance to array boundaries.
     **kwargs
         Additional keyword arguments.
 
@@ -70,18 +72,27 @@ class PeakCaller(ABC):
         self,
         number_of_peaks: int = 1000,
         min_distance: int = 1,
+        min_boundary_distance: int = 0,
         **kwargs,
     ):
-        number_of_peaks, min_distance = int(number_of_peaks), int(min_distance)
+        number_of_peaks = int(number_of_peaks)
+        min_distance, min_boundary_distance = int(min_distance), int(
+            min_boundary_distance
+        )
         if number_of_peaks <= 0:
             raise ValueError(
                 f"number_of_peaks has to be larger than 0, got {number_of_peaks}"
             )
         if min_distance < 0:
             raise ValueError(f"min_distance has to be non-negative, got {min_distance}")
+        if min_boundary_distance < 0:
+            raise ValueError(
+                f"min_boundary_distance has to be non-negative, got {min_boundary_distance}"
+            )
 
         self.peak_list = []
         self.min_distance = min_distance
+        self.min_boundary_distance = min_boundary_distance
         self.number_of_peaks = number_of_peaks
 
     def __iter__(self):
@@ -120,6 +131,25 @@ class PeakCaller(ABC):
 
         if peak_details is None:
             peak_details = backend.to_backend_array([-1] * peak_positions.shape[0])
+
+        if self.min_boundary_distance > 0:
+            upper_limit = backend.subtract(
+                score_space.shape, self.min_boundary_distance
+            )
+            valid_peaks = backend.sum(
+                backend.multiply(
+                    peak_positions < upper_limit,
+                    peak_positions >= self.min_boundary_distance,
+                ),
+                axis=1,
+            ) == peak_positions.shape[1]
+            if backend.sum(valid_peaks) == 0:
+                return None
+
+            peak_positions, peak_details = (
+                peak_positions[valid_peaks],
+                peak_details[valid_peaks],
+            )
 
         rotations = backend.repeat(
             rotation_matrix.reshape(1, *rotation_matrix.shape),
@@ -814,6 +844,7 @@ class MaxScoreOverRotations:
         score_space_shape: Tuple[int],
         score_space_dtype: type,
         translation_offset: NDArray = None,
+        score_threshold: float = 0,
         shared_memory_handler: object = None,
         rotation_space_dtype: type = int,
         use_memmap: bool = False,
@@ -822,7 +853,11 @@ class MaxScoreOverRotations:
     ):
         score_space_shape = tuple(int(x) for x in score_space_shape)
         self.score_space = backend.arr_to_sharedarr(
-            backend.zeros(shape=score_space_shape, dtype=score_space_dtype),
+            backend.full(
+                shape=score_space_shape,
+                dtype=score_space_dtype,
+                fill_value=score_threshold,
+            ),
             shared_memory_handler=shared_memory_handler,
         )
         self.rotations = backend.arr_to_sharedarr(
