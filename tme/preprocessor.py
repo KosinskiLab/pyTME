@@ -15,6 +15,7 @@ from scipy.ndimage import (
     fourier_gaussian,
     gaussian_filter,
     rank_filter,
+    median_filter,
     zoom,
     generic_gradient_magnitude,
     sobel,
@@ -23,6 +24,7 @@ from scipy.ndimage import (
     gaussian_laplace,
     gaussian_gradient_magnitude,
 )
+from scipy.ndimage import mean as ndimean
 from scipy.signal import convolve, decimate
 from scipy.optimize import differential_evolution
 from pywt import wavelist, wavedecn, waverecn
@@ -598,8 +600,6 @@ class Preprocessor:
         NDArray
             Simulated electron densities.
         """
-        if template is None:
-            raise ValueError("Argument template missing")
         template = template.copy()
         interpolation_box = template.shape
 
@@ -608,6 +608,29 @@ class Preprocessor:
             size = 3
 
         template = rank_filter(template, rank=rank, size=size)
+        template = self.interpolate_box(box=interpolation_box, arr=template)
+
+        return template
+
+    def median_filter(self, template: NDArray, size: int = None) -> NDArray:
+        """
+        Perform median filtering.
+
+        Parameters
+        ----------
+        template : NDArray
+            The template to be filtered.
+        size : int, optional
+            Size of the filter.
+
+        Returns
+        -------
+        NDArray
+            Filtered template.
+        """
+        interpolation_box = template.shape
+
+        template = median_filter(template, size=size)
         template = self.interpolate_box(box=interpolation_box, arr=template)
 
         return template
@@ -812,7 +835,7 @@ class Preprocessor:
         return arr
 
     @staticmethod
-    def fftfreqn(shape: NDArray, sampling_rate: NDArray) -> NDArray:
+    def fftfreqn(shape: NDArray, sampling_rate: NDArray = 1) -> NDArray:
         """
         Calculate the N-dimensional equivalent to the inverse fftshifted
         absolute of numpy's fftfreq function, supporting anisotropic sampling.
@@ -832,7 +855,7 @@ class Preprocessor:
         Examples
         --------
         >>> import numpy as np
-        >>> from dge import Preprocessor
+        >>> from tme import Preprocessor
         >>> freq = Preprocessor().fftfreqn((10,), 1)
         >>> freq_numpy = np.fft.fftfreq(10, 1)
         >>> np.allclose(freq, np.abs(np.fft.ifftshift(freq_numpy)))
@@ -901,7 +924,6 @@ class Preprocessor:
         maximum_frequency : float
             The upper boundary of the frequency range to be preserved.  Higher values
             will emphasize finer details and potentially noise.
-
         sampling_rate : NDarray, optional
             The sampling rate along each dimension.
         gaussian_sigma : float, optional
@@ -988,6 +1010,7 @@ class Preprocessor:
         self,
         shape: Tuple[int],
         tilt_angles: NDArray,
+        opening_axes: NDArray = 0,
         sigma: float = 0,
         omit_negative_frequencies: bool = True,
     ) -> NDArray:
@@ -1001,21 +1024,18 @@ class Preprocessor:
             Shape of the output wedge array.
         tilt_angles : NDArray
             Tilt angles in format d dimensions N tilts [d x N].
+        opening_axes : NDArray
+            Axis running through the void defined by the wedge in format (N,)
         sigma : float, optional
             Standard deviation for Gaussian kernel used for smoothing the wedge.
         omit_negative_frequencies : bool, optional
             Whether the wedge mask should omit negative frequencies, i.e. be
-            applicable to non hermitian-symmetric fourier transforms.
+            applicable to symmetric Fourier transforms (see :obj:`numpy.fft.fftn`)
 
         Returns
         -------
         NDArray
             A numpy array containing the wedge mask.
-
-        Notes
-        -----
-        The axis perpendicular to the tilts is the leftmost closest axis
-        with minimal tilt.
 
         Examples
         --------
@@ -1047,25 +1067,37 @@ class Preprocessor:
         with the difference being that :py:meth:`Preprocessor.continuous_wedge_mask`
         does not consider individual plane tilts.
 
+        Raises
+        ------
+        ValueError
+            If opening_axes is neither a single value or defined for each tilt.
+
         See Also
         --------
         :py:meth:`Preprocessor.continuous_wedge_mask`
         """
-        plane = np.zeros(shape, dtype=np.float32)
-        opening_axis = np.argmax(np.abs(tilt_angles), axis=0)
-        slices = tuple(slice(a, a + 1) for a in np.divide(shape, 2).astype(int))
-        plane_rotated = np.zeros_like(plane)
-        wedge_volume = np.zeros_like(plane)
-        for index in range(tilt_angles.shape[1]):
-            potential_axes, *_ = np.where(
-                np.abs(tilt_angles[:, index]) == np.abs(tilt_angles[:, index]).min()
+        opening_axes = np.asarray(opening_axes)
+        opening_axes = np.repeat(
+            opening_axes, tilt_angles.shape[1] // opening_axes.size
+        )
+
+        if opening_axes.size != tilt_angles.shape[1]:
+            raise ValueError(
+                "opening_axes has to be a single value or be defined for each tilt."
             )
-            largest_tilt = np.argmax(np.abs(tilt_angles[:, index]))
-            opening_axis_index = np.argmin(np.abs(potential_axes - largest_tilt))
-            opening_axis = potential_axes[opening_axis_index]
-            rotation_matrix = euler_to_rotationmatrix(tilt_angles[:, index])
-            plane_rotated.fill(0)
+
+        plane = np.zeros(shape, dtype=np.float32)
+        slices = tuple(slice(a, a + 1) for a in np.divide(shape, 2).astype(int))
+        plane_rotated, wedge_volume = np.zeros_like(plane), np.zeros_like(plane)
+        for index in range(tilt_angles.shape[1]):
             plane.fill(0)
+            plane_rotated.fill(0)
+
+            opening_axis = opening_axes[index]
+            rotation_matrix = euler_to_rotationmatrix(
+                np.roll(tilt_angles[:, index], 1 - opening_axes)
+            )
+
             subset = tuple(
                 slice(None) if i != opening_axis else slices[opening_axis]
                 for i in range(plane.ndim)
@@ -1097,7 +1129,8 @@ class Preprocessor:
         start_tilt: float,
         stop_tilt: float,
         shape: Tuple[int],
-        tilt_axis: int = 1,
+        opening_axis: int = 0,
+        tilt_axis: int = 2,
         sigma: float = 0,
         extrude_plane: bool = True,
         infinite_plane: bool = True,
@@ -1116,10 +1149,15 @@ class Preprocessor:
             Ending tilt angle in degrees, , e.g. a stage tilt of -70 degrees
             would yield a stop_tilt value of 70.
         tilt_axis : int
-            Axis that runs through the empty part of the wedge.
-            - 0 for X-axis
+            Axis that the plane is tilted over.
+            - 0 for Z-axis
             - 1 for Y-axis
-            - 2 for Z-axis
+            - 2 for X-axis
+        opening_axis : int
+            Axis running through the void defined by the wedge.
+            - 0 for Z-axis
+            - 1 for Y-axis
+            - 2 for X-axis
         shape : Tuple of ints
             Shape of the output wedge array.
         sigma : float, optional
@@ -1131,7 +1169,7 @@ class Preprocessor:
             analogous to rotating a line in 3D.
         omit_negative_frequencies : bool, optional
             Whether the wedge mask should omit negative frequencies, i.e. be
-            applicable to non hermitian-symmetric fourier transforms.
+            applicable to symmetric Fourier transforms (see :obj:`numpy.fft.fftn`)
         infinite_plane : bool, optional
             Whether the plane should be considered to be larger than the shape. In this
             case the output wedge mask fill have no spheric component.
@@ -1157,9 +1195,6 @@ class Preprocessor:
         """
         shape_center = np.divide(shape, 2).astype(int)
 
-        opening_axis = tilt_axis
-        base_axis = (tilt_axis + 1) % len(shape)
-
         grid = (np.indices(shape).T - shape_center).T
 
         start_radians = np.tan(np.radians(90 - start_tilt))
@@ -1170,7 +1205,7 @@ class Preprocessor:
             ratios = np.where(
                 grid[opening_axis] == 0,
                 max_tan_value,
-                grid[base_axis] / grid[opening_axis],
+                grid[tilt_axis] / grid[opening_axis],
             )
 
         wedge = np.logical_or(start_radians <= ratios, stop_radians >= ratios).astype(
@@ -1178,7 +1213,7 @@ class Preprocessor:
         )
 
         if extrude_plane:
-            distances = np.sqrt(grid[base_axis] ** 2 + grid[opening_axis] ** 2)
+            distances = np.sqrt(grid[tilt_axis] ** 2 + grid[opening_axis] ** 2)
         else:
             distances = np.linalg.norm(grid, axis=0)
 
@@ -1288,4 +1323,68 @@ class Preprocessor:
         reciprocal_template_filter = reciprocal_template_filter.astype(ft_vol.dtype)
         np.multiply(ft_vol, reciprocal_template_filter, out=ft_vol)
         ret = np.real(np.fft.ifftn(ft_vol))
+        return ret
+
+
+class LinearWhiteningFilter:
+    @staticmethod
+    def _fftfreqn(
+        shape: Tuple[int],
+        sampling_rate: NDArray,
+        omit_negative_frequencies: bool = False,
+    ):
+        center = np.divide(shape, 2).astype(int)
+        norm = np.multiply(shape, sampling_rate)
+
+        if omit_negative_frequencies:
+            shape = (*shape[:-1], center[-1] + 1)
+            center = (*center[:-1], 0)
+
+        indices = np.indices(shape).T
+        indices -= center
+        indices = np.divide(indices, norm)
+        return indices.T
+
+    def filter(
+        self, template: NDArray, n_bins: int = None
+    ) -> Tuple[NDArray, NDArray, NDArray]:
+        max_bins = int(np.linalg.norm(template.shape) // 2 + 1)
+        n_bins = max_bins if n_bins is None else n_bins
+        n_bins = int(min(n_bins, max_bins))
+
+        grid = self._fftfreqn(
+            shape=template.shape, sampling_rate=1, omit_negative_frequencies=True
+        )
+        frequency_grid = np.linalg.norm(grid, axis=0)
+
+        _, bin_edges = np.histogram(frequency_grid, bins=n_bins - 1)
+        bins = np.digitize(frequency_grid, bins=bin_edges, right=True)
+
+        fourier_transform = np.fft.fftshift(np.fft.rfftn(template))
+        fourier_spectrum = np.abs(fourier_transform)
+
+        radial_averages = ndimean(fourier_spectrum, labels=bins, index=np.unique(bins))
+        np.reciprocal(radial_averages, out=radial_averages)
+        np.divide(radial_averages, radial_averages.max(), out=radial_averages)
+
+        bins = radial_averages[bins]
+        np.multiply(fourier_transform, bins, out=fourier_transform)
+        center_indices = tuple([dim_size // 2 for dim_size in fourier_transform.shape])
+        fourier_transform[center_indices] = 0
+        ret = np.fft.irfftn(np.fft.ifftshift(fourier_transform)).real
+
+        return ret, bin_edges, radial_averages
+
+    def apply(
+        self, template: NDArray, bin_edges: NDArray, radial_averages: NDArray
+    ) -> NDArray:
+        fourier_transform = np.fft.fftshift(np.fft.fftn(template))
+
+        grid = self._fftfreqn(shape=fourier_transform.shape, sampling_rate=1)
+        frequency_grid = np.linalg.norm(grid, axis=0)
+
+        bins = np.digitize(frequency_grid, bins=bin_edges, right=True)
+        np.multiply(fourier_transform, radial_averages[bins], out=fourier_transform)
+        ret = np.fft.ifftn(np.fft.ifftshift(fourier_transform)).real
+
         return ret

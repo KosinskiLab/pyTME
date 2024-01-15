@@ -104,7 +104,7 @@ class Density:
             )
         if origin.size != data.ndim:
             raise ValueError(f"Expected origin size : {data.ndim}, got {origin.size}.")
-        if type(metadata) != dict:
+        if not isinstance(metadata, dict):
             raise ValueError("Argument metadata has to be of class dict.")
 
         self.data, self.origin, self.sampling_rate = data, origin, sampling_rate
@@ -680,7 +680,7 @@ class Density:
         >>>    chain = "A"
         >>> )
 
-        We can restrict the generated py:class:`Density` instance to only contain
+        We can restrict the generated :py:class:`Density` instance to only contain
         specific elements like carbon and nitrogen:
 
         >>> density = Density.from_structure(
@@ -1345,7 +1345,7 @@ class Density:
         """
         :py:meth:`Density.pad` extends the internal :py:attr:`Density.data`
         array of the current :py:class:`Density` instance to ``new_shape`` and
-        adapts :py:attr:`Density.origin` accordingly:
+        adapts :py:attr:`Density.origin` accordingly.
 
         Parameters
         ----------
@@ -1713,7 +1713,7 @@ class Density:
 
         Parameters
         ----------
-        new_sampling_rate : Tuple[float]
+        new_sampling_rate : tuple of floats or float
             Sampling rate to resample to.
         order : int, optional
             Order of spline used for interpolation, by default 1.

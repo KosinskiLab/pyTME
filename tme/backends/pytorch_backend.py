@@ -131,7 +131,7 @@ class PytorchBackend(NumpyFFTWBackend):
 
     def full(self, shape, fill_value, dtype=None):
         return self._array_backend.full(
-            shape, dtype=dtype, fill_value=fill_value, device=self.device
+            size = shape, dtype=dtype, fill_value=fill_value, device=self.device
         )
 
     def datatype_bytes(self, dtype: type) -> int:

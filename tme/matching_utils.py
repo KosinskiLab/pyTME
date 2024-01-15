@@ -16,11 +16,12 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 from numpy.typing import NDArray
 from scipy.spatial import ConvexHull
+from scipy.ndimage import gaussian_filter
 from scipy.spatial.transform import Rotation
 
-from .helpers import quaternion_to_rotation_matrix, load_quaternions_by_angle
 from .extensions import max_euclidean_distance
 from .matching_memory import estimate_ram_usage
+from .helpers import quaternion_to_rotation_matrix, load_quaternions_by_angle
 
 
 def handle_traceback(last_type, last_value, last_traceback):
@@ -206,7 +207,7 @@ def load_pickle(filename: str) -> object:
 
     def _is_pickle_memmap(data):
         ret = False
-        if type(data[0]) == str:
+        if isinstance(data[0], str):
             if data[0] == "np.memmap":
                 ret = True
         return ret
@@ -904,7 +905,9 @@ def _format_mmcif_colunns(subdict: Dict) -> Dict:
     return padded_subdict
 
 
-def create_mask(mask_type: str, **kwargs) -> NDArray:
+def create_mask(
+    mask_type: str, sigma_decay: float = 0, mask_cutoff: float = 0.135, **kwargs
+) -> NDArray:
     """
     Creates a mask of the specified type.
 
@@ -912,6 +915,10 @@ def create_mask(mask_type: str, **kwargs) -> NDArray:
     ----------
     mask_type : str
         Type of the mask to be created. Can be "ellipse", "box", or "tube".
+    sigma_decay : float, optional
+        Standard deviation of an optionally applied Gaussian filter.
+    mask_cutoff : float, optional
+        Values below mask_cutoff will be set to zero. By default, exp(-2).
     kwargs : dict
         Additional parameters required by the mask creating functions.
 
@@ -935,7 +942,13 @@ def create_mask(mask_type: str, **kwargs) -> NDArray:
     if mask_type not in mapping:
         raise ValueError(f"mask_type has to be one of {','.join(mapping.keys())}")
 
-    return mapping[mask_type](**kwargs)
+    mask = mapping[mask_type](**kwargs)
+    if sigma_decay > 0:
+        mask = gaussian_filter(mask.astype(np.float32), sigma=sigma_decay)
+
+    mask[mask < mask_cutoff] = 0
+
+    return mask
 
 
 def elliptical_mask(
@@ -946,11 +959,11 @@ def elliptical_mask(
 
     Parameters
     ----------
-    shape : tuple
+    shape : tuple of ints
         Shape of the mask to be created.
-    radius : tuple
+    radius : tuple of floats
         Radius of the ellipse.
-    center : tuple
+    center : tuple of ints
         Center of the ellipse.
 
     Returns
