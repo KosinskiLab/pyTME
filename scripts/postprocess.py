@@ -285,7 +285,7 @@ class Orientations:
 
             for index, (translation, rotation, score, detail) in enumerate(self):
                 rotation = Rotation.from_euler("zyx", rotation, degrees=True)
-                rotation = rotation.as_euler(seq="zyz", degrees=True)
+                rotation = rotation.as_euler(seq="ZYZ", degrees=True)
 
                 translation_string = "\t".join([str(x) for x in translation][::-1])
                 angle_string = "\t".join([str(x) for x in rotation[::-1]])

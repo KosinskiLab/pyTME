@@ -35,7 +35,7 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
 
         .. note::
 
-            |project| uses the zyx convention, like the CCP4/MRC format. In `IMOD <https://bio3d.colorado.edu/imod/>`_ terms, a file read by :py:meth:`tme.density.Density.from_file` with data shape 500, 928, 960, will contain 960 columns, 928 rows and 500 sections. Similarly, the reported Euler angles are in zyx convention (see :py:meth:`tme.matching_utils.euler_to_rotationmatrix` for reference).
+            |project| uses the zyx convention, like the CCP4/MRC format. In `IMOD <https://bio3d.colorado.edu/imod/>`_ terms, a file read by :py:meth:`tme.density.Density.from_file` with data shape 500, 928, 960, will contain 960 columns, 928 rows and 500 sections. Similarly, the reported Euler angles are in intrinsic zyx convention (see :py:meth:`tme.matching_utils.euler_to_rotationmatrix` for reference).
 
     .. tab-item:: Alignments
 
@@ -82,7 +82,7 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
                 --output_format relion \
                 --min_distance 20 \
                 --number_of_peaks 1000 \
-                -—wegde_mask mask.mrc
+                -—wedge_mask mask.mrc
 
         .. note::
 

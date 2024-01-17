@@ -140,7 +140,7 @@ The following outlines some typical use cases of ``match_template.py``.
                 -i emd_3228.map.gz \
                 --invert_target_contrast
 
-        As we have seen in the :doc:`Postprocessing <postprocessing>` guide, template matching accuracy can benefit from the usage of masks to emphasise paticular components of the template and the application of filters to the data. In order to design a suitable mask, we first resample the template to the sampling rate of the tomogram using :py:meth:`tme.density.Density.resample` from within python.
+        As we have seen in the :doc:`Preprocessing <preprocessing>` guide, template matching accuracy can benefit from the usage of masks to emphasise paticular components of the template and the application of filters to the data. In order to design a suitable mask, we first resample the template to the sampling rate of the tomogram using :py:meth:`tme.density.Density.resample` from within python.
 
         .. code-block:: python
 
