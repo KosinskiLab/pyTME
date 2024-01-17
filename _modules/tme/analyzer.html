@@ -513,13 +513,16 @@ document.write(`
             <span class="n">upper_limit</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
                 <span class="n">score_space</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_boundary_distance</span>
             <span class="p">)</span>
-            <span class="n">valid_peaks</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-                <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
-                    <span class="n">peak_positions</span> <span class="o">&lt;</span> <span class="n">upper_limit</span><span class="p">,</span>
-                    <span class="n">peak_positions</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_boundary_distance</span><span class="p">,</span>
-                <span class="p">),</span>
-                <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="p">)</span> <span class="o">==</span> <span class="n">peak_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">valid_peaks</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                    <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+                        <span class="n">peak_positions</span> <span class="o">&lt;</span> <span class="n">upper_limit</span><span class="p">,</span>
+                        <span class="n">peak_positions</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_boundary_distance</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="o">==</span> <span class="n">peak_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
             <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">valid_peaks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
 
