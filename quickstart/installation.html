@@ -498,9 +498,12 @@ git<span class="w"> </span>--version
 </div>
 <section id="optional-gui-setup">
 <span id="gui-installation"></span><h2>Optional GUI Setup<a class="headerlink" href="#optional-gui-setup" title="Link to this heading">#</a></h2>
-<p>To utilize the optional preprocessing GUI provided by tme, you’ll need to install several additional librarys:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>napari<span class="w"> </span>magicgui<span class="w"> </span>pyqt5
-pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/maurerv/napari-density-io.git
+<p>If you installed tme using Conda, you will only need to install execute the following code to use the preprocessing GUI:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/maurerv/napari-density-io.git
+</pre></div>
+</div>
+<p>If you installed using Conda please do not execute the following as this might cause version mismatches. If you chose a different installation method, you will require to install the following GUI dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>napari<span class="w"> </span>magicgui<span class="w"> </span>PyQt5
 </pre></div>
 </div>
 </section>
@@ -537,8 +540,10 @@ PyTorch</label><div class="sd-tab-content docutils">
 </section>
 <section id="testing-the-installation">
 <h2>Testing the Installation<a class="headerlink" href="#testing-the-installation" title="Link to this heading">#</a></h2>
-<p>To verify that tme has been installed correctly, you can run the test suite provided with the project:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest
+<p>To verify that tme has been installed correctly, you can run the test suite provided with the project as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/KosinskiLab/pyTME.git
+<span class="nb">cd</span><span class="w"> </span>pytme
+pytest
 </pre></div>
 </div>
 <p>If the tests pass without any errors, tme has been successfully installed.</p>

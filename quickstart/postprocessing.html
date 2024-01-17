@@ -418,7 +418,7 @@ Orientations</label><div class="sd-tab-content docutils">
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>tme uses the zyx convention, like the CCP4/MRC format. In <a class="reference external" href="https://bio3d.colorado.edu/imod/">IMOD</a> terms, a file read by <a class="reference internal" href="../reference/api/tme.density.Density.from_file.html#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.from_file()</span></code></a> with data shape 500, 928, 960, will contain 960 columns, 928 rows and 500 sections. Similarly, the reported Euler angles are in zyx convention (see <a class="reference internal" href="../reference/api/tme.matching_utils.euler_to_rotationmatrix.html#tme.matching_utils.euler_to_rotationmatrix" title="tme.matching_utils.euler_to_rotationmatrix"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.euler_to_rotationmatrix()</span></code></a> for reference).</p>
+<p>tme uses the zyx convention, like the CCP4/MRC format. In <a class="reference external" href="https://bio3d.colorado.edu/imod/">IMOD</a> terms, a file read by <a class="reference internal" href="../reference/api/tme.density.Density.from_file.html#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.from_file()</span></code></a> with data shape 500, 928, 960, will contain 960 columns, 928 rows and 500 sections. Similarly, the reported Euler angles are in intrinsic zyx convention (see <a class="reference internal" href="../reference/api/tme.matching_utils.euler_to_rotationmatrix.html#tme.matching_utils.euler_to_rotationmatrix" title="tme.matching_utils.euler_to_rotationmatrix"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.euler_to_rotationmatrix()</span></code></a> for reference).</p>
 </div>
 </div>
 <input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
@@ -461,7 +461,7 @@ Relion</label><div class="sd-tab-content docutils">
 <span class="w">    </span>--output_format<span class="w"> </span>relion<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--min_distance<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--number_of_peaks<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-—wegde_mask<span class="w"> </span>mask.mrc
+<span class="w">    </span>-—wedge_mask<span class="w"> </span>mask.mrc
 </pre></div>
 </div>
 <div class="admonition note">

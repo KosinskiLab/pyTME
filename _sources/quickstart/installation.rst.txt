@@ -124,12 +124,17 @@ This section provides instructions on how to install the |project| library. Depe
 Optional GUI Setup
 ------------------
 
-To utilize the optional preprocessing GUI provided by |project|, you'll need to install several additional librarys:
+If you installed |project| using Conda, you will only need to install execute the following code to use the preprocessing GUI:
 
 .. code-block:: bash
 
-   pip install napari magicgui pyqt5
    pip install git+https://github.com/maurerv/napari-density-io.git
+
+If you installed using Conda please do not execute the following as this might cause version mismatches. If you chose a different installation method, you will require to install the following GUI dependencies:
+
+.. code-block:: bash
+
+   pip install napari magicgui PyQt5
 
 
 GPU Support
@@ -177,10 +182,12 @@ After determining your CUDA version, you can proceed to install one of the follo
 Testing the Installation
 ------------------------
 
-To verify that |project| has been installed correctly, you can run the test suite provided with the project:
+To verify that |project| has been installed correctly, you can run the test suite provided with the project as follows:
 
 .. code-block:: bash
 
+   git clone https://github.com/KosinskiLab/pyTME.git
+   cd pytme
    pytest
 
 If the tests pass without any errors, |project| has been successfully installed.
