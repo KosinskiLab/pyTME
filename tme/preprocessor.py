@@ -1095,7 +1095,7 @@ class Preprocessor:
 
             opening_axis = opening_axes[index]
             rotation_matrix = euler_to_rotationmatrix(
-                np.roll(tilt_angles[:, index], 1 - opening_axes)
+                np.roll(tilt_angles[:, index], opening_axis - 1)
             )
 
             subset = tuple(
@@ -1218,7 +1218,7 @@ class Preprocessor:
             distances = np.linalg.norm(grid, axis=0)
 
         if not infinite_plane:
-            np.multiply(wedge, distances <= shape[opening_axis] // 2, out=wedge)
+            np.multiply(wedge, distances <= shape[tilt_axis] // 2, out=wedge)
 
         wedge = self.gaussian_filter(template=wedge, sigma=sigma, fourier=False)
         wedge = np.fft.ifftshift(wedge > np.exp(-2))
