@@ -88,7 +88,7 @@ def main():
         shape2=template_box,
         matching_method=args.score,
         ncores=args.ncores,
-        analyzer_method="MaxScoreOverRotations"
+        analyzer_method="MaxScoreOverRotations",
     )
     print(result)
 

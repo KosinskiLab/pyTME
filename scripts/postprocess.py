@@ -5,6 +5,8 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+from os import getcwd
+from os.path import join
 import argparse
 from sys import exit
 from typing import List, Tuple
@@ -205,8 +207,12 @@ class Orientations:
         return None
 
     def _to_relion_star(
-        self, filename: str, name_prefix: str = None, ctf_image: str = None,
-        sampling_rate : float = None, subtomogram_size : int = None
+        self,
+        filename: str,
+        name_prefix: str = None,
+        ctf_image: str = None,
+        sampling_rate: float = None,
+        subtomogram_size: int = None,
     ) -> None:
         """
         Save orientations in RELION's STAR file format.
@@ -249,11 +255,10 @@ class Orientations:
             "300.000000",
             str(int(subtomogram_size)),
             "3",
-            str(float(sampling_rate))
+            str(float(sampling_rate)),
         ]
         optics_header = "\n".join(optics_header)
         optics_data = "\t".join(optics_data)
-
 
         header = [
             "data_particles",
@@ -448,6 +453,9 @@ def main():
         template_is_density = False
         template = Structure.from_file(cli_args.template)
         center_of_mass = template.center_of_mass()[::-1]
+        template = Density.from_structure(
+            template, sampling_rate=sampling_rate
+        )
 
     if args.output_format == "relion":
         new_shape = np.add(template.shape, np.mod(template.shape, 2))
@@ -457,10 +465,6 @@ def main():
 
     if args.output_format in ("extraction", "relion"):
         target = Density.from_file(cli_args.target)
-        if isinstance(template, Structure):
-            template = Density.from_structure(
-                template, sampling_rate=target.sampling_rate
-            )
 
         if not np.all(np.divide(target.shape, template.shape) > 2):
             print(
@@ -489,14 +493,15 @@ def main():
         )
 
         orientations = orientations[keep_peaks]
+        working_directory = getcwd()
         if args.output_format == "relion":
             orientations.to_file(
                 filename=f"{args.output_prefix}.star",
                 file_format="relion",
-                name_prefix=args.output_prefix,
+                name_prefix=join(working_directory, args.output_prefix),
                 ctf_image=args.wedge_mask,
-                sampling_rate = target.sampling_rate.max(),
-                subtomogram_size = template.shape[0]
+                sampling_rate=target.sampling_rate.max(),
+                subtomogram_size=template.shape[0],
             )
 
         peaks = peaks[keep_peaks,]
@@ -543,7 +548,9 @@ def main():
                 origin=candidate_starts[index] * sampling_rate,
             )
             # out_density.data = out_density.data * template_mask.data
-            out_density.to_file(f"{args.output_prefix}{index}.mrc")
+            out_density.to_file(
+                join(working_directory, f"{args.output_prefix}{index}.mrc")
+            )
 
         exit(0)
 

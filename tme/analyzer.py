@@ -136,13 +136,16 @@ class PeakCaller(ABC):
             upper_limit = backend.subtract(
                 score_space.shape, self.min_boundary_distance
             )
-            valid_peaks = backend.sum(
-                backend.multiply(
-                    peak_positions < upper_limit,
-                    peak_positions >= self.min_boundary_distance,
-                ),
-                axis=1,
-            ) == peak_positions.shape[1]
+            valid_peaks = (
+                backend.sum(
+                    backend.multiply(
+                        peak_positions < upper_limit,
+                        peak_positions >= self.min_boundary_distance,
+                    ),
+                    axis=1,
+                )
+                == peak_positions.shape[1]
+            )
             if backend.sum(valid_peaks) == 0:
                 return None
 
