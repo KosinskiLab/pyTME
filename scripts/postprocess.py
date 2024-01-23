@@ -211,8 +211,8 @@ class Orientations:
         filename: str,
         name_prefix: str = None,
         ctf_image: str = None,
-        sampling_rate: float = None,
-        subtomogram_size: int = None,
+        sampling_rate: float = 1.0,
+        subtomogram_size: int = 0,
     ) -> None:
         """
         Save orientations in RELION's STAR file format.
@@ -288,12 +288,13 @@ class Orientations:
             _ = ofile.write("\n# version 30001\n")
             _ = ofile.write(f"{header}\n")
 
+            # pyTME uses a zyx data layout
             for index, (translation, rotation, score, detail) in enumerate(self):
                 rotation = Rotation.from_euler("zyx", rotation, degrees=True)
-                rotation = rotation.as_euler(seq="ZYZ", degrees=True)
+                rotation = rotation.as_euler(seq="xyx", degrees=True)
 
                 translation_string = "\t".join([str(x) for x in translation][::-1])
-                angle_string = "\t".join([str(x) for x in rotation[::-1]])
+                angle_string = "\t".join([str(x) for x in rotation])
                 name = f"{name_prefix}{index}.mrc"
                 _ = ofile.write(
                     f"{translation_string}\t{name}\t{angle_string}\t1{ctf_image}\n"
