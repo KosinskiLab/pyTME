@@ -21,7 +21,7 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
 
         Executing the following code will generate a tab-separated file named `output.tsv` with eight columns. The z, y and x column correspond to the translation, the euler_z, euler_y and euler_x column to the rotation used to obtain the column score. The detail column provides some additional information based on the process with which the peaks were generated.
 
-        The 1,000 identified peaks with higest score that are separated by at least 20 voxel and no less than 30 voxel distanced from the boundaries of the target will be written to disk when executing the following from within the shell:
+        At most 1,000 peaks top scoring that are separated by at least 20 voxel and no less than 30 voxel distanced from the boundaries of the target will be written to disk when executing the following from within the shell:
 
         .. code-block:: bash
 
@@ -39,9 +39,9 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
 
     .. tab-item:: Alignments
 
-        Executing the following code will align the template to the target used in ``match_template.py`` based on high-scoring orientations. These high-scoring orientations are written to disk, either as atomic structure or density depending on which was used as input for ``match_template.py``. The generated files follow the naming pattern {output_prefix}.{index}.{extension}. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on. Extension corresponds to the file extension of the template used in ``match_template.py``.
+        Executing the following code will align the template to the target used in ``match_template.py`` based on high-scoring orientations. These high-scoring orientations are written to disk, either as atomic structure or density depending on which was used as input for ``match_template.py``. The generated files follow the naming pattern {output_prefix}_{index}.{extension}. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on. Extension corresponds to the file extension of the template used in ``match_template.py``.
 
-        The following will write no more than ten top scoring alignments
+        The following will write at most ten top scoring alignments
         to disk.
 
         .. code-block:: bash
@@ -54,9 +54,9 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
 
     .. tab-item:: Extraction
 
-        Executing the following code will extract regions from the target with the dimension of the template used in ``match_template.py``. The output can be used for averaging, i.e. subtomograms, or alignment. The generated files follow the naming pattern {output_prefix}.{index}.mrc. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on.
+        Executing the following code will extract regions from the target with the dimension of the template used in ``match_template.py``. The output can be used for averaging, i.e. subtomograms, or alignment. The generated files follow the naming pattern {output_prefix}_{index}.mrc. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on.
 
-        The following will write no more than 500 top scoring peaks separated by a distance of 20 voxel that have been identified using :py:class:`tme.analyzer.PeakCallerMaximumFilter` to disk.
+        The following will write at most 500 top scoring peaks separated by a distance of 20 voxel that have been identified using :py:class:`tme.analyzer.PeakCallerMaximumFilter` to disk.
 
         .. code-block:: bash
 

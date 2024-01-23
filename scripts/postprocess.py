@@ -54,16 +54,26 @@ def parse_args():
         help="Prefix for the output file name. Extension depends on output_format.",
     )
     parser.add_argument(
-        "--number_of_peaks", type=int, default=1000, help="Number of peaks to consider."
+        "--number_of_peaks",
+        type=int,
+        default=1000,
+        help="Number of peaks to consider. Note, this is the number of called peaks "
+        ", subject to min_distance and min_boundary_distance filtering. Therefore, the "
+        "returned number of peaks will be at most equal to number_of_peaks. "
+        "Ignored when --orientations is provided.",
     )
     parser.add_argument(
-        "--min_distance", type=int, default=5, help="Minimum distance between peaks."
+        "--min_distance",
+        type=int,
+        default=5,
+        help="Minimum distance between peaks. Ignored when --orientations is provided.",
     )
     parser.add_argument(
         "--min_boundary_distance",
         type=int,
         default=0,
-        help="Minimum distance from target boundaries.",
+        help="Minimum distance from target boundaries. Ignored when --orientations "
+        "is provided.",
     )
     parser.add_argument(
         "--wedge_mask",
@@ -75,7 +85,8 @@ def parse_args():
         "--peak_caller",
         choices=list(PEAK_CALLERS.keys()),
         default="PeakCallerScipy",
-        help="Peak caller to use for analysis. Ignored if input_file contains peaks.",
+        help="Peak caller to use for analysis. Ignored if input_file contains peaks or when "
+        "--orientations is provided.",
     )
     parser.add_argument(
         "--orientations",
@@ -295,7 +306,7 @@ class Orientations:
 
                 translation_string = "\t".join([str(x) for x in translation][::-1])
                 angle_string = "\t".join([str(x) for x in rotation])
-                name = f"{name_prefix}{index}.mrc"
+                name = f"{name_prefix}_{index}.mrc"
                 _ = ofile.write(
                     f"{translation_string}\t{name}\t{angle_string}\t1{ctf_image}\n"
                 )
@@ -414,7 +425,12 @@ def main():
                 min_boundary_distance=args.min_boundary_distance,
             )
             peak_caller(scores, rotation_matrix=np.eye(3))
-            candidates = peak_caller.merge([tuple(peak_caller)])
+            candidates = peak_caller.merge(
+                candidates=[tuple(peak_caller)],
+                number_of_peaks=args.number_of_peaks,
+                min_distance=args.min_distance,
+                min_boundary_distance=args.min_boundary_distance,
+            )
             if len(candidates) == 0:
                 exit(
                     "Found no peaks. Try reducing min_distance or min_boundary_distance."
@@ -454,9 +470,7 @@ def main():
         template_is_density = False
         template = Structure.from_file(cli_args.template)
         center_of_mass = template.center_of_mass()[::-1]
-        template = Density.from_structure(
-            template, sampling_rate=sampling_rate
-        )
+        template = Density.from_structure(template, sampling_rate=sampling_rate)
 
     if args.output_format == "relion":
         new_shape = np.add(template.shape, np.mod(template.shape, 2))
@@ -550,7 +564,7 @@ def main():
             )
             # out_density.data = out_density.data * template_mask.data
             out_density.to_file(
-                join(working_directory, f"{args.output_prefix}{index}.mrc")
+                join(working_directory, f"{args.output_prefix}_{index}.mrc")
             )
 
         exit(0)
@@ -574,7 +588,8 @@ def main():
                 translation=translation[::-1],
                 rotation_matrix=rotation_matrix[::-1, ::-1],
             )
-        transformed_template.to_file(f"{args.output_prefix}{index}{template_extension}")
+        # template_extension should contain the extension '.'
+        transformed_template.to_file(f"{args.output_prefix}_{index}{template_extension}")
         index += 1
 
 
