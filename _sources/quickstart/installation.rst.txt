@@ -87,7 +87,7 @@ This section provides instructions on how to install the |project| library. Depe
          .. code-block:: bash
 
             git clone https://github.com/KosinskiLab/pyTME.git
-            cd pytme
+            cd pyTME
 
       3. **Set Up a Development Environment**:
 
