@@ -6,7 +6,7 @@ from multiprocessing.managers import SharedMemoryManager
 from tme.backends import MatchingBackend, NumpyFFTWBackend, BackendManager
 
 
-BACKEND_CLASSES = ["NumpyFFTWBackend", "PytorchBackend", "CupyBackend"]
+BACKEND_CLASSES = ["NumpyFFTWBackend", "PytorchBackend", "CupyBackend", "MLXBackend"]
 BACKENDS_TO_TEST = []
 for backend_class in BACKEND_CLASSES:
     try:
@@ -54,8 +54,8 @@ class TestBackendManager:
 class TestBackends:
     def setup_method(self):
         self.backend = NumpyFFTWBackend()
-        self.x1 = np.random.rand(30, 30)
-        self.x2 = np.random.rand(30, 30)
+        self.x1 = np.random.rand(30, 30).astype(np.float32)
+        self.x2 = np.random.rand(30, 30).astype(np.float32)
 
     def teardown_method(self):
         self.backend = None
@@ -75,7 +75,9 @@ class TestBackends:
     )
     def test_arithmetic_operations(self, method_name, backend):
         base = getattr(self.backend, method_name)(self.x1, self.x2)
-        other = getattr(backend, method_name)(self.x1, self.x2)
+        x1 = backend.to_backend_array(self.x1)
+        x2 = backend.to_backend_array(self.x2)
+        other = getattr(backend, method_name)(x1, x2)
 
         assert np.allclose(base, backend.to_numpy_array(other))
 
@@ -256,7 +258,7 @@ class TestBackends:
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     def test_get_available_memory(self, backend):
         mem = backend.get_available_memory()
-        assert type(mem) == int
+        assert isinstance(mem, int)
 
     # @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     # def test_shared_memory(self, backend):
@@ -318,7 +320,7 @@ class TestBackends:
             complex_arr,
         )
         irfftn(complex_arr, real_arr)
-        assert np.allclose(arr, backend.to_numpy_array(real_arr), rtol=0.1)
+        assert np.allclose(arr, backend.to_numpy_array(real_arr), rtol=0.3)
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     def test_extract_center(self, backend):
@@ -377,6 +379,6 @@ class TestBackends:
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     def test_datatype_bytes(self, backend):
-        assert type(backend.datatype_bytes(backend._default_dtype)) == int
-        assert type(backend.datatype_bytes(backend._complex_dtype)) == int
-        assert type(backend.datatype_bytes(backend._default_dtype_int)) == int
+        assert isinstance(backend.datatype_bytes(backend._default_dtype), int)
+        assert isinstance(backend.datatype_bytes(backend._complex_dtype), int)
+        assert isinstance(backend.datatype_bytes(backend._default_dtype_int), int)

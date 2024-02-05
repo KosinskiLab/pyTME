@@ -1244,7 +1244,7 @@ def scan(
         The merged results from callback_class if provided otherwise None.
     """
     shape_diff = backend.subtract(
-        matching_data.target.shape, matching_data._template.shape
+        matching_data._target.shape, matching_data._template.shape
     )
     if backend.sum(shape_diff < 0) and not pad_fourier:
         warnings.warn(
@@ -1254,22 +1254,10 @@ def scan(
         )
 
     matching_data.to_backend()
-    fourier_pad = matching_data.template.shape
-    fourier_shift = backend.zeros(len(fourier_pad))
-    if not pad_fourier:
-        fourier_pad = backend.full(shape=fourier_shift.shape, fill_value=1, dtype=int)
 
-    convolution_shape, fast_shape, fast_ft_shape = backend.compute_convolution_shapes(
-        matching_data._target.shape, fourier_pad
+    fast_shape, fast_ft_shape, fourier_shift = matching_data.fourier_padding(
+        pad_fourier=pad_fourier
     )
-    if not pad_fourier:
-        fourier_shift = 1 - backend.astype(
-            backend.divide(matching_data._template.shape, 2), int
-        )
-        fourier_shift -= backend.mod(matching_data._template.shape, 2)
-        shape_diff = backend.subtract(fast_shape, convolution_shape)
-        shape_diff = backend.astype(backend.divide(shape_diff, 2), int)
-        backend.add(fourier_shift, shape_diff, out=fourier_shift)
 
     callback_class_args["fourier_shift"] = fourier_shift
     rfftn, irfftn = backend.build_fft(
@@ -1354,7 +1342,7 @@ def scan(
 
     setup["fftargs"] = fftargs.copy()
     convolution_mode = "same"
-    if backend.sum(matching_data._target_pad) > 0:
+    if backend.sum(backend.to_backend_array(matching_data._target_pad)) > 0:
         convolution_mode = "valid"
     setup["convolution_mode"] = convolution_mode
     setup["interpolation_order"] = interpolation_order
@@ -1459,17 +1447,13 @@ def scan_subsets(
         The merged results from callback_class if provided otherwise None.
     """
     target_splits = split_numpy_array_slices(
-        matching_data.target.shape, splits=target_splits
+        matching_data._target.shape, splits=target_splits
     )
     template_splits = split_numpy_array_slices(
         matching_data._template.shape, splits=template_splits
     )
+    target_pad = matching_data.target_padding(pad_target=pad_target_edges)
 
-    target_pad = np.zeros(len(matching_data.target.shape), dtype=int)
-    if pad_target_edges:
-        target_pad = np.subtract(
-            matching_data._template.shape, np.mod(matching_data._template.shape, 2)
-        )
     outer_jobs, inner_jobs = job_schedule
     results = Parallel(n_jobs=outer_jobs)(
         delayed(_run_inner)(

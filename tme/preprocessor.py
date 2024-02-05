@@ -1360,31 +1360,36 @@ class LinearWhiteningFilter:
         _, bin_edges = np.histogram(frequency_grid, bins=n_bins - 1)
         bins = np.digitize(frequency_grid, bins=bin_edges, right=True)
 
-        fourier_transform = np.fft.fftshift(np.fft.rfftn(template))
+        fft_shift_axes = tuple(range(template.ndim - 1))
+        fourier_transform = np.fft.fftshift(np.fft.rfftn(template), axes=fft_shift_axes)
         fourier_spectrum = np.abs(fourier_transform)
 
         radial_averages = ndimean(fourier_spectrum, labels=bins, index=np.unique(bins))
         np.reciprocal(radial_averages, out=radial_averages)
         np.divide(radial_averages, radial_averages.max(), out=radial_averages)
 
-        bins = radial_averages[bins]
-        np.multiply(fourier_transform, bins, out=fourier_transform)
-        center_indices = tuple([dim_size // 2 for dim_size in fourier_transform.shape])
-        fourier_transform[center_indices] = 0
-        ret = np.fft.irfftn(np.fft.ifftshift(fourier_transform)).real
+        np.multiply(fourier_transform, radial_averages[bins], out=fourier_transform)
 
+        ret = np.fft.irfftn(
+            np.fft.ifftshift(fourier_transform, axes=fft_shift_axes)
+        ).real
         return ret, bin_edges, radial_averages
 
     def apply(
         self, template: NDArray, bin_edges: NDArray, radial_averages: NDArray
     ) -> NDArray:
-        fourier_transform = np.fft.fftshift(np.fft.fftn(template))
-
-        grid = self._fftfreqn(shape=fourier_transform.shape, sampling_rate=1)
+        grid = self._fftfreqn(
+            shape=template.shape, sampling_rate=1, omit_negative_frequencies=True
+        )
         frequency_grid = np.linalg.norm(grid, axis=0)
+
+        fft_shift_axes = tuple(range(template.ndim - 1))
+        fourier_transform = np.fft.fftshift(np.fft.rfftn(template), axes=fft_shift_axes)
 
         bins = np.digitize(frequency_grid, bins=bin_edges, right=True)
         np.multiply(fourier_transform, radial_averages[bins], out=fourier_transform)
-        ret = np.fft.ifftn(np.fft.ifftshift(fourier_transform)).real
+        ret = np.fft.irfftn(
+            np.fft.ifftshift(fourier_transform, axes=fft_shift_axes)
+        ).real
 
         return ret

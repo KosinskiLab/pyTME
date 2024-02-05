@@ -1,4 +1,4 @@
-gi#!python3
+#!python3
 """ CLI interface for basic pyTME template matching functions.
 
     Copyright (c) 2023 European Molecular Biology Laboratory

@@ -1083,18 +1083,22 @@ def tube_mask(
     circle_shape = tuple(b for ix, b in enumerate(shape) if ix != symmetry_axis)
     base_center = tuple(b for ix, b in enumerate(base_center) if ix != symmetry_axis)
 
-    inner_circle = create_mask(
-        mask_type="ellipse",
-        shape=circle_shape,
-        radius=inner_radius,
-        center=base_center,
-    )
-    outer_circle = create_mask(
-        mask_type="ellipse",
-        shape=circle_shape,
-        radius=outer_radius,
-        center=base_center,
-    )
+    inner_circle = np.zeros(circle_shape)
+    outer_circle = np.zeros_like(inner_circle)
+    if inner_radius > 0:
+        inner_circle = create_mask(
+            mask_type="ellipse",
+            shape=circle_shape,
+            radius=inner_radius,
+            center=base_center,
+        )
+    if outer_radius > 0:
+        outer_circle = create_mask(
+            mask_type="ellipse",
+            shape=circle_shape,
+            radius=outer_radius,
+            center=base_center,
+        )
     circle = outer_circle - inner_circle
     circle = np.expand_dims(circle, axis=symmetry_axis)
 

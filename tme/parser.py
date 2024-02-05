@@ -229,7 +229,7 @@ class PDBParser(Parser):
 class MMCIFParser(Parser):
     """
     A Parser subclass for converting MMCIF file data into a dictionary representation.
-    This implementation heavily relies on the atomium library:
+    This implementation heavily relies on the atomium library [1]_.
 
     References
     ----------
@@ -308,7 +308,7 @@ class MMCIFParser(Parser):
         -------
         list of dict
             A list of dictionaries where each dictionary represents a block
-             of data from the MMCIF file.
+            of data from the MMCIF file.
         """
         category = None
         block, blocks = [], []
