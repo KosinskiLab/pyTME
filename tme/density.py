@@ -186,8 +186,8 @@ class Density:
         Notes
         -----
         If ``filename`` ends with ".em" or ".em.gz" the method will parse it as EM file.
-        Otherwise it defaults to the CCP4/MRC format and on failure, defaults to
-        skimage.io.imread regardless of the extension. Currently, the later does not
+        Otherwise it defaults to the CCP4/MRC format and on failure, switches to
+        :obj:`skimage.io.imread` regardless of the extension. Currently, the later does not
         extract origin or sampling_rate information from the file.
 
         See Also
@@ -305,6 +305,8 @@ class Density:
             ) and not np.all(start == 0):
                 origin = np.multiply(start, sampling_rate)
 
+            extended_header = mrc.header.nsymbt
+
         if is_gzipped(filename):
             if use_memmap:
                 warnings.warn(
@@ -325,7 +327,7 @@ class Density:
                 slices=subset,
                 data_shape=data_shape,
                 dtype=data_type,
-                header_size=1024,
+                header_size=1024 + extended_header,
             )
             return data, origin, sampling_rate
 
@@ -553,12 +555,12 @@ class Density:
     @staticmethod
     def _load_skio(filename: str) -> Tuple[NDArray]:
         """
-        Uses skimage.io.imread to extract data from filename.
+        Uses :obj:`skimage.io.imread` to extract data from filename [1]_.
 
         Parameters
         ----------
         filename : str
-            Path to a file whose format is supported by skimage.io.imread.
+            Path to a file whose format is supported by :obj:`skimage.io.imread`.
 
         Returns
         -------
@@ -720,7 +722,7 @@ class Density:
         :py:meth:`tme.structure.Structure.to_volume`
         """
         structure = filename_or_structure
-        if type(filename_or_structure) == str:
+        if isinstance(filename_or_structure, str):
             structure = Structure.from_file(
                 filename=filename_or_structure,
                 filter_by_elements=filter_by_elements,
@@ -790,8 +792,8 @@ class Density:
         Notes
         -----
         If ``filename`` ends with ".em" or ".em.gz", the method will create an EM file.
-        Otherwise, it defaults to the CCP4/MRC format, and on failure, it falls back
-        to `skimage.io.imsave`.
+        Otherwise, it defaults to the CCP4/MRC format, and on failure, falls back
+        to :obj:`skimage.io.imsave`.
 
         See Also
         --------
@@ -879,12 +881,12 @@ class Density:
 
     def _save_skio(self, filename: str, gzip: bool) -> None:
         """
-        Uses skimage.io.imsave to write data to filename.
+        Uses :obj:`skimage.io.imsave` to write data to filename [1]_.
 
         Parameters
         ----------
         filename : str
-            Path to write to with a format supported by skimage.io.imsave.
+            Path to write to with a format supported by :obj:`skimage.io.imsave`.
         gzip : bool, optional
             If True, the output will be gzip compressed.
 
@@ -1407,9 +1409,9 @@ class Density:
 
     def centered(self, cutoff: float = 0) -> Tuple["Density", NDArray]:
         """
-        Shifts the data center of mass to the center of the data array. The box size
-        of the return Density object is at least equal to the box size of the class
-        instance.
+        Shifts the data center of mass to the center of the data array using linear
+        interpolation. The box size of the returned :py:class:`Density` object is at
+        least equal to the box size of the class instance.
 
         Parameters
         ----------
@@ -1442,8 +1444,8 @@ class Density:
         --------
         :py:meth:`Density.centered` returns a tuple containing a centered version
         of the current :py:class:`Density` instance, as well as an array with
-        translations. The translation corresponds to the shift that was used to
-        center the current :py:class:`Density` instance.
+        translations. The translation corresponds to the shift that between the
+        center of mass and the center of the internal :py:attr:`Density.data` attribute.
 
         >>> import numpy as np
         >>> from tme import Density
@@ -1463,12 +1465,13 @@ class Density:
         internal :py:attr:`Density.data` attribute:
 
         >>> centered_dens.data
-        array([[0., 0., 0., 0., 0., 0.],
-               [0., 1., 1., 1., 1., 1.],
-               [0., 1., 1., 1., 1., 1.],
-               [0., 1., 1., 1., 1., 1.],
-               [0., 1., 1., 1., 1., 1.],
-               [0., 1., 1., 1., 1., 1.]])
+        array([[0., 0., 0., 0., 0., 0., 0.],
+               [0., 1., 1., 1., 1., 1., 0.],
+               [0., 1., 1., 1., 1., 1., 0.],
+               [0., 1., 1., 1., 1., 1., 0.],
+               [0., 1., 1., 1., 1., 1., 0.],
+               [0., 1., 1., 1., 1., 1., 0.],
+               [0., 0., 0., 0., 0., 0., 0.]])
 
         `centered_dens` is sufficiently large to represent all rotations that
         could be applied to the :py:attr:`Density.data` attribute. Lets look
@@ -1494,14 +1497,15 @@ class Density:
         ret.pad(new_shape)
 
         center = self.center_of_mass(ret.data, cutoff)
-        shift = np.subtract(np.divide(ret.shape, 2), center).astype(int)
+        shift = np.subtract(np.divide(ret.shape, 2), center)
 
         ret = ret.rigid_transform(
             translation=shift,
             rotation_matrix=np.eye(ret.data.ndim),
             use_geometric_center=False,
+            order=1,
         )
-        offset = np.subtract(center, self.center_of_mass(ret.data))
+        offset = np.subtract(center, self.center_of_mass(ret.data, cutoff))
 
         return ret, offset
 
