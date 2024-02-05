@@ -109,6 +109,48 @@ def mean(
     return preprocessor.mean_filter(template=template, width=width)
 
 
+def resolution_sphere(template: NDArray, cutoff_angstrom: float, highpass : bool = False, sampling_rate = None):
+    cutoff_frequency = np.max(2 * sampling_rate / cutoff_angstrom)
+
+    min_freq, max_freq = 0, cutoff_frequency
+    if highpass:
+        min_freq, max_freq = cutoff_frequency, 1e10
+
+    mask = preprocessor.bandpass_mask(
+        shape=template.shape,
+        minimum_frequency=min_freq,
+        maximum_frequency=max_freq,
+        omit_negative_frequencies=False,
+    )
+
+    mask = np.fft.ifftshift(mask)
+    template_ft = np.fft.fftn(template)
+    np.multiply(template_ft, mask, out = template_ft)
+
+    return np.fft.ifftn(template_ft).real
+
+
+def resolution_gaussian(template : NDArray, cutoff_angstrom : float, highpass : bool = False,
+    sampling_rate = None):
+    grid = preprocessor.fftfreqn(
+        shape = template.shape, sampling_rate = sampling_rate / sampling_rate.max()
+    )
+
+    sigma_fourier = np.divide(
+        np.max(2 * sampling_rate / cutoff_angstrom),
+        np.sqrt(2 * np.log(2))
+    )
+
+    mask = np.exp(-grid ** 2 / (2 * sigma_fourier ** 2))
+    if highpass:
+        mask = 1 - mask
+
+    mask = np.fft.ifftshift(mask)
+    template_ft = np.fft.fftn(template)
+    np.multiply(template_ft, mask, out = template_ft)
+
+    return np.fft.ifftn(template_ft).real
+
 def wedge(
     template: NDArray,
     tilt_start: float,
@@ -220,6 +262,8 @@ WRAPPED_FUNCTIONS = {
     "mean_filter": mean,
     "wedge_filter": wedge,
     "power_spectrum": compute_power_spectrum,
+    "resolution_gaussian" : resolution_gaussian,
+    "resolution_sphere" : resolution_sphere,
 }
 
 EXCLUDED_FUNCTIONS = [
@@ -331,6 +375,9 @@ class FilterWidget(widgets.Container):
 
         function_name = self.name_mapping.get(self.method_dropdown.value)
         function = self._get_function(function_name)
+
+        if "sampling_rate" in inspect.getfullargspec(function).args:
+            kwargs["sampling_rate"] = selected_layer_metadata["sampling_rate"]
 
         processed_data = function(selected_layer.data, **kwargs)
 
@@ -509,7 +556,6 @@ class MaskWidget(widgets.Container):
 
         self.adapt_button = widgets.PushButton(text="Adapt to layer", enabled=False)
         self.adapt_button.changed.connect(self._update_initial_values)
-
         self.viewer.layers.selection.events.active.connect(
             self._update_action_button_state
         )
@@ -520,8 +566,9 @@ class MaskWidget(widgets.Container):
         # self.density_field.value = f"Positive Density in Mask: {0:.2f}%"
 
         self.append(self.method_dropdown)
-        self.append(self.percentile_range_edit)
         self.append(self.adapt_button)
+        self.append(self.percentile_range_edit)
+
         self.append(self.align_button)
         self.append(self.action_button)
         self.append(self.density_field)

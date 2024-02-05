@@ -64,6 +64,7 @@ html_theme_options = {
 
 intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable/", None),
+    "skimage": ("https://scikit-image.org/docs/stable/", None),
 }
 
 plot_html_show_source_link = True

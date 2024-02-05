@@ -589,7 +589,9 @@ def main():
                 rotation_matrix=rotation_matrix[::-1, ::-1],
             )
         # template_extension should contain the extension '.'
-        transformed_template.to_file(f"{args.output_prefix}_{index}{template_extension}")
+        transformed_template.to_file(
+            f"{args.output_prefix}_{index}{template_extension}"
+        )
         index += 1
 
 

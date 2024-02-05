@@ -1,4 +1,4 @@
-#!python3
+gi#!python3
 """ CLI interface for basic pyTME template matching functions.
 
     Copyright (c) 2023 European Molecular Biology Laboratory
@@ -380,8 +380,8 @@ def parse_args():
         type=float,
         required=False,
         default=None,
-        help="Step size between tilts, e.g. '5'. When set a more accurate"
-        " wedge mask will be computed.",
+        help="Step size between tilts, e.g. '5'. When set the wedge mask"
+        " reflects the individual tilts, otherwise a continuous mask is used.",
     )
     parser.add_argument(
         "--wedge_axes",
@@ -488,14 +488,16 @@ def main():
         if target_mask:
             args.target_mask = generate_tempfile_name(suffix=".mrc")
             target_mask.to_file(args.target_mask)
-            print_block(
-                name="Target Mask",
-                data={
-                    "Initial Shape": initial_shape,
-                    "Sampling Rate": tuple(np.round(target_mask.sampling_rate, 2)),
-                    "Final Shape": target_mask.shape,
-                },
-            )
+
+    if target_mask:
+        print_block(
+            name="Target Mask",
+            data={
+                "Initial Shape": initial_shape,
+                "Sampling Rate": tuple(np.round(target_mask.sampling_rate, 2)),
+                "Final Shape": target_mask.shape,
+            },
+        )
 
     initial_shape = template.shape
     _ = crop_data(data=template, data_mask=template_mask, cutoff=args.cutoff_template)
@@ -577,8 +579,9 @@ def main():
     template_mask = template_mask.rigid_transform(
         rotation_matrix=np.eye(template_mask.data.ndim),
         translation=-translation,
+        order=1,
     )
-
+    template_mask.origin = template.origin.copy()
     print_block(
         name="Template Mask",
         data={
