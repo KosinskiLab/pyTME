@@ -6,12 +6,10 @@
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-from typing import Tuple, Dict, Callable
+from typing import Tuple, Callable
 from contextlib import contextmanager
 from multiprocessing import shared_memory
 from multiprocessing.managers import SharedMemoryManager
-
-from numpy.typing import NDArray
 
 from .npfftw_backend import NumpyFFTWBackend
 from ..types import NDArray, TorchTensor
@@ -47,7 +45,6 @@ class PytorchBackend(NumpyFFTWBackend):
         )
         self.device = device
         self.F = F
-        self._default_dtype_int = torch.int32
 
     def to_backend_array(self, arr: NDArray) -> TorchTensor:
         if isinstance(arr, self._array_backend.Tensor):
@@ -131,7 +128,7 @@ class PytorchBackend(NumpyFFTWBackend):
 
     def full(self, shape, fill_value, dtype=None):
         return self._array_backend.full(
-            size = shape, dtype=dtype, fill_value=fill_value, device=self.device
+            size=shape, dtype=dtype, fill_value=fill_value, device=self.device
         )
 
     def datatype_bytes(self, dtype: type) -> int:

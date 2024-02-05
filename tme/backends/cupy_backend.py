@@ -45,7 +45,11 @@ class CupyBackend(NumpyFFTWBackend):
         self.maximum_filter = maximum_filter
 
     def to_backend_array(self, arr: NDArray) -> CupyArray:
-        if isinstance(arr, self._array_backend.ndarray):
+        current_device = self._array_backend.cuda.device.get_device_id()
+        if (
+            isinstance(arr, self._array_backend.ndarray)
+            and arr.device.id == current_device
+        ):
             return arr
         return self._array_backend.asarray(arr)
 

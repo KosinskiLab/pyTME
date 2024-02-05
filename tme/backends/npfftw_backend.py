@@ -38,7 +38,7 @@ class NumpyFFTWBackend(MatchingBackend):
             array_backend=array_backend,
             default_dtype=default_dtype,
             complex_dtype=complex_dtype,
-            default_dtype_int=np.int32,
+            default_dtype_int=default_dtype_int,
         )
         self.affine_transform = affine_transform
 
@@ -424,8 +424,8 @@ class NumpyFFTWBackend(MatchingBackend):
         new_shape = self.to_backend_array(newshape)
         current_shape = self.to_backend_array(arr.shape)
         starts = self.subtract(current_shape, new_shape)
-        starts = self.astype(self.divide(starts, 2), int)
-        stops = self.add(starts, newshape)
+        starts = self.astype(self.divide(starts, 2), self._default_dtype_int)
+        stops = self.astype(self.add(starts, newshape), self._default_dtype_int)
         box = tuple(slice(start, stop) for start, stop in zip(starts, stops))
         return arr[box]
 
@@ -493,7 +493,9 @@ class NumpyFFTWBackend(MatchingBackend):
         out_mask : NDArray, optional
             The output array to write the rotation of `arr_mask` to.
         order : int, optional
-            Spline interpolation order. Has to be in the range 0-5.
+            Spline interpolation order. Has to be in the range 0-5. Non-zero
+            elements will be converted into a point-cloud and rotated according
+            to ``rotation_matrix`` if order is None.
         """
 
         if order is None:

@@ -373,7 +373,7 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def std(self, arr: ArrayLike) -> Scalar:
+    def std(self, arr: ArrayLike, axis: Scalar) -> Scalar:
         """
         Compute the standad deviation of array elements.
 
@@ -381,6 +381,8 @@ class MatchingBackend(ABC):
         ----------
         arr : Scalar
             The array whose standard deviation should be computed.
+        axis : Scalar
+            Axis to perform the operation on.
 
         Returns
         -------

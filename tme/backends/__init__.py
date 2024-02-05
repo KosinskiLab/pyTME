@@ -11,6 +11,7 @@ from .matching_backend import MatchingBackend
 from .npfftw_backend import NumpyFFTWBackend
 from .pytorch_backend import PytorchBackend
 from .cupy_backend import CupyBackend
+from .mlx_backend import MLXBackend
 
 
 class BackendManager:
