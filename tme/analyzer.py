@@ -264,7 +264,9 @@ class PeakCaller(ABC):
         backend.add(peak_positions, translation_offset, out=peak_positions)
         if not len(self.peak_list):
             self.peak_list = [peak_positions, rotations, peak_scores, peak_details]
-            peak_scores, peak_details, dim = (), (), peak_positions.shape[1]
+            dim = peak_positions.shape[1]
+            peak_scores = backend.zeros((0,), peak_scores.dtype)
+            peak_details = backend.zeros((0,), peak_details.dtype)
             rotations = backend.zeros((0, dim, dim), rotations.dtype)
             peak_positions = backend.zeros((0, dim), peak_positions.dtype)
 

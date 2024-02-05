@@ -11,6 +11,7 @@ from contextlib import contextmanager
 from multiprocessing import shared_memory
 from multiprocessing.managers import SharedMemoryManager
 
+import numpy as np
 from .npfftw_backend import NumpyFFTWBackend
 from ..types import NDArray, TorchTensor
 
@@ -54,6 +55,8 @@ class PytorchBackend(NumpyFFTWBackend):
         return self.tensor(arr, device=self.device)
 
     def to_numpy_array(self, arr: TorchTensor) -> NDArray:
+        if isinstance(arr, np.ndarray):
+            return arr
         return arr.cpu().numpy()
 
     def to_cpu_array(self, arr: TorchTensor) -> NDArray:
