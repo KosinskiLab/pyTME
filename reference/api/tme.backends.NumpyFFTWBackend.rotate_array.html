@@ -914,7 +914,9 @@ or mass center. Default is mass center.</p>
 </dd>
 <dt><strong>out_mask</strong><span class="classifier">NDArray, optional</span></dt><dd><p>The output array to write the rotation of <cite>arr_mask</cite> to.</p>
 </dd>
-<dt><strong>order</strong><span class="classifier">int, optional</span></dt><dd><p>Spline interpolation order. Has to be in the range 0-5.</p>
+<dt><strong>order</strong><span class="classifier">int, optional</span></dt><dd><p>Spline interpolation order. Has to be in the range 0-5. Non-zero
+elements will be converted into a point-cloud and rotated according
+to <code class="docutils literal notranslate"><span class="pre">rotation_matrix</span></code> if order is None.</p>
 </dd>
 </dl>
 </dd>

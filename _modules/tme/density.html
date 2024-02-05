@@ -557,8 +557,8 @@ document.write(`
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 <span class="sd">        If ``filename`` ends with &quot;.em&quot; or &quot;.em.gz&quot; the method will parse it as EM file.</span>
-<span class="sd">        Otherwise it defaults to the CCP4/MRC format and on failure, defaults to</span>
-<span class="sd">        skimage.io.imread regardless of the extension. Currently, the later does not</span>
+<span class="sd">        Otherwise it defaults to the CCP4/MRC format and on failure, switches to</span>
+<span class="sd">        :obj:`skimage.io.imread` regardless of the extension. Currently, the later does not</span>
 <span class="sd">        extract origin or sampling_rate information from the file.</span>
 
 <span class="sd">        See Also</span>
@@ -677,6 +677,8 @@ document.write(`
             <span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">start</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
                 <span class="n">origin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
 
+            <span class="n">extended_header</span> <span class="o">=</span> <span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">nsymbt</span>
+
         <span class="k">if</span> <span class="n">is_gzipped</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -697,7 +699,7 @@ document.write(`
                 <span class="n">slices</span><span class="o">=</span><span class="n">subset</span><span class="p">,</span>
                 <span class="n">data_shape</span><span class="o">=</span><span class="n">data_shape</span><span class="p">,</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="n">data_type</span><span class="p">,</span>
-                <span class="n">header_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                <span class="n">header_size</span><span class="o">=</span><span class="mi">1024</span> <span class="o">+</span> <span class="n">extended_header</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span>
 
@@ -925,12 +927,12 @@ document.write(`
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_load_skio</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Uses skimage.io.imread to extract data from filename.</span>
+<span class="sd">        Uses :obj:`skimage.io.imread` to extract data from filename [1]_.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        filename : str</span>
-<span class="sd">            Path to a file whose format is supported by skimage.io.imread.</span>
+<span class="sd">            Path to a file whose format is supported by :obj:`skimage.io.imread`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1094,7 +1096,7 @@ document.write(`
 <span class="sd">        :py:meth:`tme.structure.Structure.to_volume`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">structure</span> <span class="o">=</span> <span class="n">filename_or_structure</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">filename_or_structure</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename_or_structure</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">structure</span> <span class="o">=</span> <span class="n">Structure</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
                 <span class="n">filename</span><span class="o">=</span><span class="n">filename_or_structure</span><span class="p">,</span>
                 <span class="n">filter_by_elements</span><span class="o">=</span><span class="n">filter_by_elements</span><span class="p">,</span>
@@ -1167,8 +1169,8 @@ document.write(`
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 <span class="sd">        If ``filename`` ends with &quot;.em&quot; or &quot;.em.gz&quot;, the method will create an EM file.</span>
-<span class="sd">        Otherwise, it defaults to the CCP4/MRC format, and on failure, it falls back</span>
-<span class="sd">        to `skimage.io.imsave`.</span>
+<span class="sd">        Otherwise, it defaults to the CCP4/MRC format, and on failure, falls back</span>
+<span class="sd">        to :obj:`skimage.io.imsave`.</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -1257,12 +1259,12 @@ document.write(`
 
     <span class="k">def</span> <span class="nf">_save_skio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gzip</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Uses skimage.io.imsave to write data to filename.</span>
+<span class="sd">        Uses :obj:`skimage.io.imsave` to write data to filename [1]_.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        filename : str</span>
-<span class="sd">            Path to write to with a format supported by skimage.io.imsave.</span>
+<span class="sd">            Path to write to with a format supported by :obj:`skimage.io.imsave`.</span>
 <span class="sd">        gzip : bool, optional</span>
 <span class="sd">            If True, the output will be gzip compressed.</span>
 
@@ -1811,9 +1813,9 @@ document.write(`
 <a class="viewcode-back" href="../../reference/api/tme.density.Density.centered.html#tme.density.Density.centered">[docs]</a>
     <span class="k">def</span> <span class="nf">centered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;Density&quot;</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Shifts the data center of mass to the center of the data array. The box size</span>
-<span class="sd">        of the return Density object is at least equal to the box size of the class</span>
-<span class="sd">        instance.</span>
+<span class="sd">        Shifts the data center of mass to the center of the data array using linear</span>
+<span class="sd">        interpolation. The box size of the returned :py:class:`Density` object is at</span>
+<span class="sd">        least equal to the box size of the class instance.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1846,8 +1848,8 @@ document.write(`
 <span class="sd">        --------</span>
 <span class="sd">        :py:meth:`Density.centered` returns a tuple containing a centered version</span>
 <span class="sd">        of the current :py:class:`Density` instance, as well as an array with</span>
-<span class="sd">        translations. The translation corresponds to the shift that was used to</span>
-<span class="sd">        center the current :py:class:`Density` instance.</span>
+<span class="sd">        translations. The translation corresponds to the shift that between the</span>
+<span class="sd">        center of mass and the center of the internal :py:attr:`Density.data` attribute.</span>
 
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">        &gt;&gt;&gt; from tme import Density</span>
@@ -1867,12 +1869,13 @@ document.write(`
 <span class="sd">        internal :py:attr:`Density.data` attribute:</span>
 
 <span class="sd">        &gt;&gt;&gt; centered_dens.data</span>
-<span class="sd">        array([[0., 0., 0., 0., 0., 0.],</span>
-<span class="sd">               [0., 1., 1., 1., 1., 1.],</span>
-<span class="sd">               [0., 1., 1., 1., 1., 1.],</span>
-<span class="sd">               [0., 1., 1., 1., 1., 1.],</span>
-<span class="sd">               [0., 1., 1., 1., 1., 1.],</span>
-<span class="sd">               [0., 1., 1., 1., 1., 1.]])</span>
+<span class="sd">        array([[0., 0., 0., 0., 0., 0., 0.],</span>
+<span class="sd">               [0., 1., 1., 1., 1., 1., 0.],</span>
+<span class="sd">               [0., 1., 1., 1., 1., 1., 0.],</span>
+<span class="sd">               [0., 1., 1., 1., 1., 1., 0.],</span>
+<span class="sd">               [0., 1., 1., 1., 1., 1., 0.],</span>
+<span class="sd">               [0., 1., 1., 1., 1., 1., 0.],</span>
+<span class="sd">               [0., 0., 0., 0., 0., 0., 0.]])</span>
 
 <span class="sd">        `centered_dens` is sufficiently large to represent all rotations that</span>
 <span class="sd">        could be applied to the :py:attr:`Density.data` attribute. Lets look</span>
@@ -1898,14 +1901,15 @@ document.write(`
         <span class="n">ret</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
 
         <span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">)</span>
-        <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">center</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">center</span><span class="p">)</span>
 
         <span class="n">ret</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
             <span class="n">translation</span><span class="o">=</span><span class="n">shift</span><span class="p">,</span>
             <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span>
             <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">ret</span><span class="p">,</span> <span class="n">offset</span></div>
 

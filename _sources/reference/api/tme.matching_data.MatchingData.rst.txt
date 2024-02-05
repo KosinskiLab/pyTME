@@ -40,10 +40,16 @@
       
          
          
+           MatchingData.fourier_padding
+         
+         
            MatchingData.subset_array
          
          
            MatchingData.subset_by_slice
+         
+         
+           MatchingData.target_padding
          
          
            MatchingData.to_backend

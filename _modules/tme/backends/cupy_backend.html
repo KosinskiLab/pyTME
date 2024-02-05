@@ -419,7 +419,11 @@ document.write(`
 <div class="viewcode-block" id="CupyBackend.to_backend_array">
 <a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.to_backend_array.html#tme.backends.CupyBackend.to_backend_array">[docs]</a>
     <span class="k">def</span> <span class="nf">to_backend_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CupyArray</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">current_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">get_device_id</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">arr</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">current_device</span>
+        <span class="p">):</span>
             <span class="k">return</span> <span class="n">arr</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span></div>
 

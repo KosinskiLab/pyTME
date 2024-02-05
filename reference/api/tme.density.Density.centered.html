@@ -892,9 +892,9 @@ document.write(`
 <dl class="py method">
 <dt class="sig sig-object py" id="tme.density.Density.centered">
 <span class="sig-prename descclassname"><span class="pre">Density.</span></span><span class="sig-name descname"><span class="pre">centered</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/density.html#Density.centered"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.density.Density.centered" title="Link to this definition">#</a></dt>
-<dd><p>Shifts the data center of mass to the center of the data array. The box size
-of the return Density object is at least equal to the box size of the class
-instance.</p>
+<dd><p>Shifts the data center of mass to the center of the data array using linear
+interpolation. The box size of the returned <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> object is at
+least equal to the box size of the class instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -928,8 +928,8 @@ outside the data array.</p>
 <p class="rubric">Examples</p>
 <p><a class="reference internal" href="#tme.density.Density.centered" title="tme.density.Density.centered"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.centered()</span></code></a> returns a tuple containing a centered version
 of the current <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance, as well as an array with
-translations. The translation corresponds to the shift that was used to
-center the current <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance.</p>
+translations. The translation corresponds to the shift that between the
+center of mass and the center of the internal <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)))</span>
@@ -948,12 +948,13 @@ of the current <a class="reference internal" href="tme.density.Density.html#tme.
 <p><a class="reference internal" href="#tme.density.Density.centered" title="tme.density.Density.centered"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.centered()</span></code></a> achieves centering via zero-padding the
 internal <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">centered_dens</span><span class="o">.</span><span class="n">data</span>
-<span class="go">array([[0., 0., 0., 0., 0., 0.],</span>
-<span class="go">       [0., 1., 1., 1., 1., 1.],</span>
-<span class="go">       [0., 1., 1., 1., 1., 1.],</span>
-<span class="go">       [0., 1., 1., 1., 1., 1.],</span>
-<span class="go">       [0., 1., 1., 1., 1., 1.],</span>
-<span class="go">       [0., 1., 1., 1., 1., 1.]])</span>
+<span class="go">array([[0., 0., 0., 0., 0., 0., 0.],</span>
+<span class="go">       [0., 1., 1., 1., 1., 1., 0.],</span>
+<span class="go">       [0., 1., 1., 1., 1., 1., 0.],</span>
+<span class="go">       [0., 1., 1., 1., 1., 1., 0.],</span>
+<span class="go">       [0., 1., 1., 1., 1., 1., 0.],</span>
+<span class="go">       [0., 1., 1., 1., 1., 1., 0.],</span>
+<span class="go">       [0., 0., 0., 0., 0., 0., 0.]])</span>
 </pre></div>
 </div>
 <p><cite>centered_dens</cite> is sufficiently large to represent all rotations that

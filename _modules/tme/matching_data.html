@@ -378,6 +378,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="kn">from</span> <span class="nn">.types</span> <span class="kn">import</span> <span class="n">ArrayLike</span>
 <span class="kn">from</span> <span class="nn">.backends</span> <span class="kn">import</span> <span class="n">backend</span>
 <span class="kn">from</span> <span class="nn">.matching_utils</span> <span class="kn">import</span> <span class="n">compute_full_convolution_index</span>
 
@@ -474,7 +475,8 @@ document.write(`
 <span class="sd">        NDArray</span>
 <span class="sd">            Subset of the input array with padding applied.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">padding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="n">slice_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arr_slice</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="n">slice_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">stop</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arr_slice</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
@@ -549,7 +551,7 @@ document.write(`
 <span class="sd">        MatchingData</span>
 <span class="sd">            Newly allocated sliced class instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">target_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">target_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">template_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span>
 
         <span class="k">if</span> <span class="n">target_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -558,9 +560,9 @@ document.write(`
             <span class="n">template_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape_to_slice</span><span class="p">(</span><span class="n">template_shape</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">target_pad</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">target_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">target_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">template_pad</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">template_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">template_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="n">indices</span> <span class="o">=</span> <span class="n">compute_full_convolution_index</span><span class="p">(</span>
             <span class="n">outer_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
@@ -576,6 +578,7 @@ document.write(`
             <span class="n">target_subset</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
             <span class="n">target_min</span><span class="p">,</span> <span class="n">target_max</span> <span class="o">=</span> <span class="n">target_subset</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">target_subset</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
             <span class="n">target_subset</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_subset</span> <span class="o">-</span> <span class="n">target_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">target_max</span> <span class="o">-</span> <span class="n">target_min</span><span class="p">)</span>
+
         <span class="n">template_subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_array</span><span class="p">(</span>
             <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">,</span>
             <span class="n">arr_slice</span><span class="o">=</span><span class="n">template_slice</span><span class="p">,</span>
@@ -604,6 +607,15 @@ document.write(`
                 <span class="n">padding</span><span class="o">=</span><span class="n">template_pad</span><span class="p">,</span>
             <span class="p">)</span>
 
+        <span class="n">target_dims</span><span class="p">,</span> <span class="n">template_dims</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_target_dims&quot;</span><span class="p">):</span>
+            <span class="n">target_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_dims</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_template_dims&quot;</span><span class="p">):</span>
+            <span class="n">template_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_dims</span>
+
+        <span class="n">ret</span><span class="o">.</span><span class="n">_set_batch_dimension</span><span class="p">(</span><span class="n">target_dims</span><span class="o">=</span><span class="n">target_dims</span><span class="p">,</span> <span class="n">template_dims</span><span class="o">=</span><span class="n">template_dims</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">ret</span></div>
 
 
@@ -622,20 +634,229 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span></div>
 
 
+    <span class="k">def</span> <span class="nf">_set_batch_dimension</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">target_dims</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">template_dims</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the shapes of target and template for template matching considering</span>
+<span class="sd">        their corresponding batch dimensions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        target_dims : Tuple[int], optional</span>
+<span class="sd">            A tuple of integers specifying the batch dimensions of the target. If None,</span>
+<span class="sd">            the target is assumed not to have batch dimensions.</span>
+<span class="sd">        template_dims : Tuple[int], optional</span>
+<span class="sd">            A tuple of integers specifying the batch dimensions of the template. If None,</span>
+<span class="sd">            the template is assumed not to have batch dimensions.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+
+<span class="sd">        If the target and template share a batch dimension, the target will</span>
+<span class="sd">        take precendence and the template dimension will be shifted to the right.</span>
+<span class="sd">        If target and template have the same dimension, but target specifies batch</span>
+<span class="sd">        dimensions, the leftmost template dimensions are assumed to be a collapse</span>
+<span class="sd">        dimensions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target_dims</span> <span class="o">=</span> <span class="n">target_dims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_template_dims</span> <span class="o">=</span> <span class="n">template_dims</span>
+
+        <span class="n">target_ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_target_batch</span><span class="p">,</span> <span class="n">target_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_batch_dimension</span><span class="p">(</span>
+            <span class="n">batch_dims</span><span class="o">=</span><span class="n">target_dims</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="n">target_ndim</span>
+        <span class="p">)</span>
+        <span class="n">template_ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_template_batch</span><span class="p">,</span> <span class="n">template_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_batch_dimension</span><span class="p">(</span>
+            <span class="n">batch_dims</span><span class="o">=</span><span class="n">template_dims</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="n">template_ndim</span>
+        <span class="p">)</span>
+
+        <span class="n">batch_dims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_dims</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_dims</span><span class="p">)</span>
+        <span class="n">target_measurement_dims</span> <span class="o">=</span> <span class="n">target_ndim</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_dims</span><span class="p">)</span>
+
+        <span class="n">collapse_dims</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">template_ndim</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_dims</span><span class="p">)</span> <span class="o">-</span> <span class="n">target_measurement_dims</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="p">)</span>
+
+        <span class="n">matching_dims</span> <span class="o">=</span> <span class="n">target_measurement_dims</span> <span class="o">+</span> <span class="n">batch_dims</span>
+
+        <span class="n">target_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">matching_dims</span><span class="p">,),</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype_int</span>
+        <span class="p">)</span>
+        <span class="n">template_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">matching_dims</span><span class="p">,),</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype_int</span>
+        <span class="p">)</span>
+        <span class="n">batch_mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">matching_dims</span><span class="p">,),</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
+        <span class="n">target_index</span><span class="p">,</span> <span class="n">template_index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">matching_dims</span><span class="p">):</span>
+            <span class="n">target_dim</span> <span class="o">=</span> <span class="n">k</span> <span class="o">-</span> <span class="n">target_index</span>
+            <span class="n">template_dim</span> <span class="o">=</span> <span class="n">k</span> <span class="o">-</span> <span class="n">template_index</span>
+
+            <span class="k">if</span> <span class="n">target_dim</span> <span class="ow">in</span> <span class="n">target_dims</span><span class="p">:</span>
+                <span class="n">target_shape</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">target_dim</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">target_index</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_dims</span><span class="p">)</span> <span class="ow">and</span> <span class="n">collapse_dims</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">template_shape</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">template_dim</span><span class="p">]</span>
+                    <span class="n">collapse_dims</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="n">template_index</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">template_dim</span> <span class="ow">in</span> <span class="n">template_dims</span><span class="p">:</span>
+                <span class="n">template_shape</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">template_dim</span><span class="p">]</span>
+                <span class="n">target_index</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+
+            <span class="n">batch_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">target_dim</span> <span class="o">&lt;</span> <span class="n">target_ndim</span><span class="p">:</span>
+                <span class="n">target_shape</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">target_dim</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">template_dim</span> <span class="o">&lt;</span> <span class="n">template_ndim</span><span class="p">:</span>
+                <span class="n">template_shape</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">template_dim</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_target_shape</span> <span class="o">=</span> <span class="n">target_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span> <span class="o">=</span> <span class="n">template_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_mask</span> <span class="o">=</span> <span class="n">batch_mask</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_compute_batch_dimension</span><span class="p">(</span>
+        <span class="n">batch_dims</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">ndim</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes a mask for the batch dimensions and the validated batch dimensions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        batch_dims : Tuple[int]</span>
+<span class="sd">            A tuple of integers representing the batch dimensions.</span>
+<span class="sd">        ndim : int</span>
+<span class="sd">            The number of dimensions of the array.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tuple[ArrayLike, Tuple]</span>
+<span class="sd">            A tuple containing the mask (as an ArrayLike) and the validated batch dimensions.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If any dimension in batch_dims is not less than ndim.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">batch_dims</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">mask</span><span class="p">,</span> <span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch_dims</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">batch_dims</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_dims</span><span class="p">,)</span>
+
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">batch_dims</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dim</span> <span class="o">&lt;</span> <span class="n">ndim</span><span class="p">:</span>
+                <span class="n">mask</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Batch indices needs to be &lt; </span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">mask</span><span class="p">,</span> <span class="n">batch_dims</span>
+
+<div class="viewcode-block" id="MatchingData.target_padding">
+<a class="viewcode-back" href="../../reference/api/tme.matching_data.MatchingData.target_padding.html#tme.matching_data.MatchingData.target_padding">[docs]</a>
+    <span class="k">def</span> <span class="nf">target_padding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pad_target</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes padding for the target based on the template&#39;s shape.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pad_target : bool, default False</span>
+<span class="sd">            If True, computes the padding required for the target. If False,</span>
+<span class="sd">            an array of zeros is returned.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ArrayLike</span>
+<span class="sd">            An array indicating the padding for each dimension of the target.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">target_padding</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype_int</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pad_target</span><span class="p">:</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="n">out</span><span class="o">=</span><span class="n">target_padding</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_is_target_batch&quot;</span><span class="p">):</span>
+                <span class="n">target_padding</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_is_target_batch</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">target_padding</span></div>
+
+
+<div class="viewcode-block" id="MatchingData.fourier_padding">
+<a class="viewcode-back" href="../../reference/api/tme.matching_data.MatchingData.fourier_padding.html#tme.matching_data.MatchingData.fourier_padding">[docs]</a>
+    <span class="k">def</span> <span class="nf">fourier_padding</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">pad_fourier</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">ArrayLike</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes an efficient shape for the forward Fourier transform, the</span>
+<span class="sd">        corresponding shape of the real-valued FFT, and the associated</span>
+<span class="sd">        translation shift.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pad_fourier : bool, default False</span>
+<span class="sd">            If true, returns the shape of the full-convolution defined as sum of target</span>
+<span class="sd">            shape and template shape minus one. By default, returns unpadded transform.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tuple[ArrayLike, ArrayLike, ArrayLike]</span>
+<span class="sd">            A tuple containing the calculated fast shape, fast Fourier transform shape,</span>
+<span class="sd">            and the Fourier shift values, respectively.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">template_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_output_template_shape&quot;</span><span class="p">):</span>
+            <span class="n">template_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span>
+        <span class="n">template_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">template_shape</span><span class="p">)</span>
+
+        <span class="n">target_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_output_target_shape&quot;</span><span class="p">):</span>
+            <span class="n">target_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_target_shape</span>
+        <span class="n">target_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">target_shape</span><span class="p">)</span>
+
+        <span class="n">fourier_pad</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">template_shape</span><span class="p">)</span>
+        <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fourier_pad</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pad_fourier</span><span class="p">:</span>
+            <span class="n">fourier_pad</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">fourier_pad</span><span class="p">),</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="n">fourier_pad</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">fourier_pad</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_batch_mask&quot;</span><span class="p">):</span>
+            <span class="n">batch_mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_mask</span><span class="p">)</span>
+            <span class="n">fourier_pad</span><span class="p">[</span><span class="n">batch_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_convolution_shapes</span><span class="p">(</span><span class="n">target_shape</span><span class="p">,</span> <span class="n">fourier_pad</span><span class="p">)</span>
+        <span class="n">convolution_shape</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span> <span class="o">=</span> <span class="n">ret</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pad_fourier</span><span class="p">:</span>
+            <span class="n">fourier_shift</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">template_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
+            <span class="n">fourier_shift</span> <span class="o">-=</span> <span class="n">backend</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">template_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">convolution_shape</span><span class="p">)</span>
+            <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape_diff</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">,</span> <span class="n">shape_diff</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">fourier_shift</span></div>
+
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">rotations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return rotation matrices used for fitting.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return stored rotation matrices..&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotations</span>
 
     <span class="nd">@rotations</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">rotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rotations</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set and reshape the rotation matrices for fitting.</span>
+<span class="sd">        Set and reshape the rotation matrices for template matching.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        rotations : NDArray</span>
-<span class="sd">            Rotations in shape (3 x 3), (1 x 3 x 3), or (n x k x k).</span>
+<span class="sd">            Rotations in shape (k x k), or (n x k x k).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">rotations</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Rotation set has to be of type numpy ndarray.&quot;</span><span class="p">)</span>
@@ -702,6 +923,7 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span> <span class="o">=</span> <span class="n">mask</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_targetmaskshape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">return</span> <span class="kc">None</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_targetmaskshape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span><span class="o">.</span><span class="n">shape</span>
 

@@ -907,7 +907,7 @@ document.write(`
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="tme.matching_data.MatchingData.rotations.html#tme.matching_data.MatchingData.rotations" title="tme.matching_data.MatchingData.rotations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MatchingData.rotations</span></code></a></p></td>
-<td><p>Return rotation matrices used for fitting.</p></td>
+<td><p>Return stored rotation matrices..</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="tme.matching_data.MatchingData.target.html#tme.matching_data.MatchingData.target" title="tme.matching_data.MatchingData.target"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MatchingData.target</span></code></a></p></td>
 <td><p>Returns the target NDArray.</p></td>
@@ -926,11 +926,17 @@ document.write(`
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.matching_data.MatchingData.subset_array.html#tme.matching_data.MatchingData.subset_array" title="tme.matching_data.MatchingData.subset_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MatchingData.subset_array</span></code></a>(arr, arr_slice, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.matching_data.MatchingData.fourier_padding.html#tme.matching_data.MatchingData.fourier_padding" title="tme.matching_data.MatchingData.fourier_padding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MatchingData.fourier_padding</span></code></a>([pad_fourier])</p></td>
+<td><p>Computes an efficient shape for the forward Fourier transform, the corresponding shape of the real-valued FFT, and the associated translation shift.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.matching_data.MatchingData.subset_array.html#tme.matching_data.MatchingData.subset_array" title="tme.matching_data.MatchingData.subset_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MatchingData.subset_array</span></code></a>(arr, arr_slice, ...)</p></td>
 <td><p>Extract a subset of the input array according to the given slice and apply padding.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.matching_data.MatchingData.subset_by_slice.html#tme.matching_data.MatchingData.subset_by_slice" title="tme.matching_data.MatchingData.subset_by_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MatchingData.subset_by_slice</span></code></a>([target_slice, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.matching_data.MatchingData.subset_by_slice.html#tme.matching_data.MatchingData.subset_by_slice" title="tme.matching_data.MatchingData.subset_by_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MatchingData.subset_by_slice</span></code></a>([target_slice, ...])</p></td>
 <td><p>Slice the instance arrays based on the provided slices.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.matching_data.MatchingData.target_padding.html#tme.matching_data.MatchingData.target_padding" title="tme.matching_data.MatchingData.target_padding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MatchingData.target_padding</span></code></a>([pad_target])</p></td>
+<td><p>Computes padding for the target based on the template's shape.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="tme.matching_data.MatchingData.to_backend.html#tme.matching_data.MatchingData.to_backend" title="tme.matching_data.MatchingData.to_backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MatchingData.to_backend</span></code></a>()</p></td>
 <td><p>Transfer the class instance's numpy arrays to the current backend.</p></td>

@@ -1643,7 +1643,7 @@ document.write(`
 <span class="sd">        The merged results from callback_class if provided otherwise None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
-        <span class="n">matching_data</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">matching_data</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">shape_diff</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pad_fourier</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -1653,22 +1653,10 @@ document.write(`
         <span class="p">)</span>
 
     <span class="n">matching_data</span><span class="o">.</span><span class="n">to_backend</span><span class="p">()</span>
-    <span class="n">fourier_pad</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fourier_pad</span><span class="p">))</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">pad_fourier</span><span class="p">:</span>
-        <span class="n">fourier_pad</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">fourier_shift</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
-    <span class="n">convolution_shape</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_convolution_shapes</span><span class="p">(</span>
-        <span class="n">matching_data</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">fourier_pad</span>
+    <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">fourier_padding</span><span class="p">(</span>
+        <span class="n">pad_fourier</span><span class="o">=</span><span class="n">pad_fourier</span>
     <span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">pad_fourier</span><span class="p">:</span>
-        <span class="n">fourier_shift</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">int</span>
-        <span class="p">)</span>
-        <span class="n">fourier_shift</span> <span class="o">-=</span> <span class="n">backend</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">convolution_shape</span><span class="p">)</span>
-        <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape_diff</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
-        <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">,</span> <span class="n">shape_diff</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">)</span>
 
     <span class="n">callback_class_args</span><span class="p">[</span><span class="s2">&quot;fourier_shift&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fourier_shift</span>
     <span class="n">rfftn</span><span class="p">,</span> <span class="n">irfftn</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">build_fft</span><span class="p">(</span>
@@ -1753,7 +1741,7 @@ document.write(`
 
     <span class="n">setup</span><span class="p">[</span><span class="s2">&quot;fftargs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fftargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">convolution_mode</span> <span class="o">=</span> <span class="s2">&quot;same&quot;</span>
-    <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_target_pad</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_target_pad</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">convolution_mode</span> <span class="o">=</span> <span class="s2">&quot;valid&quot;</span>
     <span class="n">setup</span><span class="p">[</span><span class="s2">&quot;convolution_mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">convolution_mode</span>
     <span class="n">setup</span><span class="p">[</span><span class="s2">&quot;interpolation_order&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interpolation_order</span>
@@ -1861,17 +1849,13 @@ document.write(`
 <span class="sd">        The merged results from callback_class if provided otherwise None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">target_splits</span> <span class="o">=</span> <span class="n">split_numpy_array_slices</span><span class="p">(</span>
-        <span class="n">matching_data</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">splits</span><span class="o">=</span><span class="n">target_splits</span>
+        <span class="n">matching_data</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">splits</span><span class="o">=</span><span class="n">target_splits</span>
     <span class="p">)</span>
     <span class="n">template_splits</span> <span class="o">=</span> <span class="n">split_numpy_array_slices</span><span class="p">(</span>
         <span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">splits</span><span class="o">=</span><span class="n">template_splits</span>
     <span class="p">)</span>
+    <span class="n">target_pad</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">target_padding</span><span class="p">(</span><span class="n">pad_target</span><span class="o">=</span><span class="n">pad_target_edges</span><span class="p">)</span>
 
-    <span class="n">target_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">pad_target_edges</span><span class="p">:</span>
-        <span class="n">target_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
-            <span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="p">)</span>
     <span class="n">outer_jobs</span><span class="p">,</span> <span class="n">inner_jobs</span> <span class="o">=</span> <span class="n">job_schedule</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">outer_jobs</span><span class="p">)(</span>
         <span class="n">delayed</span><span class="p">(</span><span class="n">_run_inner</span><span class="p">)(</span>

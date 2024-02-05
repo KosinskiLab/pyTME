@@ -786,7 +786,7 @@ document.write(`
 <div class="viewcode-block" id="MatchingBackend.std">
 <a class="viewcode-back" href="../../../reference/api/tme.backends.MatchingBackend.std.html#tme.backends.MatchingBackend.std">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the standad deviation of array elements.</span>
 
@@ -794,6 +794,8 @@ document.write(`
 <span class="sd">        ----------</span>
 <span class="sd">        arr : Scalar</span>
 <span class="sd">            The array whose standard deviation should be computed.</span>
+<span class="sd">        axis : Scalar</span>
+<span class="sd">            Axis to perform the operation on.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>

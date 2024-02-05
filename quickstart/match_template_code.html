@@ -749,8 +749,8 @@ document.write(`
         <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Step size between tilts, e.g. &#39;5&#39;. When set a more accurate&quot;</span>
-        <span class="s2">&quot; wedge mask will be computed.&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Step size between tilts, e.g. &#39;5&#39;. When set the wedge mask&quot;</span>
+        <span class="s2">&quot; reflects the individual tilts, otherwise a continuous mask is used.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--wedge_axes&quot;</span><span class="p">,</span>
@@ -857,14 +857,16 @@ document.write(`
         <span class="k">if</span> <span class="n">target_mask</span><span class="p">:</span>
             <span class="n">args</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">generate_tempfile_name</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.mrc&quot;</span><span class="p">)</span>
             <span class="n">target_mask</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">target_mask</span><span class="p">)</span>
-            <span class="n">print_block</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Target Mask&quot;</span><span class="p">,</span>
-                <span class="n">data</span><span class="o">=</span><span class="p">{</span>
-                    <span class="s2">&quot;Initial Shape&quot;</span><span class="p">:</span> <span class="n">initial_shape</span><span class="p">,</span>
-                    <span class="s2">&quot;Sampling Rate&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">target_mask</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
-                    <span class="s2">&quot;Final Shape&quot;</span><span class="p">:</span> <span class="n">target_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-                <span class="p">},</span>
-            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">target_mask</span><span class="p">:</span>
+        <span class="n">print_block</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Target Mask&quot;</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;Initial Shape&quot;</span><span class="p">:</span> <span class="n">initial_shape</span><span class="p">,</span>
+                <span class="s2">&quot;Sampling Rate&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">target_mask</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+                <span class="s2">&quot;Final Shape&quot;</span><span class="p">:</span> <span class="n">target_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
 
     <span class="n">initial_shape</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">_</span> <span class="o">=</span> <span class="n">crop_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">data_mask</span><span class="o">=</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cutoff_template</span><span class="p">)</span>
@@ -946,8 +948,9 @@ document.write(`
     <span class="n">template_mask</span> <span class="o">=</span> <span class="n">template_mask</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
         <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">template_mask</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span>
         <span class="n">translation</span><span class="o">=-</span><span class="n">translation</span><span class="p">,</span>
+        <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span>
-
+    <span class="n">template_mask</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">print_block</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Template Mask&quot;</span><span class="p">,</span>
         <span class="n">data</span><span class="o">=</span><span class="p">{</span>
