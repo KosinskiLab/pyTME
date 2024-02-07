@@ -49,7 +49,7 @@ where
     CC(f,g) = \mathcal{F}^{-1}(\mathcal{F}(f) \cdot \mathcal{F}(g)^*),
     \label{eq:CC}
 
-with :math:`\mathcal{F}` and :math:`\mathcal{F}^{-1}` denoting the forward and inverse Fourier transform, :math:`^*` the complex conjugate, and :math:`\cdot` the element-wise product. :math:`f`, :math:`g` are the target and template, respectively, and :math:`m` is the mask. :math:`N_m` is the number of non-zero elements in :math:`m`, :math:`\overline{g \cdot m}` and :math:`\sigma_{g \cdot m}` the mean and standard deviation of :math:`g \cdot m`, respectively.
+with :math:`\mathcal{F}` and :math:`\mathcal{F}^{-1}` denoting the forward and inverse Fourier transform, :math:`^*` the complex conjugate, and :math:`\cdot` the element-wise product. :math:`f`, :math:`g` are the target and template, respectively, and :math:`m` is the template mask. :math:`N_m` is the number of non-zero elements in :math:`m`, :math:`\overline{g \cdot m}` and :math:`\sigma_{g \cdot m}` the mean and standard deviation of :math:`g \cdot m`, respectively.
 
 ``match_template.py`` will compute a bounding box that encapsulates all possible rotations of the template and move the template's center of mass to the center of that box. The computed bounding box will be used as default template mask, if none is specified by the user. Subsequently, ``match_template.py`` will compute the similarity between template and target for all integer-valued voxel translations of the template, together with a range of rotations of the template. The fineness of the rotational grid can be specified by the user.
 

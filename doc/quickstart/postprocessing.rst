@@ -86,7 +86,7 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
 
         .. note::
 
-            Without a wedge mask or a fully fledged CTF, the averages computed by `RELION <https://github.com/3dem/relion>`_ might be overly distorted due to preferential alignment of subtomograms on the missing wedge. Wedge mask can be generated with pyTME (see :py:meth:`tme.preprocessor.Preprocessor.wedge_mask` and :py:meth:`tme.preprocessor.Preprocessor.continuous_wedge_mask`) or the Napari GUI (see :ref:`preprocessing section <filter-application>`).
+            Without a wedge mask or a fully fledged CTF, the averages computed by `RELION <https://github.com/3dem/relion>`_ might be overly distorted due to preferential alignment of subtomograms on the missing wedge. Wedge mask can be generated with |project| (see :py:meth:`tme.preprocessor.Preprocessor.wedge_mask` and :py:meth:`tme.preprocessor.Preprocessor.continuous_wedge_mask`) or the Napari GUI (see :ref:`preprocessing section <filter-application>`).
 
             ``postprocess.py`` automatically pads the extracted subtomograms to an even number of voxels in each dimension to avoid potential RELION crashes.
 
@@ -104,7 +104,7 @@ Background
 
 Generally, high scores indicate regions of high similarity, and most scoring functions are limited to the interval [0, 1], with 1 being a perfect match (see :doc:`exhaustive template matching <../reference/matching_exhaustive>` for details on your specific scoring method).
 
-``match_template.py`` performs an search of all rotational and translation degrees of freedom of the input. For a three-dimensional input this corresponds to a six-dimensional search. Due to memory contraints, this problem is simplified by only storing the maximum score for each translation of the template as well as the rotation used to obtain it. This results in two arrays with the same shape as the template.
+``match_template.py`` performs an search of all rotational and translation degrees of freedom of the input. For a three-dimensional input this corresponds to a six-dimensional search. Due to memory contraints, this problem is simplified by only storing the maximum score for each translation of the template as well as the rotation used to obtain it. This results in two arrays with the same shape as the target.
 
 To better understand this, lets recall an example from the :ref:`Preprocessing section <preprocess-filtering>`:
 
@@ -136,9 +136,9 @@ To better understand this, lets recall an example from the :ref:`Preprocessing s
     plt.tight_layout()
     plt.show()
 
-The score peak is highlighted within the red rectangle, and for this example is located at 111, 240. Therefore, the maximum similariy is obtained when translating the template so that is center of mass is at position 111, 240 within the target. This convention used in |project| to represent in scores and candidates is analogous to other tools and figuratively explained in a `skimage tutorial <https://scikit-image.org/docs/stable/auto_examples/features_detection/plot_template.html>`_
+The score peak is located within the red rectangle at 111, 240. Therefore, the maximum similariy is obtained when translating the template so that its center of mass is at position 111, 240. This convention used in |project| to represent in scores and candidates is analogous to other tools and figuratively explained in a `skimage tutorial <https://scikit-image.org/docs/stable/auto_examples/features_detection/plot_template.html>`_
 
-The identity matrix is the corresponding rotation matrix for this peak. Different approaches are used to express rotations and translations. |project| centeres rotations around the center of mass and applies translations subsequently by default. match_template.py follows this default behaviour.
+The identity matrix is the corresponding rotation matrix for this peak. Different approaches are used to express rotations and translations. |project| centeres rotations around the center of mass and applies translations subsequently by default.
 
 The following sections explain the output of ``match_template.py`` and outline the peak calling procedure used by ``postprocess.py``.
 

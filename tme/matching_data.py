@@ -279,7 +279,7 @@ class MatchingData:
         take precendence and the template dimension will be shifted to the right.
         If target and template have the same dimension, but target specifies batch
         dimensions, the leftmost template dimensions are assumed to be a collapse
-        dimensions.
+        dimension that operates on a measurement dimension.
         """
         self._target_dims = target_dims
         self._template_dims = template_dims

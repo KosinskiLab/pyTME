@@ -252,7 +252,7 @@ def parse_args():
         type=check_positive,
         default=40.0,
         help="Angular sampling rate for template matching. "
-        "A lower number yields more rotations.",
+        "A lower number yields more rotations. Values >= 180 sample only the identity.",
     )
     parser.add_argument(
         "-p",

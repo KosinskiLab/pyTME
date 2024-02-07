@@ -124,13 +124,13 @@ This section provides instructions on how to install the |project| library. Depe
 Optional GUI Setup
 ------------------
 
-If you installed |project| using Conda, you will only need to install execute the following code to use the preprocessing GUI:
+If you installed |project| using Conda, you will only need to execute the following to use the preprocessing GUI:
 
 .. code-block:: bash
 
    pip install git+https://github.com/maurerv/napari-density-io.git
 
-If you installed using Conda please do not execute the following as this might cause version mismatches. If you chose a different installation method, you will require to install the following GUI dependencies:
+Otherwise, you also have to install the remaining GUI dependencies:
 
 .. code-block:: bash
 
@@ -150,10 +150,7 @@ Use the `nvidia-smi` command to get information about your NVIDIA driver and GPU
 
    nvidia-smi
 
-Look for the CUDA version in the output; it's usually displayed in the top right corner.
-
-After determining your CUDA version, you can proceed to install one of the following GPU-accelerated libraries: PyTorch or CuPy. While both are supported, CuPy is the recommended choice.
-
+Look for the CUDA version in the output; it's usually displayed in the top right corner. After determining your CUDA version, you can proceed to install one of the supported GPU-accelerated libraries.
 
 .. tab-set::
 
