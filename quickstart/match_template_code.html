@@ -621,7 +621,7 @@ document.write(`
         <span class="nb">type</span><span class="o">=</span><span class="n">check_positive</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Angular sampling rate for template matching. &quot;</span>
-        <span class="s2">&quot;A lower number yields more rotations.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A lower number yields more rotations. Values &gt;= 180 sample only the identity.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-p&quot;</span><span class="p">,</span>
