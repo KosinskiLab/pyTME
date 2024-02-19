@@ -763,10 +763,14 @@ def euler_to_rotationmatrix(angles: Tuple[float]) -> NDArray:
     NDArray
         The generated rotation matrix.
     """
-    if len(angles) == 1:
+    n_angles = len(angles)
+    angle_convention = "zyx"[:n_angles]
+    if n_angles == 1:
         angles = (angles, 0, 0)
     rotation_matrix = (
-        Rotation.from_euler("zyx", angles, degrees=True).as_matrix().astype(np.float32)
+        Rotation.from_euler(angle_convention, angles, degrees=True)
+        .as_matrix()
+        .astype(np.float32)
     )
     return rotation_matrix
 

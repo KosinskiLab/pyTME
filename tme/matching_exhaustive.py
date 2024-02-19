@@ -773,6 +773,7 @@ def corr_scoring(
     fourier_shift = callback_class_args.get("fourier_shift", backend.zeros(arr.ndim))
     fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
 
+    template_sum = template.sum()
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
         backend.fill(arr, 0)
@@ -783,6 +784,9 @@ def corr_scoring(
             use_geometric_center=False,
             order=interpolation_order,
         )
+        rotation_norm = template_sum / arr.sum()
+        backend.multiply(arr, rotation_norm, out=arr)
+
         rfftn(arr, ft_temp)
         template_filter_func(ft_temp, template_filter, out=ft_temp)
 

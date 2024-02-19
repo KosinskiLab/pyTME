@@ -26,6 +26,12 @@ class TestDensity:
             data=DEFAULT_DATA,
             origin=DEFAULT_ORIGIN,
             sampling_rate=DEFAULT_SAMPLING_RATE,
+            metadata={
+                "min": DEFAULT_DATA.min(),
+                "max": DEFAULT_DATA.max(),
+                "mean": DEFAULT_DATA.mean(),
+                "std": DEFAULT_DATA.std(),
+            },
         )
         _, self.path = mkstemp()
         self.structure_path = "tme/tests/data/Structures/5khe.cif"
@@ -211,7 +217,7 @@ class TestDensity:
         assert np.allclose(empty_density.data, np.zeros_like(empty_density.data))
         assert np.allclose(empty_density.sampling_rate, self.density.sampling_rate)
         assert np.allclose(empty_density.origin, self.density.origin)
-        assert empty_density.metadata == self.density.metadata
+        assert empty_density.metadata == {"min": 0, "max": 0, "mean": 0, "std": 0}
 
     def test_copy(self):
         copied_density = self.density.copy()
