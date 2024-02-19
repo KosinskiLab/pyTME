@@ -544,7 +544,7 @@ def main():
                 "stop_tilt": tilt_stop,
                 "tilt_step": args.tilt_step,
                 "sigma": args.wedge_smooth,
-                "opening_axes": opening_axis,
+                "opening_axis": opening_axis,
                 "tilt_axis": tilt_axis,
                 "omit_negative_frequencies": True,
             }
