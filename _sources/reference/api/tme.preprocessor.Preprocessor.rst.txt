@@ -88,6 +88,9 @@
            Preprocessor.rank_filter
          
          
+           Preprocessor.step_wedge_mask
+         
+         
            Preprocessor.wavelet_filter
          
          

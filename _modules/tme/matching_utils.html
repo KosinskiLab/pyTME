@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.matching_utils &#8212; pytme 0.1.6 documentation</title>
+    <title>tme.matching_utils &#8212; pytme 0.1.7 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+    <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.6 documentation</p>
+    <p class="title logo__title">pytme 0.1.7 documentation</p>
   
 </a></div>
     
@@ -1162,10 +1162,14 @@ document.write(`
 <span class="sd">    NDArray</span>
 <span class="sd">        The generated rotation matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">n_angles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+    <span class="n">angle_convention</span> <span class="o">=</span> <span class="s2">&quot;zyx&quot;</span><span class="p">[:</span><span class="n">n_angles</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">n_angles</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">angles</span> <span class="o">=</span> <span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">Rotation</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s2">&quot;zyx&quot;</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">Rotation</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="n">angle_convention</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">rotation_matrix</span></div>
 
@@ -1659,7 +1663,7 @@ document.write(`
 
   <p class="copyright">
     
-      © Copyright 2023 European Molecular Biology Laboratory.
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
       <br/>
     
   </p>

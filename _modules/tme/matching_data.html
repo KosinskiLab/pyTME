@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.matching_data &#8212; pytme 0.1.6 documentation</title>
+    <title>tme.matching_data &#8212; pytme 0.1.7 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+    <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.6 documentation</p>
+    <p class="title logo__title">pytme 0.1.7 documentation</p>
   
 </a></div>
     
@@ -371,7 +371,7 @@ document.write(`
 
 <span class="sd">    Author: Valentin Maurer &lt;valentin.maurer@embl-hamburg.de&gt;</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -452,7 +452,11 @@ document.write(`
 <div class="viewcode-block" id="MatchingData.subset_array">
 <a class="viewcode-back" href="../../reference/api/tme.matching_data.MatchingData.subset_array.html#tme.matching_data.MatchingData.subset_array">[docs]</a>
     <span class="k">def</span> <span class="nf">subset_array</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">arr_slice</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">],</span> <span class="n">padding</span><span class="p">:</span> <span class="n">NDArray</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">arr_slice</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">],</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">invert</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Extract a subset of the input array according to the given slice and</span>
@@ -467,8 +471,11 @@ document.write(`
 <span class="sd">        padding : NDArray</span>
 <span class="sd">            Padding values for each dimension. If the padding exceeds the array</span>
 <span class="sd">            dimensions, the extra regions are filled with the mean of the array</span>
-<span class="sd">            values, otherwise, the</span>
-<span class="sd">            values in ``arr`` are used.</span>
+<span class="sd">            values, otherwise, the values in ``arr`` are used.</span>
+<span class="sd">        invert : bool, optional</span>
+<span class="sd">            Whether the returned array should be inverted and normalized to the interval</span>
+<span class="sd">            [0, 1]. If available, uses the metadata information of the Density object,</span>
+<span class="sd">            otherwise computes min and max on the extracted subset.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -501,9 +508,14 @@ document.write(`
         <span class="n">subset_slice</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="o">*</span><span class="n">prod</span><span class="p">)</span> <span class="k">for</span> <span class="n">prod</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">subset_start</span><span class="p">,</span> <span class="n">subset_stop</span><span class="p">))</span>
         <span class="n">subset_mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slice_to_mesh</span><span class="p">(</span><span class="n">subset_slice</span><span class="p">,</span> <span class="n">ret_shape</span><span class="p">)</span>
 
+        <span class="n">arr_min</span><span class="p">,</span> <span class="n">arr_max</span><span class="p">,</span> <span class="n">arr_mean</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">==</span> <span class="n">Density</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="n">arr_slice</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+                <span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="n">arr_slice</span><span class="p">)</span>
+                <span class="n">arr</span><span class="p">,</span> <span class="n">arr_mean</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">dens</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">arr_min</span><span class="p">,</span> <span class="n">arr_max</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">dens</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">*</span><span class="n">arr_mesh</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
@@ -512,10 +524,34 @@ document.write(`
                     <span class="n">arr</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span>
                 <span class="p">)</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="o">*</span><span class="n">arr_mesh</span><span class="p">])</span>
+
+        <span class="k">def</span> <span class="nf">_warn_on_mismatch</span><span class="p">(</span>
+            <span class="n">expectation</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">computation</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+            <span class="n">expectation</span><span class="p">,</span> <span class="n">computation</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">expectation</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">computation</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">expectation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">expectation</span> <span class="o">=</span> <span class="n">computation</span>
+
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">computation</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">expectation</span><span class="p">):</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Computed </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> value is more extrem than value specified in file&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; (|</span><span class="si">{</span><span class="n">computation</span><span class="si">}</span><span class="s2">| &gt; |</span><span class="si">{</span><span class="n">expectation</span><span class="si">}</span><span class="s2">|). This may lead to issues&quot;</span>
+                    <span class="s2">&quot; with padding and contrast inversion.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">expectation</span>
+
+        <span class="n">arr_mean</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">if</span> <span class="n">arr_mean</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">arr_mean</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
-            <span class="n">shape</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">slice_shape</span><span class="p">,</span> <span class="n">padding</span><span class="p">),</span> <span class="n">fill_value</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">slice_shape</span><span class="p">,</span> <span class="n">padding</span><span class="p">),</span> <span class="n">fill_value</span><span class="o">=</span><span class="n">arr_mean</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span>
         <span class="p">)</span>
         <span class="n">ret</span><span class="p">[</span><span class="o">*</span><span class="n">subset_mesh</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span>
+
+        <span class="k">if</span> <span class="n">invert</span><span class="p">:</span>
+            <span class="n">arr_min</span> <span class="o">=</span> <span class="n">_warn_on_mismatch</span><span class="p">(</span><span class="n">arr_min</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="s2">&quot;min&quot;</span><span class="p">)</span>
+            <span class="n">arr_max</span> <span class="o">=</span> <span class="n">_warn_on_mismatch</span><span class="p">(</span><span class="n">arr_max</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span>
+
+            <span class="n">ret</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">ret</span> <span class="o">-</span> <span class="n">arr_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">arr_max</span> <span class="o">-</span> <span class="n">arr_min</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ret</span></div>
 
@@ -572,12 +608,11 @@ document.write(`
         <span class="p">)</span>
 
         <span class="n">target_subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_array</span><span class="p">(</span>
-            <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">,</span> <span class="n">arr_slice</span><span class="o">=</span><span class="n">target_slice</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">target_pad</span>
+            <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">,</span>
+            <span class="n">arr_slice</span><span class="o">=</span><span class="n">target_slice</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">target_pad</span><span class="p">,</span>
+            <span class="n">invert</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span><span class="p">:</span>
-            <span class="n">target_subset</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
-            <span class="n">target_min</span><span class="p">,</span> <span class="n">target_max</span> <span class="o">=</span> <span class="n">target_subset</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">target_subset</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-            <span class="n">target_subset</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_subset</span> <span class="o">-</span> <span class="n">target_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">target_max</span> <span class="o">-</span> <span class="n">target_min</span><span class="p">)</span>
 
         <span class="n">template_subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_array</span><span class="p">(</span>
             <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">,</span>
@@ -872,14 +907,14 @@ document.write(`
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the target NDArray.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">)</span> <span class="o">==</span> <span class="n">Density</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">,</span> <span class="n">Density</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">data</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">template</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the reversed template NDArray.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">)</span> <span class="o">==</span> <span class="n">Density</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">,</span> <span class="n">Density</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">)</span>
 
@@ -908,7 +943,7 @@ document.write(`
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">target_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the target mask NDArray.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span><span class="p">)</span> <span class="o">==</span> <span class="n">Density</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span><span class="p">,</span> <span class="n">Density</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span><span class="o">.</span><span class="n">data</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span>
 
@@ -937,7 +972,7 @@ document.write(`
 <span class="sd">        template : NDArray</span>
 <span class="sd">            Array to set as the template.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span><span class="p">)</span> <span class="o">==</span> <span class="n">Density</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span><span class="p">,</span> <span class="n">Density</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span><span class="p">)</span>
 
@@ -1023,7 +1058,7 @@ document.write(`
 
   <p class="copyright">
     
-      © Copyright 2023 European Molecular Biology Laboratory.
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
       <br/>
     
   </p>

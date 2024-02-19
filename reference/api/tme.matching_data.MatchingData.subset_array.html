@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>MatchingData.subset_array &#8212; pytme 0.1.6 documentation</title>
+    <title>MatchingData.subset_array &#8212; pytme 0.1.7 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+    <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -123,7 +123,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.6 documentation</p>
+    <p class="title logo__title">pytme 0.1.7 documentation</p>
   
 </a></div>
     
@@ -891,7 +891,7 @@ document.write(`
 <h1>MatchingData.subset_array<a class="headerlink" href="#matchingdata-subset-array" title="Link to this heading">#</a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="tme.matching_data.MatchingData.subset_array">
-<span class="sig-prename descclassname"><span class="pre">MatchingData.</span></span><span class="sig-name descname"><span class="pre">subset_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arr_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/matching_data.html#MatchingData.subset_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.matching_data.MatchingData.subset_array" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">MatchingData.</span></span><span class="sig-name descname"><span class="pre">subset_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arr_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/matching_data.html#MatchingData.subset_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.matching_data.MatchingData.subset_array" title="Link to this definition">#</a></dt>
 <dd><p>Extract a subset of the input array according to the given slice and
 apply padding.</p>
 <dl class="field-list simple">
@@ -903,8 +903,11 @@ apply padding.</p>
 </dd>
 <dt><strong>padding</strong><span class="classifier">NDArray</span></dt><dd><p>Padding values for each dimension. If the padding exceeds the array
 dimensions, the extra regions are filled with the mean of the array
-values, otherwise, the
-values in <code class="docutils literal notranslate"><span class="pre">arr</span></code> are used.</p>
+values, otherwise, the values in <code class="docutils literal notranslate"><span class="pre">arr</span></code> are used.</p>
+</dd>
+<dt><strong>invert</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether the returned array should be inverted and normalized to the interval
+[0, 1]. If available, uses the metadata information of the Density object,
+otherwise computes min and max on the extracted subset.</p>
 </dd>
 </dl>
 </dd>
@@ -1003,7 +1006,7 @@ values in <code class="docutils literal notranslate"><span class="pre">arr</span
 
   <p class="copyright">
     
-      © Copyright 2023 European Molecular Biology Laboratory.
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
       <br/>
     
   </p>

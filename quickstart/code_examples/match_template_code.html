@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>match_template.py &#8212; pytme 0.1.6 documentation</title>
+    <title>match_template.py &#8212; pytme 0.1.7 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+    <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.6 documentation</p>
+    <p class="title logo__title">pytme 0.1.7 documentation</p>
   
 </a></div>
     
@@ -908,15 +908,14 @@ document.write(`
         <span class="n">opening_axis</span><span class="p">,</span> <span class="n">tilt_axis</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
 
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">tilt_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
-                <span class="o">-</span><span class="n">tilt_start</span><span class="p">,</span> <span class="n">tilt_stop</span> <span class="o">+</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span>
-            <span class="p">)</span>
-            <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">tilt_angles</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
-            <span class="n">angles</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">tilt_angles</span>
-            <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;wedge_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;tilt_angles&quot;</span><span class="p">:</span> <span class="n">angles</span><span class="p">,</span>
+            <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;step_wedge_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;start_tilt&quot;</span><span class="p">:</span> <span class="n">tilt_start</span><span class="p">,</span>
+                <span class="s2">&quot;stop_tilt&quot;</span><span class="p">:</span> <span class="n">tilt_stop</span><span class="p">,</span>
+                <span class="s2">&quot;tilt_step&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span><span class="p">,</span>
                 <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span><span class="p">,</span>
                 <span class="s2">&quot;opening_axes&quot;</span><span class="p">:</span> <span class="n">opening_axis</span><span class="p">,</span>
+                <span class="s2">&quot;tilt_axis&quot;</span><span class="p">:</span> <span class="n">tilt_axis</span><span class="p">,</span>
+                <span class="s2">&quot;omit_negative_frequencies&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;continuous_wedge_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
@@ -926,6 +925,7 @@ document.write(`
                 <span class="s2">&quot;opening_axis&quot;</span><span class="p">:</span> <span class="n">opening_axis</span><span class="p">,</span>
                 <span class="s2">&quot;infinite_plane&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
                 <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span><span class="p">,</span>
+                <span class="s2">&quot;omit_negative_frequencies&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="p">}</span>
 
     <span class="k">if</span> <span class="n">template_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1201,7 +1201,7 @@ document.write(`
 
   <p class="copyright">
     
-      © Copyright 2023 European Molecular Biology Laboratory.
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
       <br/>
     
   </p>

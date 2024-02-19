@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Preprocessor.wedge_mask &#8212; pytme 0.1.6 documentation</title>
+    <title>Preprocessor.wedge_mask &#8212; pytme 0.1.7 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+    <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -123,7 +123,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.6 documentation</p>
+    <p class="title logo__title">pytme 0.1.7 documentation</p>
   
 </a></div>
     
@@ -926,6 +926,7 @@ applicable to symmetric Fourier transforms (see <a class="reference external" hr
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
+<dt><a class="reference internal" href="tme.preprocessor.Preprocessor.step_wedge_mask.html#tme.preprocessor.Preprocessor.step_wedge_mask" title="tme.preprocessor.Preprocessor.step_wedge_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Preprocessor.step_wedge_mask()</span></code></a></dt><dd></dd>
 <dt><a class="reference internal" href="tme.preprocessor.Preprocessor.continuous_wedge_mask.html#tme.preprocessor.Preprocessor.continuous_wedge_mask" title="tme.preprocessor.Preprocessor.continuous_wedge_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Preprocessor.continuous_wedge_mask()</span></code></a></dt><dd></dd>
 </dl>
 </div>
@@ -946,8 +947,8 @@ applicable to symmetric Fourier transforms (see <a class="reference external" hr
 around axis 2 and propagated along axis 0. The code above would
 be equivalent to the following</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wedge</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="p">()</span><span class="o">.</span><span class="n">continuous_wedge_mask</span><span class="p">(</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="n">start_tilt</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">start_tilt</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>   <span class="n">stop_tilt</span><span class="o">=</span><span class="mi">55</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>   <span class="n">tilt_axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>   <span class="n">omit_negative_frequencies</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1046,7 +1047,7 @@ does not consider individual plane tilts.</p>
 
   <p class="copyright">
     
-      © Copyright 2023 European Molecular Biology Laboratory.
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
       <br/>
     
   </p>

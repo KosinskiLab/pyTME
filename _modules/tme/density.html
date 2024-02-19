@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.density &#8212; pytme 0.1.6 documentation</title>
+    <title>tme.density &#8212; pytme 0.1.7 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+    <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.6 documentation</p>
+    <p class="title logo__title">pytme 0.1.7 documentation</p>
   
 </a></div>
     
@@ -570,16 +570,16 @@ document.write(`
             <span class="n">func</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_load_mrc</span>
             <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.em&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.em.gz&quot;</span><span class="p">):</span>
                 <span class="n">func</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_load_em</span>
-            <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span>
                 <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="n">subset</span><span class="p">,</span> <span class="n">use_memmap</span><span class="o">=</span><span class="n">use_memmap</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_load_skio</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_load_skio</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">subset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">cls</span><span class="o">.</span><span class="n">_validate_slices</span><span class="p">(</span><span class="n">slices</span><span class="o">=</span><span class="n">subset</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span></div>
 
 
     <span class="nd">@classmethod</span>
@@ -679,6 +679,13 @@ document.write(`
 
             <span class="n">extended_header</span> <span class="o">=</span> <span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">nsymbt</span>
 
+            <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">dmin</span><span class="p">),</span>
+                <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">dmax</span><span class="p">),</span>
+                <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">dmean</span><span class="p">),</span>
+                <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">rms</span><span class="p">),</span>
+            <span class="p">}</span>
+
         <span class="k">if</span> <span class="n">is_gzipped</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -701,7 +708,7 @@ document.write(`
                 <span class="n">dtype</span><span class="o">=</span><span class="n">data_type</span><span class="p">,</span>
                 <span class="n">header_size</span><span class="o">=</span><span class="mi">1024</span> <span class="o">+</span> <span class="n">extended_header</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">metadata</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">use_memmap</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">mrcfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">header_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">mrc</span><span class="p">:</span>
@@ -715,7 +722,7 @@ document.write(`
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">crs_index</span><span class="p">)</span>
             <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">crs_index</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">metadata</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_load_em</span><span class="p">(</span>
@@ -820,7 +827,7 @@ document.write(`
             <span class="n">pixel_size</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">pixel_size</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="p">{}</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_validate_slices</span><span class="p">(</span><span class="n">slices</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">],</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
@@ -964,7 +971,7 @@ document.write(`
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="s2">&quot;origin and sampling_rate are not yet extracted from non CCP4/MRC files.&quot;</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span> <span class="p">{}</span>
 
 <div class="viewcode-block" id="Density.from_structure">
 <a class="viewcode-back" href="../../reference/api/tme.density.Density.from_structure.html#tme.density.Density.from_structure">[docs]</a>
@@ -1287,7 +1294,8 @@ document.write(`
 <span class="sd">        Returns a copy of the current class instance with all elements in</span>
 <span class="sd">        :py:attr:`Density.data` set to zero. :py:attr:`Density.origin` and</span>
 <span class="sd">        :py:attr:`Density.sampling_rate` will be copied, while</span>
-<span class="sd">        :py:attr:`Density.metadata` will be initialized to an empty dictionary.</span>
+<span class="sd">        :py:attr:`Density.metadata` will be initialized to contain min, max,</span>
+<span class="sd">        mean and standard deviation of :py:attr:`Density.data`.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -1302,6 +1310,7 @@ document.write(`
             <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
             <span class="n">origin</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">),</span>
             <span class="n">sampling_rate</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="Density.copy">
@@ -2807,7 +2816,7 @@ document.write(`
 
   <p class="copyright">
     
-      © Copyright 2023 European Molecular Biology Laboratory.
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
       <br/>
     
   </p>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.matching_exhaustive &#8212; pytme 0.1.6 documentation</title>
+    <title>tme.matching_exhaustive &#8212; pytme 0.1.7 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+    <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.6 documentation</p>
+    <p class="title logo__title">pytme 0.1.7 documentation</p>
   
 </a></div>
     
@@ -1163,6 +1163,7 @@ document.write(`
     <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">callback_class_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fourier_shift&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
     <span class="n">fourier_shift_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">fourier_shift</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span>
 
+    <span class="n">template_sum</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
         <span class="n">rotation</span> <span class="o">=</span> <span class="n">rotations</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
         <span class="n">backend</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -1173,6 +1174,9 @@ document.write(`
             <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="n">interpolation_order</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="n">rotation_norm</span> <span class="o">=</span> <span class="n">template_sum</span> <span class="o">/</span> <span class="n">arr</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">rotation_norm</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">arr</span><span class="p">)</span>
+
         <span class="n">rfftn</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">ft_temp</span><span class="p">)</span>
         <span class="n">template_filter_func</span><span class="p">(</span><span class="n">ft_temp</span><span class="p">,</span> <span class="n">template_filter</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">ft_temp</span><span class="p">)</span>
 
@@ -1986,7 +1990,7 @@ document.write(`
 
   <p class="copyright">
     
-      © Copyright 2023 European Molecular Biology Laboratory.
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
       <br/>
     
   </p>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.preprocessor &#8212; pytme 0.1.6 documentation</title>
+    <title>tme.preprocessor &#8212; pytme 0.1.7 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+    <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.6 documentation</p>
+    <p class="title logo__title">pytme 0.1.7 documentation</p>
   
 </a></div>
     
@@ -1489,8 +1489,8 @@ document.write(`
 <span class="sd">        be equivalent to the following</span>
 
 <span class="sd">        &gt;&gt;&gt; wedge = Preprocessor().continuous_wedge_mask(</span>
-<span class="sd">        &gt;&gt;&gt;    shape = (50,50,50),</span>
-<span class="sd">        &gt;&gt;&gt;    start_tilt = 50,</span>
+<span class="sd">        &gt;&gt;&gt;    shape=(50,50,50),</span>
+<span class="sd">        &gt;&gt;&gt;    start_tilt=50,</span>
 <span class="sd">        &gt;&gt;&gt;    stop_tilt=55,</span>
 <span class="sd">        &gt;&gt;&gt;    tilt_axis=1,</span>
 <span class="sd">        &gt;&gt;&gt;    omit_negative_frequencies=False,</span>
@@ -1508,6 +1508,7 @@ document.write(`
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
+<span class="sd">        :py:meth:`Preprocessor.step_wedge_mask`</span>
 <span class="sd">        :py:meth:`Preprocessor.continuous_wedge_mask`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">opening_axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">opening_axes</span><span class="p">)</span>
@@ -1550,6 +1551,115 @@ document.write(`
             <span class="n">template</span><span class="o">=</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">fourier</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
         <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">wedge_volume</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">wedge_volume</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">omit_negative_frequencies</span><span class="p">:</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">wedge_volume</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">wedge_volume</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="n">stop</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">wedge_volume</span></div>
+
+
+<div class="viewcode-block" id="Preprocessor.step_wedge_mask">
+<a class="viewcode-back" href="../../reference/api/tme.preprocessor.Preprocessor.step_wedge_mask.html#tme.preprocessor.Preprocessor.step_wedge_mask">[docs]</a>
+    <span class="k">def</span> <span class="nf">step_wedge_mask</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">start_tilt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">stop_tilt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">tilt_step</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">omit_negative_frequencies</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a wedge mask with the same shape as template by rotating a</span>
+<span class="sd">        plane according to tilt angles. The DC component of the filter is at the origin.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        start_tilt : float</span>
+<span class="sd">            Starting tilt angle in degrees, e.g. a stage tilt of 70 degrees</span>
+<span class="sd">            would yield a start_tilt value of 70.</span>
+<span class="sd">        stop_tilt : float</span>
+<span class="sd">            Ending tilt angle in degrees, , e.g. a stage tilt of -70 degrees</span>
+<span class="sd">            would yield a stop_tilt value of 70.</span>
+<span class="sd">        tilt_step : float</span>
+<span class="sd">            Angle between the different tilt planes.</span>
+<span class="sd">        shape : Tuple of ints</span>
+<span class="sd">            Shape of the output wedge array.</span>
+<span class="sd">        tilt_axis : int, optional</span>
+<span class="sd">            Axis that the plane is tilted over.</span>
+<span class="sd">            - 0 for Z-axis</span>
+<span class="sd">            - 1 for Y-axis</span>
+<span class="sd">            - 2 for X-axis</span>
+<span class="sd">        opening_axis : int, optional</span>
+<span class="sd">            Axis running through the void defined by the wedge.</span>
+<span class="sd">            - 0 for Z-axis</span>
+<span class="sd">            - 1 for Y-axis</span>
+<span class="sd">            - 2 for X-axis</span>
+<span class="sd">        sigma : float, optional</span>
+<span class="sd">            Standard deviation for Gaussian kernel used for smoothing the wedge.</span>
+<span class="sd">        omit_negative_frequencies : bool, optional</span>
+<span class="sd">            Whether the wedge mask should omit negative frequencies, i.e. be</span>
+<span class="sd">            applicable to symmetric Fourier transforms (see :obj:`numpy.fft.fftn`)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            A numpy array containing the wedge mask.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This function is equivalent to :py:meth:`Preprocessor.wedge_mask`, but much faster</span>
+<span class="sd">        for large shapes because it only considers a single tilt angle rather than the rotation</span>
+<span class="sd">        of an N-1 dimensional hyperplane in N dimensions.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :py:meth:`Preprocessor.wedge_mask`</span>
+<span class="sd">        :py:meth:`Preprocessor.continuous_wedge_mask`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tilt_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">start_tilt</span><span class="p">,</span> <span class="n">stop_tilt</span> <span class="o">+</span> <span class="n">tilt_step</span><span class="p">,</span> <span class="n">tilt_step</span><span class="p">)</span>
+        <span class="n">plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">shape</span><span class="p">[</span><span class="n">opening_axis</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">subset</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">slice</span><span class="p">(</span><span class="n">x</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">plane</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">plane</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">plane_rotated</span><span class="p">,</span> <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">plane</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tilt_angles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">plane_rotated</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">euler_to_rotationmatrix</span><span class="p">((</span><span class="n">tilt_angles</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))]</span>
+
+            <span class="n">Density</span><span class="o">.</span><span class="n">rotate_array</span><span class="p">(</span>
+                <span class="n">arr</span><span class="o">=</span><span class="n">plane</span><span class="p">,</span>
+                <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="p">,</span>
+                <span class="n">out</span><span class="o">=</span><span class="n">plane_rotated</span><span class="p">,</span>
+                <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">wedge_volume</span> <span class="o">+=</span> <span class="n">plane_rotated</span>
+
+        <span class="n">wedge_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span>
+            <span class="n">template</span><span class="o">=</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">fourier</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">wedge_volume</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">opening_axis</span> <span class="o">&gt;</span> <span class="n">tilt_axis</span><span class="p">:</span>
+            <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">reshape_dimensions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">x</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">tilt_axis</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">wedge_volume</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">reshape_dimensions</span><span class="p">)</span>
+        <span class="n">tile_dimensions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">reshape_dimensions</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="n">tile_dimensions</span><span class="p">)</span>
+
         <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">wedge_volume</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">omit_negative_frequencies</span><span class="p">:</span>
@@ -1629,6 +1739,7 @@ document.write(`
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        :py:meth:`Preprocessor.wedge_mask`</span>
+<span class="sd">        :py:meth:`Preprocessor.step_wedge_mask`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">shape_center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
@@ -1793,7 +1904,7 @@ document.write(`
     <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
-        <span class="n">max_bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">max_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">n_bins</span> <span class="o">=</span> <span class="n">max_bins</span> <span class="k">if</span> <span class="n">n_bins</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">n_bins</span>
         <span class="n">n_bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">max_bins</span><span class="p">))</span>
 
@@ -1816,7 +1927,7 @@ document.write(`
         <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">fourier_transform</span><span class="p">,</span> <span class="n">radial_averages</span><span class="p">[</span><span class="n">bins</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">fourier_transform</span><span class="p">)</span>
 
         <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">fourier_transform</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">fft_shift_axes</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">fourier_transform</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">fft_shift_axes</span><span class="p">),</span> <span class="n">s</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span>
         <span class="p">)</span><span class="o">.</span><span class="n">real</span>
         <span class="k">return</span> <span class="n">ret</span><span class="p">,</span> <span class="n">bin_edges</span><span class="p">,</span> <span class="n">radial_averages</span>
 
@@ -1834,7 +1945,7 @@ document.write(`
         <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">frequency_grid</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bin_edges</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">fourier_transform</span><span class="p">,</span> <span class="n">radial_averages</span><span class="p">[</span><span class="n">bins</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">fourier_transform</span><span class="p">)</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">fourier_transform</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">fft_shift_axes</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">fourier_transform</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">fft_shift_axes</span><span class="p">),</span> <span class="n">s</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span>
         <span class="p">)</span><span class="o">.</span><span class="n">real</span>
 
         <span class="k">return</span> <span class="n">ret</span>
@@ -1881,7 +1992,7 @@ document.write(`
 
   <p class="copyright">
     
-      © Copyright 2023 European Molecular Biology Laboratory.
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
       <br/>
     
   </p>
