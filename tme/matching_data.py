@@ -4,7 +4,7 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-
+import warnings
 from typing import Tuple, List
 
 import numpy as np
@@ -81,7 +81,11 @@ class MatchingData:
         return arr
 
     def subset_array(
-        self, arr: NDArray, arr_slice: Tuple[slice], padding: NDArray
+        self,
+        arr: NDArray,
+        arr_slice: Tuple[slice],
+        padding: NDArray,
+        invert: bool = False,
     ) -> NDArray:
         """
         Extract a subset of the input array according to the given slice and
@@ -96,8 +100,11 @@ class MatchingData:
         padding : NDArray
             Padding values for each dimension. If the padding exceeds the array
             dimensions, the extra regions are filled with the mean of the array
-            values, otherwise, the
-            values in ``arr`` are used.
+            values, otherwise, the values in ``arr`` are used.
+        invert : bool, optional
+            Whether the returned array should be inverted and normalized to the interval
+            [0, 1]. If available, uses the metadata information of the Density object,
+            otherwise computes min and max on the extracted subset.
 
         Returns
         -------
@@ -130,9 +137,14 @@ class MatchingData:
         subset_slice = tuple(slice(*prod) for prod in zip(subset_start, subset_stop))
         subset_mesh = self._slice_to_mesh(subset_slice, ret_shape)
 
+        arr_min, arr_max, arr_mean = None, None, None
         if type(arr) == Density:
             if type(arr.data) == np.memmap:
-                arr = Density.from_file(arr.data.filename, subset=arr_slice).data
+                dens = Density.from_file(arr.data.filename, subset=arr_slice)
+                arr, arr_mean = dens.data, dens.metadata.get("mean", None)
+                arr_min, arr_max = dens.metadata.get("min", None), dens.metadata.get(
+                    "max", None
+                )
             else:
                 arr = np.asarray(arr.data[*arr_mesh])
         else:
@@ -141,10 +153,34 @@ class MatchingData:
                     arr.filename, mode="r", shape=arr.shape, dtype=arr.dtype
                 )
             arr = np.asarray(arr[*arr_mesh])
+
+        def _warn_on_mismatch(
+            expectation: float, computation: float, name: str
+        ) -> float:
+            expectation, computation = float(expectation), float(computation)
+            if expectation is None:
+                expectation = computation
+
+            if abs(computation) > abs(expectation):
+                warnings.warn(
+                    f"Computed {name} value is more extrem than value specified in file"
+                    f" (|{computation}| > |{expectation}|). This may lead to issues"
+                    " with padding and contrast inversion."
+                )
+
+            return expectation
+
+        arr_mean = arr.mean() if arr_mean is None else arr_mean
         ret = np.full(
-            shape=np.add(slice_shape, padding), fill_value=arr.mean(), dtype=arr.dtype
+            shape=np.add(slice_shape, padding), fill_value=arr_mean, dtype=arr.dtype
         )
         ret[*subset_mesh] = arr
+
+        if invert:
+            arr_min = _warn_on_mismatch(arr_min, arr.min(), "min")
+            arr_max = _warn_on_mismatch(arr_max, arr.max(), "max")
+
+            ret = (-ret - arr_min) / (arr_max - arr_min)
 
         return ret
 
@@ -198,12 +234,11 @@ class MatchingData:
         )
 
         target_subset = self.subset_array(
-            arr=self._target, arr_slice=target_slice, padding=target_pad
+            arr=self._target,
+            arr_slice=target_slice,
+            padding=target_pad,
+            invert=self._invert_target,
         )
-        if self._invert_target:
-            target_subset *= -1
-            target_min, target_max = target_subset.min(), target_subset.max()
-            target_subset = (target_subset - target_min) / (target_max - target_min)
 
         template_subset = self.subset_array(
             arr=self._template,
@@ -488,14 +523,14 @@ class MatchingData:
     @property
     def target(self):
         """Returns the target NDArray."""
-        if type(self._target) == Density:
+        if isinstance(self._target, Density):
             return self._target.data
         return self._target
 
     @property
     def template(self):
         """Returns the reversed template NDArray."""
-        if type(self._template) == Density:
+        if isinstance(self._template, Density):
             return backend.reverse(self._template.data)
         return backend.reverse(self._template)
 
@@ -524,7 +559,7 @@ class MatchingData:
     @property
     def target_mask(self):
         """Returns the target mask NDArray."""
-        if type(self._target_mask) == Density:
+        if isinstance(self._target_mask, Density):
             return self._target_mask.data
         return self._target_mask
 
@@ -553,7 +588,7 @@ class MatchingData:
         template : NDArray
             Array to set as the template.
         """
-        if type(self._template_mask) == Density:
+        if isinstance(self._template_mask, Density):
             return backend.reverse(self._template_mask.data)
         return backend.reverse(self._template_mask)
 

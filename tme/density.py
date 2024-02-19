@@ -199,16 +199,16 @@ class Density:
             func = cls._load_mrc
             if filename.endswith(".em") or filename.endswith(".em.gz"):
                 func = cls._load_em
-            data, origin, sampling_rate = func(
+            data, origin, sampling_rate, meta = func(
                 filename=filename, subset=subset, use_memmap=use_memmap
             )
         except ValueError:
-            data, origin, sampling_rate = cls._load_skio(filename=filename)
+            data, origin, sampling_rate, meta = cls._load_skio(filename=filename)
             if subset is not None:
                 cls._validate_slices(slices=subset, shape=data.shape)
                 data = data[subset].copy()
 
-        return cls(data=data, origin=origin, sampling_rate=sampling_rate)
+        return cls(data=data, origin=origin, sampling_rate=sampling_rate, metadata=meta)
 
     @classmethod
     def _load_mrc(
@@ -307,6 +307,13 @@ class Density:
 
             extended_header = mrc.header.nsymbt
 
+            metadata = {
+                "min": float(mrc.header.dmin),
+                "max": float(mrc.header.dmax),
+                "mean": float(mrc.header.dmean),
+                "std": float(mrc.header.rms),
+            }
+
         if is_gzipped(filename):
             if use_memmap:
                 warnings.warn(
@@ -329,7 +336,7 @@ class Density:
                 dtype=data_type,
                 header_size=1024 + extended_header,
             )
-            return data, origin, sampling_rate
+            return data, origin, sampling_rate, metadata
 
         if not use_memmap:
             with mrcfile.open(filename, header_only=False) as mrc:
@@ -343,7 +350,7 @@ class Density:
             data = np.transpose(data, crs_index)
             start = np.take(start, crs_index)
 
-        return data, origin, sampling_rate
+        return data, origin, sampling_rate, metadata
 
     @classmethod
     def _load_em(
@@ -448,7 +455,7 @@ class Density:
             pixel_size = 1
         sampling_rate = np.repeat(pixel_size, data.ndim).astype(data.dtype)
 
-        return data, origin, sampling_rate
+        return data, origin, sampling_rate, {}
 
     @staticmethod
     def _validate_slices(slices: Tuple[slice], shape: Tuple[int]):
@@ -592,7 +599,7 @@ class Density:
         warnings.warn(
             "origin and sampling_rate are not yet extracted from non CCP4/MRC files."
         )
-        return data, np.zeros(data.ndim), np.ones(data.ndim)
+        return data, np.zeros(data.ndim), np.ones(data.ndim), {}
 
     @classmethod
     def from_structure(
@@ -909,7 +916,8 @@ class Density:
         Returns a copy of the current class instance with all elements in
         :py:attr:`Density.data` set to zero. :py:attr:`Density.origin` and
         :py:attr:`Density.sampling_rate` will be copied, while
-        :py:attr:`Density.metadata` will be initialized to an empty dictionary.
+        :py:attr:`Density.metadata` will be initialized to contain min, max,
+        mean and standard deviation of :py:attr:`Density.data`.
 
         Examples
         --------
@@ -924,6 +932,7 @@ class Density:
             data=np.zeros_like(self.data),
             origin=deepcopy(self.origin),
             sampling_rate=deepcopy(self.sampling_rate),
+            metadata={"min": 0, "max": 0, "mean": 0, "std": 0},
         )
 
     def copy(self) -> "Density":
