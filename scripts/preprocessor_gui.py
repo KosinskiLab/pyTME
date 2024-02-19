@@ -29,17 +29,17 @@ preprocessor = Preprocessor()
 SLIDER_MIN, SLIDER_MAX = 0, 25
 
 
-def gaussian_filter(template, sigma: float, **kwargs: dict):
+def gaussian_filter(template: NDArray, sigma: float, **kwargs: dict) -> NDArray:
     return preprocessor.gaussian_filter(template=template, sigma=sigma, **kwargs)
 
 
 def bandpass_filter(
-    template,
+    template: NDArray,
     minimum_frequency: float,
     maximum_frequency: float,
     gaussian_sigma: float,
     **kwargs: dict,
-):
+) -> NDArray:
     return preprocessor.bandpass_filter(
         template=template,
         minimum_frequency=minimum_frequency,
@@ -51,8 +51,8 @@ def bandpass_filter(
 
 
 def difference_of_gaussian_filter(
-    template, sigmas: Tuple[float, float], **kwargs: dict
-):
+    template: NDArray, sigmas: Tuple[float, float], **kwargs: dict
+) -> NDArray:
     low_sigma, high_sigma = sigmas
     return preprocessor.difference_of_gaussian_filter(
         template=template, low_sigma=low_sigma, high_sigma=high_sigma, **kwargs
@@ -60,7 +60,7 @@ def difference_of_gaussian_filter(
 
 
 def edge_gaussian_filter(
-    template,
+    template: NDArray,
     sigma: float,
     edge_algorithm: Annotated[
         str,
@@ -68,7 +68,7 @@ def edge_gaussian_filter(
     ],
     reverse: bool = False,
     **kwargs: dict,
-):
+) -> NDArray:
     return preprocessor.edge_gaussian_filter(
         template=template,
         sigma=sigma,
@@ -78,13 +78,13 @@ def edge_gaussian_filter(
 
 
 def local_gaussian_filter(
-    template,
+    template: NDArray,
     lbd: float,
     sigma_range: Tuple[float, float],
     gaussian_sigma: float,
     reverse: bool = False,
     **kwargs: dict,
-):
+) -> NDArray:
     return preprocessor.local_gaussian_filter(
         template=template,
         lbd=lbd,
@@ -94,22 +94,30 @@ def local_gaussian_filter(
 
 
 def ntree(
-    template,
+    template: NDArray,
     sigma_range: Tuple[float, float],
     **kwargs: dict,
-):
+) -> NDArray:
     return preprocessor.ntree_filter(template=template, sigma_range=sigma_range)
 
 
 def mean(
-    template,
+    template: NDArray,
     width: int,
     **kwargs: dict,
-):
+) -> NDArray:
     return preprocessor.mean_filter(template=template, width=width)
 
 
-def resolution_sphere(template: NDArray, cutoff_angstrom: float, highpass : bool = False, sampling_rate = None):
+def resolution_sphere(
+    template: NDArray,
+    cutoff_angstrom: float,
+    highpass: bool = False,
+    sampling_rate=None,
+) -> NDArray:
+    if cutoff_angstrom == 0:
+        return template
+
     cutoff_frequency = np.max(2 * sampling_rate / cutoff_angstrom)
 
     min_freq, max_freq = 0, cutoff_frequency
@@ -123,33 +131,38 @@ def resolution_sphere(template: NDArray, cutoff_angstrom: float, highpass : bool
         omit_negative_frequencies=False,
     )
 
-    mask = np.fft.ifftshift(mask)
     template_ft = np.fft.fftn(template)
-    np.multiply(template_ft, mask, out = template_ft)
-
+    np.multiply(template_ft, mask, out=template_ft)
     return np.fft.ifftn(template_ft).real
 
 
-def resolution_gaussian(template : NDArray, cutoff_angstrom : float, highpass : bool = False,
-    sampling_rate = None):
+def resolution_gaussian(
+    template: NDArray,
+    cutoff_angstrom: float,
+    highpass: bool = False,
+    sampling_rate=None,
+) -> NDArray:
+    if cutoff_angstrom == 0:
+        return template
+
     grid = preprocessor.fftfreqn(
-        shape = template.shape, sampling_rate = sampling_rate / sampling_rate.max()
+        shape=template.shape, sampling_rate=sampling_rate / sampling_rate.max()
     )
 
     sigma_fourier = np.divide(
-        np.max(2 * sampling_rate / cutoff_angstrom),
-        np.sqrt(2 * np.log(2))
+        np.max(2 * sampling_rate / cutoff_angstrom), np.sqrt(2 * np.log(2))
     )
 
-    mask = np.exp(-grid ** 2 / (2 * sigma_fourier ** 2))
+    mask = np.exp(-(grid**2) / (2 * sigma_fourier**2))
     if highpass:
         mask = 1 - mask
 
     mask = np.fft.ifftshift(mask)
-    template_ft = np.fft.fftn(template)
-    np.multiply(template_ft, mask, out = template_ft)
 
+    template_ft = np.fft.fftn(template)
+    np.multiply(template_ft, mask, out=template_ft)
     return np.fft.ifftn(template_ft).real
+
 
 def wedge(
     template: NDArray,
@@ -162,7 +175,7 @@ def wedge(
     omit_negative_frequencies: bool = True,
     extrude_plane: bool = True,
     infinite_plane: bool = True,
-):
+) -> NDArray:
     template_ft = np.fft.rfftn(template)
 
     if tilt_step <= 0:
@@ -197,7 +210,7 @@ def wedge(
     return template
 
 
-def compute_power_spectrum(template: NDArray):
+def compute_power_spectrum(template: NDArray) -> NDArray:
     return np.fft.fftshift(np.log(np.abs(np.fft.fftn(template))))
 
 
@@ -262,8 +275,8 @@ WRAPPED_FUNCTIONS = {
     "mean_filter": mean,
     "wedge_filter": wedge,
     "power_spectrum": compute_power_spectrum,
-    "resolution_gaussian" : resolution_gaussian,
-    "resolution_sphere" : resolution_sphere,
+    "resolution_gaussian": resolution_gaussian,
+    "resolution_sphere": resolution_sphere,
 }
 
 EXCLUDED_FUNCTIONS = [
@@ -405,7 +418,7 @@ class FilterWidget(widgets.Container):
 
 def sphere_mask(
     template: NDArray, center_x: float, center_y: float, center_z: float, radius: float
-):
+) -> NDArray:
     return create_mask(
         mask_type="ellipse",
         shape=template.shape,
@@ -422,7 +435,7 @@ def ellipsod_mask(
     radius_x: float,
     radius_y: float,
     radius_z: float,
-):
+) -> NDArray:
     return create_mask(
         mask_type="ellipse",
         shape=template.shape,
@@ -439,7 +452,7 @@ def box_mask(
     height_x: int,
     height_y: int,
     height_z: int,
-):
+) -> NDArray:
     return create_mask(
         mask_type="box",
         shape=template.shape,
@@ -457,7 +470,7 @@ def tube_mask(
     inner_radius: float,
     outer_radius: float,
     height: int,
-):
+) -> NDArray:
     return create_mask(
         mask_type="tube",
         shape=template.shape,
@@ -480,7 +493,7 @@ def wedge_mask(
     omit_negative_frequencies: bool = False,
     extrude_plane: bool = True,
     infinite_plane: bool = True,
-):
+) -> NDArray:
     if tilt_step <= 0:
         wedge_mask = preprocessor.continuous_wedge_mask(
             start_tilt=tilt_start,
@@ -496,25 +509,26 @@ def wedge_mask(
         wedge_mask = np.fft.fftshift(wedge_mask)
         return wedge_mask
 
-    tilt_angles = np.arange(-tilt_start, tilt_stop + tilt_step, tilt_step)
-    angles = np.zeros((template.ndim, tilt_angles.size))
-
-    angles[tilt_axis, :] = tilt_angles
-
-    wedge_mask = preprocessor.wedge_mask(
-        tilt_angles=angles,
+    wedge_mask = preprocessor.step_wedge_mask(
+        start_tilt=tilt_start,
+        stop_tilt=tilt_stop,
+        tilt_axis=tilt_axis,
+        tilt_step=tilt_step,
+        opening_axis=opening_axis,
         shape=template.shape,
         sigma=gaussian_sigma,
-        opening_axes=opening_axis,
         omit_negative_frequencies=omit_negative_frequencies,
+        extrude_plane=extrude_plane,
+        infinite_plane=infinite_plane,
     )
+
     wedge_mask = np.fft.fftshift(wedge_mask)
     return wedge_mask
 
 
 def threshold_mask(
     template: NDArray, standard_deviation: float = 5.0, invert: bool = False
-):
+) -> NDArray:
     template_mean = template.mean()
     template_deviation = standard_deviation * template.std()
     upper = template_mean + template_deviation
@@ -522,6 +536,15 @@ def threshold_mask(
     mask = np.logical_and(template > lower, template < upper)
     if invert:
         np.invert(mask, out=mask)
+
+    return mask
+
+
+def lowpass_mask(template: NDArray, sigma: float = 1.0):
+    template = template / template.max()
+    template = (template > np.exp(-2)) * 128.0
+    template = preprocessor.gaussian_filter(template=template, sigma=sigma)
+    mask = template > np.exp(-2)
 
     return mask
 
@@ -543,6 +566,7 @@ class MaskWidget(widgets.Container):
             "Box": box_mask,
             "Wedge": wedge_mask,
             "Threshold": threshold_mask,
+            "Lowpass": lowpass_mask,
         }
 
         self.method_dropdown = widgets.ComboBox(
@@ -606,6 +630,7 @@ class MaskWidget(widgets.Container):
             arr=active_layer.data,
             rotation_matrix=rotation_matrix,
             use_geometric_center=False,
+            order=1,
         )
         eps = np.finfo(rotated_data.dtype).eps
         rotated_data[rotated_data < eps] = 0
@@ -636,7 +661,7 @@ class MaskWidget(widgets.Container):
             dict(zip(["height_x", "height_y", "height_z"], coordinates_heights))
         )
 
-        defaults["radius"] = np.min(coordinate_radius)
+        defaults["radius"] = np.max(coordinate_radius)
         defaults["inner_radius"] = np.min(coordinate_radius)
         defaults["outer_radius"] = np.max(coordinate_radius)
         defaults["height"] = defaults["radius"]

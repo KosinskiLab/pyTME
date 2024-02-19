@@ -539,15 +539,14 @@ def main():
         opening_axis, tilt_axis = [int(x) for x in args.wedge_axes.split(",")]
 
         if args.tilt_step is not None:
-            tilt_angles = np.arange(
-                -tilt_start, tilt_stop + args.tilt_step, args.tilt_step
-            )
-            angles = np.zeros((template.data.ndim, tilt_angles.size))
-            angles[tilt_axis, :] = tilt_angles
-            template_filter["wedge_mask"] = {
-                "tilt_angles": angles,
+            template_filter["step_wedge_mask"] = {
+                "start_tilt": tilt_start,
+                "stop_tilt": tilt_stop,
+                "tilt_step": args.tilt_step,
                 "sigma": args.wedge_smooth,
                 "opening_axes": opening_axis,
+                "tilt_axis": tilt_axis,
+                "omit_negative_frequencies": True,
             }
         else:
             template_filter["continuous_wedge_mask"] = {
@@ -557,6 +556,7 @@ def main():
                 "opening_axis": opening_axis,
                 "infinite_plane": True,
                 "sigma": args.wedge_smooth,
+                "omit_negative_frequencies": True,
             }
 
     if template_mask is None:

@@ -1055,8 +1055,8 @@ class Preprocessor:
         be equivalent to the following
 
         >>> wedge = Preprocessor().continuous_wedge_mask(
-        >>>    shape = (50,50,50),
-        >>>    start_tilt = 50,
+        >>>    shape=(50,50,50),
+        >>>    start_tilt=50,
         >>>    stop_tilt=55,
         >>>    tilt_axis=1,
         >>>    omit_negative_frequencies=False,
@@ -1074,6 +1074,7 @@ class Preprocessor:
 
         See Also
         --------
+        :py:meth:`Preprocessor.step_wedge_mask`
         :py:meth:`Preprocessor.continuous_wedge_mask`
         """
         opening_axes = np.asarray(opening_axes)
@@ -1116,6 +1117,112 @@ class Preprocessor:
             template=wedge_volume, sigma=sigma, fourier=False
         )
         wedge_volume = np.where(wedge_volume > np.exp(-2), 1, 0)
+        wedge_volume = np.fft.ifftshift(wedge_volume)
+
+        if omit_negative_frequencies:
+            stop = 1 + (wedge_volume.shape[-1] // 2)
+            wedge_volume = wedge_volume[..., :stop]
+
+        return wedge_volume
+
+    def step_wedge_mask(
+        self,
+        start_tilt: float,
+        stop_tilt: float,
+        tilt_step: float,
+        shape: Tuple[int],
+        opening_axis: int = 0,
+        tilt_axis: int = 2,
+        sigma: float = 0,
+        omit_negative_frequencies: bool = True,
+    ) -> NDArray:
+        """
+        Create a wedge mask with the same shape as template by rotating a
+        plane according to tilt angles. The DC component of the filter is at the origin.
+
+        Parameters
+        ----------
+        start_tilt : float
+            Starting tilt angle in degrees, e.g. a stage tilt of 70 degrees
+            would yield a start_tilt value of 70.
+        stop_tilt : float
+            Ending tilt angle in degrees, , e.g. a stage tilt of -70 degrees
+            would yield a stop_tilt value of 70.
+        tilt_step : float
+            Angle between the different tilt planes.
+        shape : Tuple of ints
+            Shape of the output wedge array.
+        tilt_axis : int, optional
+            Axis that the plane is tilted over.
+            - 0 for Z-axis
+            - 1 for Y-axis
+            - 2 for X-axis
+        opening_axis : int, optional
+            Axis running through the void defined by the wedge.
+            - 0 for Z-axis
+            - 1 for Y-axis
+            - 2 for X-axis
+        sigma : float, optional
+            Standard deviation for Gaussian kernel used for smoothing the wedge.
+        omit_negative_frequencies : bool, optional
+            Whether the wedge mask should omit negative frequencies, i.e. be
+            applicable to symmetric Fourier transforms (see :obj:`numpy.fft.fftn`)
+
+        Returns
+        -------
+        NDArray
+            A numpy array containing the wedge mask.
+
+        Notes
+        -----
+        This function is equivalent to :py:meth:`Preprocessor.wedge_mask`, but much faster
+        for large shapes because it only considers a single tilt angle rather than the rotation
+        of an N-1 dimensional hyperplane in N dimensions.
+
+        See Also
+        --------
+        :py:meth:`Preprocessor.wedge_mask`
+        :py:meth:`Preprocessor.continuous_wedge_mask`
+        """
+        tilt_angles = np.arange(-start_tilt, stop_tilt + tilt_step, tilt_step)
+        plane = np.zeros((shape[opening_axis], shape[tilt_axis]), dtype=np.float32)
+        subset = tuple(
+            slice(None) if i != 0 else slice(x // 2, x // 2 + 1)
+            for i, x in enumerate(plane.shape)
+        )
+        plane[subset] = 1
+        plane_rotated, wedge_volume = np.zeros_like(plane), np.zeros_like(plane)
+        for index in range(tilt_angles.shape[0]):
+            plane_rotated.fill(0)
+
+            rotation_matrix = euler_to_rotationmatrix((tilt_angles[index], 0))
+            rotation_matrix = rotation_matrix[np.ix_((0, 1), (0, 1))]
+
+            Density.rotate_array(
+                arr=plane,
+                rotation_matrix=rotation_matrix,
+                out=plane_rotated,
+                use_geometric_center=True,
+                order=1,
+            )
+            wedge_volume += plane_rotated
+
+        wedge_volume = self.gaussian_filter(
+            template=wedge_volume, sigma=sigma, fourier=False
+        )
+        wedge_volume = np.where(wedge_volume > np.exp(-2), 1, 0)
+
+        if opening_axis > tilt_axis:
+            wedge_volume = np.moveaxis(wedge_volume, 1, 0)
+
+        reshape_dimensions = tuple(
+            x if i in (opening_axis, tilt_axis) else 1 for i, x in enumerate(shape)
+        )
+
+        wedge_volume = wedge_volume.reshape(reshape_dimensions)
+        tile_dimensions = np.divide(shape, reshape_dimensions).astype(int)
+        wedge_volume = np.tile(wedge_volume, tile_dimensions)
+
         wedge_volume = np.fft.ifftshift(wedge_volume)
 
         if omit_negative_frequencies:
@@ -1192,6 +1299,7 @@ class Preprocessor:
         See Also
         --------
         :py:meth:`Preprocessor.wedge_mask`
+        :py:meth:`Preprocessor.step_wedge_mask`
         """
         shape_center = np.divide(shape, 2).astype(int)
 
@@ -1348,7 +1456,7 @@ class LinearWhiteningFilter:
     def filter(
         self, template: NDArray, n_bins: int = None
     ) -> Tuple[NDArray, NDArray, NDArray]:
-        max_bins = int(np.linalg.norm(template.shape) // 2 + 1)
+        max_bins = np.max(template.shape) // 2 + 1
         n_bins = max_bins if n_bins is None else n_bins
         n_bins = int(min(n_bins, max_bins))
 
@@ -1371,7 +1479,7 @@ class LinearWhiteningFilter:
         np.multiply(fourier_transform, radial_averages[bins], out=fourier_transform)
 
         ret = np.fft.irfftn(
-            np.fft.ifftshift(fourier_transform, axes=fft_shift_axes)
+            np.fft.ifftshift(fourier_transform, axes=fft_shift_axes), s=template.shape
         ).real
         return ret, bin_edges, radial_averages
 
@@ -1389,7 +1497,7 @@ class LinearWhiteningFilter:
         bins = np.digitize(frequency_grid, bins=bin_edges, right=True)
         np.multiply(fourier_transform, radial_averages[bins], out=fourier_transform)
         ret = np.fft.irfftn(
-            np.fft.ifftshift(fourier_transform, axes=fft_shift_axes)
+            np.fft.ifftshift(fourier_transform, axes=fft_shift_axes), s=template.shape
         ).real
 
         return ret
