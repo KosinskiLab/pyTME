@@ -4,10 +4,14 @@ import sys
 sys.path.insert(0, os.path.abspath("../tme"))
 sys.path.insert(1, os.path.abspath("../scripts"))
 
+from tme import __version__
+
 project = "pytme"
-copyright = "2023 European Molecular Biology Laboratory"
-author = "Valentin Maurer"
-release = "0.1.6"
+copyright = "2023-2024, European Molecular Biology Laboratory"
+author = "Valentin J. Maurer"
+release = __version__
+
+language = "en"
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -48,7 +52,14 @@ html_context = {
     "github_version": "master",
     "doc_path": "docs",
 }
+# html_logo = "_static/index_api.svg"
+# html_favicon = "_static/index_api.svg"
 html_theme_options = {
+    # "logo": {
+    # "text": "pytme",
+    # "image_light": "_static/index_api.svg",
+    # "image_dark": "_static/index_api.svg",
+    # },
     "header_links_before_dropdown": 4,
     "icon_links": [
         {

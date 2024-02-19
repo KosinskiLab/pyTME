@@ -6,7 +6,7 @@ A software for template matching on electron microscopy data.
 
 ### Installation
 
-There are three ways to get PyTME up and running:
+There are three ways to get pyTME up and running:
 
 1. **Install from Source:**
 ```bash
@@ -19,7 +19,7 @@ pip install pytme
 ```
 
 3. **Docker Container:**
-Build and use the PyTME container from Docker. This assumes a linux/amd64 platform.
+Build and use the pyTME container from Docker. This assumes a linux/amd64 platform.
 ```bash
 docker build \
 	-t pytme \
@@ -33,12 +33,14 @@ docker build \
 
 ### Publication
 
-The pyTME publication is available on [bioRxiv](https://www.biorxiv.org/content/10.1101/2023.10.23.563472v1).
+The pyTME publication is available on [SoftwareX](https://www.sciencedirect.com/science/article/pii/S2352711024000074).
 
 ```
-@article{Maurer2023.10.23.563472,
-	author = {Valentin J. Maurer and Marc Siggel and Jan Kosinski},
-	journal = {bioRxiv},
+@article{Maurer:2024aa,
+	author = {Maurer, Valentin J. and Siggel, Marc and Kosinski, Jan},
+	journal = {SoftwareX},
+	pages = {101636},
 	title = {PyTME (Python Template Matching Engine): A fast, flexible, and multi-purpose template matching library for cryogenic electron microscopy data},
-	year = {2023}}
+	volume = {25},
+	year = {2024}}
 ```
