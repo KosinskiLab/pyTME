@@ -900,7 +900,7 @@ document.write(`
 </dd>
 <dt><strong>symmetry_axis</strong><span class="classifier">int</span></dt><dd><p>The axis of symmetry for the tube.</p>
 </dd>
-<dt><strong>base_center</strong><span class="classifier">tuple</span></dt><dd><p>Center of the base circle of the tube.</p>
+<dt><strong>base_center</strong><span class="classifier">tuple</span></dt><dd><p>Center of the tube.</p>
 </dd>
 <dt><strong>inner_radius</strong><span class="classifier">float</span></dt><dd><p>Inner radius of the tube.</p>
 </dd>
@@ -918,8 +918,9 @@ document.write(`
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt>ValueError</dt><dd><p>If the inner radius is larger than the outer radius. Or height is larger
-than the symmetry axis shape.</p>
+<dt>ValueError</dt><dd><p>If the inner radius is larger than the outer radius, height is larger
+than the symmetry axis shape, or if base_center and shape do not have the
+same length.</p>
 </dd>
 </dl>
 </dd>

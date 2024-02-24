@@ -891,7 +891,7 @@ document.write(`
 <h1>scramble_phases<a class="headerlink" href="#scramble-phases" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="tme.matching_utils.scramble_phases">
-<span class="sig-name descname"><span class="pre">scramble_phases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_proportion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/matching_utils.html#scramble_phases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.matching_utils.scramble_phases" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">scramble_phases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_proportion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_power</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/matching_utils.html#scramble_phases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.matching_utils.scramble_phases" title="Link to this definition">#</a></dt>
 <dd><p>Applies random phase scrambling to a given array.</p>
 <p>This function takes an input array, applies a Fourier transform, then scrambles the
 phase with a given proportion of noise, and finally applies an
@@ -905,6 +905,8 @@ is controlled by a random seed.</p>
 <dt><strong>noise_proportion</strong><span class="classifier">float, optional</span></dt><dd><p>The proportion of noise in the phase scrambling, by default 0.5.</p>
 </dd>
 <dt><strong>seed</strong><span class="classifier">int, optional</span></dt><dd><p>The seed for the random phase scrambling, by default 42.</p>
+</dd>
+<dt><strong>normalize_power</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether the returned template should have the same sum of squares as arr.</p>
 </dd>
 </dl>
 </dd>

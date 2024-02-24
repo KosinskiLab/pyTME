@@ -962,7 +962,9 @@ document.write(`
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">scramble_phases</span><span class="p">:</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">scramble_phases</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">noise_proportion</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">scramble_phases</span><span class="p">(</span>
+            <span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">noise_proportion</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">normalize_power</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
 
     <span class="n">available_memory</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">get_available_memory</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">use_gpu</span><span class="p">:</span>
@@ -1040,7 +1042,7 @@ document.write(`
         <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="n">analyzer_args</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;score_threshold&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;score_threshold&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
         <span class="s2">&quot;number_of_peaks&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
         <span class="s2">&quot;convolution_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span>
         <span class="s2">&quot;use_memmap&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">use_memmap</span><span class="p">,</span>

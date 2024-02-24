@@ -1473,7 +1473,7 @@ document.write(`
 <span class="sd">    symmetry_axis : int</span>
 <span class="sd">        The axis of symmetry for the tube.</span>
 <span class="sd">    base_center : tuple</span>
-<span class="sd">        Center of the base circle of the tube.</span>
+<span class="sd">        Center of the tube.</span>
 <span class="sd">    inner_radius : float</span>
 <span class="sd">        Inner radius of the tube.</span>
 <span class="sd">    outer_radius : float</span>
@@ -1489,8 +1489,9 @@ document.write(`
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If the inner radius is larger than the outer radius. Or height is larger</span>
-<span class="sd">        than the symmetry axis shape.</span>
+<span class="sd">        If the inner radius is larger than the outer radius, height is larger</span>
+<span class="sd">        than the symmetry axis shape, or if base_center and shape do not have the</span>
+<span class="sd">        same length.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">inner_radius</span> <span class="o">&gt;</span> <span class="n">outer_radius</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;inner_radius should be smaller than outer_radius.&quot;</span><span class="p">)</span>
@@ -1501,8 +1502,11 @@ document.write(`
     <span class="k">if</span> <span class="n">symmetry_axis</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;symmetry_axis can be not larger than </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_center</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;shape and base_center need to have the same length.&quot;</span><span class="p">)</span>
+
     <span class="n">circle_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">b</span> <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="k">if</span> <span class="n">ix</span> <span class="o">!=</span> <span class="n">symmetry_axis</span><span class="p">)</span>
-    <span class="n">base_center</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">b</span> <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">base_center</span><span class="p">)</span> <span class="k">if</span> <span class="n">ix</span> <span class="o">!=</span> <span class="n">symmetry_axis</span><span class="p">)</span>
+    <span class="n">circle_center</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">b</span> <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">base_center</span><span class="p">)</span> <span class="k">if</span> <span class="n">ix</span> <span class="o">!=</span> <span class="n">symmetry_axis</span><span class="p">)</span>
 
     <span class="n">inner_circle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">circle_shape</span><span class="p">)</span>
     <span class="n">outer_circle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">inner_circle</span><span class="p">)</span>
@@ -1511,28 +1515,30 @@ document.write(`
             <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
             <span class="n">shape</span><span class="o">=</span><span class="n">circle_shape</span><span class="p">,</span>
             <span class="n">radius</span><span class="o">=</span><span class="n">inner_radius</span><span class="p">,</span>
-            <span class="n">center</span><span class="o">=</span><span class="n">base_center</span><span class="p">,</span>
+            <span class="n">center</span><span class="o">=</span><span class="n">circle_center</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">outer_radius</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">outer_circle</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
             <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
             <span class="n">shape</span><span class="o">=</span><span class="n">circle_shape</span><span class="p">,</span>
             <span class="n">radius</span><span class="o">=</span><span class="n">outer_radius</span><span class="p">,</span>
-            <span class="n">center</span><span class="o">=</span><span class="n">base_center</span><span class="p">,</span>
+            <span class="n">center</span><span class="o">=</span><span class="n">circle_center</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="n">circle</span> <span class="o">=</span> <span class="n">outer_circle</span> <span class="o">-</span> <span class="n">inner_circle</span>
     <span class="n">circle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">circle</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">symmetry_axis</span><span class="p">)</span>
 
-    <span class="n">center</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
-    <span class="n">start_idx</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">height</span> <span class="o">//</span> <span class="mi">2</span>
-    <span class="n">stop_idx</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">height</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">height</span> <span class="o">%</span> <span class="mi">2</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">base_center</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">]</span>
+    <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">center</span> <span class="o">-</span> <span class="n">height</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">stop_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">center</span> <span class="o">+</span> <span class="n">height</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">height</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">start_idx</span><span class="p">,</span> <span class="n">stop_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">start_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">stop_idx</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">])</span>
 
     <span class="n">slice_indices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
         <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">symmetry_axis</span> <span class="k">else</span> <span class="nb">slice</span><span class="p">(</span><span class="n">start_idx</span><span class="p">,</span> <span class="n">stop_idx</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
     <span class="p">)</span>
     <span class="n">tube</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-    <span class="n">tube</span><span class="p">[</span><span class="n">slice_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">circle</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">symmetry_axis</span><span class="p">)</span>
+    <span class="n">tube</span><span class="p">[</span><span class="n">slice_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">circle</span>
 
     <span class="k">return</span> <span class="n">tube</span></div>
 
@@ -1541,7 +1547,10 @@ document.write(`
 <div class="viewcode-block" id="scramble_phases">
 <a class="viewcode-back" href="../../reference/api/tme.matching_utils.scramble_phases.html#tme.matching_utils.scramble_phases">[docs]</a>
 <span class="k">def</span> <span class="nf">scramble_phases</span><span class="p">(</span>
-    <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">noise_proportion</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span>
+    <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">noise_proportion</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
+    <span class="n">normalize_power</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Applies random phase scrambling to a given array.</span>
@@ -1559,6 +1568,8 @@ document.write(`
 <span class="sd">        The proportion of noise in the phase scrambling, by default 0.5.</span>
 <span class="sd">    seed : int, optional</span>
 <span class="sd">        The seed for the random phase scrambling, by default 42.</span>
+<span class="sd">    normalize_power : bool, optional</span>
+<span class="sd">        Whether the returned template should have the same sum of squares as arr.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1582,6 +1593,17 @@ document.write(`
     <span class="n">ph_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">ph</span><span class="p">)</span>
     <span class="n">ph_new</span> <span class="o">=</span> <span class="n">ph</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">noise_proportion</span><span class="p">)</span> <span class="o">+</span> <span class="n">ph_noise</span> <span class="o">*</span> <span class="n">noise_proportion</span>
     <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftn</span><span class="p">(</span><span class="n">amp</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">ph_new</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">normalize_power</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">ret</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span>
+        <span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">arr</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span><span class="p">)</span>
+
+        <span class="n">scaling</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">scaling</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">ret</span></div>
 
 
