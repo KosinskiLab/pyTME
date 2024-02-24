@@ -1056,7 +1056,7 @@ def tube_mask(
     symmetry_axis : int
         The axis of symmetry for the tube.
     base_center : tuple
-        Center of the base circle of the tube.
+        Center of the tube.
     inner_radius : float
         Inner radius of the tube.
     outer_radius : float
@@ -1072,8 +1072,9 @@ def tube_mask(
     Raises
     ------
     ValueError
-        If the inner radius is larger than the outer radius. Or height is larger
-        than the symmetry axis shape.
+        If the inner radius is larger than the outer radius, height is larger
+        than the symmetry axis shape, or if base_center and shape do not have the
+        same length.
     """
     if inner_radius > outer_radius:
         raise ValueError("inner_radius should be smaller than outer_radius.")
@@ -1084,8 +1085,11 @@ def tube_mask(
     if symmetry_axis > len(shape):
         raise ValueError(f"symmetry_axis can be not larger than {len(shape)}.")
 
+    if len(base_center) != len(shape):
+        raise ValueError("shape and base_center need to have the same length.")
+
     circle_shape = tuple(b for ix, b in enumerate(shape) if ix != symmetry_axis)
-    base_center = tuple(b for ix, b in enumerate(base_center) if ix != symmetry_axis)
+    circle_center = tuple(b for ix, b in enumerate(base_center) if ix != symmetry_axis)
 
     inner_circle = np.zeros(circle_shape)
     outer_circle = np.zeros_like(inner_circle)
@@ -1094,34 +1098,39 @@ def tube_mask(
             mask_type="ellipse",
             shape=circle_shape,
             radius=inner_radius,
-            center=base_center,
+            center=circle_center,
         )
     if outer_radius > 0:
         outer_circle = create_mask(
             mask_type="ellipse",
             shape=circle_shape,
             radius=outer_radius,
-            center=base_center,
+            center=circle_center,
         )
     circle = outer_circle - inner_circle
     circle = np.expand_dims(circle, axis=symmetry_axis)
 
-    center = shape[symmetry_axis] // 2
-    start_idx = center - height // 2
-    stop_idx = center + height // 2 + height % 2
+    center = base_center[symmetry_axis]
+    start_idx = int(center - height // 2)
+    stop_idx = int(center + height // 2 + height % 2)
+
+    start_idx, stop_idx = max(start_idx, 0), min(stop_idx, shape[symmetry_axis])
 
     slice_indices = tuple(
         slice(None) if i != symmetry_axis else slice(start_idx, stop_idx)
         for i in range(len(shape))
     )
     tube = np.zeros(shape)
-    tube[slice_indices] = np.repeat(circle, height, axis=symmetry_axis)
+    tube[slice_indices] = circle
 
     return tube
 
 
 def scramble_phases(
-    arr: NDArray, noise_proportion: float = 0.5, seed: int = 42
+    arr: NDArray,
+    noise_proportion: float = 0.5,
+    seed: int = 42,
+    normalize_power: bool = True,
 ) -> NDArray:
     """
     Applies random phase scrambling to a given array.
@@ -1139,6 +1148,8 @@ def scramble_phases(
         The proportion of noise in the phase scrambling, by default 0.5.
     seed : int, optional
         The seed for the random phase scrambling, by default 42.
+    normalize_power : bool, optional
+        Whether the returned template should have the same sum of squares as arr.
 
     Returns
     -------
@@ -1162,6 +1173,17 @@ def scramble_phases(
     ph_noise = np.random.permutation(ph)
     ph_new = ph * (1 - noise_proportion) + ph_noise * noise_proportion
     ret = np.real(np.fft.ifftn(amp * np.exp(1j * ph_new)))
+
+    if normalize_power:
+        np.divide(
+            np.subtract(ret, ret.min()), np.subtract(ret.max(), ret.min()), out=ret
+        )
+        np.multiply(ret, np.subtract(arr.max(), arr.min()), out=ret)
+        np.add(ret, arr.min(), out=ret)
+
+        scaling = np.divide(np.abs(arr).sum(), np.abs(ret).sum())
+        np.multiply(ret, scaling, out=ret)
+
     return ret
 
 
