@@ -15,6 +15,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from scipy.spatial.transform import Rotation
+from numpy.typing import NDArray
 
 from tme import Density, Structure
 from tme.analyzer import (
@@ -28,6 +29,7 @@ from tme.matching_utils import (
     load_pickle,
     euler_to_rotationmatrix,
     euler_from_rotationmatrix,
+    centered_mask,
 )
 
 PEAK_CALLERS = {
@@ -74,6 +76,13 @@ def parse_args():
         default=0,
         help="Minimum distance from target boundaries. Ignored when --orientations "
         "is provided.",
+    )
+    parser.add_argument(
+        "--mask_edges",
+        action="store_true",
+        default=False,
+        help="Whether to mask edges of the input score array according to the template shape."
+        "Uses twice the value of --min_boundary_distance if boht are provided.",
     )
     parser.add_argument(
         "--wedge_mask",
@@ -403,11 +412,25 @@ class Orientations:
         return translation, rotation, score, detail
 
 
+def load_template(filepath: str, sampling_rate: NDArray) -> "Density":
+    try:
+        template = Density.from_file(filepath)
+        template, _ = template.centered(0)
+        center_of_mass = template.center_of_mass(template.data)
+    except ValueError:
+        template = Structure.from_file(filepath)
+        center_of_mass = template.center_of_mass()[::-1]
+        template = Density.from_structure(template, sampling_rate=sampling_rate)
+
+    return template, center_of_mass
+
+
 def main():
     args = parse_args()
     data = load_pickle(args.input_file)
 
     meta = data[-1]
+    target_origin, _, sampling_rate, cli_args = meta
 
     if args.orientations is not None:
         orientations = Orientations.from_file(
@@ -419,6 +442,19 @@ def main():
         # Output is MaxScoreOverRotations
         if data[0].ndim == data[2].ndim:
             scores, offset, rotation_array, rotation_mapping, meta = data
+            if args.mask_edges:
+                template, center_of_mass = load_template(
+                    cli_args.template, sampling_rate=sampling_rate
+                )
+                if not cli_args.no_centering:
+                    template, *_ = template.centered(0)
+                mask_size = template.shape
+                if args.min_boundary_distance > 0:
+                    mask_size = 2 * args.min_boundary_distance
+                scores = centered_mask(
+                    scores, np.subtract(scores.shape, mask_size) + 1
+                )
+
             peak_caller = PEAK_CALLERS[args.peak_caller](
                 number_of_peaks=args.number_of_peaks,
                 min_distance=args.min_distance,
@@ -458,19 +494,11 @@ def main():
         orientations.to_file(filename=f"{args.output_prefix}.tsv", file_format="text")
         exit(0)
 
-    target_origin, _, sampling_rate, cli_args = meta
-
-    template_is_density, index = True, 0
     _, template_extension = splitext(cli_args.template)
-    try:
-        template = Density.from_file(cli_args.template)
-        template, _ = template.centered(0)
-        center_of_mass = template.center_of_mass(template.data)
-    except ValueError:
-        template_is_density = False
-        template = Structure.from_file(cli_args.template)
-        center_of_mass = template.center_of_mass()[::-1]
-        template = Density.from_structure(template, sampling_rate=sampling_rate)
+    template, center_of_mass = load_template(
+        filepath=cli_args.template, sampling_rate=sampling_rate
+    )
+    template_is_density, index = isinstance(template, Density), 0
 
     if args.output_format == "relion":
         new_shape = np.add(template.shape, np.mod(template.shape, 2))

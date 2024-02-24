@@ -470,13 +470,12 @@ def flcSphericalMask_setup(
     n_observations = backend.sum(template_mask_pad > np.exp(-2))
     rfftn(template_mask_pad, ft_template_mask)
 
-    # Variance part denominator
+    # Denominator E(X^2) - E(X)^2
     rfftn(backend.square(target_pad), ft_target)
     backend.multiply(ft_target, ft_template_mask, out=ft_temp)
     irfftn(ft_temp, temp2)
     backend.divide(temp2, n_observations, out=temp2)
 
-    # Mean part denominator
     rfftn(target_pad, ft_target)
     backend.multiply(ft_target, ft_template_mask, out=ft_temp)
     irfftn(ft_temp, temp)
@@ -773,7 +772,7 @@ def corr_scoring(
     fourier_shift = callback_class_args.get("fourier_shift", backend.zeros(arr.ndim))
     fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
 
-    template_sum = template.sum()
+    template_sum = backend.sum(template)
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
         backend.fill(arr, 0)
@@ -784,7 +783,7 @@ def corr_scoring(
             use_geometric_center=False,
             order=interpolation_order,
         )
-        rotation_norm = template_sum / arr.sum()
+        rotation_norm = template_sum / backend.sum(arr)
         backend.multiply(arr, rotation_norm, out=arr)
 
         rfftn(arr, ft_temp)
@@ -909,6 +908,7 @@ def flc_scoring(
     fourier_shift = callback_class_args.get("fourier_shift", backend.zeros(arr.ndim))
     fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
 
+    template_sum = backend.sum(template)
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
         backend.fill(arr, 0)
@@ -922,6 +922,8 @@ def flc_scoring(
             use_geometric_center=False,
             order=interpolation_order,
         )
+        rotation_norm = template_sum / backend.sum(arr)
+        backend.multiply(arr, rotation_norm, out=arr)
         n_observations = backend.sum(temp)
 
         rfftn(temp, ft_temp)
