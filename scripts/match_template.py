@@ -593,7 +593,9 @@ def main():
     print("\n" + "-" * 80)
 
     if args.scramble_phases:
-        template.data = scramble_phases(template.data, noise_proportion=1.0)
+        template.data = scramble_phases(
+            template.data, noise_proportion=1.0, normalize_power=True
+        )
 
     available_memory = backend.get_available_memory()
     if args.use_gpu:
@@ -671,7 +673,7 @@ def main():
         exit(-1)
 
     analyzer_args = {
-        "score_threshold": 0.0,
+        "score_threshold": 0,
         "number_of_peaks": 1000,
         "convolution_mode": "valid",
         "use_memmap": args.use_memmap,

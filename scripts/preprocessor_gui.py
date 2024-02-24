@@ -664,7 +664,7 @@ class MaskWidget(widgets.Container):
         defaults["radius"] = np.max(coordinate_radius)
         defaults["inner_radius"] = np.min(coordinate_radius)
         defaults["outer_radius"] = np.max(coordinate_radius)
-        defaults["height"] = defaults["radius"]
+        defaults["height"] = np.max(coordinates_heights)
 
         for widget in self.action_widgets:
             if widget.name in defaults:
