@@ -1143,13 +1143,6 @@ document.write(`
         <span class="n">rotate_mask</span> <span class="o">=</span> <span class="n">arr_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mask_coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">return_type</span> <span class="o">=</span> <span class="p">(</span><span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">rotate_mask</span> <span class="o">*</span> <span class="p">(</span><span class="n">out_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
 
-        <span class="c1"># Otherwise array might be slightly shifted by centering</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
-            <span class="n">rotation_matrix</span><span class="p">,</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
-        <span class="p">):</span>
-            <span class="n">center_rotation</span> <span class="o">=</span> <span class="kc">False</span>
-
         <span class="n">coordinates_rotated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">mask_rotated</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">mask_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>

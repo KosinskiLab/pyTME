@@ -8,6 +8,7 @@ Quickstart
    preprocessing
    match_template
    postprocessing
+   integrations
    api/index
    contribution
    license
