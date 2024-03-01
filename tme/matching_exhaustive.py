@@ -359,7 +359,8 @@ def flc_setup(
     ft_target = backend.preallocate_array(fast_ft_shape, complex_dtype)
     ft_target2 = backend.preallocate_array(fast_ft_shape, complex_dtype)
     rfftn(target_pad, ft_target)
-    rfftn(backend.square(target_pad), ft_target2)
+    backend.square(target_pad, out=target_pad)
+    rfftn(target_pad, ft_target2)
 
     # Convert arrays used in subsequent fitting to SharedMemory objects
     ft_target = backend.arr_to_sharedarr(
@@ -369,12 +370,17 @@ def flc_setup(
         arr=ft_target2, shared_memory_handler=shared_memory_handler
     )
 
-    template_mask = template_mask > 0
-    template_mean = backend.mean(template[template_mask])
-    template_std = backend.std(template[template_mask])
-    template_mask = backend.astype(template_mask, real_dtype)
+    n_observations = backend.sum(template_mask)
+    masked_mean = backend.sum(backend.multiply(template, template_mask))
+    masked_mean = backend.divide(masked_mean, n_observations)
+    masked_std = backend.sum(backend.multiply(backend.square(template), template_mask))
+    masked_std = backend.subtract(
+        masked_std / n_observations, backend.square(masked_mean)
+    )
+    masked_std = backend.sqrt(backend.maximum(masked_std, 0))
 
-    backend.divide(template - template_mean, template_std, out=template)
+    backend.subtract(template, masked_mean, out=template)
+    backend.divide(template, masked_std, out=template)
     backend.multiply(template, template_mask, out=template)
 
     template_buffer = backend.arr_to_sharedarr(
@@ -501,7 +507,6 @@ def flcSphericalMask_setup(
     template = backend.divide(backend.subtract(template, template_mean), template_std)
     backend.multiply(template, template_mask, out=template)
 
-    # Convert arrays used in subsequent fitting to SharedMemory objects
     template_buffer = backend.arr_to_sharedarr(
         arr=template, shared_memory_handler=shared_memory_handler
     )
@@ -908,7 +913,7 @@ def flc_scoring(
     fourier_shift = callback_class_args.get("fourier_shift", backend.zeros(arr.ndim))
     fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
 
-    template_sum = backend.sum(template)
+    unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
         backend.fill(arr, 0)
@@ -922,9 +927,23 @@ def flc_scoring(
             use_geometric_center=False,
             order=interpolation_order,
         )
-        rotation_norm = template_sum / backend.sum(arr)
-        backend.multiply(arr, rotation_norm, out=arr)
+        # Given the amount of FFTs, might aswell normalize properly
         n_observations = backend.sum(temp)
+        masked_mean = backend.sum(
+            backend.multiply(arr[unpadded_slice], temp[unpadded_slice])
+        )
+        masked_mean = backend.divide(masked_mean, n_observations)
+        masked_std = backend.sum(
+            backend.multiply(backend.square(arr[unpadded_slice]), temp[unpadded_slice])
+        )
+        masked_std = backend.subtract(
+            masked_std / n_observations, backend.square(masked_mean)
+        )
+        masked_std = backend.sqrt(backend.maximum(masked_std, 0))
+
+        backend.subtract(arr, masked_mean, out=arr)
+        backend.divide(arr, masked_std, out=arr)
+        backend.multiply(arr, temp, out=arr)
 
         rfftn(temp, ft_temp)
 

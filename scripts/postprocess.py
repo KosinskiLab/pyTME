@@ -451,9 +451,7 @@ def main():
                 mask_size = template.shape
                 if args.min_boundary_distance > 0:
                     mask_size = 2 * args.min_boundary_distance
-                scores = centered_mask(
-                    scores, np.subtract(scores.shape, mask_size) + 1
-                )
+                scores = centered_mask(scores, np.subtract(scores.shape, mask_size) + 1)
 
             peak_caller = PEAK_CALLERS[args.peak_caller](
                 number_of_peaks=args.number_of_peaks,

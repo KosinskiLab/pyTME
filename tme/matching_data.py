@@ -116,7 +116,6 @@ class MatchingData:
 
         slice_start = np.array([x.start for x in arr_slice], dtype=int)
         slice_stop = np.array([x.stop for x in arr_slice], dtype=int)
-        slice_shape = np.subtract(slice_stop, slice_start)
 
         padding = np.add(padding, np.mod(padding, 2))
         left_pad = right_pad = np.divide(padding, 2).astype(int)
@@ -126,25 +125,18 @@ class MatchingData:
             np.subtract(arr.shape, slice_stop), right_pad
         ).astype(int)
 
-        ret_shape = np.add(slice_shape, padding)
         arr_start = np.subtract(slice_start, data_voxels_left)
         arr_stop = np.add(slice_stop, data_voxels_right)
         arr_slice = tuple(slice(*pos) for pos in zip(arr_start, arr_stop))
         arr_mesh = self._slice_to_mesh(arr_slice, arr.shape)
 
-        subset_start = np.subtract(left_pad, data_voxels_left)
-        subset_stop = np.add(subset_start, np.subtract(arr_stop, arr_start))
-        subset_slice = tuple(slice(*prod) for prod in zip(subset_start, subset_stop))
-        subset_mesh = self._slice_to_mesh(subset_slice, ret_shape)
-
-        arr_min, arr_max, arr_mean = None, None, None
+        arr_min, arr_max = None, None
         if type(arr) == Density:
             if type(arr.data) == np.memmap:
                 dens = Density.from_file(arr.data.filename, subset=arr_slice)
-                arr, arr_mean = dens.data, dens.metadata.get("mean", None)
-                arr_min, arr_max = dens.metadata.get("min", None), dens.metadata.get(
-                    "max", None
-                )
+                arr = dens.data
+                arr_min = dens.metadata.get("min", None)
+                arr_max = dens.metadata.get("max", None)
             else:
                 arr = np.asarray(arr.data[*arr_mesh])
         else:
@@ -163,24 +155,28 @@ class MatchingData:
 
             if abs(computation) > abs(expectation):
                 warnings.warn(
-                    f"Computed {name} value is more extrem than value specified in file"
+                    f"Computed {name} value is more extreme than value specified in file"
                     f" (|{computation}| > |{expectation}|). This may lead to issues"
                     " with padding and contrast inversion."
                 )
 
             return expectation
 
-        arr_mean = arr.mean() if arr_mean is None else arr_mean
-        ret = np.full(
-            shape=np.add(slice_shape, padding), fill_value=arr_mean, dtype=arr.dtype
+        padding = tuple(
+            (left, right)
+            for left, right in zip(
+                np.subtract(left_pad, data_voxels_left),
+                np.subtract(right_pad, data_voxels_right),
+            )
         )
-        ret[*subset_mesh] = arr
+        ret = np.pad(arr, padding, mode="reflect")
 
         if invert:
             arr_min = _warn_on_mismatch(arr_min, arr.min(), "min")
             arr_max = _warn_on_mismatch(arr_max, arr.max(), "max")
 
-            ret = (-ret - arr_min) / (arr_max - arr_min)
+            np.subtract(-ret, arr_min, out=ret)
+            np.divide(ret, arr_max - arr_min, out=ret)
 
         return ret
 

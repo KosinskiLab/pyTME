@@ -194,15 +194,14 @@ def wedge(
         template = np.real(np.fft.irfftn(template_ft))
         return template
 
-    tilt_angles = np.arange(-tilt_start, tilt_stop, tilt_step)
-    angles = np.zeros((template.ndim, tilt_angles.size))
-    angles[tilt_axis, :] = tilt_angles
-
-    wedge_mask = preprocessor.wedge_mask(
-        tilt_angles=angles,
+    wedge_mask = preprocessor.step_wedge_mask(
+        start_tilt=tilt_start,
+        stop_tilt=tilt_stop,
+        tilt_axis=tilt_axis,
+        tilt_step=tilt_step,
+        opening_axis=opening_axis,
         shape=template.shape,
         sigma=gaussian_sigma,
-        opening_axes=opening_axis,
         omit_negative_frequencies=omit_negative_frequencies,
     )
     np.multiply(template_ft, wedge_mask, out=template_ft)
@@ -518,8 +517,6 @@ def wedge_mask(
         shape=template.shape,
         sigma=gaussian_sigma,
         omit_negative_frequencies=omit_negative_frequencies,
-        extrude_plane=extrude_plane,
-        infinite_plane=infinite_plane,
     )
 
     wedge_mask = np.fft.fftshift(wedge_mask)

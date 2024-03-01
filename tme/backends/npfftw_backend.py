@@ -613,13 +613,6 @@ class NumpyFFTWBackend(MatchingBackend):
         rotate_mask = arr_mask is not None and mask_coordinates is not None
         return_type = (out is None) + 2 * rotate_mask * (out_mask is None)
 
-        # Otherwise array might be slightly shifted by centering
-        if np.allclose(
-            rotation_matrix,
-            np.eye(rotation_matrix.shape[0], dtype=rotation_matrix.dtype),
-        ):
-            center_rotation = False
-
         coordinates_rotated = np.empty(coordinates.shape, dtype=rotation_matrix.dtype)
         mask_rotated = (
             np.empty(mask_coordinates.shape, dtype=rotation_matrix.dtype)
