@@ -119,6 +119,38 @@ Real-world data often contain noise, arising from varied sources like sensor imp
    from skimage.feature import match_template
 
    from tme import Density, Preprocessor
+   from tme.matching_data import MatchingData
+   from tme.analyzer import MaxScoreOverRotations
+   from tme.matching_exhaustive import scan_subsets, MATCHING_EXHAUSTIVE_REGISTER
+
+   def compute_score(
+      target,
+      template,
+      template_mask = None,
+      score = "FLC",
+      pad_target_edges: bool = True,
+      pad_fourier: bool = False,
+   ):
+      if template_mask is None:
+         template_mask = np.ones_like(template)
+      matching_data = MatchingData(
+         target=target.astype(np.float32), template=template.astype(np.float32)
+      )
+      matching_data.template_mask = template_mask
+      matching_data.rotations = np.eye(2).reshape(1, 2, 2)
+      matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[score]
+
+      candidates = scan_subsets(
+         matching_data=matching_data,
+         matching_score=matching_score,
+         matching_setup=matching_setup,
+         callback_class=MaxScoreOverRotations,
+         callback_class_args={"score_threshold": -1},
+         pad_target_edges=pad_target_edges,
+         pad_fourier=pad_fourier,
+         job_schedule=(1, 1),
+      )
+      return candidates[0]
 
    preprocessor = Preprocessor()
    target = Density.from_file("../_static/examples/preprocessing_target.png").data
@@ -136,36 +168,37 @@ Real-world data often contain noise, arising from varied sources like sensor imp
    np.random.default_rng(42)
    norm = colors.Normalize(vmin=0, vmax=1)
 
+   template_mask = np.ones_like(template)
    axs[0, 0].imshow(target, cmap = "gray")
    axs[0, 0].set_title('Target', color = '#0a7d91')
-   axs[0, 1].imshow(match_template(target, template, pad_input = True))
+   axs[0, 1].imshow(compute_score(target, template))
    axs[0, 1].set_title('Template Matching Score', color = '#0a7d91')
 
    target_noisy = random_noise(target, mode="gaussian", mean = 0, var = .75)
    axs[1, 0].imshow(target_noisy, cmap = "gray")
    axs[1, 0].set_title('Target + Gaussian Noise', color = '#0a7d91')
-   axs[1, 1].imshow(match_template(target_noisy, template, pad_input = True),
+   axs[1, 1].imshow(compute_score(target_noisy, template),
       cmap='viridis', norm=norm)
    axs[1, 1].set_title('Template Matching Score', color = '#0a7d91')
 
    target_filter = preprocessor.gaussian_filter(target_noisy, sigma = 1)
    axs[2, 0].imshow(target_filter, cmap = "gray")
    axs[2, 0].set_title('Target + Gaussian Noise + Gaussian Filter', color = '#0a7d91')
-   axs[2, 1].imshow(match_template(target_filter, template, pad_input = True),
+   axs[2, 1].imshow(compute_score(target_filter, template),
       cmap='viridis', norm=norm)
    axs[2, 1].set_title('Template Matching Score', color = '#0a7d91')
 
    target_noisy = random_noise(target, mode="s&p", amount = .7)
    axs[3, 0].imshow(target_noisy, cmap = "gray")
    axs[3, 0].set_title('Target + S&P Noise', color = '#0a7d91')
-   axs[3, 1].imshow(match_template(target_noisy, template, pad_input = True),
+   axs[3, 1].imshow(compute_score(target_noisy, template),
       cmap='viridis', norm=norm)
    axs[3, 1].set_title('Template Matching Score', color = '#0a7d91')
 
    target_filter = preprocessor.median_filter(target_noisy, size = 7)
    axs[4, 0].imshow(target_filter, cmap = "gray")
    axs[4, 0].set_title('Target + S&P Noise + Median Filter', color = '#0a7d91')
-   score_image=axs[4, 1].imshow(match_template(target_filter, template, pad_input = True),
+   score_image=axs[4, 1].imshow(compute_score(target_filter, template),
       cmap='viridis', norm=norm)
    axs[4, 1].set_title('Template Matching Score', color = '#0a7d91')
 
@@ -181,7 +214,7 @@ Real-world data often contain noise, arising from varied sources like sensor imp
 
 .. note::
 
-   The normalized cross-correlation score of pixels on the left and top image border are elevated. This is a common artifact caused by zero-padding. Since these areas do not allow for cross-correlation computation using the entire template, they can be masked. Alternatively ``postprocess.py`` (see :doc:`postprocessing`) has a ``min_boundary_distance`` flag, that disregrads peaks in this area.
+   The normalized cross-correlation score of pixels close to boundaries are often elevated. This is a common artifact since these areas do not allow for cross-correlation computation using the entire template, they can be masked. Alternatively ``postprocess.py`` (see :doc:`postprocessing`) has a ``min_boundary_distance`` flag, that disregrads peaks in this area.
 
 
 When the target image is infused with noise, the template matching score around the true positive position (where the template is expected to match accurately) is notably lower. This decrease in the matching score is indicative of the noise interfering with the ability to find correct matches in the target image. The presence of noise essentially masks or distorts the features that the template is designed to detect, leading to a reduced confidence in identifying the correct location. Furthermore, the presence of noise introduces additional bias, such as erroneous peaks in the template matching score. These peaks are not present in the original, noise-free image, and potentially result in the detection of false positives. In other words, the template might incorrectly identify parts of the noisy image as matches, even though these areas do not actually resemble the template.

@@ -308,6 +308,49 @@ def cam_setup(**kwargs):
     return corr_setup(**kwargs)
 
 
+def _normalize_under_mask(template: NDArray, mask: NDArray, mask_intensity) -> None:
+    """
+    Standardizes the values in in template by subtracting the mean and dividing by the
+    standard deviation based on the elements in mask. Subsequently, the template is
+    multiplied by the mask.
+
+    Parameters
+    ----------
+    template : NDArray
+        The data array to be normalized. This array is modified in-place.
+    mask : NDArray
+        A boolean array of the same shape as `template`. True values indicate the positions in `template`
+        to consider for normalization.
+    mask_intensity : float
+        Mask intensity used to compute expectations.
+
+    References
+    ----------
+    .. [1]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
+            and F. Förster, J. Struct. Biol. 178, 177 (2012).
+    .. [2]  M. L. Chaillet, G. van der Schot, I. Gubins, S. Roet,
+            R. C. Veltkamp, and F. Förster, Int. J. Mol. Sci. 24,
+            13375 (2023)
+
+    Returns
+    -------
+    None
+        This function modifies `template` in-place and does not return any value.
+    """
+    masked_mean = backend.sum(backend.multiply(template, mask))
+    masked_mean = backend.divide(masked_mean, mask_intensity)
+    masked_std = backend.sum(backend.multiply(backend.square(template), mask))
+    masked_std = backend.subtract(
+        masked_std / mask_intensity, backend.square(masked_mean)
+    )
+    masked_std = backend.sqrt(backend.maximum(masked_std, 0))
+
+    backend.subtract(template, masked_mean, out=template)
+    backend.divide(template, masked_std, out=template)
+    backend.multiply(template, mask, out=template)
+    return None
+
+
 def flc_setup(
     rfftn: Callable,
     irfftn: Callable,
@@ -370,18 +413,9 @@ def flc_setup(
         arr=ft_target2, shared_memory_handler=shared_memory_handler
     )
 
-    n_observations = backend.sum(template_mask)
-    masked_mean = backend.sum(backend.multiply(template, template_mask))
-    masked_mean = backend.divide(masked_mean, n_observations)
-    masked_std = backend.sum(backend.multiply(backend.square(template), template_mask))
-    masked_std = backend.subtract(
-        masked_std / n_observations, backend.square(masked_mean)
+    _normalize_under_mask(
+        template=template, mask=template_mask, mask_intensity=backend.sum(template_mask)
     )
-    masked_std = backend.sqrt(backend.maximum(masked_std, 0))
-
-    backend.subtract(template, masked_mean, out=template)
-    backend.divide(template, masked_std, out=template)
-    backend.multiply(template, template_mask, out=template)
 
     template_buffer = backend.arr_to_sharedarr(
         arr=template, shared_memory_handler=shared_memory_handler
@@ -461,7 +495,6 @@ def flcSphericalMask_setup(
     :py:meth:`corr_scoring`
     """
     target_pad = backend.topleft_pad(target, fast_shape)
-    template_mask_pad = backend.topleft_pad(template_mask, fast_shape)
 
     # Target and squared target window sums
     ft_target = backend.preallocate_array(fast_ft_shape, complex_dtype)
@@ -473,7 +506,9 @@ def flcSphericalMask_setup(
     numerator2 = backend.preallocate_array(1, real_dtype)
 
     eps = backend.eps(real_dtype)
-    n_observations = backend.sum(template_mask_pad > np.exp(-2))
+    n_observations = backend.sum(template_mask)
+
+    template_mask_pad = backend.topleft_pad(template_mask, fast_shape)
     rfftn(template_mask_pad, ft_template_mask)
 
     # Denominator E(X^2) - E(X)^2
@@ -500,12 +535,9 @@ def flcSphericalMask_setup(
     backend.fill(temp2, 0)
     temp2[nonzero_indices] = 1 / temp[nonzero_indices]
 
-    template_mask = template_mask > np.exp(-2)
-    template_mean = backend.mean(template[template_mask])
-    template_std = backend.std(template[template_mask])
-
-    template = backend.divide(backend.subtract(template, template_mean), template_std)
-    backend.multiply(template, template_mask, out=template)
+    _normalize_under_mask(
+        template=template, mask=template_mask, mask_intensity=backend.sum(template_mask)
+    )
 
     template_buffer = backend.arr_to_sharedarr(
         arr=template, shared_memory_handler=shared_memory_handler
@@ -929,21 +961,12 @@ def flc_scoring(
         )
         # Given the amount of FFTs, might aswell normalize properly
         n_observations = backend.sum(temp)
-        masked_mean = backend.sum(
-            backend.multiply(arr[unpadded_slice], temp[unpadded_slice])
-        )
-        masked_mean = backend.divide(masked_mean, n_observations)
-        masked_std = backend.sum(
-            backend.multiply(backend.square(arr[unpadded_slice]), temp[unpadded_slice])
-        )
-        masked_std = backend.subtract(
-            masked_std / n_observations, backend.square(masked_mean)
-        )
-        masked_std = backend.sqrt(backend.maximum(masked_std, 0))
 
-        backend.subtract(arr, masked_mean, out=arr)
-        backend.divide(arr, masked_std, out=arr)
-        backend.multiply(arr, temp, out=arr)
+        _normalize_under_mask(
+            template=arr[unpadded_slice],
+            mask=temp[unpadded_slice],
+            mask_intensity=n_observations,
+        )
 
         rfftn(temp, ft_temp)
 
