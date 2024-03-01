@@ -687,6 +687,49 @@ document.write(`
 
 
 
+<span class="k">def</span> <span class="nf">_normalize_under_mask</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">mask_intensity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Standardizes the values in in template by subtracting the mean and dividing by the</span>
+<span class="sd">    standard deviation based on the elements in mask. Subsequently, the template is</span>
+<span class="sd">    multiplied by the mask.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    template : NDArray</span>
+<span class="sd">        The data array to be normalized. This array is modified in-place.</span>
+<span class="sd">    mask : NDArray</span>
+<span class="sd">        A boolean array of the same shape as `template`. True values indicate the positions in `template`</span>
+<span class="sd">        to consider for normalization.</span>
+<span class="sd">    mask_intensity : float</span>
+<span class="sd">        Mask intensity used to compute expectations.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,</span>
+<span class="sd">            and F. Förster, J. Struct. Biol. 178, 177 (2012).</span>
+<span class="sd">    .. [2]  M. L. Chaillet, G. van der Schot, I. Gubins, S. Roet,</span>
+<span class="sd">            R. C. Veltkamp, and F. Förster, Int. J. Mol. Sci. 24,</span>
+<span class="sd">            13375 (2023)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        This function modifies `template` in-place and does not return any value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">masked_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">mask</span><span class="p">))</span>
+    <span class="n">masked_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">masked_mean</span><span class="p">,</span> <span class="n">mask_intensity</span><span class="p">)</span>
+    <span class="n">masked_std</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">template</span><span class="p">),</span> <span class="n">mask</span><span class="p">))</span>
+    <span class="n">masked_std</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+        <span class="n">masked_std</span> <span class="o">/</span> <span class="n">mask_intensity</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">masked_mean</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">masked_std</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">masked_std</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">masked_mean</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
+    <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">masked_std</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
+    <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
 <div class="viewcode-block" id="flc_setup">
 <a class="viewcode-back" href="../../reference/api/tme.matching_exhaustive.flc_setup.html#tme.matching_exhaustive.flc_setup">[docs]</a>
 <span class="k">def</span> <span class="nf">flc_setup</span><span class="p">(</span>
@@ -751,18 +794,9 @@ document.write(`
         <span class="n">arr</span><span class="o">=</span><span class="n">ft_target2</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span>
     <span class="p">)</span>
 
-    <span class="n">n_observations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template_mask</span><span class="p">)</span>
-    <span class="n">masked_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">))</span>
-    <span class="n">masked_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">masked_mean</span><span class="p">,</span> <span class="n">n_observations</span><span class="p">)</span>
-    <span class="n">masked_std</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">template</span><span class="p">),</span> <span class="n">template_mask</span><span class="p">))</span>
-    <span class="n">masked_std</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
-        <span class="n">masked_std</span> <span class="o">/</span> <span class="n">n_observations</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">masked_mean</span><span class="p">)</span>
+    <span class="n">_normalize_under_mask</span><span class="p">(</span>
+        <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">mask_intensity</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template_mask</span><span class="p">)</span>
     <span class="p">)</span>
-    <span class="n">masked_std</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">masked_std</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-
-    <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">masked_mean</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
-    <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">masked_std</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
-    <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
 
     <span class="n">template_buffer</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">arr_to_sharedarr</span><span class="p">(</span>
         <span class="n">arr</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span>
@@ -845,7 +879,6 @@ document.write(`
 <span class="sd">    :py:meth:`corr_scoring`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">target_pad</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topleft_pad</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">)</span>
-    <span class="n">template_mask_pad</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topleft_pad</span><span class="p">(</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">)</span>
 
     <span class="c1"># Target and squared target window sums</span>
     <span class="n">ft_target</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
@@ -857,7 +890,9 @@ document.write(`
     <span class="n">numerator2</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
 
     <span class="n">eps</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">eps</span><span class="p">(</span><span class="n">real_dtype</span><span class="p">)</span>
-    <span class="n">n_observations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template_mask_pad</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">n_observations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template_mask</span><span class="p">)</span>
+
+    <span class="n">template_mask_pad</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topleft_pad</span><span class="p">(</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">)</span>
     <span class="n">rfftn</span><span class="p">(</span><span class="n">template_mask_pad</span><span class="p">,</span> <span class="n">ft_template_mask</span><span class="p">)</span>
 
     <span class="c1"># Denominator E(X^2) - E(X)^2</span>
@@ -884,12 +919,9 @@ document.write(`
     <span class="n">backend</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">temp2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">temp2</span><span class="p">[</span><span class="n">nonzero_indices</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">temp</span><span class="p">[</span><span class="n">nonzero_indices</span><span class="p">]</span>
 
-    <span class="n">template_mask</span> <span class="o">=</span> <span class="n">template_mask</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">template_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">template</span><span class="p">[</span><span class="n">template_mask</span><span class="p">])</span>
-    <span class="n">template_std</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">template</span><span class="p">[</span><span class="n">template_mask</span><span class="p">])</span>
-
-    <span class="n">template</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mean</span><span class="p">),</span> <span class="n">template_std</span><span class="p">)</span>
-    <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
+    <span class="n">_normalize_under_mask</span><span class="p">(</span>
+        <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">mask_intensity</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template_mask</span><span class="p">)</span>
+    <span class="p">)</span>
 
     <span class="n">template_buffer</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">arr_to_sharedarr</span><span class="p">(</span>
         <span class="n">arr</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span>
@@ -1322,21 +1354,12 @@ document.write(`
         <span class="p">)</span>
         <span class="c1"># Given the amount of FFTs, might aswell normalize properly</span>
         <span class="n">n_observations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
-        <span class="n">masked_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">unpadded_slice</span><span class="p">],</span> <span class="n">temp</span><span class="p">[</span><span class="n">unpadded_slice</span><span class="p">])</span>
-        <span class="p">)</span>
-        <span class="n">masked_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">masked_mean</span><span class="p">,</span> <span class="n">n_observations</span><span class="p">)</span>
-        <span class="n">masked_std</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">unpadded_slice</span><span class="p">]),</span> <span class="n">temp</span><span class="p">[</span><span class="n">unpadded_slice</span><span class="p">])</span>
-        <span class="p">)</span>
-        <span class="n">masked_std</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
-            <span class="n">masked_std</span> <span class="o">/</span> <span class="n">n_observations</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">masked_mean</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="n">masked_std</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">masked_std</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 
-        <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">masked_mean</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">arr</span><span class="p">)</span>
-        <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">masked_std</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">arr</span><span class="p">)</span>
-        <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">arr</span><span class="p">)</span>
+        <span class="n">_normalize_under_mask</span><span class="p">(</span>
+            <span class="n">template</span><span class="o">=</span><span class="n">arr</span><span class="p">[</span><span class="n">unpadded_slice</span><span class="p">],</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">temp</span><span class="p">[</span><span class="n">unpadded_slice</span><span class="p">],</span>
+            <span class="n">mask_intensity</span><span class="o">=</span><span class="n">n_observations</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="n">rfftn</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">ft_temp</span><span class="p">)</span>
 
