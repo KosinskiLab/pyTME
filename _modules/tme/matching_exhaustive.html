@@ -583,11 +583,17 @@ document.write(`
     <span class="n">target_pad</span><span class="p">,</span> <span class="n">ft_target2</span><span class="p">,</span> <span class="n">ft_window_template</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
     <span class="c1"># Normalizing constants</span>
-    <span class="n">template_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
-    <span class="n">template_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">n_observations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template_mask</span><span class="p">)</span>
+    <span class="n">template_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">))</span>
+    <span class="n">template_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">template_mean</span><span class="p">,</span> <span class="n">n_observations</span><span class="p">)</span>
     <span class="n">template_ssd</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-        <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mean</span><span class="p">))</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mean</span><span class="p">),</span>
+            <span class="n">template_mask</span>
+        <span class="p">))</span>
     <span class="p">)</span>
+    <span class="n">template_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">template</span><span class="p">)</span>
 
     <span class="c1"># Final numerator is score - numerator2</span>
     <span class="n">numerator2</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">target_window_sum</span><span class="p">,</span> <span class="n">template_mean</span><span class="p">)</span>
@@ -926,6 +932,9 @@ document.write(`
     <span class="n">template_buffer</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">arr_to_sharedarr</span><span class="p">(</span>
         <span class="n">arr</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span>
     <span class="p">)</span>
+    <span class="n">template_mask_buffer</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">arr_to_sharedarr</span><span class="p">(</span>
+        <span class="n">arr</span><span class="o">=</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span>
+    <span class="p">)</span>
     <span class="n">target_ft_buffer</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">arr_to_sharedarr</span><span class="p">(</span>
         <span class="n">arr</span><span class="o">=</span><span class="n">ft_target</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span>
     <span class="p">)</span>
@@ -937,6 +946,7 @@ document.write(`
     <span class="p">)</span>
 
     <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
+    <span class="n">template_mask_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_mask_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
     <span class="n">target_ft_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_ft_buffer</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
 
     <span class="n">inv_denominator_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">inv_denominator_buffer</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
@@ -944,6 +954,7 @@ document.write(`
 
     <span class="n">ret</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="n">template_tuple</span><span class="p">,</span>
+        <span class="s2">&quot;template_mask&quot;</span><span class="p">:</span> <span class="n">template_mask_tuple</span><span class="p">,</span>
         <span class="s2">&quot;ft_target&quot;</span><span class="p">:</span> <span class="n">target_ft_tuple</span><span class="p">,</span>
         <span class="s2">&quot;inv_denominator&quot;</span><span class="p">:</span> <span class="n">inv_denominator_tuple</span><span class="p">,</span>
         <span class="s2">&quot;numerator2&quot;</span><span class="p">:</span> <span class="n">numerator2_tuple</span><span class="p">,</span>
@@ -1172,6 +1183,12 @@ document.write(`
         <span class="n">filter_shape</span><span class="p">,</span> <span class="n">filter_dtype</span><span class="p">,</span> <span class="n">filter_buffer</span>
     <span class="p">)</span>
 
+    <span class="n">norm_template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">mask_sum</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="s2">&quot;template_mask&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">template_mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span><span class="n">template_shape</span><span class="p">,</span> <span class="n">template_dtype</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;template_mask&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">norm_template</span><span class="p">,</span> <span class="n">mask_sum</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template_mask</span><span class="p">)</span>
+    <span class="n">norm_template</span> <span class="o">=</span> <span class="n">conditional_execute</span><span class="p">(</span><span class="n">_normalize_under_mask</span><span class="p">,</span> <span class="n">norm_template</span><span class="p">)</span>
+
     <span class="n">arr</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
     <span class="n">ft_temp</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
 
@@ -1200,6 +1217,7 @@ document.write(`
     <span class="n">fourier_shift_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">fourier_shift</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span>
 
     <span class="n">template_sum</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+    <span class="n">unpadded_slice</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span> <span class="k">for</span> <span class="n">stop</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
         <span class="n">rotation</span> <span class="o">=</span> <span class="n">rotations</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
         <span class="n">backend</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -1212,6 +1230,7 @@ document.write(`
         <span class="p">)</span>
         <span class="n">rotation_norm</span> <span class="o">=</span> <span class="n">template_sum</span> <span class="o">/</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
         <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">rotation_norm</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">arr</span><span class="p">)</span>
+        <span class="n">norm_template</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">unpadded_slice</span><span class="p">],</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">mask_sum</span><span class="p">)</span>
 
         <span class="n">rfftn</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">ft_temp</span><span class="p">)</span>
         <span class="n">template_filter_func</span><span class="p">(</span><span class="n">ft_temp</span><span class="p">,</span> <span class="n">template_filter</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">ft_temp</span><span class="p">)</span>

@@ -546,8 +546,11 @@ document.write(`
             <span class="n">arr_min</span> <span class="o">=</span> <span class="n">_warn_on_mismatch</span><span class="p">(</span><span class="n">arr_min</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="s2">&quot;min&quot;</span><span class="p">)</span>
             <span class="n">arr_max</span> <span class="o">=</span> <span class="n">_warn_on_mismatch</span><span class="p">(</span><span class="n">arr_max</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span>
 
-            <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="o">-</span><span class="n">ret</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span><span class="p">)</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">arr_max</span> <span class="o">-</span> <span class="n">arr_min</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span><span class="p">)</span>
+            <span class="c1"># Avoid in-place operation in case ret is not floating point</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="o">-</span><span class="n">ret</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">arr_max</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">)</span>
+            <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ret</span></div>
 

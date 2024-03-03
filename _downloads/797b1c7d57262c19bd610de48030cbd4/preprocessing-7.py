@@ -25,7 +25,7 @@ def compute_score(target, template, template_mask, score):
         matching_setup=matching_setup,
         callback_class=MaxScoreOverRotations,
         callback_class_args={"score_threshold": -1},
-        pad_target_edges=False,
+        pad_target_edges=True,
         pad_fourier=False,
         job_schedule=(1,1),
     )
@@ -34,7 +34,7 @@ def compute_score(target, template, template_mask, score):
 
 if __name__ == "__main__":
 
-    matching_score = "FLCSphericalMask"
+    matching_score = "FLC"
 
     target = Density.from_file("../_static/examples/preprocessing_target.png").data
     template = Density.from_file("../_static/examples/preprocessing_template.png").data
