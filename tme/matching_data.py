@@ -175,8 +175,11 @@ class MatchingData:
             arr_min = _warn_on_mismatch(arr_min, arr.min(), "min")
             arr_max = _warn_on_mismatch(arr_max, arr.max(), "max")
 
-            np.subtract(-ret, arr_min, out=ret)
-            np.divide(ret, arr_max - arr_min, out=ret)
+            # Avoid in-place operation in case ret is not floating point
+            ret = np.divide(
+                np.subtract(-ret, arr_min),
+                np.subtract(arr_max, arr_min)
+            )
 
         return ret
 

@@ -208,11 +208,17 @@ def corr_setup(
     target_pad, ft_target2, ft_window_template = None, None, None
 
     # Normalizing constants
-    template_mean = backend.mean(template)
-    template_volume = np.prod(template.shape)
+    n_observations = backend.sum(template_mask)
+    template_mean = backend.sum(backend.multiply(template, template_mask))
+    template_mean = backend.divide(template_mean, n_observations)
     template_ssd = backend.sum(
-        backend.square(backend.subtract(template, template_mean))
+        backend.square(backend.multiply(
+            backend.multiply(template, template_mean),
+            template_mask
+        ))
     )
+    template_volume = np.prod(template.shape)
+    backend.multiply(template, template_mask, out = template)
 
     # Final numerator is score - numerator2
     numerator2 = backend.multiply(target_window_sum, template_mean)
@@ -542,6 +548,9 @@ def flcSphericalMask_setup(
     template_buffer = backend.arr_to_sharedarr(
         arr=template, shared_memory_handler=shared_memory_handler
     )
+    template_mask_buffer = backend.arr_to_sharedarr(
+        arr=template_mask, shared_memory_handler=shared_memory_handler
+    )
     target_ft_buffer = backend.arr_to_sharedarr(
         arr=ft_target, shared_memory_handler=shared_memory_handler
     )
@@ -553,6 +562,7 @@ def flcSphericalMask_setup(
     )
 
     template_tuple = (template_buffer, template.shape, real_dtype)
+    template_mask_tuple = (template_mask_buffer, template.shape, real_dtype)
     target_ft_tuple = (target_ft_buffer, fast_ft_shape, complex_dtype)
 
     inv_denominator_tuple = (inv_denominator_buffer, fast_shape, real_dtype)
@@ -560,6 +570,7 @@ def flcSphericalMask_setup(
 
     ret = {
         "template": template_tuple,
+        "template_mask": template_mask_tuple,
         "ft_target": target_ft_tuple,
         "inv_denominator": inv_denominator_tuple,
         "numerator2": numerator2_tuple,
@@ -782,6 +793,12 @@ def corr_scoring(
         filter_shape, filter_dtype, filter_buffer
     )
 
+    norm_template, template_mask, mask_sum = False, 1, 1
+    if "template_mask" in kwargs:
+        template_mask = backend.sharedarr_to_arr(template_shape, template_dtype, kwargs["template_mask"][0])
+        norm_template, mask_sum = True, backend.sum(template_mask)
+    norm_template = conditional_execute(_normalize_under_mask, norm_template)
+
     arr = backend.preallocate_array(fast_shape, real_dtype)
     ft_temp = backend.preallocate_array(fast_ft_shape, complex_dtype)
 
@@ -810,6 +827,7 @@ def corr_scoring(
     fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
 
     template_sum = backend.sum(template)
+    unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
         backend.fill(arr, 0)
@@ -822,6 +840,7 @@ def corr_scoring(
         )
         rotation_norm = template_sum / backend.sum(arr)
         backend.multiply(arr, rotation_norm, out=arr)
+        norm_template(arr[unpadded_slice], template_mask, mask_sum)
 
         rfftn(arr, ft_temp)
         template_filter_func(ft_temp, template_filter, out=ft_temp)

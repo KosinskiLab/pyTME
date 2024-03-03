@@ -496,7 +496,7 @@ To build intuition towards mask design, let us assess the effect of a range of b
            matching_setup=matching_setup,
            callback_class=MaxScoreOverRotations,
            callback_class_args={"score_threshold": -1},
-           pad_target_edges=False,
+           pad_target_edges=True,
            pad_fourier=False,
            job_schedule=(1,1),
        )
@@ -505,7 +505,7 @@ To build intuition towards mask design, let us assess the effect of a range of b
 
    if __name__ == "__main__":
 
-       matching_score = "FLCSphericalMask"
+       matching_score = "FLC"
 
        target = Density.from_file("../_static/examples/preprocessing_target.png").data
        template = Density.from_file("../_static/examples/preprocessing_template.png").data
@@ -570,7 +570,7 @@ To build intuition towards mask design, let us assess the effect of a range of b
        plt.tight_layout()
        plt.show()
 
-The applied ellipsoidal mask is a suitable choice in this case, because the mask recapitulates the defining features of a face well. Therefore, we also avoid sharp transition in template intensity that could adversely effect the template matching score computation. In the following we look at the effect of smoothing a suboptimal mask, that includes strong changes in intensity. For smoothing the mask, we apply a Gaussian filter that rounds the edges and provides a smoother intensity transition. Albeit difficult to see in this representation, smoothing the mask results in 15% higher peaks, compared to their individual backgrounds. Nevertheless, the benefit of smoothing masks is less obvious and has to be evaluated on a per-problem basis.
+The applied ellipsoidal mask is a suitable choice in this case, because the mask recapitulates the defining features of a face well. Therefore, we also avoid sharp transition in template intensity that could adversely effect the template matching score computation. In the following we look at the effect of smoothing a suboptimal mask, that includes strong changes in intensity. For smoothing the mask, we apply a Gaussian filter that rounds the edges and provides a smoother intensity transition. Albeit difficult to see in this representation, smoothing the mask results in 5% higher peaks, compared to their individual backgrounds. Nevertheless, the benefit of smoothing masks is less obvious and has to be evaluated on a per-problem basis.
 
 .. plot::
    :caption: Influence of mask smoothing on template matching scores.
@@ -600,7 +600,7 @@ The applied ellipsoidal mask is a suitable choice in this case, because the mask
          matching_setup=matching_setup,
          callback_class=MaxScoreOverRotations,
          callback_class_args={"score_threshold": -1},
-         pad_target_edges=False,
+         pad_target_edges=True,
          pad_fourier=False,
          job_schedule=(1,1),
       )
