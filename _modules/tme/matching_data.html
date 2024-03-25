@@ -417,6 +417,8 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="kc">False</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_batch_dimension</span><span class="p">()</span>
+
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_shape_to_slice</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">)</span>
@@ -520,13 +522,13 @@ document.write(`
         <span class="k">def</span> <span class="nf">_warn_on_mismatch</span><span class="p">(</span>
             <span class="n">expectation</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">computation</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-            <span class="n">expectation</span><span class="p">,</span> <span class="n">computation</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">expectation</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">computation</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">expectation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">expectation</span> <span class="o">=</span> <span class="n">computation</span>
+            <span class="n">expectation</span><span class="p">,</span> <span class="n">computation</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">expectation</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">computation</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">computation</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">expectation</span><span class="p">):</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Computed </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> value is more extreme than value specified in file&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Computed </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> value is more extreme than value in file header&quot;</span>
                     <span class="sa">f</span><span class="s2">&quot; (|</span><span class="si">{</span><span class="n">computation</span><span class="si">}</span><span class="s2">| &gt; |</span><span class="si">{</span><span class="n">expectation</span><span class="si">}</span><span class="s2">|). This may lead to issues&quot;</span>
                     <span class="s2">&quot; with padding and contrast inversion.&quot;</span>
                 <span class="p">)</span>
@@ -547,10 +549,7 @@ document.write(`
             <span class="n">arr_max</span> <span class="o">=</span> <span class="n">_warn_on_mismatch</span><span class="p">(</span><span class="n">arr_max</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span>
 
             <span class="c1"># Avoid in-place operation in case ret is not floating point</span>
-            <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="o">-</span><span class="n">ret</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">),</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">arr_max</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="o">-</span><span class="n">ret</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">arr_max</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">ret</span></div>
 
@@ -597,14 +596,16 @@ document.write(`
         <span class="k">if</span> <span class="n">target_pad</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">target_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">template_pad</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">template_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">template_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
-        <span class="n">indices</span> <span class="o">=</span> <span class="n">compute_full_convolution_index</span><span class="p">(</span>
-            <span class="n">outer_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-            <span class="n">inner_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-            <span class="n">outer_split</span><span class="o">=</span><span class="n">target_slice</span><span class="p">,</span>
-            <span class="n">inner_split</span><span class="o">=</span><span class="n">template_slice</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">compute_full_convolution_index</span><span class="p">(</span>
+                <span class="n">outer_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">inner_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">outer_split</span><span class="o">=</span><span class="n">target_slice</span><span class="p">,</span>
+                <span class="n">inner_split</span><span class="o">=</span><span class="n">template_slice</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="n">target_subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_array</span><span class="p">(</span>
             <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">,</span>
@@ -620,10 +621,10 @@ document.write(`
         <span class="p">)</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target_subset</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">template_subset</span><span class="p">)</span>
 
-        <span class="n">ret</span><span class="o">.</span><span class="n">_translation_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">target_slice</span><span class="p">],</span>
-            <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">template_slice</span><span class="p">],</span>
-        <span class="p">)</span>
+        <span class="c1"># ret._translation_offset = np.add(</span>
+        <span class="c1">#     [x.start for x in target_slice],</span>
+        <span class="c1">#     [x.start for x in template_slice],</span>
+        <span class="c1"># )</span>
         <span class="n">ret</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_filter</span>
 
         <span class="n">ret</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span> <span class="n">indices</span>
@@ -914,8 +915,10 @@ document.write(`
     <span class="k">def</span> <span class="nf">template</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the reversed template NDArray.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">,</span> <span class="n">Density</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">)</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span><span class="p">)</span>
 
     <span class="nd">@template</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">):</span>

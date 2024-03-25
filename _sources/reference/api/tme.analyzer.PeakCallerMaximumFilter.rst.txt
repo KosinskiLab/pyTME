@@ -24,5 +24,8 @@
          
            PeakCallerMaximumFilter.merge
          
+         
+           PeakCallerMaximumFilter.oversample_peaks
+         
    
    

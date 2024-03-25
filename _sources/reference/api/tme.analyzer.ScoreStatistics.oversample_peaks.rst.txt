@@ -1,0 +1,6 @@
+ScoreStatistics.oversample\_peaks
+=============================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: ScoreStatistics.oversample_peaks

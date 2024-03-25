@@ -24,5 +24,8 @@
          
            PeakCallerRecursiveMasking.merge
          
+         
+           PeakCallerRecursiveMasking.oversample_peaks
+         
    
    

@@ -24,5 +24,8 @@
          
            PeakCallerScipy.merge
          
+         
+           PeakCallerScipy.oversample_peaks
+         
    
    

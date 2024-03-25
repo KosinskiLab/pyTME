@@ -25,6 +25,9 @@
            ScoreStatistics.merge
          
          
+           ScoreStatistics.oversample_peaks
+         
+         
            ScoreStatistics.set_reference
          
    

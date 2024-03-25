@@ -24,5 +24,8 @@
          
            PeakCaller.merge
          
+         
+           PeakCaller.oversample_peaks
+         
    
    

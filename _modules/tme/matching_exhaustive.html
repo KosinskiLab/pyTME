@@ -587,13 +587,12 @@ document.write(`
     <span class="n">template_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">))</span>
     <span class="n">template_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">template_mean</span><span class="p">,</span> <span class="n">n_observations</span><span class="p">)</span>
     <span class="n">template_ssd</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-        <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mean</span><span class="p">),</span>
-            <span class="n">template_mask</span>
-        <span class="p">))</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mean</span><span class="p">),</span> <span class="n">template_mask</span><span class="p">)</span>
+        <span class="p">)</span>
     <span class="p">)</span>
     <span class="n">template_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-    <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">template</span><span class="p">)</span>
+    <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
 
     <span class="c1"># Final numerator is score - numerator2</span>
     <span class="n">numerator2</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">target_window_sum</span><span class="p">,</span> <span class="n">template_mean</span><span class="p">)</span>
@@ -1185,7 +1184,9 @@ document.write(`
 
     <span class="n">norm_template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">mask_sum</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="s2">&quot;template_mask&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">template_mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span><span class="n">template_shape</span><span class="p">,</span> <span class="n">template_dtype</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;template_mask&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">template_mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
+            <span class="n">template_shape</span><span class="p">,</span> <span class="n">template_dtype</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;template_mask&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
         <span class="n">norm_template</span><span class="p">,</span> <span class="n">mask_sum</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template_mask</span><span class="p">)</span>
     <span class="n">norm_template</span> <span class="o">=</span> <span class="n">conditional_execute</span><span class="p">(</span><span class="n">_normalize_under_mask</span><span class="p">,</span> <span class="n">norm_template</span><span class="p">)</span>
 
@@ -1216,7 +1217,7 @@ document.write(`
     <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">callback_class_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fourier_shift&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
     <span class="n">fourier_shift_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">fourier_shift</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span>
 
-    <span class="n">template_sum</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+    <span class="n">template_sum</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">template</span><span class="p">))</span>
     <span class="n">unpadded_slice</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span> <span class="k">for</span> <span class="n">stop</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
         <span class="n">rotation</span> <span class="o">=</span> <span class="n">rotations</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
@@ -1228,7 +1229,7 @@ document.write(`
             <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="n">interpolation_order</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">rotation_norm</span> <span class="o">=</span> <span class="n">template_sum</span> <span class="o">/</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+        <span class="n">rotation_norm</span> <span class="o">=</span> <span class="n">template_sum</span> <span class="o">/</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span>
         <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">rotation_norm</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">arr</span><span class="p">)</span>
         <span class="n">norm_template</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">unpadded_slice</span><span class="p">],</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">mask_sum</span><span class="p">)</span>
 
@@ -1710,8 +1711,9 @@ document.write(`
 <span class="sd">        The merged results from callback_class if provided otherwise None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
-        <span class="n">matching_data</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">matching_data</span><span class="o">.</span><span class="n">_output_target_shape</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_output_template_shape</span>
     <span class="p">)</span>
+    <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">shape_diff</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_mask</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">shape_diff</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pad_fourier</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="s2">&quot;Target is larger than template and Fourier padding is turned off.&quot;</span>

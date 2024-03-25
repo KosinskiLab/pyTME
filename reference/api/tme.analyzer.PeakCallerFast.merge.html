@@ -49,7 +49,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/tme.analyzer.PeakCallerFast.merge';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="PeakCallerRecursiveMasking" href="tme.analyzer.PeakCallerRecursiveMasking.html" />
+    <link rel="next" title="PeakCallerFast.oversample_peaks" href="tme.analyzer.PeakCallerFast.oversample_peaks.html" />
     <link rel="prev" title="PeakCallerFast.call_peaks" href="tme.analyzer.PeakCallerFast.call_peaks.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -517,36 +517,43 @@ document.write(`
 <li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCaller.html">PeakCaller</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.call_peaks.html">PeakCaller.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.merge.html">PeakCaller.merge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.oversample_peaks.html">PeakCaller.oversample_peaks</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerSort.html">PeakCallerSort</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.call_peaks.html">PeakCallerSort.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.merge.html">PeakCallerSort.merge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.oversample_peaks.html">PeakCallerSort.oversample_peaks</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.html">PeakCallerMaximumFilter</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.call_peaks.html">PeakCallerMaximumFilter.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.merge.html">PeakCallerMaximumFilter.merge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.oversample_peaks.html">PeakCallerMaximumFilter.oversample_peaks</a></li>
 </ul>
 </li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="tme.analyzer.PeakCallerFast.html">PeakCallerFast</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.call_peaks.html">PeakCallerFast.call_peaks</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">PeakCallerFast.merge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.oversample_peaks.html">PeakCallerFast.oversample_peaks</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.html">PeakCallerRecursiveMasking</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.call_peaks.html">PeakCallerRecursiveMasking.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.merge.html">PeakCallerRecursiveMasking.merge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.oversample_peaks.html">PeakCallerRecursiveMasking.oversample_peaks</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.html">PeakCallerScipy</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.call_peaks.html">PeakCallerScipy.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.merge.html">PeakCallerScipy.merge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.oversample_peaks.html">PeakCallerScipy.oversample_peaks</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.ScoreStatistics.html">ScoreStatistics</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.call_peaks.html">ScoreStatistics.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.merge.html">ScoreStatistics.merge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.oversample_peaks.html">ScoreStatistics.oversample_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.set_reference.html">ScoreStatistics.set_reference</a></li>
 </ul>
 </li>
@@ -936,11 +943,11 @@ of candidates.</p>
       </div>
     </a>
     <a class="right-next"
-       href="tme.analyzer.PeakCallerRecursiveMasking.html"
+       href="tme.analyzer.PeakCallerFast.oversample_peaks.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">PeakCallerRecursiveMasking</p>
+        <p class="prev-next-title">PeakCallerFast.oversample_peaks</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

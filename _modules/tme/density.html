@@ -379,6 +379,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">splitext</span><span class="p">,</span> <span class="n">basename</span>
 
+<span class="kn">import</span> <span class="nn">h5py</span>
 <span class="kn">import</span> <span class="nn">mrcfile</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">skimage.io</span> <span class="k">as</span> <span class="nn">skio</span>
@@ -500,8 +501,8 @@ document.write(`
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        filename : str</span>
-<span class="sd">            Path to a file in CCP4/MRC, EM or a format supported by skimage.io.imread.</span>
-<span class="sd">            The file can be gzip compressed.</span>
+<span class="sd">            Path to a file in CCP4/MRC, EM, HDF5 or a format supported by</span>
+<span class="sd">            skimage.io.imread. The file can be gzip compressed.</span>
 <span class="sd">        subset : tuple of slices, optional</span>
 <span class="sd">            Slices representing the desired subset along each dimension.</span>
 <span class="sd">        use_memmap : bool, optional</span>
@@ -556,8 +557,9 @@ document.write(`
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        If ``filename`` ends with &quot;.em&quot; or &quot;.em.gz&quot; the method will parse it as EM file.</span>
-<span class="sd">        Otherwise it defaults to the CCP4/MRC format and on failure, switches to</span>
+<span class="sd">        If ``filename`` ends with &quot;.em&quot; or &quot;.em.gz&quot; the method will parse it as EM file,</span>
+<span class="sd">        if it ends with &quot;h5&quot; or &quot;h5.gz&quot; the method will parse the file as HDF5.</span>
+<span class="sd">        Otherwise the method defaults to the CCP4/MRC format and on failure, switches to</span>
 <span class="sd">        :obj:`skimage.io.imread` regardless of the extension. Currently, the later does not</span>
 <span class="sd">        extract origin or sampling_rate information from the file.</span>
 
@@ -568,8 +570,10 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">func</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_load_mrc</span>
-            <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.em&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.em.gz&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;em&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;em.gz&quot;</span><span class="p">):</span>
                 <span class="n">func</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_load_em</span>
+            <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;h5&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;h5.gz&quot;</span><span class="p">):</span>
+                <span class="n">func</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_load_hdf5</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span>
                 <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="n">subset</span><span class="p">,</span> <span class="n">use_memmap</span><span class="o">=</span><span class="n">use_memmap</span>
             <span class="p">)</span>
@@ -973,6 +977,40 @@ document.write(`
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span> <span class="p">{}</span>
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_load_hdf5</span><span class="p">(</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">],</span> <span class="n">use_memmap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Density&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extracts data from an H5 file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Path to a file in CCP4/MRC format.</span>
+<span class="sd">        subset : tuple of slices, optional</span>
+<span class="sd">            Slices representing the desired subset along each dimension.</span>
+<span class="sd">        use_memmap : bool, optional</span>
+<span class="sd">            Whether the Density objects data attribute should be memmory mapped.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Density</span>
+<span class="sd">            An instance of the Density class populated with the data from the HDF5 file.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :py:meth:`Density._save_hdf5`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">subset</span> <span class="o">=</span> <span class="o">...</span> <span class="k">if</span> <span class="n">subset</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">subset</span>
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">infile</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="n">subset</span><span class="p">]</span>
+            <span class="n">origin</span> <span class="o">=</span> <span class="n">infile</span><span class="p">[</span><span class="s2">&quot;origin&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+            <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">infile</span><span class="p">[</span><span class="s2">&quot;sampling_rate&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">infile</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+            <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">metadata</span>
+
 <div class="viewcode-block" id="Density.from_structure">
 <a class="viewcode-back" href="../../reference/api/tme.density.Density.from_structure.html#tme.density.Density.from_structure">[docs]</a>
     <span class="nd">@classmethod</span>
@@ -1175,9 +1213,9 @@ document.write(`
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        If ``filename`` ends with &quot;.em&quot; or &quot;.em.gz&quot;, the method will create an EM file.</span>
-<span class="sd">        Otherwise, it defaults to the CCP4/MRC format, and on failure, falls back</span>
-<span class="sd">        to :obj:`skimage.io.imsave`.</span>
+<span class="sd">        If ``filename`` ends with &quot;em&quot; or &quot;em.gz&quot; will create an EM file, &quot;h5&quot; or</span>
+<span class="sd">        &quot;h5.gz&quot; will create a HDF5 file. Otherwise, the method defaults to the CCP4/MRC</span>
+<span class="sd">        format, and on failure, falls back to :obj:`skimage.io.imsave`.</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -1188,14 +1226,16 @@ document.write(`
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_mrc</span>
-            <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.em&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.em.gz&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;em&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;em.gz&quot;</span><span class="p">):</span>
                 <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_em</span>
+            <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;h5&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;h5.gz&quot;</span><span class="p">):</span>
+                <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_hdf5</span>
             <span class="n">_</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">gzip</span><span class="o">=</span><span class="n">gzip</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_skio</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">gzip</span><span class="o">=</span><span class="n">gzip</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_save_mrc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gzip</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_save_mrc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gzip</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Writes current class instance to disk as mrc file.</span>
 
@@ -1221,20 +1261,16 @@ document.write(`
             <span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;origin&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
             <span class="n">mrc</span><span class="o">.</span><span class="n">voxel_size</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">_save_em</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gzip</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_save_em</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gzip</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Writes data to disk as an .em file.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        filename : str</span>
-<span class="sd">            Path to write the .em file to.</span>
-<span class="sd">        data : NDArray</span>
-<span class="sd">            Data to be saved.</span>
-<span class="sd">        origin : NDArray</span>
-<span class="sd">            Coordinate origin of the data.</span>
-<span class="sd">        sampling_rate : NDArray</span>
-<span class="sd">            Sampling rate of the data.</span>
+<span class="sd">            Path to write to.</span>
+<span class="sd">        gzip : bool, optional</span>
+<span class="sd">            If True, the output will be gzip compressed.</span>
 
 <span class="sd">        References</span>
 <span class="sd">        ----------</span>
@@ -1264,7 +1300,7 @@ document.write(`
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="mi">256</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">tobytes</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">_save_skio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gzip</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_save_skio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gzip</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Uses :obj:`skimage.io.imsave` to write data to filename [1]_.</span>
 
@@ -1287,6 +1323,35 @@ document.write(`
         <span class="k">if</span> <span class="n">gzip</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">gzip_open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
                 <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">swap</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_save_hdf5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gzip</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the Density instance data to an HDF5 file, with optional compression.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Path to write to.</span>
+<span class="sd">        gzip : bool, optional</span>
+<span class="sd">            If True, the output will be gzip compressed.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :py:meth:`Density._load_hdf5`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">compression</span> <span class="o">=</span> <span class="s2">&quot;gzip&quot;</span> <span class="k">if</span> <span class="n">gzip</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;origin&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;sampling_rate&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">empty</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Density&quot;</span><span class="p">:</span>
