@@ -184,7 +184,7 @@ To verify that |project| has been installed correctly, you can run the test suit
 .. code-block:: bash
 
    git clone https://github.com/KosinskiLab/pyTME.git
-   cd pytme
+   cd pyTME
    pytest
 
 If the tests pass without any errors, |project| has been successfully installed.

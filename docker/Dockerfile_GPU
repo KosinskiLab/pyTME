@@ -20,7 +20,7 @@ RUN mkdir /python && cd /python && \
     make install && \
     rm -rf /python
 
-RUN python3 -mpip install \
+RUN python3 -mpip --no-cache-dir install \
     git+https://github.com/KosinskiLab/pyTME.git \
     cupy-cuda12x
 

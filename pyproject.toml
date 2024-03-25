@@ -23,6 +23,8 @@ dependencies=[
     "scipy>=1.9.1",
     "pybind11",
     "psutil",
+    "tifffile",
+    "h5py"
 ]
 license = {text = "Proprietary"}
 classifiers = [

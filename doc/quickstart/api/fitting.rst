@@ -37,7 +37,7 @@ In the following code, we make use of the data structures :py:class:`tme.density
 
 .. code-block:: python
 
-    from dge import Structure, Density
+    from tme import Structure, Density
 
     # Paths to downloaded files, adapt to your local paths
     map_file = "emd_8621.map.gz"
