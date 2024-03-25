@@ -96,7 +96,7 @@ class TestDensity:
         assert np.allclose(density.origin, self.density.origin)
         assert density.metadata == self.density.metadata
 
-    @pytest.mark.parametrize("extension", ("mrc", "em", "tiff"))
+    @pytest.mark.parametrize("extension", ("mrc", "em", "tiff", "h5"))
     @pytest.mark.parametrize("gzip", (True, False))
     @pytest.mark.parametrize("use_memmap", (True, False))
     @pytest.mark.parametrize("subset", (True, False))

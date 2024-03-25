@@ -212,13 +212,12 @@ def corr_setup(
     template_mean = backend.sum(backend.multiply(template, template_mask))
     template_mean = backend.divide(template_mean, n_observations)
     template_ssd = backend.sum(
-        backend.square(backend.multiply(
-            backend.multiply(template, template_mean),
-            template_mask
-        ))
+        backend.square(
+            backend.multiply(backend.multiply(template, template_mean), template_mask)
+        )
     )
     template_volume = np.prod(template.shape)
-    backend.multiply(template, template_mask, out = template)
+    backend.multiply(template, template_mask, out=template)
 
     # Final numerator is score - numerator2
     numerator2 = backend.multiply(target_window_sum, template_mean)
@@ -795,7 +794,9 @@ def corr_scoring(
 
     norm_template, template_mask, mask_sum = False, 1, 1
     if "template_mask" in kwargs:
-        template_mask = backend.sharedarr_to_arr(template_shape, template_dtype, kwargs["template_mask"][0])
+        template_mask = backend.sharedarr_to_arr(
+            template_shape, template_dtype, kwargs["template_mask"][0]
+        )
         norm_template, mask_sum = True, backend.sum(template_mask)
     norm_template = conditional_execute(_normalize_under_mask, norm_template)
 
@@ -826,7 +827,7 @@ def corr_scoring(
     fourier_shift = callback_class_args.get("fourier_shift", backend.zeros(arr.ndim))
     fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
 
-    template_sum = backend.sum(template)
+    template_sum = backend.sum(backend.abs(template))
     unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
@@ -838,7 +839,7 @@ def corr_scoring(
             use_geometric_center=False,
             order=interpolation_order,
         )
-        rotation_norm = template_sum / backend.sum(arr)
+        rotation_norm = template_sum / backend.sum(backend.abs(arr))
         backend.multiply(arr, rotation_norm, out=arr)
         norm_template(arr[unpadded_slice], template_mask, mask_sum)
 
@@ -1311,8 +1312,9 @@ def scan(
         The merged results from callback_class if provided otherwise None.
     """
     shape_diff = backend.subtract(
-        matching_data._target.shape, matching_data._template.shape
+        matching_data._output_target_shape, matching_data._output_template_shape
     )
+    shape_diff = backend.multiply(shape_diff, matching_data._batch_mask)
     if backend.sum(shape_diff < 0) and not pad_fourier:
         warnings.warn(
             "Target is larger than template and Fourier padding is turned off."

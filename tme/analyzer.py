@@ -15,14 +15,14 @@ from numpy.typing import NDArray
 from scipy.stats import entropy
 from sklearn.cluster import DBSCAN
 from skimage.feature import peak_local_max
-
+from skimage.registration._phase_cross_correlation import _upsampled_dft
 from .extensions import max_index_by_label, online_statistics
 from .matching_utils import (
     split_numpy_array_slices,
     array_to_memmap,
     generate_tempfile_name,
+    euler_to_rotationmatrix,
 )
-
 from .backends import backend
 
 
@@ -104,7 +104,10 @@ class PeakCaller(ABC):
         yield from self.peak_list
 
     def __call__(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
+        self,
+        score_space: NDArray,
+        rotation_matrix: NDArray,
+        **kwargs,
     ) -> None:
         """
         Update the internal parameter store based on input array.
@@ -159,11 +162,12 @@ class PeakCaller(ABC):
             peak_positions.shape[0],
             axis=0,
         )
+        peak_scores = score_space[tuple(peak_positions.T)]
 
         self._update(
             peak_positions=peak_positions,
             peak_details=peak_details,
-            peak_scores=score_space[tuple(peak_positions.T)],
+            peak_scores=peak_scores,
             rotations=rotations,
             **kwargs,
         )
@@ -230,6 +234,79 @@ class PeakCaller(ABC):
                 **kwargs,
             )
         return tuple(base)
+
+    @staticmethod
+    def oversample_peaks(
+        score_space: NDArray, peak_positions: NDArray, oversampling_factor: int = 8
+    ):
+        """
+        Refines peaks positions in the corresponding score space.
+
+        Parameters
+        ----------
+        score_space : NDArray
+            The d-dimensional array representing the score space.
+        peak_positions : NDArray
+            An array of shape (n, d) containing the peak coordinates
+            to be refined, where n is the number of peaks and d is the
+            dimensionality of the score space.
+        oversampling_factor : int, optional
+            The oversampling factor for Fourier transforms. Defaults to 8.
+
+        Returns
+        -------
+        NDArray
+            An array of shape (n, d) containing the refined subpixel
+            coordinates of the peaks.
+
+        Notes
+        -----
+        Floating point peak positions are determined by oversampling the
+        score_space around peak_positions. The accuracy
+        of refinement scales with 1 / oversampling_factor.
+
+        References
+        ----------
+        .. [1]  https://scikit-image.org/docs/stable/api/skimage.registration.html
+        .. [2]  Manuel Guizar-Sicairos, Samuel T. Thurman, and
+                James R. Fienup, “Efficient subpixel image registration
+                algorithms,” Optics Letters 33, 156-158 (2008).
+                DOI:10.1364/OL.33.000156
+
+        """
+        score_space = backend.to_numpy_array(score_space)
+        peak_positions = backend.to_numpy_array(peak_positions)
+
+        peak_positions = np.round(
+            np.divide(
+                np.multiply(peak_positions, oversampling_factor), oversampling_factor
+            )
+        )
+        upsampled_region_size = np.ceil(np.multiply(oversampling_factor, 1.5))
+        dftshift = np.round(np.divide(upsampled_region_size, 2.0))
+        sample_region_offset = np.subtract(
+            dftshift, np.multiply(peak_positions, oversampling_factor)
+        )
+
+        score_space_ft = np.fft.fftn(score_space).conj()
+        for index in range(sample_region_offset.shape[0]):
+            cross_correlation_upsampled = _upsampled_dft(
+                data=score_space_ft,
+                upsampled_region_size=upsampled_region_size,
+                upsample_factor=oversampling_factor,
+                axis_offsets=sample_region_offset[index],
+            ).conj()
+
+            maxima = np.unravel_index(
+                np.argmax(np.abs(cross_correlation_upsampled)),
+                cross_correlation_upsampled.shape,
+            )
+            maxima = np.divide(np.subtract(maxima, dftshift), oversampling_factor)
+            peak_positions[index] = np.add(peak_positions[index], maxima)
+
+        peak_positions = backend.to_backend_array(peak_positions)
+
+        return peak_positions
 
     def _update(
         self,
@@ -333,7 +410,7 @@ class PeakCallerSort(PeakCaller):
 class PeakCallerMaximumFilter(PeakCaller):
     """
     Find local maxima by applying a maximum filter and enforcing a distance
-    constraint subseqquently. This is similar to the strategy implemented in
+    constraint subsequently. This is similar to the strategy implemented in
     skimage.feature.peak_local_max.
     """
 
@@ -457,7 +534,13 @@ class PeakCallerRecursiveMasking(PeakCaller):
     """
 
     def call_peaks(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
+        self,
+        score_space: NDArray,
+        rotation_matrix: NDArray,
+        mask: NDArray = None,
+        rotation_space: NDArray = None,
+        rotation_mapping: Dict = None,
+        **kwargs,
     ) -> Tuple[NDArray, NDArray]:
         """
         Call peaks in the score space.
@@ -466,35 +549,181 @@ class PeakCallerRecursiveMasking(PeakCaller):
         ----------
         score_space : NDArray
             Data array of scores.
-        minimum_score : float
-            Minimum score value to consider.
-        min_distance : float
-            Minimum distance between maxima.
+        rotation_matrix : NDArray
+            Rotation matrix.
+        mask : NDArray, optional
+            Mask array, by default None.
+        rotation_space : NDArray, optional
+            Rotation space array, by default None.
+        rotation_mapping : Dict optional
+            Dictionary mapping values in rotation_space to Euler angles.
+            By default None
 
         Returns
         -------
-        NDArray
-            Array of peak coordiantes.
-        NDArray
-            Array of peak details.
+        Tuple[NDArray, NDArray]
+            Array of peak coordinates and peak details.
+
+        Notes
+        -----
+        By default, scores are masked using a box with edge length self.min_distance.
+        If mask is provided, elements around each peak will be multiplied by the mask
+        values. If rotation_space and rotation_mapping is provided, the respective
+        rotation will be applied to the mask, otherwise rotation_matrix is used.
         """
-        score_box = tuple(self.min_distance for _ in range(score_space.ndim))
-        coordinates = []
+        coordinates, masking_function = [], self._mask_scores_rotate
+
+        if mask is None:
+            masking_function = self._mask_scores_box
+            shape = tuple(self.min_distance for _ in range(score_space.ndim))
+            mask = backend.zeros(shape, dtype=backend._default_dtype)
+
+        rotated_template = backend.zeros(mask.shape, dtype=mask.dtype)
+
         while True:
             backend.argmax(score_space)
-            max_coord = backend.unravel_index(
+            peak = backend.unravel_index(
                 indices=backend.argmax(score_space), shape=score_space.shape
             )
-            coordinates.append(max_coord)
-            start = backend.maximum(backend.subtract(max_coord, score_box), 0)
-            stop = backend.minimum(backend.add(max_coord, score_box), score_space.shape)
-            start, stop = backend.astype(start, int), backend.astype(stop, int)
-            coords = tuple(slice(*pos) for pos in zip(start, stop))
-            score_space[coords] = 0
+            coordinates.append(peak)
+
+            current_rotation_matrix = self._get_rotation_matrix(
+                peak=peak,
+                rotation_space=rotation_space,
+                rotation_mapping=rotation_mapping,
+                rotation_matrix=rotation_matrix,
+            )
+
+            masking_function(
+                score_space=score_space,
+                rotation_matrix=current_rotation_matrix,
+                peak=peak,
+                mask=mask,
+                rotated_template=rotated_template,
+            )
+
             if len(coordinates) >= self.number_of_peaks:
                 break
         peaks = backend.to_backend_array(coordinates)
         return peaks, None
+
+    @staticmethod
+    def _get_rotation_matrix(
+        peak: NDArray,
+        rotation_space: NDArray,
+        rotation_mapping: NDArray,
+        rotation_matrix: NDArray,
+    ) -> NDArray:
+        """
+        Get rotation matrix based on peak and rotation data.
+
+        Parameters
+        ----------
+        peak : NDArray
+            Peak coordinates.
+        rotation_space : NDArray
+            Rotation space array.
+        rotation_mapping : Dict
+            Dictionary mapping values in rotation_space to Euler angles.
+        rotation_matrix : NDArray
+            Current rotation matrix.
+
+        Returns
+        -------
+        NDArray
+            Rotation matrix.
+        """
+        if rotation_space is None or rotation_mapping is None:
+            return rotation_matrix
+
+        rotation = rotation_mapping[rotation_space[tuple(peak)]]
+
+        rotation_matrix = backend.to_backend_array(
+            euler_to_rotationmatrix(backend.to_numpy_array(rotation))
+        )
+        return rotation_matrix
+
+    @staticmethod
+    def _mask_scores_box(
+        score_space: NDArray, peak: NDArray, mask: NDArray, **kwargs: Dict
+    ) -> None:
+        """
+        Mask scores in a box around a peak.
+
+        Parameters
+        ----------
+        score_space : NDArray
+            Data array of scores.
+        peak : NDArray
+            Peak coordinates.
+        mask : NDArray
+            Mask array.
+        """
+        start = backend.maximum(backend.subtract(peak, mask.shape), 0)
+        stop = backend.minimum(backend.add(peak, mask.shape), score_space.shape)
+        start, stop = backend.astype(start, int), backend.astype(stop, int)
+        coords = tuple(slice(*pos) for pos in zip(start, stop))
+        score_space[coords] = 0
+        return None
+
+    @staticmethod
+    def _mask_scores_rotate(
+        score_space: NDArray,
+        peak: NDArray,
+        mask: NDArray,
+        rotated_template: NDArray,
+        rotation_matrix: NDArray,
+        **kwargs: Dict,
+    ) -> None:
+        """
+        Mask score_space using mask rotation around a peak.
+
+        Parameters
+        ----------
+        score_space : NDArray
+            Data array of scores.
+        peak : NDArray
+            Peak coordinates.
+        mask : NDArray
+            Mask array.
+        rotated_template : NDArray
+            Empty array to write mask rotations to.
+        rotation_matrix : NDArray
+            Rotation matrix.
+        """
+        left_pad = backend.divide(mask.shape, 2).astype(int)
+        right_pad = backend.add(left_pad, backend.mod(mask.shape, 2).astype(int))
+
+        score_start = backend.subtract(peak, left_pad)
+        score_stop = backend.add(peak, right_pad)
+
+        template_start = backend.subtract(backend.maximum(score_start, 0), score_start)
+        template_stop = backend.subtract(
+            score_stop, backend.minimum(score_stop, score_space.shape)
+        )
+        template_stop = backend.subtract(mask.shape, template_stop)
+
+        score_start = backend.maximum(score_start, 0)
+        score_stop = backend.minimum(score_stop, score_space.shape)
+        score_start = backend.astype(score_start, int)
+        score_stop = backend.astype(score_stop, int)
+
+        template_start = backend.astype(template_start, int)
+        template_stop = backend.astype(template_stop, int)
+        coords_score = tuple(slice(*pos) for pos in zip(score_start, score_stop))
+        coords_template = tuple(
+            slice(*pos) for pos in zip(template_start, template_stop)
+        )
+
+        rotated_template.fill(0)
+        backend.rotate_array(
+            arr=mask, rotation_matrix=rotation_matrix, order=1, out=rotated_template
+        )
+
+        score_space[coords_score] = backend.multiply(
+            score_space[coords_score], (rotated_template[coords_template] <= 0.1)
+        )
+        return None
 
 
 class PeakCallerScipy(PeakCaller):
@@ -1077,6 +1306,61 @@ class MaxScoreOverRotations:
             rotations_out,
             new_rotation_mapping,
         )
+
+
+class MaxScoreOverTranslations(MaxScoreOverRotations):
+    """
+    Obtain the maximum translation score over various rotations.
+
+    Attributes
+    ----------
+    score_space : NDArray
+        The score space for the observed rotations.
+    rotations : NDArray
+        The rotation identifiers for each score.
+    translation_offset : NDArray, optional
+        The offset applied during translation.
+    observed_rotations : int
+        Count of observed rotations.
+    use_memmap : bool, optional
+        Whether to offload internal data arrays to disk
+    thread_safe: bool, optional
+        Whether access to internal data arrays should be thread safe
+    """
+
+    def __call__(
+        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
+    ) -> None:
+        """
+        Update internal parameter store based on `score_space`.
+
+        Parameters
+        ----------
+        score_space : ndarray
+            Numpy array containing the score space.
+        rotation_matrix : ndarray
+            Square matrix describing the current rotation.
+        **kwargs
+            Arbitrary keyword arguments.
+        """
+        from tme.matching_utils import centered_mask
+
+        with self.lock:
+            rotation = backend.tobytes(rotation_matrix)
+            if rotation not in self.observed_rotations:
+                self.observed_rotations[rotation] = len(self.observed_rotations)
+            score_space = centered_mask(score_space, kwargs["template_shape"])
+            rotation_index = self.observed_rotations[rotation]
+            internal_scores = backend.sharedarr_to_arr(
+                shape=self.score_space_shape,
+                dtype=self.score_space_dtype,
+                shm=self.score_space,
+            )
+            max_score = score_space.max(axis=(1, 2, 3))
+            mean_score = score_space.mean(axis=(1, 2, 3))
+            std_score = score_space.std(axis=(1, 2, 3))
+            z_score = (max_score - mean_score) / std_score
+            internal_scores[rotation_index] = z_score
 
 
 class MemmapHandler:

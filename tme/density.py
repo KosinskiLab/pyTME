@@ -12,6 +12,7 @@ from gzip import open as gzip_open
 from typing import Tuple, Dict, Set
 from os.path import splitext, basename
 
+import h5py
 import mrcfile
 import numpy as np
 import skimage.io as skio
@@ -129,8 +130,8 @@ class Density:
         Parameters
         ----------
         filename : str
-            Path to a file in CCP4/MRC, EM or a format supported by skimage.io.imread.
-            The file can be gzip compressed.
+            Path to a file in CCP4/MRC, EM, HDF5 or a format supported by
+            skimage.io.imread. The file can be gzip compressed.
         subset : tuple of slices, optional
             Slices representing the desired subset along each dimension.
         use_memmap : bool, optional
@@ -185,8 +186,9 @@ class Density:
 
         Notes
         -----
-        If ``filename`` ends with ".em" or ".em.gz" the method will parse it as EM file.
-        Otherwise it defaults to the CCP4/MRC format and on failure, switches to
+        If ``filename`` ends with ".em" or ".em.gz" the method will parse it as EM file,
+        if it ends with "h5" or "h5.gz" the method will parse the file as HDF5.
+        Otherwise the method defaults to the CCP4/MRC format and on failure, switches to
         :obj:`skimage.io.imread` regardless of the extension. Currently, the later does not
         extract origin or sampling_rate information from the file.
 
@@ -197,8 +199,10 @@ class Density:
         """
         try:
             func = cls._load_mrc
-            if filename.endswith(".em") or filename.endswith(".em.gz"):
+            if filename.endswith("em") or filename.endswith("em.gz"):
                 func = cls._load_em
+            elif filename.endswith("h5") or filename.endswith("h5.gz"):
+                func = cls._load_hdf5
             data, origin, sampling_rate, meta = func(
                 filename=filename, subset=subset, use_memmap=use_memmap
             )
@@ -601,6 +605,40 @@ class Density:
         )
         return data, np.zeros(data.ndim), np.ones(data.ndim), {}
 
+    @staticmethod
+    def _load_hdf5(
+        filename: str, subset: Tuple[slice], use_memmap: bool = False
+    ) -> "Density":
+        """
+        Extracts data from an H5 file.
+
+        Parameters
+        ----------
+        filename : str
+            Path to a file in CCP4/MRC format.
+        subset : tuple of slices, optional
+            Slices representing the desired subset along each dimension.
+        use_memmap : bool, optional
+            Whether the Density objects data attribute should be memmory mapped.
+
+        Returns
+        -------
+        Density
+            An instance of the Density class populated with the data from the HDF5 file.
+
+        See Also
+        --------
+        :py:meth:`Density._save_hdf5`
+        """
+        subset = ... if subset is None else subset
+        with h5py.File(filename, mode="r") as infile:
+            data = infile["data"][subset]
+            origin = infile["origin"][...]
+            sampling_rate = infile["sampling_rate"][...]
+            metadata = {key: val for key, val in infile.attrs.items()}
+
+            return data, origin, sampling_rate, metadata
+
     @classmethod
     def from_structure(
         cls,
@@ -798,9 +836,9 @@ class Density:
 
         Notes
         -----
-        If ``filename`` ends with ".em" or ".em.gz", the method will create an EM file.
-        Otherwise, it defaults to the CCP4/MRC format, and on failure, falls back
-        to :obj:`skimage.io.imsave`.
+        If ``filename`` ends with "em" or "em.gz" will create an EM file, "h5" or
+        "h5.gz" will create a HDF5 file. Otherwise, the method defaults to the CCP4/MRC
+        format, and on failure, falls back to :obj:`skimage.io.imsave`.
 
         See Also
         --------
@@ -811,13 +849,15 @@ class Density:
 
         try:
             func = self._save_mrc
-            if filename.endswith(".em") or filename.endswith(".em.gz"):
+            if filename.endswith("em") or filename.endswith("em.gz"):
                 func = self._save_em
+            elif filename.endswith("h5") or filename.endswith("h5.gz"):
+                func = self._save_hdf5
             _ = func(filename=filename, gzip=gzip)
         except ValueError:
             _ = self._save_skio(filename=filename, gzip=gzip)
 
-    def _save_mrc(self, filename: str, gzip: bool) -> None:
+    def _save_mrc(self, filename: str, gzip: bool = False) -> None:
         """
         Writes current class instance to disk as mrc file.
 
@@ -843,20 +883,16 @@ class Density:
             mrc.header["origin"] = tuple(self.origin[::-1])
             mrc.voxel_size = tuple(self.sampling_rate[::-1])
 
-    def _save_em(self, filename: str, gzip: bool) -> None:
+    def _save_em(self, filename: str, gzip: bool = False) -> None:
         """
         Writes data to disk as an .em file.
 
         Parameters
         ----------
         filename : str
-            Path to write the .em file to.
-        data : NDArray
-            Data to be saved.
-        origin : NDArray
-            Coordinate origin of the data.
-        sampling_rate : NDArray
-            Sampling rate of the data.
+            Path to write to.
+        gzip : bool, optional
+            If True, the output will be gzip compressed.
 
         References
         ----------
@@ -886,7 +922,7 @@ class Density:
             f.write(b" " * 256)
             f.write(self.data.tobytes())
 
-    def _save_skio(self, filename: str, gzip: bool) -> None:
+    def _save_skio(self, filename: str, gzip: bool = False) -> None:
         """
         Uses :obj:`skimage.io.imsave` to write data to filename [1]_.
 
@@ -909,6 +945,35 @@ class Density:
         if gzip:
             with gzip_open(filename, "wb") as outfile:
                 outfile.write(swap.getvalue())
+
+    def _save_hdf5(self, filename: str, gzip: bool = False) -> None:
+        """
+        Saves the Density instance data to an HDF5 file, with optional compression.
+
+        Parameters
+        ----------
+        filename : str
+            Path to write to.
+        gzip : bool, optional
+            If True, the output will be gzip compressed.
+
+        See Also
+        --------
+        :py:meth:`Density._load_hdf5`
+        """
+        compression = "gzip" if gzip else None
+        with h5py.File(filename, mode="w") as f:
+            f.create_dataset("data", data=self.data, compression=compression)
+            f.create_dataset("origin", data=self.origin)
+            f.create_dataset("sampling_rate", data=self.sampling_rate)
+
+            self.metadata["mean"] = self.data.mean()
+            self.metadata["std"] = self.data.std()
+            self.metadata["min"] = self.data.min()
+            self.metadata["max"] = self.data.max()
+
+            for key, val in self.metadata.items():
+                f.attrs[key] = val
 
     @property
     def empty(self) -> "Density":

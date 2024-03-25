@@ -48,6 +48,8 @@ class MatchingData:
 
         self._invert_target = False
 
+        self._set_batch_dimension()
+
     @staticmethod
     def _shape_to_slice(shape: Tuple[int]):
         return tuple(slice(0, dim) for dim in shape)
@@ -149,13 +151,13 @@ class MatchingData:
         def _warn_on_mismatch(
             expectation: float, computation: float, name: str
         ) -> float:
-            expectation, computation = float(expectation), float(computation)
             if expectation is None:
                 expectation = computation
+            expectation, computation = float(expectation), float(computation)
 
             if abs(computation) > abs(expectation):
                 warnings.warn(
-                    f"Computed {name} value is more extreme than value specified in file"
+                    f"Computed {name} value is more extreme than value in file header"
                     f" (|{computation}| > |{expectation}|). This may lead to issues"
                     " with padding and contrast inversion."
                 )
@@ -176,10 +178,7 @@ class MatchingData:
             arr_max = _warn_on_mismatch(arr_max, arr.max(), "max")
 
             # Avoid in-place operation in case ret is not floating point
-            ret = np.divide(
-                np.subtract(-ret, arr_min),
-                np.subtract(arr_max, arr_min)
-            )
+            ret = np.divide(np.subtract(-ret, arr_min), np.subtract(arr_max, arr_min))
 
         return ret
 
@@ -223,14 +222,16 @@ class MatchingData:
         if target_pad is None:
             target_pad = np.zeros(len(self._target.shape), dtype=int)
         if template_pad is None:
-            template_pad = np.zeros(len(self._target.shape), dtype=int)
+            template_pad = np.zeros(len(self._template.shape), dtype=int)
 
-        indices = compute_full_convolution_index(
-            outer_shape=self._target.shape,
-            inner_shape=self._template.shape,
-            outer_split=target_slice,
-            inner_split=template_slice,
-        )
+        indices = None
+        if len(self._target.shape) == len(self._template.shape):
+            indices = compute_full_convolution_index(
+                outer_shape=self._target.shape,
+                inner_shape=self._template.shape,
+                outer_split=target_slice,
+                inner_split=template_slice,
+            )
 
         target_subset = self.subset_array(
             arr=self._target,
@@ -246,10 +247,10 @@ class MatchingData:
         )
         ret = self.__class__(target=target_subset, template=template_subset)
 
-        ret._translation_offset = np.add(
-            [x.start for x in target_slice],
-            [x.start for x in template_slice],
-        )
+        # ret._translation_offset = np.add(
+        #     [x.start for x in target_slice],
+        #     [x.start for x in template_slice],
+        # )
         ret.template_filter = self.template_filter
 
         ret.rotations, ret.indices = self.rotations, indices
@@ -530,8 +531,10 @@ class MatchingData:
     def template(self):
         """Returns the reversed template NDArray."""
         if isinstance(self._template, Density):
-            return backend.reverse(self._template.data)
-        return backend.reverse(self._template)
+            template = backend.reverse(self._template.data)
+        else:
+            template = backend.reverse(self._template)
+        return template.reshape(self._output_template_shape)
 
     @template.setter
     def template(self, template: NDArray):

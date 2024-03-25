@@ -84,6 +84,36 @@ class TestPeakCallers:
         assert [len(res) == 2 for res in result]
 
 
+class TestRecursiveMasking:
+    def setup_method(self):
+        self.number_of_peaks = 100
+        self.min_distance = 5
+        self.data = np.random.rand(100, 100, 100)
+        self.rotation_matrix = np.eye(3)
+        self.mask = np.random.rand(20, 20, 20)
+        self.rotation_space = np.zeros_like(self.data)
+        self.rotation_mapping = {0: (0, 0, 0)}
+
+    @pytest.mark.parametrize("number_of_peaks", (1, 100))
+    @pytest.mark.parametrize("compute_rotation", (True, False))
+    def test__call__(self, number_of_peaks, compute_rotation):
+        peak_caller = PeakCallerRecursiveMasking(
+            number_of_peaks=number_of_peaks, min_distance=self.min_distance
+        )
+        rotation_space, rotation_mapping = None, None
+        if compute_rotation:
+            rotation_space = self.rotation_space
+            rotation_mapping = self.rotation_mapping
+
+        peak_caller(
+            score_space=self.data,
+            rotation_matrix=self.rotation_matrix,
+            mask=self.mask,
+            rotation_space=rotation_space,
+            rotation_mapping=rotation_mapping,
+        )
+
+
 class TestMaxScoreOverRotations:
     def setup_method(self):
         self.number_of_peaks = 100
