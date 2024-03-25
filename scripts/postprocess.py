@@ -6,7 +6,7 @@
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 from os import getcwd
-from os.path import join
+from os.path import join, abspath
 import argparse
 from sys import exit
 from typing import List, Tuple
@@ -29,7 +29,6 @@ from tme.matching_utils import (
     load_pickle,
     euler_to_rotationmatrix,
     euler_from_rotationmatrix,
-    centered_mask,
 )
 
 PEAK_CALLERS = {
@@ -45,75 +44,132 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Peak Calling for Template Matching Outputs"
     )
-    parser.add_argument(
-        "--input_file",
-        required=True,
-        help="Path to the output of match_template.py.",
+
+    input_group = parser.add_argument_group("Input")
+    output_group = parser.add_argument_group("Output")
+    peak_group = parser.add_argument_group("Peak Calling")
+    additional_group = parser.add_argument_group("Additional Parameters")
+
+    input_group.add_argument(
+        "--input_file", required=True, help="Path to the output of match_template.py."
     )
-    parser.add_argument(
+    input_group.add_argument(
+        "--target_mask",
+        required=False,
+        type=str,
+        help="Path to an optional mask applied to template matching scores.",
+    )
+    input_group.add_argument(
+        "--orientations",
+        required=False,
+        type=str,
+        help="Path to file generated using output_format orientations. Can be filtered "
+        "to exclude false-positive peaks. If this file is provided, peak calling "
+        "is skipped and corresponding parameters ignored.",
+    )
+
+    output_group.add_argument(
         "--output_prefix",
         required=True,
-        help="Prefix for the output file name. Extension depends on output_format.",
+        help="Output filename, extension will be added based on output_format.",
     )
-    parser.add_argument(
-        "--number_of_peaks",
-        type=int,
-        default=1000,
-        help="Number of peaks to consider. Note, this is the number of called peaks "
-        ", subject to min_distance and min_boundary_distance filtering. Therefore, the "
-        "returned number of peaks will be at most equal to number_of_peaks. "
-        "Ignored when --orientations is provided.",
+    output_group.add_argument(
+        "--output_format",
+        choices=["orientations", "alignment", "extraction", "relion", "backmapping"],
+        default="orientations",
+        help="Available output formats:"
+        "orientations (translation, rotation, and score), "
+        "alignment (aligned template to target based on orientations), "
+        "extraction (extract regions around peaks from targets, i.e. subtomograms), "
+        "relion (perform extraction step and generate corresponding star files), "
+        "backmapping (map template to target using identified peaks).",
     )
-    parser.add_argument(
-        "--min_distance",
-        type=int,
-        default=5,
-        help="Minimum distance between peaks. Ignored when --orientations is provided.",
-    )
-    parser.add_argument(
-        "--min_boundary_distance",
-        type=int,
-        default=0,
-        help="Minimum distance from target boundaries. Ignored when --orientations "
-        "is provided.",
-    )
-    parser.add_argument(
-        "--mask_edges",
-        action="store_true",
-        default=False,
-        help="Whether to mask edges of the input score array according to the template shape."
-        "Uses twice the value of --min_boundary_distance if boht are provided.",
-    )
-    parser.add_argument(
-        "--wedge_mask",
-        type=str,
-        default=None,
-        help="Path to Fourier space mask. Only considered if output_format is relion.",
-    )
-    parser.add_argument(
+
+    peak_group.add_argument(
         "--peak_caller",
         choices=list(PEAK_CALLERS.keys()),
         default="PeakCallerScipy",
-        help="Peak caller to use for analysis. Ignored if input_file contains peaks or when "
-        "--orientations is provided.",
+        help="Peak caller for local maxima identification.",
     )
-    parser.add_argument(
-        "--orientations",
+    peak_group.add_argument(
+        "--minimum_score",
+        type=float,
         default=None,
-        help="Path to orientations file to overwrite orientations computed from"
-        " match_template.py output.",
+        help="Minimum score from which peaks will be considered.",
     )
-    parser.add_argument(
-        "--output_format",
-        choices=["orientations", "alignment", "extraction", "relion"],
-        default="orientations",
-        help="Choose the output format. Available formats are: "
-        "orientations (translation, rotation, and score), "
-        "alignment (aligned template to target based on orientations), "
-        "extraction (extract regions around peaks from targets, i.e. subtomograms). "
-        "relion (perform extraction step and generate corresponding star files).",
+    peak_group.add_argument(
+        "--maximum_score",
+        type=float,
+        default=None,
+        help="Maximum score until which peaks will be considered.",
     )
+    peak_group.add_argument(
+        "--min_distance",
+        type=int,
+        default=5,
+        help="Minimum distance between peaks.",
+    )
+    peak_group.add_argument(
+        "--min_boundary_distance",
+        type=int,
+        default=0,
+        help="Minimum distance of peaks to target edges.",
+    )
+    peak_group.add_argument(
+        "--mask_edges",
+        action="store_true",
+        default=False,
+        help="Whether candidates should not be identified from scores that were "
+        "computed from padded densities. Superseded by min_boundary_distance.",
+    )
+    peak_group.add_argument(
+        "--number_of_peaks",
+        type=int,
+        default=1000,
+        help="Upper limit of peaks to call, subject to filtering parameters.",
+    )
+    peak_group.add_argument(
+        "--peak_oversampling",
+        type=int,
+        default=1,
+        help="1 / factor equals voxel precision, e.g. 2 detects half voxel "
+        "translations. Useful for matching structures to electron density maps.",
+    )
+
+    additional_group.add_argument(
+        "--subtomogram_box_size",
+        type=int,
+        default=None,
+        help="Subtomogram box size, by default equal to the centered template. Will be "
+        "padded to even values if output_format is relion.",
+    )
+    additional_group.add_argument(
+        "--mask_subtomograms",
+        action="store_true",
+        default=False,
+        help="Whether to mask subtomograms using the template mask. The mask will be "
+        "rotated according to determined angles.",
+    )
+    additional_group.add_argument(
+        "--invert_target_contrast",
+        action="store_true",
+        default=False,
+        help="Whether to invert the target contrast.",
+    )
+    additional_group.add_argument(
+        "--wedge_mask",
+        type=str,
+        default=None,
+        help="Path to file used as ctf_mask for output_format relion.",
+    )
+
     args = parser.parse_args()
+
+    if args.wedge_mask is not None:
+        args.wedge_mask = abspath(args.wedge_mask)
+
+    if args.output_format == "relion" and args.subtomogram_box_size is not None:
+        args.subtomogram_box_size += args.subtomogram_box_size % 2
 
     return args
 
@@ -411,18 +467,86 @@ class Orientations:
 
         return translation, rotation, score, detail
 
+    def get_extraction_slices(
+        self,
+        target_shape,
+        extraction_shape,
+        drop_out_of_box: bool = False,
+        return_orientations: bool = False,
+    ) -> "Orientations":
+        left_pad = np.divide(extraction_shape, 2).astype(int)
+        right_pad = np.add(left_pad, np.mod(extraction_shape, 2)).astype(int)
 
-def load_template(filepath: str, sampling_rate: NDArray) -> "Density":
+        obs_start = np.subtract(self.translations, left_pad)
+        obs_stop = np.add(self.translations, right_pad)
+
+        cand_start = np.subtract(np.maximum(obs_start, 0), obs_start)
+        cand_stop = np.subtract(obs_stop, np.minimum(obs_stop, target_shape))
+        cand_stop = np.subtract(extraction_shape, cand_stop)
+        obs_start = np.maximum(obs_start, 0)
+        obs_stop = np.minimum(obs_stop, target_shape)
+
+        subset = self
+        if drop_out_of_box:
+            stops = np.subtract(cand_stop, extraction_shape)
+            keep_peaks = (
+                np.sum(
+                    np.multiply(cand_start == 0, stops == 0),
+                    axis=1,
+                )
+                == self.translations.shape[1]
+            )
+            n_remaining = keep_peaks.sum()
+            if n_remaining == 0:
+                print(
+                    "No peak remaining after filtering. Started with"
+                    f" {self.translations.shape[0]} filtered to {n_remaining}."
+                    " Consider reducing min_distance, increase num_peaks or use"
+                    " a different peak caller."
+                )
+                exit(-1)
+
+            cand_start = cand_start[keep_peaks,]
+            cand_stop = cand_stop[keep_peaks,]
+            obs_start = obs_start[keep_peaks,]
+            obs_stop = obs_stop[keep_peaks,]
+            subset = self[keep_peaks]
+
+        cand_start, cand_stop = cand_start.astype(int), cand_stop.astype(int)
+        obs_start, obs_stop = obs_start.astype(int), obs_stop.astype(int)
+
+        candidate_slices = [
+            tuple(slice(s, e) for s, e in zip(start_row, stop_row))
+            for start_row, stop_row in zip(cand_start, cand_stop)
+        ]
+
+        observation_slices = [
+            tuple(slice(s, e) for s, e in zip(start_row, stop_row))
+            for start_row, stop_row in zip(obs_start, obs_stop)
+        ]
+
+        if return_orientations:
+            return subset, candidate_slices, observation_slices
+
+        return candidate_slices, observation_slices
+
+
+def load_template(filepath: str, sampling_rate: NDArray, center: bool = True):
     try:
         template = Density.from_file(filepath)
-        template, _ = template.centered(0)
         center_of_mass = template.center_of_mass(template.data)
+        template_is_density = True
     except ValueError:
         template = Structure.from_file(filepath)
         center_of_mass = template.center_of_mass()[::-1]
         template = Density.from_structure(template, sampling_rate=sampling_rate)
+        template_is_density = False
 
-    return template, center_of_mass
+    translation = np.zeros_like(center_of_mass)
+    if center:
+        template, translation = template.centered(0)
+
+    return template, center_of_mass, translation, template_is_density
 
 
 def main():
@@ -432,33 +556,66 @@ def main():
     meta = data[-1]
     target_origin, _, sampling_rate, cli_args = meta
 
+    _, template_extension = splitext(cli_args.template)
+    ret = load_template(
+        filepath=cli_args.template,
+        sampling_rate=sampling_rate,
+        center=not cli_args.no_centering,
+    )
+    template, center_of_mass, translation, template_is_density = ret
+
+    if args.output_format == "relion" and args.subtomogram_box_size is None:
+        new_shape = np.add(template.shape, np.mod(template.shape, 2))
+        new_shape = np.repeat(new_shape.max(), new_shape.size).astype(int)
+        print(f"Padding template from {template.shape} to {new_shape} for RELION.")
+        template.pad(new_shape)
+
+    template_mask = template.empty
+    template_mask.data[:] = 1
+    if cli_args.template_mask is not None:
+        template_mask = Density.from_file(cli_args.template_mask)
+        template_mask.pad(template.shape, center=False)
+        origin_translation = np.divide(
+            np.subtract(template.origin, template_mask.origin), template.sampling_rate
+        )
+        translation = np.add(translation, origin_translation)
+
+        template_mask = template_mask.rigid_transform(
+            rotation_matrix=np.eye(template_mask.data.ndim),
+            translation=-translation,
+            order=1,
+        )
+
+    if args.mask_edges and args.min_boundary_distance == 0:
+        max_shape = np.max(template.shape)
+        args.min_boundary_distance = np.ceil(np.divide(max_shape, 2))
+
     if args.orientations is not None:
         orientations = Orientations.from_file(
             filename=args.orientations, file_format="text"
         )
-
     else:
         translations, rotations, scores, details = [], [], [], []
         # Output is MaxScoreOverRotations
         if data[0].ndim == data[2].ndim:
             scores, offset, rotation_array, rotation_mapping, meta = data
-            if args.mask_edges:
-                template, center_of_mass = load_template(
-                    cli_args.template, sampling_rate=sampling_rate
-                )
-                if not cli_args.no_centering:
-                    template, *_ = template.centered(0)
-                mask_size = template.shape
-                if args.min_boundary_distance > 0:
-                    mask_size = 2 * args.min_boundary_distance
-                scores = centered_mask(scores, np.subtract(scores.shape, mask_size) + 1)
+
+            if args.target_mask is not None:
+                target_mask = Density.from_file(args.target_mask)
+                scores = scores * target_mask.data
 
             peak_caller = PEAK_CALLERS[args.peak_caller](
                 number_of_peaks=args.number_of_peaks,
                 min_distance=args.min_distance,
                 min_boundary_distance=args.min_boundary_distance,
             )
-            peak_caller(scores, rotation_matrix=np.eye(3))
+            peak_caller(
+                scores,
+                rotation_matrix=np.eye(3),
+                mask=template.data,
+                rotation_mapping=rotation_mapping,
+                rotation_array=rotation_array,
+            )
             candidates = peak_caller.merge(
                 candidates=[tuple(peak_caller)],
                 number_of_peaks=args.number_of_peaks,
@@ -466,16 +623,15 @@ def main():
                 min_boundary_distance=args.min_boundary_distance,
             )
             if len(candidates) == 0:
-                exit(
-                    "Found no peaks. Try reducing min_distance or min_boundary_distance."
-                )
+                print("Found no peaks. Consider changing peak calling parameters.")
+                exit(-1)
 
             for translation, _, score, detail in zip(*candidates):
                 rotations.append(rotation_mapping[rotation_array[tuple(translation)]])
 
         else:
             candidates = data
-            translation, rotation, score, detail, *_ = data
+            translation, rotation, *_ = data
             for i in range(translation.shape[0]):
                 rotations.append(euler_from_rotationmatrix(rotation[i]))
 
@@ -488,25 +644,26 @@ def main():
             details=details,
         )
 
+    if args.minimum_score is not None:
+        keep = orientations.scores >= args.minimum_score
+        orientations = orientations[keep]
+
+    if args.maximum_score is not None:
+        keep = orientations.scores <= args.maximum_score
+        orientations = orientations[keep]
+
     if args.output_format == "orientations":
         orientations.to_file(filename=f"{args.output_prefix}.tsv", file_format="text")
         exit(0)
 
-    _, template_extension = splitext(cli_args.template)
-    template, center_of_mass = load_template(
-        filepath=cli_args.template, sampling_rate=sampling_rate
-    )
-    template_is_density, index = isinstance(template, Density), 0
-
-    if args.output_format == "relion":
-        new_shape = np.add(template.shape, np.mod(template.shape, 2))
-        new_shape = np.repeat(new_shape.max(), new_shape.size).astype(int)
-        print(f"Padding template from {template.shape} to {new_shape} for RELION.")
-        template.pad(new_shape)
+    target = Density.from_file(cli_args.target)
+    if args.invert_target_contrast:
+        target.data = np.divide(
+            np.subtract(-target.data, target.data.min()),
+            np.subtract(target.data.max(), target.data.min()),
+        )
 
     if args.output_format in ("extraction", "relion"):
-        target = Density.from_file(cli_args.target)
-
         if not np.all(np.divide(target.shape, template.shape) > 2):
             print(
                 "Target might be too small relative to template to extract"
@@ -514,26 +671,19 @@ def main():
                 f" Target : {target.shape}, template : {template.shape}."
             )
 
-        peaks = orientations.translations.astype(int)
-        max_shape = np.max(template.shape).astype(int)
-        half_shape = max_shape // 2
-
-        left_pad = half_shape
-        right_pad = np.add(half_shape, max_shape % 2)
-        starts = np.subtract(peaks, left_pad)
-        stops = np.add(peaks, right_pad)
-
-        candidate_starts = np.maximum(starts, 0).astype(int)
-        candidate_stops = np.minimum(stops, target.shape).astype(int)
-        keep_peaks = (
-            np.sum(
-                np.multiply(starts == candidate_starts, stops == candidate_stops),
-                axis=1,
+        extraction_shape = template.shape
+        if args.subtomogram_box_size is not None:
+            extraction_shape = np.repeat(
+                args.subtomogram_box_size, len(extraction_shape)
             )
-            == peaks.shape[1]
+
+        orientations, cand_slices, obs_slices = orientations.get_extraction_slices(
+            target_shape=target.shape,
+            extraction_shape=extraction_shape,
+            drop_out_of_box=True,
+            return_orientations=True,
         )
 
-        orientations = orientations[keep_peaks]
         working_directory = getcwd()
         if args.output_format == "relion":
             orientations.to_file(
@@ -542,62 +692,73 @@ def main():
                 name_prefix=join(working_directory, args.output_prefix),
                 ctf_image=args.wedge_mask,
                 sampling_rate=target.sampling_rate.max(),
-                subtomogram_size=template.shape[0],
+                subtomogram_size=extraction_shape[0],
             )
 
-        peaks = peaks[keep_peaks,]
-        starts = starts[keep_peaks,]
-        stops = stops[keep_peaks,]
-        candidate_starts = candidate_starts[keep_peaks,]
-        candidate_stops = candidate_stops[keep_peaks,]
-
-        if not len(peaks):
-            print(
-                "No peak remaining after filtering. Started with"
-                f" {orientations.translations.shape[0]} filtered to {peaks.shape[0]}."
-                " Consider reducing min_distance, increase num_peaks or use"
-                " a different peak caller."
-            )
-            exit(-1)
-
-        observation_starts = np.subtract(candidate_starts, starts).astype(int)
-        observation_stops = np.subtract(np.add(max_shape, candidate_stops), stops)
-        observation_stops = observation_stops.astype(int)
-
-        candidate_slices = [
-            tuple(slice(s, e) for s, e in zip(start_row, stop_row))
-            for start_row, stop_row in zip(candidate_starts, candidate_stops)
-        ]
-
-        observation_slices = [
-            tuple(slice(s, e) for s, e in zip(start_row, stop_row))
-            for start_row, stop_row in zip(observation_starts, observation_stops)
-        ]
-        observations = np.zeros(
-            (len(candidate_slices), max_shape, max_shape, max_shape)
-        )
-
-        slices = zip(candidate_slices, observation_slices)
+        observations = np.zeros((len(cand_slices), *extraction_shape))
+        slices = zip(cand_slices, obs_slices)
         for idx, (cand_slice, obs_slice) in enumerate(slices):
-            observations[idx][:] = np.mean(target.data[cand_slice])
-            observations[idx][obs_slice] = target.data[cand_slice]
+            observations[idx][:] = np.mean(target.data[obs_slice])
+            observations[idx][cand_slice] = target.data[obs_slice]
 
         for index in range(observations.shape[0]):
+            cand_start = [x.start for x in cand_slices[index]]
             out_density = Density(
                 data=observations[index],
                 sampling_rate=sampling_rate,
-                origin=candidate_starts[index] * sampling_rate,
+                origin=np.multiply(cand_start, sampling_rate),
             )
-            # out_density.data = out_density.data * template_mask.data
+            if args.mask_subtomograms:
+                rotation_matrix = euler_to_rotationmatrix(orientations.rotations[index])
+                mask_transfomed = template_mask.rigid_transform(
+                    rotation_matrix=rotation_matrix, order=1
+                )
+                out_density.data = out_density.data * mask_transfomed.data
             out_density.to_file(
                 join(working_directory, f"{args.output_prefix}_{index}.mrc")
             )
 
         exit(0)
 
-    for translation, angles, *_ in orientations:
-        rotation_matrix = euler_to_rotationmatrix(angles)
+    if args.output_format == "backmapping":
+        orientations, cand_slices, obs_slices = orientations.get_extraction_slices(
+            target_shape=target.shape,
+            extraction_shape=template.shape,
+            drop_out_of_box=True,
+            return_orientations=True,
+        )
+        ret, template_sum = target.empty, template.data.sum()
+        for index in range(len(cand_slices)):
+            rotation_matrix = euler_to_rotationmatrix(orientations.rotations[index])
 
+            transformed_template = template.rigid_transform(
+                rotation_matrix=rotation_matrix
+            )
+            transformed_template.data = np.multiply(
+                transformed_template.data,
+                np.divide(template_sum, transformed_template.data.sum()),
+            )
+            cand_slice, obs_slice = cand_slices[index], obs_slices[index]
+            ret.data[obs_slice] += transformed_template.data[cand_slice]
+        ret.to_file(f"{args.output_prefix}_backmapped.mrc")
+        exit(0)
+
+    if args.peak_oversampling > 1:
+        peak_caller = peak_caller = PEAK_CALLERS[args.peak_caller]()
+        if data[0].ndim != data[2].ndim:
+            print(
+                "Input pickle does not contain template matching scores."
+                " Cannot oversample peaks."
+            )
+            exit(-1)
+        orientations.translations = peak_caller.oversample_peaks(
+            score_space=data[0],
+            translations=orientations.translations,
+            oversampling_factor=args.oversampling_factor,
+        )
+
+    for index, (translation, angles, *_) in enumerate(orientations):
+        rotation_matrix = euler_to_rotationmatrix(angles)
         if template_is_density:
             translation = np.subtract(translation, center_of_mass)
             transformed_template = template.rigid_transform(
@@ -606,6 +767,7 @@ def main():
             new_origin = np.add(target_origin / sampling_rate, translation)
             transformed_template.origin = np.multiply(new_origin, sampling_rate)
         else:
+            template = Structure.from_file(cli_args.template)
             new_center_of_mass = np.add(
                 np.multiply(translation, sampling_rate), target_origin
             )
@@ -614,7 +776,7 @@ def main():
                 translation=translation[::-1],
                 rotation_matrix=rotation_matrix[::-1, ::-1],
             )
-        # template_extension should contain the extension '.'
+        # template_extension should contain '.'
         transformed_template.to_file(
             f"{args.output_prefix}_{index}{template_extension}"
         )

@@ -152,101 +152,76 @@ def crop_data(data: Density, cutoff: float, data_mask: Density = None) -> bool:
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Perform template matching.")
-    parser.add_argument(
+
+    io_group = parser.add_argument_group("Input / Output")
+    io_group.add_argument(
         "-m",
         "--target",
         dest="target",
         type=str,
         required=True,
-        help="Path to a target in CCP4/MRC format.",
+        help="Path to a target in CCP4/MRC, EM, H5 or another format supported by "
+        "tme.density.Density.from_file "
+        "https://kosinskilab.github.io/pyTME/reference/api/tme.density.Density.from_file.html",
     )
-    parser.add_argument(
+    io_group.add_argument(
         "--target_mask",
         dest="target_mask",
         type=str,
         required=False,
-        help="Path to a mask for the target target in CCP4/MRC format.",
+        help="Path to a mask for the target in a supported format (see target).",
     )
-    parser.add_argument(
-        "--cutoff_target",
-        dest="cutoff_target",
-        type=float,
-        required=False,
-        help="Target contour level (used for cropping).",
-        default=None,
-    )
-    parser.add_argument(
-        "--cutoff_template",
-        dest="cutoff_template",
-        type=float,
-        required=False,
-        help="Template contour level (used for cropping).",
-        default=None,
-    )
-    parser.add_argument(
-        "--no_centering",
-        dest="no_centering",
-        action="store_true",
-        help="If set, assumes the template is centered and omits centering.",
-    )
-    parser.add_argument(
+    io_group.add_argument(
         "-i",
         "--template",
         dest="template",
         type=str,
         required=True,
-        help="Path to a template in PDB/MMCIF or CCP4/MRC format.",
+        help="Path to a template in PDB/MMCIF or other supported formats (see target).",
     )
-    parser.add_argument(
+    io_group.add_argument(
         "--template_mask",
         dest="template_mask",
         type=str,
         required=False,
-        help="Path to a mask for the template in CCP4/MRC format.",
+        help="Path to a mask for the template in a supported format (see target).",
     )
-    parser.add_argument(
+    io_group.add_argument(
         "-o",
+        "--output",
         dest="output",
         type=str,
         required=False,
         default="output.pickle",
-        help="Path to output pickle file.",
+        help="Path to the output pickle file.",
     )
-    parser.add_argument(
+    io_group.add_argument(
+        "--invert_target_contrast",
+        dest="invert_target_contrast",
+        action="store_true",
+        default=False,
+        help="Invert the target's contrast and rescale linearly between zero and one. "
+        "This option is intended for targets where templates to-be-matched have "
+        "negative values, e.g. tomograms.",
+    )
+    io_group.add_argument(
+        "--scramble_phases",
+        dest="scramble_phases",
+        action="store_true",
+        default=False,
+        help="Phase scramble the template to generate a noise score background.",
+    )
+
+    scoring_group = parser.add_argument_group("Scoring")
+    scoring_group.add_argument(
         "-s",
         dest="score",
         type=str,
         default="FLCSphericalMask",
+        choices=list(MATCHING_EXHAUSTIVE_REGISTER.keys()),
         help="Template matching scoring function.",
-        choices=MATCHING_EXHAUSTIVE_REGISTER.keys(),
     )
-    parser.add_argument(
-        "-n",
-        dest="cores",
-        required=False,
-        type=int,
-        default=4,
-        help="Number of cores used for template matching.",
-    )
-    parser.add_argument(
-        "-r",
-        "--ram",
-        dest="memory",
-        required=False,
-        type=int,
-        default=None,
-        help="Amount of memory that can be used in bytes.",
-    )
-    parser.add_argument(
-        "--memory_scaling",
-        dest="memory_scaling",
-        required=False,
-        type=check_positive,
-        default=0.85,
-        help="Fraction of available memory that can be used."
-        "Defaults to 0.85. Ignored if --ram is set",
-    )
-    parser.add_argument(
+    scoring_group.add_argument(
         "-a",
         dest="angular_sampling",
         type=check_positive,
@@ -254,21 +229,31 @@ def parse_args():
         help="Angular sampling rate for template matching. "
         "A lower number yields more rotations. Values >= 180 sample only the identity.",
     )
-    parser.add_argument(
+    scoring_group.add_argument(
         "-p",
         dest="peak_calling",
         action="store_true",
         default=False,
-        help="When set perform peak calling instead of score aggregation.",
+        help="Perform peak calling instead of score aggregation.",
     )
-    parser.add_argument(
+
+    computation_group = parser.add_argument_group("Computation")
+    computation_group.add_argument(
+        "-n",
+        dest="cores",
+        required=False,
+        type=int,
+        default=4,
+        help="Number of cores used for template matching.",
+    )
+    computation_group.add_argument(
         "--use_gpu",
         dest="use_gpu",
         action="store_true",
         default=False,
         help="Whether to perform computations on the GPU.",
     )
-    parser.add_argument(
+    computation_group.add_argument(
         "--gpu_indices",
         dest="gpu_indices",
         type=str,
@@ -278,79 +263,55 @@ def parse_args():
         " If not provided but --use_gpu is set, CUDA_VISIBLE_DEVICES will"
         " be respected.",
     )
-    parser.add_argument(
-        "--invert_target_contrast",
-        dest="invert_target_contrast",
-        action="store_true",
-        default=False,
-        help="Invert the target contrast via multiplication with negative one and"
-        " linear rescaling between zero and one. Note that this might lead to"
-        " different baseline scores of individual target splits when using"
-        " unnormalized scores. This option is intended for targets, where the"
-        " object to-be-matched has negative values, i.e. tomograms.",
-    )
-    parser.add_argument(
-        "--no_edge_padding",
-        dest="no_edge_padding",
-        action="store_true",
-        default=False,
-        help="Whether to pad the edges of the target. This is useful, if the target"
-        " has a well defined bounding box, e.g. a density map.",
-    )
-    parser.add_argument(
-        "--no_fourier_padding",
-        dest="no_fourier_padding",
-        action="store_true",
-        default=False,
-        help="Whether input arrays should be zero-padded to the full convolution shape"
-        " for numerical stability. When working with very large targets such as"
-        " tomograms it is safe to use this flag and benefit from the performance gain.",
-    )
-    parser.add_argument(
-        "--scramble_phases",
-        dest="scramble_phases",
-        action="store_true",
-        default=False,
-        help="Whether to phase scramble the template for subsequent normalization.",
-    )
-    parser.add_argument(
-        "--interpolation_order",
-        dest="interpolation_order",
+    computation_group.add_argument(
+        "-r",
+        "--ram",
+        dest="memory",
         required=False,
         type=int,
-        default=3,
-        help="Spline interpolation used during rotations. If less than zero"
-        " no interpolation is performed.",
+        default=None,
+        help="Amount of memory that can be used in bytes.",
     )
-    parser.add_argument(
+    computation_group.add_argument(
+        "--memory_scaling",
+        dest="memory_scaling",
+        required=False,
+        type=float,
+        default=0.85,
+        help="Fraction of available memory that can be used. Defaults to 0.85 and is "
+        "ignored if --ram is set",
+    )
+    computation_group.add_argument(
         "--use_mixed_precision",
         dest="use_mixed_precision",
         action="store_true",
         default=False,
         help="Use float16 for real values operations where possible.",
     )
-    parser.add_argument(
+    computation_group.add_argument(
         "--use_memmap",
         dest="use_memmap",
         action="store_true",
         default=False,
-        help="Use memmaps to offload large data objects to disk. This is"
-        " particularly useful for large inputs when using --use_gpu..",
+        help="Use memmaps to offload large data objects to disk. "
+        "Particularly useful for large inputs in combination with --use_gpu.",
     )
-    parser.add_argument(
+    computation_group.add_argument(
         "--temp_directory",
         dest="temp_directory",
         default=None,
-        help="Directory for temporary objects. Faster I/O typically improves runtime.",
+        help="Directory for temporary objects. Faster I/O improves runtime.",
     )
-    parser.add_argument(
+
+    filter_group = parser.add_argument_group("Filters")
+    filter_group.add_argument(
         "--gaussian_sigma",
         dest="gaussian_sigma",
         type=float,
         required=False,
         help="Sigma parameter for Gaussian filtering the template.",
     )
-    parser.add_argument(
+    filter_group.add_argument(
         "--bandpass_band",
         dest="bandpass_band",
         type=str,
@@ -358,15 +319,15 @@ def parse_args():
         help="Comma separated start and stop frequency for bandpass filtering the"
         " template, e.g. 0.1, 0.5",
     )
-    parser.add_argument(
+    filter_group.add_argument(
         "--bandpass_smooth",
         dest="bandpass_smooth",
         type=float,
         required=False,
         default=None,
-        help="Smooth parameter for the bandpass filter.",
+        help="Sigma smooth parameter for the bandpass filter.",
     )
-    parser.add_argument(
+    filter_group.add_argument(
         "--tilt_range",
         dest="tilt_range",
         type=str,
@@ -374,16 +335,16 @@ def parse_args():
         help="Comma separated start and stop stage tilt angle, e.g. '50,45'. Used"
         " to create a wedge mask to be applied to the template.",
     )
-    parser.add_argument(
+    filter_group.add_argument(
         "--tilt_step",
         dest="tilt_step",
         type=float,
         required=False,
         default=None,
-        help="Step size between tilts, e.g. '5'. When set the wedge mask"
+        help="Step size between tilts. e.g. '5'. When set the wedge mask"
         " reflects the individual tilts, otherwise a continuous mask is used.",
     )
-    parser.add_argument(
+    filter_group.add_argument(
         "--wedge_axes",
         dest="wedge_axes",
         type=str,
@@ -392,13 +353,63 @@ def parse_args():
         help="Axis index of wedge opening and tilt axis, e.g. 0,2 for a wedge that is open in"
         " z and tilted over x.",
     )
-    parser.add_argument(
+    filter_group.add_argument(
         "--wedge_smooth",
         dest="wedge_smooth",
         type=float,
         required=False,
         default=None,
-        help="Gaussian sigma used to smooth the wedge mask.",
+        help="Sigma smooth parameter for the wedge mask.",
+    )
+
+    performance_group = parser.add_argument_group("Performance")
+    performance_group.add_argument(
+        "--cutoff_target",
+        dest="cutoff_target",
+        type=float,
+        required=False,
+        default=None,
+        help="Target contour level (used for cropping).",
+    )
+    performance_group.add_argument(
+        "--cutoff_template",
+        dest="cutoff_template",
+        type=float,
+        required=False,
+        default=None,
+        help="Template contour level (used for cropping).",
+    )
+    performance_group.add_argument(
+        "--no_centering",
+        dest="no_centering",
+        action="store_true",
+        help="Assumes the template is already centered and omits centering.",
+    )
+    performance_group.add_argument(
+        "--no_edge_padding",
+        dest="no_edge_padding",
+        action="store_true",
+        default=False,
+        help="Whether to not pad the edges of the target. Can be set if the target"
+        " has a well defined bounding box, e.g. a masked reconstruction.",
+    )
+    performance_group.add_argument(
+        "--no_fourier_padding",
+        dest="no_fourier_padding",
+        action="store_true",
+        default=False,
+        help="Whether input arrays should not be zero-padded to full convolution shape "
+        "for numerical stability. When working with very large targets, e.g. tomograms, "
+        "it is safe to use this flag and benefit from the performance gain.",
+    )
+    performance_group.add_argument(
+        "--interpolation_order",
+        dest="interpolation_order",
+        required=False,
+        type=int,
+        default=3,
+        help="Spline interpolation used for template rotations. If less than zero "
+        "no interpolation is performed.",
     )
 
     args = parser.parse_args()

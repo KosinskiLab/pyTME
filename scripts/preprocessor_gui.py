@@ -23,7 +23,7 @@ from qtpy.QtWidgets import QFileDialog
 from numpy.typing import NDArray
 
 from tme import Preprocessor, Density
-from tme.matching_utils import create_mask
+from tme.matching_utils import create_mask, load_pickle
 
 preprocessor = Preprocessor()
 SLIDER_MIN, SLIDER_MAX = 0, 25
@@ -416,7 +416,12 @@ class FilterWidget(widgets.Container):
 
 
 def sphere_mask(
-    template: NDArray, center_x: float, center_y: float, center_z: float, radius: float
+    template: NDArray,
+    center_x: float,
+    center_y: float,
+    center_z: float,
+    radius: float,
+    **kwargs,
 ) -> NDArray:
     return create_mask(
         mask_type="ellipse",
@@ -434,6 +439,7 @@ def ellipsod_mask(
     radius_x: float,
     radius_y: float,
     radius_z: float,
+    **kwargs,
 ) -> NDArray:
     return create_mask(
         mask_type="ellipse",
@@ -451,6 +457,7 @@ def box_mask(
     height_x: int,
     height_y: int,
     height_z: int,
+    **kwargs,
 ) -> NDArray:
     return create_mask(
         mask_type="box",
@@ -469,6 +476,7 @@ def tube_mask(
     inner_radius: float,
     outer_radius: float,
     height: int,
+    **kwargs,
 ) -> NDArray:
     return create_mask(
         mask_type="tube",
@@ -492,6 +500,7 @@ def wedge_mask(
     omit_negative_frequencies: bool = False,
     extrude_plane: bool = True,
     infinite_plane: bool = True,
+    **kwargs,
 ) -> NDArray:
     if tilt_step <= 0:
         wedge_mask = preprocessor.continuous_wedge_mask(
@@ -524,7 +533,7 @@ def wedge_mask(
 
 
 def threshold_mask(
-    template: NDArray, standard_deviation: float = 5.0, invert: bool = False
+    template: NDArray, standard_deviation: float = 5.0, invert: bool = False, **kwargs
 ) -> NDArray:
     template_mean = template.mean()
     template_deviation = standard_deviation * template.std()
@@ -537,13 +546,27 @@ def threshold_mask(
     return mask
 
 
-def lowpass_mask(template: NDArray, sigma: float = 1.0):
+def lowpass_mask(template: NDArray, sigma: float = 1.0, **kwargs):
     template = template / template.max()
     template = (template > np.exp(-2)) * 128.0
     template = preprocessor.gaussian_filter(template=template, sigma=sigma)
     mask = template > np.exp(-2)
 
     return mask
+
+
+def shape_mask(template, shapes_layer, expansion_dim):
+    ret = np.zeros_like(template)
+    mask_shape = tuple(x for i, x in enumerate(template.shape) if i != expansion_dim)
+    masks = shapes_layer.to_masks(mask_shape=mask_shape)
+    for index, shape_type in enumerate(shapes_layer.shape_type):
+        mask = np.expand_dims(masks[index], axis=expansion_dim)
+        mask = np.repeat(
+            mask, repeats=template.shape[expansion_dim], axis=expansion_dim
+        )
+        np.logical_or(ret, mask, out=ret)
+
+    return ret
 
 
 class MaskWidget(widgets.Container):
@@ -564,6 +587,7 @@ class MaskWidget(widgets.Container):
             "Wedge": wedge_mask,
             "Threshold": threshold_mask,
             "Lowpass": lowpass_mask,
+            "Shape": shape_mask,
         }
 
         self.method_dropdown = widgets.ComboBox(
@@ -585,6 +609,12 @@ class MaskWidget(widgets.Container):
         self.align_button.changed.connect(self._align_with_axis)
         self.density_field = widgets.Label()
         # self.density_field.value = f"Positive Density in Mask: {0:.2f}%"
+
+        self.shapes_layer_dropdown = widgets.ComboBox(
+            name="shapes_layer", choices=self._get_shape_layers()
+        )
+        self.viewer.layers.events.inserted.connect(self._update_shape_layer_choices)
+        self.viewer.layers.events.removed.connect(self._update_shape_layer_choices)
 
         self.append(self.method_dropdown)
         self.append(self.adapt_button)
@@ -673,17 +703,43 @@ class MaskWidget(widgets.Container):
         self.action_widgets.clear()
 
         function = self.methods.get(self.method_dropdown.value)
-        widgets = widgets_from_function(function)
-        for widget in widgets:
+        function_widgets = widgets_from_function(function)
+        for widget in function_widgets:
             self.action_widgets.append(widget)
             self.insert(1, widget)
+
+        for name, param in inspect.signature(function).parameters.items():
+            if name == "shapes_layer":
+                self.action_widgets.append(self.shapes_layer_dropdown)
+                self.insert(1, self.shapes_layer_dropdown)
+
+    def _get_shape_layers(self):
+        layers = [
+            layer.name
+            for layer in self.viewer.layers
+            if isinstance(layer, napari.layers.Shapes)
+        ]
+        return layers
+
+    def _update_shape_layer_choices(self, event):
+        """Update the choices in the shapes layer dropdown."""
+        self.shapes_layer_dropdown.choices = self._get_shape_layers()
 
     def _action(self):
         function = self.methods.get(self.method_dropdown.value)
 
         selected_layer = self.viewer.layers.selection.active
         kwargs = {widget.name: widget.value for widget in self.action_widgets}
+
+        if "shapes_layer" in kwargs:
+            layer_name = kwargs["shapes_layer"]
+            if layer_name not in self.viewer.layers:
+                return None
+            kwargs["shapes_layer"] = self.viewer.layers[layer_name]
+            kwargs["expansion_dim"] = self.viewer.dims.order[0]
+
         processed_data = function(template=selected_layer.data, **kwargs)
+
         new_layer_name = f"{selected_layer.name} ({self.method_dropdown.value})"
 
         if new_layer_name in self.viewer.layers:
@@ -705,14 +761,17 @@ class MaskWidget(widgets.Container):
             metadata["origin_layer"] = selected_layer.name
             new_layer.metadata = metadata
 
-        origin_layer = metadata["origin_layer"]
-        if origin_layer in self.viewer.layers:
-            origin_layer = self.viewer.layers[origin_layer]
-            if np.allclose(origin_layer.data.shape, processed_data.shape):
-                in_mask = np.sum(np.fmax(origin_layer.data * processed_data, 0))
-                in_mask /= np.sum(np.fmax(origin_layer.data, 0))
-                in_mask *= 100
-                self.density_field.value = f"Positive Density in Mask: {in_mask:.2f}%"
+            if self.method_dropdown.value == "Shape":
+                new_layer.metadata = {}
+
+        # origin_layer = metadata["origin_layer"]
+        # if origin_layer in self.viewer.layers:
+        #     origin_layer = self.viewer.layers[origin_layer]
+        #     if np.allclose(origin_layer.data.shape, processed_data.shape):
+        #         in_mask = np.sum(np.fmax(origin_layer.data * processed_data, 0))
+        #         in_mask /= np.sum(np.fmax(origin_layer.data, 0))
+        #         in_mask *= 100
+        #         self.density_field.value = f"Positive Density in Mask: {in_mask:.2f}%"
 
 
 class ExportWidget(widgets.Container):
@@ -803,16 +862,36 @@ class PointCloudWidget(widgets.Container):
             options=options,
         )
 
-        if filename:
-            layer = self.viewer.layers.selection.active
-            if layer and isinstance(layer, napari.layers.Points):
-                original_dataframe = self.dataframes.get(layer.name, pd.DataFrame())
+        if not filename:
+            return None
 
-                export_data = pd.DataFrame(layer.data, columns=["z", "y", "x"])
-                merged_data = pd.merge(
-                    export_data, original_dataframe, on=["z", "y", "x"], how="left"
-                )
-                merged_data.to_csv(filename, sep="\t", index=False)
+        layer = self.viewer.layers.selection.active
+        if layer and isinstance(layer, napari.layers.Points):
+            original_dataframe = self.dataframes.get(
+                layer.name, pd.DataFrame(columns=["z", "y", "x"])
+            )
+
+            export_data = pd.DataFrame(layer.data, columns=["z", "y", "x"])
+            merged_data = pd.merge(
+                export_data, original_dataframe, on=["z", "y", "x"], how="left"
+            )
+
+            merged_data["z"] = merged_data["z"].astype(int)
+            merged_data["y"] = merged_data["y"].astype(int)
+            merged_data["x"] = merged_data["x"].astype(int)
+
+            euler_columns = ["euler_z", "euler_y", "euler_x"]
+            for col in euler_columns:
+                if col not in merged_data.columns:
+                    continue
+                merged_data[col] = merged_data[col].fillna(0)
+
+            if "score" in merged_data.columns:
+                merged_data["score"] = merged_data["score"].fillna(1)
+            if "detail" in merged_data.columns:
+                merged_data["detail"] = merged_data["detail"].fillna(2)
+
+            merged_data.to_csv(filename, sep="\t", index=False)
 
     def _get_load_path(self, event):
         options = QFileDialog.Options()
@@ -830,6 +909,13 @@ class PointCloudWidget(widgets.Container):
         dataframe = pd.read_csv(filename, sep="\t")
         points = dataframe[["z", "y", "x"]].values
         layer_name = filename.split("/")[-1]
+
+        if "score" not in dataframe.columns:
+            dataframe["score"] = 1
+
+        if "detail" not in dataframe.columns:
+            dataframe["detail"] = -2
+
         point_properties = {
             "score": np.array(dataframe["score"].values),
             "detail": np.array(dataframe["detail"].values),
@@ -849,6 +935,38 @@ class PointCloudWidget(widgets.Container):
         self.dataframes[layer_name] = dataframe
 
 
+class MatchingWidget(widgets.Container):
+    def __init__(self, viewer):
+        super().__init__(layout="vertical")
+
+        self.viewer = viewer
+        self.dataframes = {}
+
+        self.import_button = widgets.PushButton(name="Import", text="Import Pickle")
+        self.import_button.clicked.connect(self._get_load_path)
+
+        self.append(self.import_button)
+
+    def _get_load_path(self, event):
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getOpenFileName(
+            self.native,
+            "Open Pickle File...",
+            "",
+            "Pickle Files (*.pickle);;All Files (*)",
+            options=options,
+        )
+        if filename:
+            self._load_data(filename)
+
+    def _load_data(self, filename):
+        data = load_pickle(filename)
+
+        _ = self.viewer.add_image(data=data[2], name="Rotations", colormap="orange")
+
+        _ = self.viewer.add_image(data=data[0], name="Scores", colormap="turbo")
+
+
 def main():
     viewer = napari.Viewer()
 
@@ -856,10 +974,12 @@ def main():
     mask_widget = MaskWidget(viewer)
     export_widget = ExportWidget(viewer)
     point_cloud = PointCloudWidget(viewer)
+    matching_widget = MatchingWidget(viewer)
 
     viewer.window.add_dock_widget(widget=filter_widget, name="Preprocess", area="right")
     viewer.window.add_dock_widget(widget=mask_widget, name="Mask", area="right")
     viewer.window.add_dock_widget(widget=point_cloud, name="PointCloud", area="left")
+    viewer.window.add_dock_widget(widget=matching_widget, name="Matching", area="left")
 
     viewer.window.add_dock_widget(widget=export_widget, name="Export", area="right")
 
