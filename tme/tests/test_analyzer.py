@@ -53,11 +53,23 @@ class TestPeakCallers:
 
     @pytest.mark.parametrize("peak_caller", PEAK_CALLER_CHILDREN)
     @pytest.mark.parametrize("number_of_peaks", (1, 100))
-    def test__call__(self, peak_caller, number_of_peaks):
+    @pytest.mark.parametrize("minimum_score", (None, 0.5))
+    def test__call__(self, peak_caller, number_of_peaks, minimum_score):
         peak_caller = peak_caller(
             number_of_peaks=number_of_peaks, min_distance=self.min_distance
         )
-        peak_caller(score_space=self.data, rotation_matrix=self.rotation_matrix)
+        peak_caller(
+            score_space=self.data.copy(),
+            rotation_matrix=self.rotation_matrix,
+            minimum_score=minimum_score,
+        )
+        candidates = tuple(peak_caller)
+        if minimum_score is None:
+            assert len(candidates[0] <= number_of_peaks)
+        else:
+            peaks = candidates[0].astype(int)
+            print(self.data[tuple(peaks.T)])
+            assert np.all(self.data[tuple(peaks.T)] >= minimum_score)
 
     @pytest.mark.parametrize("peak_caller", PEAK_CALLER_CHILDREN)
     @pytest.mark.parametrize("number_of_peaks", (1, 100))
@@ -96,7 +108,8 @@ class TestRecursiveMasking:
 
     @pytest.mark.parametrize("number_of_peaks", (1, 100))
     @pytest.mark.parametrize("compute_rotation", (True, False))
-    def test__call__(self, number_of_peaks, compute_rotation):
+    @pytest.mark.parametrize("minimum_score", (None, 0.5))
+    def test__call__(self, number_of_peaks, compute_rotation, minimum_score):
         peak_caller = PeakCallerRecursiveMasking(
             number_of_peaks=number_of_peaks, min_distance=self.min_distance
         )
@@ -106,12 +119,20 @@ class TestRecursiveMasking:
             rotation_mapping = self.rotation_mapping
 
         peak_caller(
-            score_space=self.data,
+            score_space=self.data.copy(),
             rotation_matrix=self.rotation_matrix,
             mask=self.mask,
             rotation_space=rotation_space,
             rotation_mapping=rotation_mapping,
         )
+
+        candidates = tuple(peak_caller)
+        if minimum_score is None:
+            assert len(candidates[0] <= number_of_peaks)
+        else:
+            peaks = candidates[0].astype(int)
+            print(self.data[tuple(peaks.T)])
+            assert np.all(self.data[tuple(peaks.T)] >= minimum_score)
 
 
 class TestMaxScoreOverRotations:

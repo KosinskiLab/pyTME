@@ -14,8 +14,9 @@ from os.path import splitext
 from dataclasses import dataclass
 
 import numpy as np
-from scipy.spatial.transform import Rotation
 from numpy.typing import NDArray
+from scipy.special import erfcinv
+from scipy.spatial.transform import Rotation
 
 from tme import Density, Structure
 from tme.analyzer import (
@@ -51,7 +52,10 @@ def parse_args():
     additional_group = parser.add_argument_group("Additional Parameters")
 
     input_group.add_argument(
-        "--input_file", required=True, help="Path to the output of match_template.py."
+        "--input_file",
+        required=True,
+        nargs="+",
+        help="Path to the output of match_template.py.",
     )
     input_group.add_argument(
         "--target_mask",
@@ -125,8 +129,10 @@ def parse_args():
     peak_group.add_argument(
         "--number_of_peaks",
         type=int,
-        default=1000,
-        help="Upper limit of peaks to call, subject to filtering parameters.",
+        default=None,
+        required=False,
+        help="Upper limit of peaks to call, subject to filtering parameters. Default 1000. "
+        "If minimum_score is provided all peaks scoring higher will be reported.",
     )
     peak_group.add_argument(
         "--peak_oversampling",
@@ -162,6 +168,13 @@ def parse_args():
         default=None,
         help="Path to file used as ctf_mask for output_format relion.",
     )
+    additional_group.add_argument(
+        "--n_false_positives",
+        type=int,
+        default=None,
+        required=False,
+        help="Number of accepted false-positives picks to determine minimum score.",
+    )
 
     args = parser.parse_args()
 
@@ -170,6 +183,16 @@ def parse_args():
 
     if args.output_format == "relion" and args.subtomogram_box_size is not None:
         args.subtomogram_box_size += args.subtomogram_box_size % 2
+
+    if args.orientations is not None:
+        args.orientations = Orientations.from_file(
+            filename=args.orientations, file_format="text"
+        )
+
+    if args.minimum_score is not None or args.n_false_positives is not None:
+        args.number_of_peaks = np.iinfo(np.int64).max
+    else:
+        args.number_of_peaks = 1000
 
     return args
 
@@ -549,12 +572,62 @@ def load_template(filepath: str, sampling_rate: NDArray, center: bool = True):
     return template, center_of_mass, translation, template_is_density
 
 
+def merge_outputs(data, filepaths: List[str], args):
+    if len(filepaths) == 0:
+        return data, 1
+
+    if data[0].ndim != data[2].ndim:
+        return data, 1
+
+    from tme.matching_exhaustive import _normalize_under_mask
+
+    def _norm_scores(data, args):
+        target_origin, _, sampling_rate, cli_args = data[-1]
+
+        _, template_extension = splitext(cli_args.template)
+        ret = load_template(
+            filepath=cli_args.template,
+            sampling_rate=sampling_rate,
+            center=not cli_args.no_centering,
+        )
+        template, center_of_mass, translation, template_is_density = ret
+
+        if args.mask_edges and args.min_boundary_distance == 0:
+            max_shape = np.max(template.shape)
+            args.min_boundary_distance = np.ceil(np.divide(max_shape, 2))
+
+        target_mask = 1
+        if args.target_mask is not None:
+            target_mask = Density.from_file(args.target_mask).data
+        elif cli_args.target_mask is not None:
+            target_mask = Density.from_file(args.target_mask).data
+
+        mask = np.ones_like(data[0])
+        np.multiply(mask, target_mask, out=mask)
+
+        cropped_shape = np.subtract(
+            mask.shape, np.multiply(args.min_boundary_distance, 2)
+        ).astype(int)
+        mask[cropped_shape] = 0
+        _normalize_under_mask(template=data[0], mask=mask, mask_intensity=mask.sum())
+        return data[0]
+
+    entities = np.zeros_like(data[0])
+    data[0] = _norm_scores(data=data, args=args)
+    for index, filepath in enumerate(filepaths):
+        new_scores = _norm_scores(data=load_pickle(filepath), args=args)
+        indices = new_scores > data[0]
+        entities[indices] = index + 1
+        data[0][indices] = new_scores[indices]
+
+    return data, entities
+
+
 def main():
     args = parse_args()
-    data = load_pickle(args.input_file)
+    data = load_pickle(args.input_file[0])
 
-    meta = data[-1]
-    target_origin, _, sampling_rate, cli_args = meta
+    target_origin, _, sampling_rate, cli_args = data[-1]
 
     _, template_extension = splitext(cli_args.template)
     ret = load_template(
@@ -590,11 +663,10 @@ def main():
         max_shape = np.max(template.shape)
         args.min_boundary_distance = np.ceil(np.divide(max_shape, 2))
 
-    if args.orientations is not None:
-        orientations = Orientations.from_file(
-            filename=args.orientations, file_format="text"
-        )
-    else:
+    # data, entities = merge_outputs(data=data, filepaths=args.input_file[1:], args=args)
+
+    orientations = args.orientations
+    if orientations is None:
         translations, rotations, scores, details = [], [], [], []
         # Output is MaxScoreOverRotations
         if data[0].ndim == data[2].ndim:
@@ -604,17 +676,44 @@ def main():
                 target_mask = Density.from_file(args.target_mask)
                 scores = scores * target_mask.data
 
+            if args.n_false_positives is not None:
+                args.n_false_positives = max(args.n_false_positives, 1)
+                cropped_shape = np.subtract(
+                    scores.shape, np.multiply(args.min_boundary_distance, 2)
+                ).astype(int)
+
+                cropped_shape = tuple(
+                    slice(
+                        int(args.min_boundary_distance),
+                        int(x - args.min_boundary_distance),
+                    )
+                    for x in scores.shape
+                )
+                # Rickgauer et al. 2017
+                n_correlations = np.size(scores[cropped_shape]) * len(rotation_mapping)
+                minimum_score = np.multiply(
+                    erfcinv(2 * args.n_false_positives / n_correlations),
+                    np.sqrt(2) * np.std(scores[cropped_shape]),
+                )
+                print(f"Determined minimum score cutoff: {minimum_score}.")
+                minimum_score = max(minimum_score, 0)
+                args.minimum_score = minimum_score
+
             peak_caller = PEAK_CALLERS[args.peak_caller](
                 number_of_peaks=args.number_of_peaks,
                 min_distance=args.min_distance,
                 min_boundary_distance=args.min_boundary_distance,
             )
+            if args.minimum_score is not None:
+                args.number_of_peaks = np.inf
+
             peak_caller(
                 scores,
                 rotation_matrix=np.eye(3),
                 mask=template.data,
                 rotation_mapping=rotation_mapping,
                 rotation_array=rotation_array,
+                minimum_score=args.minimum_score,
             )
             candidates = peak_caller.merge(
                 candidates=[tuple(peak_caller)],

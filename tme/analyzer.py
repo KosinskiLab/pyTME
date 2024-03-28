@@ -119,7 +119,7 @@ class PeakCaller(ABC):
         rotation_matrix : NDArray
             Rotation matrix used to obtain the score array.
         **kwargs
-            Additional keyword arguments.
+            Optional keyword arguments passed to :py:meth:`PeakCaller.call_peak`.
         """
         peak_positions, peak_details = self.call_peaks(
             score_space=score_space, rotation_matrix=rotation_matrix, **kwargs
@@ -194,10 +194,8 @@ class PeakCaller(ABC):
 
         Returns
         -------
-        NDArray
-            Array of peak coordiantes.
-        NDArray
-            Array of peak details.
+        Tuple[NDArray, NDArray]
+            Array of peak coordinates and peak details.
         """
 
     @classmethod
@@ -374,7 +372,7 @@ class PeakCallerSort(PeakCaller):
     """
 
     def call_peaks(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
+        self, score_space: NDArray, minimum_score: float = None, **kwargs
     ) -> Tuple[NDArray, NDArray]:
         """
         Call peaks in the score space.
@@ -384,19 +382,19 @@ class PeakCallerSort(PeakCaller):
         score_space : NDArray
             Data array of scores.
         minimum_score : float
-            Minimum score value to consider.
-        min_distance : float
-            Minimum distance between maxima.
+            Minimum score value to consider. If provided, superseeds limit given
+            by :py:attr:`PeakCaller.number_of_peaks`.
 
         Returns
         -------
-        NDArray
-            Array of peak coordiantes.
-        NDArray
-            Array of peak details.
+        Tuple[NDArray, NDArray]
+            Array of peak coordinates and peak details.
         """
         flat_score_space = score_space.reshape(-1)
         k = min(self.number_of_peaks, backend.size(flat_score_space))
+
+        if minimum_score is not None:
+            k = backend.sum(score_space >= minimum_score)
 
         top_k_indices, *_ = backend.topk_indices(flat_score_space, k)
 
@@ -415,7 +413,7 @@ class PeakCallerMaximumFilter(PeakCaller):
     """
 
     def call_peaks(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
+        self, score_space: NDArray, minimum_score: float = None, **kwargs
     ) -> Tuple[NDArray, NDArray]:
         """
         Call peaks in the score space.
@@ -425,25 +423,25 @@ class PeakCallerMaximumFilter(PeakCaller):
         score_space : NDArray
             Data array of scores.
         minimum_score : float
-            Minimum score value to consider.
-        min_distance : float
-            Minimum distance between maxima.
+            Minimum score value to consider. If provided, superseeds limit given
+            by :py:attr:`PeakCaller.number_of_peaks`.
 
         Returns
         -------
-        NDArray
-            Array of peak coordiantes.
-        NDArray
-            Array of peak details.
+        Tuple[NDArray, NDArray]
+            Array of peak coordinates and peak details.
         """
         peaks = backend.max_filter_coordinates(score_space, self.min_distance)
+
+        scores = score_space[tuple(peaks.T)]
 
         input_candidates = min(
             self.number_of_peaks, peaks.shape[0] - 1, backend.size(score_space) - 1
         )
-        top_indices = backend.topk_indices(
-            score_space[tuple(peaks.T)], input_candidates
-        )
+        if minimum_score is not None:
+            input_candidates = backend.sum(scores >= minimum_score)
+
+        top_indices = backend.topk_indices(scores, input_candidates)
         peaks = peaks[top_indices]
 
         return peaks, None
@@ -459,7 +457,7 @@ class PeakCallerFast(PeakCaller):
     """
 
     def call_peaks(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
+        self, score_space: NDArray, minimum_score: float = None, **kwargs
     ) -> Tuple[NDArray, NDArray]:
         """
         Call peaks in the score space.
@@ -469,16 +467,13 @@ class PeakCallerFast(PeakCaller):
         score_space : NDArray
             Data array of scores.
         minimum_score : float
-            Minimum score value to consider.
-        min_distance : float
-            Minimum distance between maxima.
+            Minimum score value to consider. If provided, superseeds limit given
+            by :py:attr:`PeakCaller.number_of_peaks`.
 
         Returns
         -------
-        NDArray
-            Array of peak coordiantes.
-        NDArray
-            Array of peak details.
+        Tuple[NDArray, NDArray]
+            Array of peak coordinates and peak details.
         """
         splits = {
             axis: score_space.shape[axis] // self.min_distance
@@ -538,6 +533,7 @@ class PeakCallerRecursiveMasking(PeakCaller):
         score_space: NDArray,
         rotation_matrix: NDArray,
         mask: NDArray = None,
+        minimum_score: float = None,
         rotation_space: NDArray = None,
         rotation_mapping: Dict = None,
         **kwargs,
@@ -558,6 +554,9 @@ class PeakCallerRecursiveMasking(PeakCaller):
         rotation_mapping : Dict optional
             Dictionary mapping values in rotation_space to Euler angles.
             By default None
+        minimum_score : float
+            Minimum score value to consider. If provided, superseeds limit given
+            by :py:attr:`PeakCaller.number_of_peaks`.
 
         Returns
         -------
@@ -580,11 +579,20 @@ class PeakCallerRecursiveMasking(PeakCaller):
 
         rotated_template = backend.zeros(mask.shape, dtype=mask.dtype)
 
+        peak_limit = self.number_of_peaks
+        if minimum_score is not None:
+            peak_limit = backend.size(score_space)
+        else:
+            minimum_score = backend.min(score_space) - 1
+
         while True:
             backend.argmax(score_space)
             peak = backend.unravel_index(
                 indices=backend.argmax(score_space), shape=score_space.shape
             )
+            if score_space[tuple(peak)] < minimum_score:
+                break
+
             coordinates.append(peak)
 
             current_rotation_matrix = self._get_rotation_matrix(
@@ -602,8 +610,9 @@ class PeakCallerRecursiveMasking(PeakCaller):
                 rotated_template=rotated_template,
             )
 
-            if len(coordinates) >= self.number_of_peaks:
+            if len(coordinates) >= peak_limit:
                 break
+
         peaks = backend.to_backend_array(coordinates)
         return peaks, None
 
@@ -732,7 +741,7 @@ class PeakCallerScipy(PeakCaller):
     """
 
     def call_peaks(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
+        self, score_space: NDArray, minimum_score: float = None, **kwargs
     ) -> Tuple[NDArray, NDArray]:
         """
         Call peaks in the score space.
@@ -742,21 +751,25 @@ class PeakCallerScipy(PeakCaller):
         score_space : NDArray
             Data array of scores.
         minimum_score : float
-            Minimum score value to consider.
-        min_distance : float
-            Minimum distance between maxima.
+            Minimum score value to consider. If provided, superseeds limit given
+            by :py:attr:`PeakCaller.number_of_peaks`.
 
         Returns
         -------
-        NDArray
-            Array of peak coordiantes.
-        NDArray
-            Array of peak details.
+        Tuple[NDArray, NDArray]
+            Array of peak coordinates and peak details.
         """
+
+        score_space = backend.to_numpy_array(score_space)
+        num_peaks = self.number_of_peaks
+        if minimum_score is not None:
+            num_peaks = np.inf
+
         peaks = peak_local_max(
             score_space,
-            num_peaks=self.number_of_peaks,
+            num_peaks=num_peaks,
             min_distance=self.min_distance,
+            threshold_abs=minimum_score,
         )
         return peaks, None
 

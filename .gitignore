@@ -1,4 +1,4 @@
- # Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 
@@ -72,6 +72,7 @@ doc/reference/api
 tme/package.py
 tme/tests/test_packaging.py
 tme/scoring.py
+tme/transforms.py
 scripts/match_template_devel.py
 scripts/refine_matches.py
 update_github.sh

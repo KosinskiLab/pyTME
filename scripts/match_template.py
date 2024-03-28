@@ -412,6 +412,16 @@ def parse_args():
         "no interpolation is performed.",
     )
 
+    analyzer_group = parser.add_argument_group("Analyzer")
+    analyzer_group.add_argument(
+        "--score_threshold",
+        dest="score_threshold",
+        required=False,
+        type=float,
+        default=0,
+        help="Minimum template matching scores to consider for analysis.",
+    )
+
     args = parser.parse_args()
 
     if args.interpolation_order < 0:
@@ -684,7 +694,7 @@ def main():
         exit(-1)
 
     analyzer_args = {
-        "score_threshold": 0,
+        "score_threshold": args.score_threshold,
         "number_of_peaks": 1000,
         "convolution_mode": "valid",
         "use_memmap": args.use_memmap,
