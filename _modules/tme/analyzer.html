@@ -488,7 +488,7 @@ document.write(`
 <span class="sd">        rotation_matrix : NDArray</span>
 <span class="sd">            Rotation matrix used to obtain the score array.</span>
 <span class="sd">        **kwargs</span>
-<span class="sd">            Additional keyword arguments.</span>
+<span class="sd">            Optional keyword arguments passed to :py:meth:`PeakCaller.call_peak`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">peak_positions</span><span class="p">,</span> <span class="n">peak_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_peaks</span><span class="p">(</span>
             <span class="n">score_space</span><span class="o">=</span><span class="n">score_space</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
@@ -565,10 +565,8 @@ document.write(`
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        NDArray</span>
-<span class="sd">            Array of peak coordiantes.</span>
-<span class="sd">        NDArray</span>
-<span class="sd">            Array of peak details.</span>
+<span class="sd">        Tuple[NDArray, NDArray]</span>
+<span class="sd">            Array of peak coordinates and peak details.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 
@@ -757,7 +755,7 @@ document.write(`
 <div class="viewcode-block" id="PeakCallerSort.call_peaks">
 <a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerSort.call_peaks.html#tme.analyzer.PeakCallerSort.call_peaks">[docs]</a>
     <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">minimum_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call peaks in the score space.</span>
@@ -767,19 +765,19 @@ document.write(`
 <span class="sd">        score_space : NDArray</span>
 <span class="sd">            Data array of scores.</span>
 <span class="sd">        minimum_score : float</span>
-<span class="sd">            Minimum score value to consider.</span>
-<span class="sd">        min_distance : float</span>
-<span class="sd">            Minimum distance between maxima.</span>
+<span class="sd">            Minimum score value to consider. If provided, superseeds limit given</span>
+<span class="sd">            by :py:attr:`PeakCaller.number_of_peaks`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        NDArray</span>
-<span class="sd">            Array of peak coordiantes.</span>
-<span class="sd">        NDArray</span>
-<span class="sd">            Array of peak details.</span>
+<span class="sd">        Tuple[NDArray, NDArray]</span>
+<span class="sd">            Array of peak coordinates and peak details.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">flat_score_space</span> <span class="o">=</span> <span class="n">score_space</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">k</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">flat_score_space</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">minimum_score</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">score_space</span> <span class="o">&gt;=</span> <span class="n">minimum_score</span><span class="p">)</span>
 
         <span class="n">top_k_indices</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topk_indices</span><span class="p">(</span><span class="n">flat_score_space</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
 
@@ -804,7 +802,7 @@ document.write(`
 <div class="viewcode-block" id="PeakCallerMaximumFilter.call_peaks">
 <a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerMaximumFilter.call_peaks.html#tme.analyzer.PeakCallerMaximumFilter.call_peaks">[docs]</a>
     <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">minimum_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call peaks in the score space.</span>
@@ -814,25 +812,25 @@ document.write(`
 <span class="sd">        score_space : NDArray</span>
 <span class="sd">            Data array of scores.</span>
 <span class="sd">        minimum_score : float</span>
-<span class="sd">            Minimum score value to consider.</span>
-<span class="sd">        min_distance : float</span>
-<span class="sd">            Minimum distance between maxima.</span>
+<span class="sd">            Minimum score value to consider. If provided, superseeds limit given</span>
+<span class="sd">            by :py:attr:`PeakCaller.number_of_peaks`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        NDArray</span>
-<span class="sd">            Array of peak coordiantes.</span>
-<span class="sd">        NDArray</span>
-<span class="sd">            Array of peak details.</span>
+<span class="sd">        Tuple[NDArray, NDArray]</span>
+<span class="sd">            Array of peak coordinates and peak details.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">peaks</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">max_filter_coordinates</span><span class="p">(</span><span class="n">score_space</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">)</span>
+
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">peaks</span><span class="o">.</span><span class="n">T</span><span class="p">)]</span>
 
         <span class="n">input_candidates</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span><span class="p">,</span> <span class="n">peaks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">score_space</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="p">)</span>
-        <span class="n">top_indices</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topk_indices</span><span class="p">(</span>
-            <span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">peaks</span><span class="o">.</span><span class="n">T</span><span class="p">)],</span> <span class="n">input_candidates</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">minimum_score</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">input_candidates</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">scores</span> <span class="o">&gt;=</span> <span class="n">minimum_score</span><span class="p">)</span>
+
+        <span class="n">top_indices</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topk_indices</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">input_candidates</span><span class="p">)</span>
         <span class="n">peaks</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span><span class="n">top_indices</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
@@ -854,7 +852,7 @@ document.write(`
 <div class="viewcode-block" id="PeakCallerFast.call_peaks">
 <a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerFast.call_peaks.html#tme.analyzer.PeakCallerFast.call_peaks">[docs]</a>
     <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">minimum_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call peaks in the score space.</span>
@@ -864,16 +862,13 @@ document.write(`
 <span class="sd">        score_space : NDArray</span>
 <span class="sd">            Data array of scores.</span>
 <span class="sd">        minimum_score : float</span>
-<span class="sd">            Minimum score value to consider.</span>
-<span class="sd">        min_distance : float</span>
-<span class="sd">            Minimum distance between maxima.</span>
+<span class="sd">            Minimum score value to consider. If provided, superseeds limit given</span>
+<span class="sd">            by :py:attr:`PeakCaller.number_of_peaks`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        NDArray</span>
-<span class="sd">            Array of peak coordiantes.</span>
-<span class="sd">        NDArray</span>
-<span class="sd">            Array of peak details.</span>
+<span class="sd">        Tuple[NDArray, NDArray]</span>
+<span class="sd">            Array of peak coordinates and peak details.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">splits</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">axis</span><span class="p">:</span> <span class="n">score_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span>
@@ -939,6 +934,7 @@ document.write(`
         <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
         <span class="n">mask</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">minimum_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rotation_space</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rotation_mapping</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
@@ -959,6 +955,9 @@ document.write(`
 <span class="sd">        rotation_mapping : Dict optional</span>
 <span class="sd">            Dictionary mapping values in rotation_space to Euler angles.</span>
 <span class="sd">            By default None</span>
+<span class="sd">        minimum_score : float</span>
+<span class="sd">            Minimum score value to consider. If provided, superseeds limit given</span>
+<span class="sd">            by :py:attr:`PeakCaller.number_of_peaks`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -981,11 +980,20 @@ document.write(`
 
         <span class="n">rotated_template</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">mask</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
+        <span class="n">peak_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span>
+        <span class="k">if</span> <span class="n">minimum_score</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">peak_limit</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">score_space</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">minimum_score</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">score_space</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">backend</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">score_space</span><span class="p">)</span>
             <span class="n">peak</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span>
                 <span class="n">indices</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">score_space</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="n">score_space</span><span class="o">.</span><span class="n">shape</span>
             <span class="p">)</span>
+            <span class="k">if</span> <span class="n">score_space</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">peak</span><span class="p">)]</span> <span class="o">&lt;</span> <span class="n">minimum_score</span><span class="p">:</span>
+                <span class="k">break</span>
+
             <span class="n">coordinates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">peak</span><span class="p">)</span>
 
             <span class="n">current_rotation_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_rotation_matrix</span><span class="p">(</span>
@@ -1003,8 +1011,9 @@ document.write(`
                 <span class="n">rotated_template</span><span class="o">=</span><span class="n">rotated_template</span><span class="p">,</span>
             <span class="p">)</span>
 
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">peak_limit</span><span class="p">:</span>
                 <span class="k">break</span>
+
         <span class="n">peaks</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
 
@@ -1139,7 +1148,7 @@ document.write(`
 <div class="viewcode-block" id="PeakCallerScipy.call_peaks">
 <a class="viewcode-back" href="../../reference/api/tme.analyzer.PeakCallerScipy.call_peaks.html#tme.analyzer.PeakCallerScipy.call_peaks">[docs]</a>
     <span class="k">def</span> <span class="nf">call_peaks</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">minimum_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call peaks in the score space.</span>
@@ -1149,21 +1158,25 @@ document.write(`
 <span class="sd">        score_space : NDArray</span>
 <span class="sd">            Data array of scores.</span>
 <span class="sd">        minimum_score : float</span>
-<span class="sd">            Minimum score value to consider.</span>
-<span class="sd">        min_distance : float</span>
-<span class="sd">            Minimum distance between maxima.</span>
+<span class="sd">            Minimum score value to consider. If provided, superseeds limit given</span>
+<span class="sd">            by :py:attr:`PeakCaller.number_of_peaks`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        NDArray</span>
-<span class="sd">            Array of peak coordiantes.</span>
-<span class="sd">        NDArray</span>
-<span class="sd">            Array of peak details.</span>
+<span class="sd">        Tuple[NDArray, NDArray]</span>
+<span class="sd">            Array of peak coordinates and peak details.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">score_space</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">score_space</span><span class="p">)</span>
+        <span class="n">num_peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span>
+        <span class="k">if</span> <span class="n">minimum_score</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">num_peaks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
         <span class="n">peaks</span> <span class="o">=</span> <span class="n">peak_local_max</span><span class="p">(</span>
             <span class="n">score_space</span><span class="p">,</span>
-            <span class="n">num_peaks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span><span class="p">,</span>
+            <span class="n">num_peaks</span><span class="o">=</span><span class="n">num_peaks</span><span class="p">,</span>
             <span class="n">min_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span><span class="p">,</span>
+            <span class="n">threshold_abs</span><span class="o">=</span><span class="n">minimum_score</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">peaks</span><span class="p">,</span> <span class="kc">None</span></div>
 </div>
