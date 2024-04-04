@@ -47,6 +47,7 @@ class MatchingData:
         self.target_filter = {}
 
         self._invert_target = False
+        self._rotations = None
 
         self._set_batch_dimension()
 
@@ -253,7 +254,7 @@ class MatchingData:
         # )
         ret.template_filter = self.template_filter
 
-        ret.rotations, ret.indices = self.rotations, indices
+        ret._rotations, ret.indices = self.rotations, indices
         ret._target_pad, ret._template_pad = target_pad, template_pad
         ret._invert_target = self._invert_target
 
@@ -534,7 +535,8 @@ class MatchingData:
             template = backend.reverse(self._template.data)
         else:
             template = backend.reverse(self._template)
-        return template.reshape(self._output_template_shape)
+        out_shape = backend.to_numpy_array(self._output_template_shape)
+        return template.reshape(tuple(int(x) for x in out_shape))
 
     @template.setter
     def template(self, template: NDArray):
