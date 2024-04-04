@@ -416,6 +416,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">target_filter</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rotations</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_batch_dimension</span><span class="p">()</span>
 
@@ -627,7 +628,7 @@ document.write(`
         <span class="c1"># )</span>
         <span class="n">ret</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_filter</span>
 
-        <span class="n">ret</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span> <span class="n">indices</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">_rotations</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span> <span class="n">indices</span>
         <span class="n">ret</span><span class="o">.</span><span class="n">_target_pad</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">_template_pad</span> <span class="o">=</span> <span class="n">target_pad</span><span class="p">,</span> <span class="n">template_pad</span>
         <span class="n">ret</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span>
 
@@ -918,7 +919,8 @@ document.write(`
             <span class="n">template</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">template</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span><span class="p">)</span>
+        <span class="n">out_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">out_shape</span><span class="p">))</span>
 
     <span class="nd">@template</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">):</span>
