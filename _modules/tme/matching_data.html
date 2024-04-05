@@ -550,8 +550,10 @@ document.write(`
             <span class="n">arr_max</span> <span class="o">=</span> <span class="n">_warn_on_mismatch</span><span class="p">(</span><span class="n">arr_max</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span>
 
             <span class="c1"># Avoid in-place operation in case ret is not floating point</span>
-            <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="o">-</span><span class="n">ret</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">arr_max</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">))</span>
-
+            <span class="n">ret</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">arr_max</span><span class="p">,</span> <span class="n">arr_min</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="p">)</span>
+            <span class="c1"># ret = np.divide(np.subtract(-ret, arr_min), np.subtract(arr_max, arr_min))</span>
         <span class="k">return</span> <span class="n">ret</span></div>
 
 
@@ -622,12 +624,17 @@ document.write(`
         <span class="p">)</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target_subset</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">template_subset</span><span class="p">)</span>
 
-        <span class="c1"># ret._translation_offset = np.add(</span>
-        <span class="c1">#     [x.start for x in target_slice],</span>
-        <span class="c1">#     [x.start for x in template_slice],</span>
-        <span class="c1"># )</span>
-        <span class="n">ret</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_filter</span>
+        <span class="n">target_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_target_shape</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="n">target_offset</span><span class="p">[(</span><span class="n">target_offset</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_slice</span><span class="p">))</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">target_slice</span>
+        <span class="p">]</span>
+        <span class="n">template_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_target_shape</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="n">template_offset</span><span class="p">[(</span><span class="n">template_offset</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_slice</span><span class="p">))</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">template_slice</span>
+        <span class="p">]</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">_translation_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">target_offset</span><span class="p">,</span> <span class="n">template_offset</span><span class="p">)</span>
 
+        <span class="n">ret</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_filter</span>
         <span class="n">ret</span><span class="o">.</span><span class="n">_rotations</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span> <span class="n">indices</span>
         <span class="n">ret</span><span class="o">.</span><span class="n">_target_pad</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">_template_pad</span> <span class="o">=</span> <span class="n">target_pad</span><span class="p">,</span> <span class="n">template_pad</span>
         <span class="n">ret</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span>
@@ -809,13 +816,13 @@ document.write(`
 <span class="sd">            An array indicating the padding for each dimension of the target.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">target_padding</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype_int</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_target_shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype_int</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">pad_target</span><span class="p">:</span>
             <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-                <span class="n">backend</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span><span class="p">,</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
                 <span class="n">out</span><span class="o">=</span><span class="n">target_padding</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_is_target_batch&quot;</span><span class="p">):</span>
@@ -867,7 +874,8 @@ document.write(`
             <span class="n">batch_mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_mask</span><span class="p">)</span>
             <span class="n">fourier_pad</span><span class="p">[</span><span class="n">batch_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
-        <span class="n">ret</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_convolution_shapes</span><span class="p">(</span><span class="n">target_shape</span><span class="p">,</span> <span class="n">fourier_pad</span><span class="p">)</span>
+        <span class="n">pad_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">target_shape</span><span class="p">,</span> <span class="n">template_shape</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_convolution_shapes</span><span class="p">(</span><span class="n">pad_shape</span><span class="p">,</span> <span class="n">fourier_pad</span><span class="p">)</span>
         <span class="n">convolution_shape</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span> <span class="o">=</span> <span class="n">ret</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">pad_fourier</span><span class="p">:</span>
             <span class="n">fourier_shift</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">template_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
