@@ -179,8 +179,10 @@ class MatchingData:
             arr_max = _warn_on_mismatch(arr_max, arr.max(), "max")
 
             # Avoid in-place operation in case ret is not floating point
-            ret = np.divide(np.subtract(-ret, arr_min), np.subtract(arr_max, arr_min))
-
+            ret = (
+                -np.divide(np.subtract(ret, arr_min), np.subtract(arr_max, arr_min)) + 1
+            )
+            # ret = np.divide(np.subtract(-ret, arr_min), np.subtract(arr_max, arr_min))
         return ret
 
     def subset_by_slice(
@@ -248,12 +250,17 @@ class MatchingData:
         )
         ret = self.__class__(target=target_subset, template=template_subset)
 
-        # ret._translation_offset = np.add(
-        #     [x.start for x in target_slice],
-        #     [x.start for x in template_slice],
-        # )
-        ret.template_filter = self.template_filter
+        target_offset = np.zeros(len(self._output_target_shape), dtype = int)
+        target_offset[(target_offset.size - len(target_slice)) :] = [
+            x.start for x in target_slice
+        ]
+        template_offset = np.zeros(len(self._output_target_shape), dtype = int)
+        template_offset[(template_offset.size - len(template_slice)) :] = [
+            x.start for x in template_slice
+        ]
+        ret._translation_offset = np.add(target_offset, template_offset)
 
+        ret.template_filter = self.template_filter
         ret._rotations, ret.indices = self.rotations, indices
         ret._target_pad, ret._template_pad = target_pad, template_pad
         ret._invert_target = self._invert_target
@@ -429,13 +436,13 @@ class MatchingData:
             An array indicating the padding for each dimension of the target.
         """
         target_padding = backend.zeros(
-            len(self.target.shape), dtype=backend._default_dtype_int
+            len(self._output_target_shape), dtype=backend._default_dtype_int
         )
 
         if pad_target:
             backend.subtract(
-                self._template.shape,
-                backend.mod(self._template.shape, 2),
+                self._output_template_shape,
+                backend.mod(self._output_template_shape, 2),
                 out=target_padding,
             )
             if hasattr(self, "_is_target_batch"):
@@ -484,7 +491,8 @@ class MatchingData:
             batch_mask = backend.to_backend_array(self._batch_mask)
             fourier_pad[batch_mask] = 1
 
-        ret = backend.compute_convolution_shapes(target_shape, fourier_pad)
+        pad_shape = backend.maximum(target_shape, template_shape)
+        ret = backend.compute_convolution_shapes(pad_shape, fourier_pad)
         convolution_shape, fast_shape, fast_ft_shape = ret
         if not pad_fourier:
             fourier_shift = 1 - backend.astype(backend.divide(template_shape, 2), int)
