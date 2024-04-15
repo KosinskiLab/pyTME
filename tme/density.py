@@ -1,4 +1,4 @@
-""" Implements class to represent electron density maps.
+""" Representation of N-dimensional densities
 
     Copyright (c) 2023 European Molecular Biology Laboratory
 
@@ -217,7 +217,7 @@ class Density:
     @classmethod
     def _load_mrc(
         cls, filename: str, subset: Tuple[int] = None, use_memmap: bool = False
-    ) -> Tuple[NDArray]:
+    ) -> Tuple[NDArray, NDArray, NDArray, Dict]:
         """
         Extracts data from a CCP4/MRC file.
 
@@ -232,12 +232,8 @@ class Density:
 
         Returns
         -------
-        NDArray
-            The data attribute of the CCP4/MRC file.
-        NDArray
-            The coordinate origin of the data.
-        NDArray
-            The sampling rate of the data.
+        Tuple[NDArray, NDArray, NDArray, Dict]
+            File data, coordinate origin, sampling rate array and metadata dictionary.
 
         References
         ----------
@@ -359,7 +355,7 @@ class Density:
     @classmethod
     def _load_em(
         cls, filename: str, subset: Tuple[int] = None, use_memmap: bool = False
-    ) -> Tuple[NDArray]:
+    ) -> Tuple[NDArray, NDArray, NDArray, Dict]:
         """
         Extracts data from a EM file.
 
@@ -374,12 +370,8 @@ class Density:
 
         Returns
         -------
-        NDArray
-            The data attribute of the EM file.
-        NDArray
-            The coordinate origin of the data.
-        NDArray
-            The sampling rate of the data.
+        Tuple[NDArray, NDArray, NDArray, Dict]
+            File data, coordinate origin, sampling rate array and metadata dictionary.
 
         References
         ----------
@@ -387,11 +379,11 @@ class Density:
 
         Warns
         -----
-            Warns if the pixel size is zero.
+            If the sampling rate is zero.
 
         Notes
         -----
-        A pixel size of zero will be treated as missing value and changed to one. This
+        A sampling rate of zero will be treated as missing value and changed to one. This
         function does not yet extract an origin like :py:meth:`Density._load_mrc`.
 
         See Also
@@ -487,10 +479,12 @@ class Density:
                 f"Expected length of slices : {n_dims}, got : {len(slices)}"
             )
 
-        if any([slices[i].stop > shape[i] for i in range(n_dims)]):
+        if any([slices[i].stop > shape[i] or slices[i].start > shape[i]
+            for i in range(n_dims)]
+        ):
             raise ValueError(f"Subset exceeds data dimensions ({shape}).")
 
-        if any([slices[i].stop < 0 for i in range(n_dims)]):
+        if any([slices[i].stop < 0 or slices[i].start < 0 for i in range(n_dims)]):
             raise ValueError("Subsets have to be non-negative.")
 
     @classmethod
@@ -564,7 +558,7 @@ class Density:
         return subset_data
 
     @staticmethod
-    def _load_skio(filename: str) -> Tuple[NDArray]:
+    def _load_skio(filename: str) -> Tuple[NDArray, NDArray, NDArray, Dict]:
         """
         Uses :obj:`skimage.io.imread` to extract data from filename [1]_.
 
@@ -575,12 +569,8 @@ class Density:
 
         Returns
         -------
-        NDArray
-            The data attribute of the file.
-        NDArray
-            The coordinate origin of the data.
-        NDArray
-            The sampling rate of the data.
+        Tuple[NDArray, NDArray, NDArray, Dict]
+            File data, coordinate origin, sampling rate array and metadata dictionary.
 
         References
         ----------
@@ -607,7 +597,7 @@ class Density:
 
     @staticmethod
     def _load_hdf5(
-        filename: str, subset: Tuple[slice], use_memmap: bool = False
+        filename: str, subset: Tuple[slice], use_memmap: bool = False, **kwargs
     ) -> "Density":
         """
         Extracts data from an H5 file.
@@ -631,13 +621,24 @@ class Density:
         :py:meth:`Density._save_hdf5`
         """
         subset = ... if subset is None else subset
-        with h5py.File(filename, mode="r") as infile:
-            data = infile["data"][subset]
-            origin = infile["origin"][...]
-            sampling_rate = infile["sampling_rate"][...]
-            metadata = {key: val for key, val in infile.attrs.items()}
 
-            return data, origin, sampling_rate, metadata
+        with h5py.File(filename, mode="r") as infile:
+            data = infile["data"]
+            data_attributes = [
+                infile["data"].id.get_offset(),
+                infile["data"].shape,
+                infile["data"].dtype,
+            ]
+            origin = infile["origin"][...].copy()
+            sampling_rate = infile["sampling_rate"][...].copy()
+            metadata = {key: val for key, val in infile.attrs.items()}
+            if not use_memmap:
+                return data[subset], origin, sampling_rate, metadata
+
+        offset, shape, dtype = data_attributes
+        data = np.memmap(filename, dtype=dtype, shape=shape, offset=offset)[subset]
+
+        return data, origin, sampling_rate, metadata
 
     @classmethod
     def from_structure(
@@ -940,7 +941,9 @@ class Density:
         swap, kwargs = filename, {}
         if gzip:
             swap = BytesIO()
-            kwargs["format"] = splitext(basename(filename.replace(".gz", "")))[1]
+            kwargs["format"] = splitext(
+                basename(filename.replace(".gz", ""))
+            )[1].replace(".", "")
         skio.imsave(fname=swap, arr=self.data.astype("float32"), **kwargs)
         if gzip:
             with gzip_open(filename, "wb") as outfile:
@@ -963,14 +966,25 @@ class Density:
         """
         compression = "gzip" if gzip else None
         with h5py.File(filename, mode="w") as f:
-            f.create_dataset("data", data=self.data, compression=compression)
+            f.create_dataset(
+                "data",
+                data=self.data,
+                shape=self.data.shape,
+                dtype=self.data.dtype,
+                compression=compression,
+            )
             f.create_dataset("origin", data=self.origin)
             f.create_dataset("sampling_rate", data=self.sampling_rate)
 
-            self.metadata["mean"] = self.data.mean()
-            self.metadata["std"] = self.data.std()
-            self.metadata["min"] = self.data.min()
-            self.metadata["max"] = self.data.max()
+            self.metadata["mean"] = self.metadata.get("mean", 0)
+            self.metadata["std"] = self.metadata.get("std", 0)
+            self.metadata["min"] = self.metadata.get("min", 0)
+            self.metadata["max"] = self.metadata.get("max", 0)
+            if type(self.data) != np.memmap:
+                self.metadata["mean"] = self.data.mean()
+                self.metadata["std"] = self.data.std()
+                self.metadata["min"] = self.data.min()
+                self.metadata["max"] = self.data.max()
 
             for key, val in self.metadata.items():
                 f.attrs[key] = val

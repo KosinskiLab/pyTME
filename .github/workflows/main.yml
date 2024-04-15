@@ -35,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: python:3.11.5
+      options: --shm-size=8gb
 
     steps:
       - name: Checkout Repository

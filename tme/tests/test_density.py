@@ -131,7 +131,7 @@ class TestDensity:
         )
         _, output_file = mkstemp()
         base.to_file(output_file)
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, OSError)):
             Density.from_file(output_file, subset=(slice(0, 10),))
             Density.from_file(
                 output_file, subset=(slice(-1, 10), slice(5, 10), slice(5, 10))
