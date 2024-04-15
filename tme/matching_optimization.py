@@ -382,9 +382,12 @@ class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
     """
 
     def __init__(self, **kwargs):
-        print(kwargs["target_weights"].mean())
-        kwargs["target_weights"] -= kwargs["target_weights"].mean()
-        kwargs["template_weights"] -= kwargs["template_weights"].mean()
+        kwargs["target_weights"] = np.subtract(
+            kwargs["target_weights"], kwargs["target_weights"].mean()
+        )
+        kwargs["template_weights"] = np.subtract(
+            kwargs["template_weights"], kwargs["template_weights"].mean()
+        )
         super().__init__(**kwargs)
 
 
@@ -1095,7 +1098,11 @@ class FitRefinement:
             )
 
         uncertainty = (*translational_uncertainty, *rotational_uncertainty)
-        bounds = [bound if bound != (0, 0) else (-1e-9, 1e-9) for bound in uncertainty]
+        resolution = np.finfo(np.float32).resolution
+        bounds = [
+            bound if bound != (0, 0) else (-resolution, resolution)
+            for bound in uncertainty
+        ]
         linear_constraint = LinearConstraint(
             np.eye(len(bounds)), np.min(bounds, axis=1), np.max(bounds, axis=1)
         )

@@ -52,6 +52,17 @@ jobs:
           name: dist
           path: dist/*
 
+      - name: Test with pytest
+        run: |
+          pip install pytest pytest-cov
+          ulimit -n 2048
+          pytest -vvv \
+          #  --doctest-modules \
+          #  --junitxml=junit/test-results.xml \
+          #  --cov=tme \
+          #  --cov-report=xml \
+          #  --cov-report=html
+
   docker:
     runs-on: ubuntu-latest
 

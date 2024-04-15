@@ -9,9 +9,8 @@ RUN apt-get update && \
     apt-get install -y software-properties-common ca-certificates &&\
     apt-get install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libreadline-dev libffi-dev wget libbz2-dev libsqlite3-dev && \
     update-ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN mkdir /python && cd /python && \
+    rm -rf /var/lib/apt/lists/* &&  \
+    mkdir /python && cd /python && \
     wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
     tar -zxvf Python-${PYTHON_VERSION}.tgz && \
     cd Python-${PYTHON_VERSION} && \
