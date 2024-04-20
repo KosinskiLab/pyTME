@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>MaxScoreOverRotations &#8212; pytme 0.1.9 documentation</title>
+    <title>MaxScoreOverRotations &#8212; pytme 0.2.0b documentation</title>
   
   
   
@@ -40,8 +40,8 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=8618f531"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/documentation_options.js?v=fa31bc0e"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=4ea706d9"></script>
@@ -123,7 +123,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.9 documentation</p>
+    <p class="title logo__title">pytme 0.2.0b documentation</p>
   
 </a></div>
     
@@ -433,10 +433,7 @@ document.write(`
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../template_matching.html">Template matching</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../matching_optimization.html">Non-exhaustive</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FitRefinement.html">FitRefinement</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FitRefinement.refine.html">FitRefinement.refine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FitRefinement.array_from_coordinates.html">FitRefinement.array_from_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FitRefinement.map_coordinates_to_array.html">FitRefinement.map_coordinates_to_array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FLC.html">FLC</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.CrossCorrelation.html">CrossCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.LaplaceCrossCorrelation.html">LaplaceCrossCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.NormalizedCrossCorrelation.html">NormalizedCrossCorrelation</a></li>
@@ -447,7 +444,10 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.MutualInformation.html">MutualInformation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.Envelope.html">Envelope</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.MatchCoordinatesToDensity.html">MatchCoordinatesToDensity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.Chamfer.html">Chamfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.create_score_object.html">create_score_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.optimize_match.html">optimize_match</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../matching_exhaustive.html">Exhaustive</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -668,6 +668,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max_score_over_rotations.html">NumpyFFTWBackend.max_score_over_rotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.maximum.html">NumpyFFTWBackend.maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.mean.html">NumpyFFTWBackend.mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.min.html">NumpyFFTWBackend.min</a></li>
@@ -730,6 +731,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.indices.html">PytorchBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max.html">PytorchBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max_filter_coordinates.html">PytorchBackend.max_filter_coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max_score_over_rotations.html">PytorchBackend.max_score_over_rotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.maximum.html">PytorchBackend.maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.mean.html">PytorchBackend.mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.min.html">PytorchBackend.min</a></li>
@@ -792,6 +794,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.indices.html">CupyBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max.html">CupyBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max_filter_coordinates.html">CupyBackend.max_filter_coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max_score_over_rotations.html">CupyBackend.max_score_over_rotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.maximum.html">CupyBackend.maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.mean.html">CupyBackend.mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.min.html">CupyBackend.min</a></li>
@@ -824,7 +827,21 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.tril_indices.html">CupyBackend.tril_indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.unique.html">CupyBackend.unique</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.unravel_index.html">CupyBackend.unravel_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.var.html">CupyBackend.var</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.zeros.html">CupyBackend.zeros</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../orientations.html">Orientations</a><input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-30"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.orientations.Orientations.html">Orientations</a><input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-31"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.translations.html">Orientations.translations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.rotations.html">Orientations.rotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.scores.html">Orientations.scores</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.details.html">Orientations.details</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.from_file.html">Orientations.from_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.get_extraction_slices.html">Orientations.get_extraction_slices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.to_file.html">Orientations.to_file</a></li>
 </ul>
 </li>
 </ul>
@@ -894,7 +911,8 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="tme.analyzer.MaxScoreOverRotations">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MaxScoreOverRotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score_space_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_space_dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation_offset=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_threshold=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_memory_handler=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_space_dtype=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_memmap=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread_safe=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/analyzer.html#MaxScoreOverRotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.analyzer.MaxScoreOverRotations" title="Link to this definition">#</a></dt>
-<dd><p>Obtain the maximum translation score over various rotations.</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Obtain the maximum translation score over various rotations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -1018,7 +1036,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     <br/>
   </p>
 </div>

@@ -19,7 +19,22 @@
       
          
          
-           Envelope.scoring_function
+           Envelope.array_from_coordinates
+         
+         
+           Envelope.map_coordinates_to_array
+         
+         
+           Envelope.rigid_transform
+         
+         
+           Envelope.score
+         
+         
+           Envelope.score_angles
+         
+         
+           Envelope.score_translation
          
    
    

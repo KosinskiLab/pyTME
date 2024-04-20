@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.matching_utils &#8212; pytme 0.1.9 documentation</title>
+    <title>tme.matching_utils &#8212; pytme 0.2.0b documentation</title>
   
   
   
@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=8618f531"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/documentation_options.js?v=fa31bc0e"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=4ea706d9"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.9 documentation</p>
+    <p class="title logo__title">pytme 0.2.0b documentation</p>
   
 </a></div>
     
@@ -607,6 +607,7 @@ document.write(`
     <span class="n">max_cores</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">max_ram</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">matching_method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">split_axes</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">split_only_outer</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">shape1_padding</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -637,6 +638,8 @@ document.write(`
 <span class="sd">        The maximum amount of memory that can be used.</span>
 <span class="sd">    matching_method : str</span>
 <span class="sd">        The metric used for scoring the computations.</span>
+<span class="sd">    split_axes : tuple</span>
+<span class="sd">        Axes that can be used for splitting. By default all are considered.</span>
 <span class="sd">    backend : str, optional</span>
 <span class="sd">        Backend used for computations.</span>
 <span class="sd">    split_only_outer : bool, optional</span>
@@ -681,6 +684,13 @@ document.write(`
         <span class="n">core_assignments</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_cores</span><span class="p">)]</span>
 
     <span class="n">possible_params</span><span class="p">,</span> <span class="n">split_axis</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">shape1</span><span class="p">)</span>
+
+    <span class="n">split_axis_index</span> <span class="o">=</span> <span class="n">split_axis</span>
+    <span class="k">if</span> <span class="n">split_axes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">split_axis</span><span class="p">,</span> <span class="n">split_axis_index</span> <span class="o">=</span> <span class="n">split_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">split_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape1</span><span class="p">)))</span>
+
     <span class="n">split_factor</span><span class="p">,</span> <span class="n">n_splits</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape1</span><span class="p">))],</span> <span class="mi">0</span>
     <span class="k">while</span> <span class="n">n_splits</span> <span class="o">&lt;=</span> <span class="n">max_splits</span><span class="p">:</span>
         <span class="n">splits</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">split_factor</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">split_factor</span><span class="p">))}</span>
@@ -719,9 +729,11 @@ document.write(`
                     <span class="p">(</span><span class="o">*</span><span class="n">split_factor</span><span class="p">,</span> <span class="n">outer_cores</span><span class="p">,</span> <span class="n">inner_cores</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">,</span> <span class="n">inits</span><span class="p">)</span>
                 <span class="p">)</span>
         <span class="n">split_factor</span><span class="p">[</span><span class="n">split_axis</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">split_axis</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">split_axis</span> <span class="o">==</span> <span class="n">shape1</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
-            <span class="n">split_axis</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">split_axis_index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">split_axis_index</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_axes</span><span class="p">):</span>
+            <span class="n">split_axis_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">split_axis</span> <span class="o">=</span> <span class="n">split_axes</span><span class="p">[</span><span class="n">split_axis_index</span><span class="p">]</span>
 
     <span class="n">possible_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">possible_params</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">possible_params</span><span class="p">):</span>
@@ -1000,6 +1012,91 @@ document.write(`
 
 
 
+<span class="k">def</span> <span class="nf">get_rotations_around_vector</span><span class="p">(</span>
+    <span class="n">cone_angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">cone_sampling</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">axis_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">360.0</span><span class="p">,</span>
+    <span class="n">axis_sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">vector</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="n">n_symmetry</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">convention</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate rotations describing the possible placements of a vector in a cone.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cone_angle : float</span>
+<span class="sd">        The half-angle of the cone in degrees.</span>
+<span class="sd">    cone_sampling : float</span>
+<span class="sd">        Angular increment used for sampling points on the cone in degrees.</span>
+<span class="sd">    axis_angle : float, optional</span>
+<span class="sd">        The total angle of rotation around the vector axis in degrees (default is 360.0).</span>
+<span class="sd">    axis_sampling : float, optional</span>
+<span class="sd">        Angular increment used for sampling points around the vector axis in degrees.</span>
+<span class="sd">        If None, it takes the value of `cone_sampling`.</span>
+<span class="sd">    vector : Tuple[float], optional</span>
+<span class="sd">        Cartesian coordinates in zyx convention.</span>
+<span class="sd">    n_symmetry : int, optional</span>
+<span class="sd">        Number of symmetry axis around the vector axis.</span>
+<span class="sd">    convention : str, optional</span>
+<span class="sd">        Convention for angles. By default returns rotation matrices.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    NDArray</span>
+<span class="sd">        An array of rotation angles represented as Euler angles (phi, theta, psi) in degrees.</span>
+<span class="sd">        The shape of the array is (n, 3), where `n` is the total number of rotation angles.</span>
+<span class="sd">        Each row represents a set of rotation angles.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">axis_sampling</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">axis_sampling</span> <span class="o">=</span> <span class="n">cone_sampling</span>
+
+    <span class="c1"># Heuristic to estimate necessary number of points on sphere</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cone_angle</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">cone_angle</span> <span class="o">/</span> <span class="n">cone_sampling</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">number_of_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+        <span class="mi">360</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">theta</span><span class="p">)),</span> <span class="n">cone_sampling</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">number_of_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">number_of_points</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Golden Spiral</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_of_points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">cone_angle</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">indices</span> <span class="o">/</span> <span class="n">number_of_points</span><span class="p">)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="o">*</span> <span class="n">indices</span>
+
+    <span class="n">angles_vector</span> <span class="o">=</span> <span class="n">Rotation</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span>
+        <span class="n">angles</span><span class="o">=</span><span class="n">rotation_aligning_vectors</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">vector</span><span class="p">,</span> <span class="n">convention</span><span class="o">=</span><span class="s2">&quot;zyx&quot;</span><span class="p">),</span>
+        <span class="n">seq</span><span class="o">=</span><span class="s2">&quot;zyx&quot;</span><span class="p">,</span>
+        <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># phi, theta, psi</span>
+    <span class="n">axis_angle</span> <span class="o">/=</span> <span class="n">n_symmetry</span>
+    <span class="n">phi_steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">axis_angle</span> <span class="o">/</span> <span class="n">axis_sampling</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">axis_angle</span><span class="p">,</span> <span class="n">phi_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">angles_vector</span><span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="s2">&quot;zyx&quot;</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">phi</span><span class="p">)</span>
+    <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">radius</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+    <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">phi_steps</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">angles</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">radius</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="n">angles</span> <span class="o">=</span> <span class="n">Rotation</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="n">angles</span><span class="o">=</span><span class="n">angles</span><span class="p">,</span> <span class="n">seq</span><span class="o">=</span><span class="s2">&quot;zyx&quot;</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">angles</span> <span class="o">=</span> <span class="n">angles_vector</span> <span class="o">*</span> <span class="n">angles</span>
+
+    <span class="k">if</span> <span class="n">convention</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rotation_angles</span> <span class="o">=</span> <span class="n">angles</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rotation_angles</span> <span class="o">=</span> <span class="n">angles</span><span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="n">convention</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rotation_angles</span>
+
+
 <div class="viewcode-block" id="minimum_enclosing_box">
 <a class="viewcode-back" href="../../reference/api/tme.matching_utils.minimum_enclosing_box.html#tme.matching_utils.minimum_enclosing_box">[docs]</a>
 <span class="k">def</span> <span class="nf">minimum_enclosing_box</span><span class="p">(</span>
@@ -1148,7 +1245,7 @@ document.write(`
 
 <div class="viewcode-block" id="euler_to_rotationmatrix">
 <a class="viewcode-back" href="../../reference/api/tme.matching_utils.euler_to_rotationmatrix.html#tme.matching_utils.euler_to_rotationmatrix">[docs]</a>
-<span class="k">def</span> <span class="nf">euler_to_rotationmatrix</span><span class="p">(</span><span class="n">angles</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">euler_to_rotationmatrix</span><span class="p">(</span><span class="n">angles</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">convention</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;zyx&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert Euler angles to a rotation matrix.</span>
 
@@ -1156,6 +1253,8 @@ document.write(`
 <span class="sd">    ----------</span>
 <span class="sd">    angles : tuple</span>
 <span class="sd">        A tuple representing the Euler angles in degrees.</span>
+<span class="sd">    convention : str, optional</span>
+<span class="sd">        Euler angle convention.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1163,7 +1262,7 @@ document.write(`
 <span class="sd">        The generated rotation matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_angles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
-    <span class="n">angle_convention</span> <span class="o">=</span> <span class="s2">&quot;zyx&quot;</span><span class="p">[:</span><span class="n">n_angles</span><span class="p">]</span>
+    <span class="n">angle_convention</span> <span class="o">=</span> <span class="n">convention</span><span class="p">[:</span><span class="n">n_angles</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">n_angles</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">angles</span> <span class="o">=</span> <span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="p">(</span>
@@ -1177,7 +1276,9 @@ document.write(`
 
 <div class="viewcode-block" id="euler_from_rotationmatrix">
 <a class="viewcode-back" href="../../reference/api/tme.matching_utils.euler_from_rotationmatrix.html#tme.matching_utils.euler_from_rotationmatrix">[docs]</a>
-<span class="k">def</span> <span class="nf">euler_from_rotationmatrix</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">euler_from_rotationmatrix</span><span class="p">(</span>
+    <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">convention</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;zyx&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert a rotation matrix to euler angles.</span>
 
@@ -1185,7 +1286,8 @@ document.write(`
 <span class="sd">    ----------</span>
 <span class="sd">    rotation_matrix : NDArray</span>
 <span class="sd">        A 2 x 2 or 3 x 3 rotation matrix in z y x form.</span>
-
+<span class="sd">    convention : str, optional</span>
+<span class="sd">        Euler angle convention.</span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    Tuple</span>
@@ -1197,11 +1299,53 @@ document.write(`
         <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">temp_matrix</span>
     <span class="n">euler_angles</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">Rotation</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
-        <span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="s2">&quot;zyx&quot;</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="n">convention</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">euler_angles</span></div>
 
+
+
+<span class="k">def</span> <span class="nf">rotation_aligning_vectors</span><span class="p">(</span>
+    <span class="n">initial_vector</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">target_vector</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">convention</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the rotation matrix or Euler angles required to align an initial vector with a target vector.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    initial_vector : NDArray</span>
+<span class="sd">        The initial vector to be rotated.</span>
+<span class="sd">    target_vector : NDArray, optional</span>
+<span class="sd">        The target vector to align the initial vector with. Default is [1, 0, 0].</span>
+<span class="sd">    convention : str, optional</span>
+<span class="sd">        The generate euler angles in degrees. If None returns a rotation matrix instead.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rotation_matrix_or_angles : NDArray or tuple</span>
+<span class="sd">        Rotation matrix if convention is None else tuple of euler angles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">initial_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">initial_vector</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">target_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">target_vector</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">initial_vector</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">initial_vector</span><span class="p">)</span>
+    <span class="n">target_vector</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">target_vector</span><span class="p">)</span>
+
+    <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">initial_vector</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">initial_vector</span><span class="p">,</span> <span class="n">target_vector</span><span class="p">):</span>
+        <span class="n">rotation_axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">initial_vector</span><span class="p">,</span> <span class="n">target_vector</span><span class="p">)</span>
+        <span class="n">rotation_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">initial_vector</span><span class="p">,</span> <span class="n">target_vector</span><span class="p">))</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">rotation_axis</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">rotation_axis</span><span class="p">)</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">k</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">]])</span>
+        <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">rotation_matrix</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">rotation_angle</span><span class="p">)</span> <span class="o">*</span> <span class="n">K</span>
+        <span class="n">rotation_matrix</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rotation_angle</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">convention</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">rotation_matrix</span>
+
+    <span class="n">angles</span> <span class="o">=</span> <span class="n">euler_from_rotationmatrix</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="n">convention</span><span class="o">=</span><span class="n">convention</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">angles</span>
 
 
 <div class="viewcode-block" id="rigid_transform">
@@ -1694,7 +1838,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     <br/>
   </p>
 </div>

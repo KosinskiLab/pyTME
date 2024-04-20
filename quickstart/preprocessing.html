@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Preprocessing &#8212; pytme 0.1.9 documentation</title>
+    <title>Preprocessing &#8212; pytme 0.2.0b documentation</title>
   
   
   
@@ -40,8 +40,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=8618f531"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=fa31bc0e"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=4ea706d9"></script>
@@ -124,7 +124,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.9 documentation</p>
+    <p class="title logo__title">pytme 0.2.0b documentation</p>
   
 </a></div>
     
@@ -555,7 +555,8 @@ GUI</label><div class="sd-tab-content docutils">
 </div>
 <p>The launched <cite>napari</cite> viewer instance will appear similar to the figure below. tme defines a range of widgets, of which three are relevant for this example. The widget in orange contains a variety of methods of filter methods defined in <a class="reference internal" href="../reference/api/tme.preprocessor.Preprocessor.html#tme.preprocessor.Preprocessor" title="tme.preprocessor.Preprocessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor</span></code></a>. The blue widget in blue can be used to create a range of masks, perform axis-alignments and determine sensible default mask parameters. The green widget on the bottom right is used to export data to disk.</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="../_images/napari_boot.png"><img alt="../_images/napari_boot.png" src="../_images/napari_boot.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/napari_boot.png"><img alt="../_images/napari_boot.png" src="../_images/napari_boot.png" style="width: 100%;" />
+</a>
 </figure>
 <p>Simply drag and drop your data in CCP4/MRC format into <cite>napari</cite> to import it. If your data is in a different format, you can convert it to CCP4/MRC from within Python using <a class="reference internal" href="../reference/api/tme.density.Density.from_file.html#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.from_file()</span></code></a> and <a class="reference internal" href="../reference/api/tme.density.Density.to_file.html#tme.density.Density.to_file" title="tme.density.Density.to_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.to_file()</span></code></a> like so:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
@@ -568,11 +569,13 @@ GUI</label><div class="sd-tab-content docutils">
 </div>
 <p>Make sure to adapt the paths <code class="docutils literal notranslate"><span class="pre">input_file</span></code> and <code class="docutils literal notranslate"><span class="pre">output_file</span></code> according to your specific use-case. Clicking the <cite>Apply Filter</cite> button will apply the filter to the target layer and create a new layer on the left hand side. The name of the new layer is indicative of the filter type used. The figure below shows the target used throughout this guide after application of a bandpass filter as outlined in the <a class="reference internal" href="#preprocess-filtering"><span class="std std-ref">Apply filters</span></a> section.</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="../_images/napari_filter_widget.png"><img alt="../_images/napari_filter_widget.png" src="../_images/napari_filter_widget.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/napari_filter_widget.png"><img alt="../_images/napari_filter_widget.png" src="../_images/napari_filter_widget.png" style="width: 100%;" />
+</a>
 </figure>
 <p>Note that the procedure is exactly the same for other targets. The figure below shows tomogram TS_037 (EMPIAR-10988, <a class="reference external" href="https://www.ebi.ac.uk/empiar/EMPIAR-10988/">click here</a>) <a class="footnote-reference brackets" href="#id17" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> before (left) and after application of a Gaussian filter (right).</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="../_images/napari_filter_widget_tomogram.png"><img alt="../_images/napari_filter_widget_tomogram.png" src="../_images/napari_filter_widget_tomogram.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/napari_filter_widget_tomogram.png"><img alt="../_images/napari_filter_widget_tomogram.png" src="../_images/napari_filter_widget_tomogram.png" style="width: 100%;" />
+</a>
 </figure>
 <p>After selecting an adequate filter and parameter set the filtered data can be exported via the export button. Pressing the export button will open a separate window to determine the save location. If you applied a filter to the data, <cite>napari</cite> will also create a yaml file that contains the utilized parameters. Assuming your output is named <cite>filtered.mrc</cite>, the corresponding yaml file will be <cite>filtered.yaml</cite>.</p>
 <p>For the tomogram example above, the yaml file will contain the following:</p>
@@ -589,25 +592,30 @@ GUI</label><div class="sd-tab-content docutils">
 </div>
 <p>The mask widget is operated anologously. In the following, we consider an averaged electron microscope map EMD-3228. We can increase the lower bound on the contrast in the <cite>layer controls</cite> widget and use the display mode toggle highlighted in blue, to obtain a more informative visualization of the map.</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="../_images/napari_mask_widget_intro.png"><img alt="../_images/napari_mask_widget_intro.png" src="../_images/napari_mask_widget_intro.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/napari_mask_widget_intro.png"><img alt="../_images/napari_mask_widget_intro.png" src="../_images/napari_mask_widget_intro.png" style="width: 100%;" />
+</a>
 </figure>
 <p>The dropdown menu allows users to choose from a variety of masks with a given set of parameter. The <cite>Adapy to layer</cite> button will determine initial mask parameters based on the data of the currently selected layer. <cite>Align to axis</cite> will rotate the axis of largest variation in the selected layer onto the z-Axis, which can simplify mask creation for cases whose initial positioning is suboptimal. <cite>Create mask</cite> will create a specified mask for the currently selected layer.</p>
 <p>When clicking <cite>Adapy to layer</cite> followed by <cite>Create mask</cite>, we observe that the resulting sphere is excessively large. This is because EMD-3228 contains a fair amount of noisy unstructed density around the center structure. This can be assessed by reducing the lower bound on the contrast limit slider.</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="../_images/napari_mask_widget_map.png"><img alt="../_images/napari_mask_widget_map.png" src="../_images/napari_mask_widget_map.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/napari_mask_widget_map.png"><img alt="../_images/napari_mask_widget_map.png" src="../_images/napari_mask_widget_map.png" style="width: 100%;" />
+</a>
 </figure>
 <p>We can either adapt the mask manually, or make use of the Data Quantile feature. The Data Quantile allows us to only consider a given top percentage of the data for mask generation. In this case, 94.80 appeared to be a reasonable cutoff. Make sure to select the non-mask layer before clicking on <cite>Adapy to layer</cite>. The output is displayed below.</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="../_images/napari_mask_widget_map2.png"><img alt="../_images/napari_mask_widget_map2.png" src="../_images/napari_mask_widget_map2.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/napari_mask_widget_map2.png"><img alt="../_images/napari_mask_widget_map2.png" src="../_images/napari_mask_widget_map2.png" style="width: 100%;" />
+</a>
 </figure>
 <p>Albeit more reasonable, the mask now cuts-off some parts of the map. We can mitigate this by manually fine-tuning the parameters until the mask at least encapsulates the most important features of the map.</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="../_images/napari_mask_widget_map3.png"><img alt="../_images/napari_mask_widget_map3.png" src="../_images/napari_mask_widget_map3.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/napari_mask_widget_map3.png"><img alt="../_images/napari_mask_widget_map3.png" src="../_images/napari_mask_widget_map3.png" style="width: 100%;" />
+</a>
 </figure>
 <p>The generated masks can now be exported for subsequent use in template matching.</p>
 <p>Finally, we can also use the viewer to determine the wedge mask specification. For this, drag and drop a CCP4/MRC file for which you would expect a missing wedge into viewer. Select and apply the <cite>Power Spectrum</cite> filter to visualize the missing wedge. You might need to switch the image axis using the widgets on the bottom left. Once the wedge is visible, enable axis using View &gt; Axes &gt; Axes visible. Head over to the mask widget and select wedge. The opening axis corresponds to the axis that runs through the void defined by the wedge, the tilt axis is the axis the plane is tilted over. For the data in the example below, a tilt range of (40, 40), tilt axis 2 and opening axis 0 appears sufficient. <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> follows the same conventions, as you will see in subsequent tutorials.</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="../_images/napari_mask_widget_wedge.png"><img alt="../_images/napari_mask_widget_wedge.png" src="../_images/napari_mask_widget_wedge.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/napari_mask_widget_wedge.png"><img alt="../_images/napari_mask_widget_wedge.png" src="../_images/napari_mask_widget_wedge.png" style="width: 100%;" />
+</a>
 </figure>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -837,7 +845,7 @@ API</label><div class="sd-tab-content docutils">
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     <br/>
   </p>
 </div>

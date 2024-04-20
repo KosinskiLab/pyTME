@@ -1,4 +1,4 @@
-﻿Structure.chain\_identifier
+Structure.chain\_identifier
 ========================================
 
 .. currentmodule:: tme.structure

@@ -19,7 +19,22 @@
       
          
          
-           PartialLeastSquareDifference.scoring_function
+           PartialLeastSquareDifference.array_from_coordinates
+         
+         
+           PartialLeastSquareDifference.map_coordinates_to_array
+         
+         
+           PartialLeastSquareDifference.rigid_transform
+         
+         
+           PartialLeastSquareDifference.score
+         
+         
+           PartialLeastSquareDifference.score_angles
+         
+         
+           PartialLeastSquareDifference.score_translation
          
    
    

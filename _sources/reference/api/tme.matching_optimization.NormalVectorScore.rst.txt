@@ -19,7 +19,16 @@
       
          
          
-           NormalVectorScore.scoring_function
+           NormalVectorScore.rigid_transform
+         
+         
+           NormalVectorScore.score
+         
+         
+           NormalVectorScore.score_angles
+         
+         
+           NormalVectorScore.score_translation
          
    
    

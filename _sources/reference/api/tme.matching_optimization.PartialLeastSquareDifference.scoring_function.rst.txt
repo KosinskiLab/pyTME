@@ -1,6 +1,0 @@
-PartialLeastSquareDifference.scoring\_function
-=======================================================================
-
-.. currentmodule:: tme.matching_optimization
-
-.. automethod:: PartialLeastSquareDifference.scoring_function

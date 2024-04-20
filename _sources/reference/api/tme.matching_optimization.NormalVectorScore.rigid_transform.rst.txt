@@ -1,0 +1,6 @@
+NormalVectorScore.rigid\_transform
+===========================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: NormalVectorScore.rigid_transform

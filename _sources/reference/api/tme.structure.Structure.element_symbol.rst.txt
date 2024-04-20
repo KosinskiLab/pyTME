@@ -1,4 +1,4 @@
-﻿Structure.element\_symbol
+Structure.element\_symbol
 ======================================
 
 .. currentmodule:: tme.structure

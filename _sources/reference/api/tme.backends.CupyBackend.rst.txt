@@ -97,6 +97,9 @@
            CupyBackend.max_filter_coordinates
          
          
+           CupyBackend.max_score_over_rotations
+         
+         
            CupyBackend.maximum
          
          
@@ -191,6 +194,9 @@
          
          
            CupyBackend.unravel_index
+         
+         
+           CupyBackend.var
          
          
            CupyBackend.zeros

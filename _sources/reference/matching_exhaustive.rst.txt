@@ -10,7 +10,6 @@ Within |project|, exhaustive template matching is modularized into three primary
 1. **Setup**
     - The first step is to prepare the data and set the stage for the matching operation. This step typically involves configuring FFT operations, selecting the appropriate backend for the computations, and defining parameters for the matching. The outcome of this step is a context where template matching is poised to be carried out efficiently. See the :ref:`setup-functions` section for available setup methods.
 
-
 2. **Scoring**
     - Once the environment is set, the actual template matching is done using the scoring method. This method essentially computes how well the template fits at every possible location within the target. Depending on the application, various scoring methods might be employed (e.g., correlation, convolution). See the :ref:`scoring-functions` section for available scoring methods.
 

@@ -1,4 +1,4 @@
-﻿Structure.atom\_name
+Structure.atom\_name
 =================================
 
 .. currentmodule:: tme.structure

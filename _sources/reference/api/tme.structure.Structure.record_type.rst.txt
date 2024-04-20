@@ -1,4 +1,4 @@
-﻿Structure.record\_type
+Structure.record\_type
 ===================================
 
 .. currentmodule:: tme.structure

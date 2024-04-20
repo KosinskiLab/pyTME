@@ -1,4 +1,4 @@
-﻿Structure.occupancy
+Structure.occupancy
 =================================
 
 .. currentmodule:: tme.structure

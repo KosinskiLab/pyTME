@@ -1,4 +1,4 @@
-﻿Structure.code\_for\_residue\_insertion
+Structure.code\_for\_residue\_insertion
 ==================================================
 
 .. currentmodule:: tme.structure

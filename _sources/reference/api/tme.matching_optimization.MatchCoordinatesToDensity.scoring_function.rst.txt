@@ -1,6 +1,0 @@
-MatchCoordinatesToDensity.scoring\_function
-====================================================================
-
-.. currentmodule:: tme.matching_optimization
-
-.. automethod:: MatchCoordinatesToDensity.scoring_function

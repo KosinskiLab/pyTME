@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.analyzer &#8212; pytme 0.1.9 documentation</title>
+    <title>tme.analyzer &#8212; pytme 0.2.0b documentation</title>
   
   
   
@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=8618f531"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/documentation_options.js?v=fa31bc0e"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=4ea706d9"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.9 documentation</p>
+    <p class="title logo__title">pytme 0.2.0b documentation</p>
   
 </a></div>
     
@@ -365,7 +365,7 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for tme.analyzer</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot; Implements classes to analyze score spaces from systematic fitting.</span>
+<span></span><span class="sd">&quot;&quot;&quot; Implements classes to analyze outputs from exhaustive template matching.</span>
 
 <span class="sd">    Copyright (c) 2023 European Molecular Biology Laboratory</span>
 
@@ -383,19 +383,21 @@ document.write(`
 <span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">DBSCAN</span>
 <span class="kn">from</span> <span class="nn">skimage.feature</span> <span class="kn">import</span> <span class="n">peak_local_max</span>
 <span class="kn">from</span> <span class="nn">skimage.registration._phase_cross_correlation</span> <span class="kn">import</span> <span class="n">_upsampled_dft</span>
-<span class="kn">from</span> <span class="nn">.extensions</span> <span class="kn">import</span> <span class="n">max_index_by_label</span><span class="p">,</span> <span class="n">online_statistics</span>
+<span class="kn">from</span> <span class="nn">.extensions</span> <span class="kn">import</span> <span class="n">max_index_by_label</span><span class="p">,</span> <span class="n">online_statistics</span><span class="p">,</span> <span class="n">find_candidate_indices</span>
 <span class="kn">from</span> <span class="nn">.matching_utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">split_numpy_array_slices</span><span class="p">,</span>
     <span class="n">array_to_memmap</span><span class="p">,</span>
     <span class="n">generate_tempfile_name</span><span class="p">,</span>
     <span class="n">euler_to_rotationmatrix</span><span class="p">,</span>
+    <span class="n">apply_convolution_mode</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.backends</span> <span class="kn">import</span> <span class="n">backend</span>
 
 
-<span class="k">def</span> <span class="nf">filter_points_indices</span><span class="p">(</span><span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
-    <span class="k">if</span> <span class="n">min_distance</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">filter_points_indices_bucket</span><span class="p">(</span>
+    <span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+    <span class="n">coordinates</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
     <span class="n">bucket_indices</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
     <span class="n">multiplier</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">power</span><span class="p">(</span>
         <span class="n">backend</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">bucket_indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">bucket_indices</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -407,7 +409,24 @@ document.write(`
     <span class="k">return</span> <span class="n">unique_indices</span>
 
 
-<span class="k">def</span> <span class="nf">filter_points</span><span class="p">(</span><span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<span class="k">def</span> <span class="nf">filter_points_indices</span><span class="p">(</span>
+    <span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">bucket_cutoff</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">1e4</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">min_distance</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">find_candidate_indices</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bucket_cutoff</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">filter_points_indices_bucket</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">)</span>
+    <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">coordinates</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tril</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">distances</span> <span class="o">&gt;</span> <span class="n">min_distance</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">indices</span><span class="p">[</span><span class="n">keep</span> <span class="o">==</span> <span class="n">indices</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">filter_points</span><span class="p">(</span><span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
     <span class="n">unique_indices</span> <span class="o">=</span> <span class="n">filter_points_indices</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">min_distance</span><span class="p">)</span>
     <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">unique_indices</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">coordinates</span>
@@ -463,6 +482,12 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">min_distance</span> <span class="o">=</span> <span class="n">min_distance</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_boundary_distance</span> <span class="o">=</span> <span class="n">min_boundary_distance</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">number_of_peaks</span> <span class="o">=</span> <span class="n">number_of_peaks</span>
+
+        <span class="c1"># Postprocesing arguments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fourier_shift&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convolution_mode</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;convolution_mode&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targetshape</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;targetshape&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">templateshape</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;templateshape&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -738,8 +763,68 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span><span class="n">final_order</span><span class="p">,]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotations</span><span class="p">[</span><span class="n">final_order</span><span class="p">,]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">peak_scores</span><span class="p">[</span><span class="n">final_order</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">peak_details</span><span class="p">[</span><span class="n">final_order</span><span class="p">]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">peak_details</span><span class="p">[</span><span class="n">final_order</span><span class="p">]</span>
 
+    <span class="k">def</span> <span class="nf">_postprocess</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">fourier_shift</span><span class="p">,</span> <span class="n">convolution_mode</span><span class="p">,</span> <span class="n">targetshape</span><span class="p">,</span> <span class="n">templateshape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="n">peak_positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">if</span> <span class="n">targetshape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">templateshape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="c1"># Remove padding to next fast fourier length</span>
+        <span class="n">score_space_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">targetshape</span><span class="p">,</span> <span class="n">templateshape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">fourier_shift</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">peak_positions</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">,</span> <span class="n">fourier_shift</span><span class="p">)</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">,</span> <span class="n">score_space_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+            <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+                <span class="n">peak_positions</span><span class="p">,</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+                    <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">,</span> <span class="n">score_space_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+                    <span class="n">score_space_shape</span>
+                <span class="p">),</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">peak_positions</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">convolution_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">convolution_mode</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+            <span class="n">output_shape</span> <span class="o">=</span> <span class="n">score_space_shape</span>
+        <span class="k">elif</span> <span class="n">convolution_mode</span> <span class="o">==</span> <span class="s2">&quot;same&quot;</span><span class="p">:</span>
+            <span class="n">output_shape</span> <span class="o">=</span> <span class="n">targetshape</span>
+        <span class="k">elif</span> <span class="n">convolution_mode</span> <span class="o">==</span> <span class="s2">&quot;valid&quot;</span><span class="p">:</span>
+            <span class="n">output_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">targetshape</span><span class="p">,</span> <span class="n">templateshape</span><span class="p">),</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">templateshape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">output_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">output_shape</span><span class="p">)</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">score_space_shape</span><span class="p">,</span> <span class="n">output_shape</span><span class="p">),</span>
+            <span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="n">stops</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">output_shape</span><span class="p">)</span>
+
+        <span class="n">valid_peaks</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+                    <span class="n">peak_positions</span> <span class="o">&gt;</span> <span class="n">starts</span><span class="p">,</span>
+                    <span class="n">peak_positions</span> <span class="o">&lt;=</span> <span class="n">stops</span>
+                <span class="p">),</span>
+                <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">==</span> <span class="n">peak_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">peak_positions</span><span class="p">,</span> <span class="n">starts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="n">valid_peaks</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_list</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="PeakCallerSort">
@@ -1541,7 +1626,67 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">use_memmap</span> <span class="o">=</span> <span class="n">use_memmap</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span> <span class="k">if</span> <span class="n">thread_safe</span> <span class="k">else</span> <span class="n">nullcontext</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock_is_nullcontext</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">))))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span> <span class="k">if</span> <span class="n">thread_safe</span> <span class="k">else</span> <span class="p">{}</span>
+
+
+    <span class="k">def</span> <span class="nf">_postprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">fourier_shift</span><span class="p">,</span>
+        <span class="n">convolution_mode</span><span class="p">,</span>
+        <span class="n">targetshape</span><span class="p">,</span>
+        <span class="n">templateshape</span><span class="p">,</span>
+        <span class="n">shared_memory_handler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">):</span>
+        <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_shape</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_dtype</span><span class="p">,</span>
+            <span class="n">shm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">internal_rotations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_shape</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_space_dtype</span><span class="p">,</span>
+            <span class="n">shm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">fourier_shift</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axis</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">)))</span>
+            <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span>
+                <span class="n">internal_scores</span><span class="p">,</span>
+                <span class="n">shift</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">,</span>
+                <span class="n">axis</span><span class="o">=</span><span class="n">axis</span>
+            <span class="p">)</span>
+            <span class="n">internal_rotations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span>
+                <span class="n">internal_rotations</span><span class="p">,</span>
+                <span class="n">shift</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">,</span>
+                <span class="n">axis</span><span class="o">=</span><span class="n">axis</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">convolution_mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">apply_convolution_mode</span><span class="p">(</span>
+                <span class="n">internal_scores</span><span class="p">,</span>
+                <span class="n">convolution_mode</span><span class="o">=</span><span class="n">convolution_mode</span><span class="p">,</span>
+                <span class="n">s1</span><span class="o">=</span><span class="n">targetshape</span><span class="p">,</span>
+                <span class="n">s2</span><span class="o">=</span><span class="n">templateshape</span>
+            <span class="p">)</span>
+            <span class="n">internal_rotations</span> <span class="o">=</span> <span class="n">apply_convolution_mode</span><span class="p">(</span>
+                <span class="n">internal_rotations</span><span class="p">,</span>
+                <span class="n">convolution_mode</span><span class="o">=</span><span class="n">convolution_mode</span><span class="p">,</span>
+                <span class="n">s1</span><span class="o">=</span><span class="n">targetshape</span><span class="p">,</span>
+                <span class="n">s2</span><span class="o">=</span><span class="n">templateshape</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">score_space_shape</span> <span class="o">=</span> <span class="n">internal_scores</span><span class="o">.</span><span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score_space</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">arr_to_sharedarr</span><span class="p">(</span>
+            <span class="n">internal_scores</span><span class="p">,</span>
+            <span class="n">shared_memory_handler</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">arr_to_sharedarr</span><span class="p">(</span>
+            <span class="n">internal_rotations</span><span class="p">,</span>
+            <span class="n">shared_memory_handler</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
@@ -1600,11 +1745,21 @@ document.write(`
 <span class="sd">        **kwargs</span>
 <span class="sd">            Arbitrary keyword arguments.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rotation</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
+        <span class="n">rotation_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+            <span class="n">rotation</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock_is_nullcontext</span><span class="p">:</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">max_score_over_rotations</span><span class="p">(</span>
+                <span class="n">score_space</span><span class="o">=</span><span class="n">score_space</span><span class="p">,</span>
+                <span class="n">internal_scores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space</span><span class="p">,</span>
+                <span class="n">internal_rotations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span>
+                <span class="n">rotation_index</span><span class="o">=</span><span class="n">rotation_index</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
-            <span class="n">rotation</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">rotation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">[</span><span class="n">rotation</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">)</span>
-            <span class="n">rotation_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">[</span><span class="n">rotation</span><span class="p">]</span>
             <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
                 <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_shape</span><span class="p">,</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_dtype</span><span class="p">,</span>
@@ -1615,9 +1770,14 @@ document.write(`
                 <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_space_dtype</span><span class="p">,</span>
                 <span class="n">shm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">indices</span> <span class="o">=</span> <span class="n">score_space</span> <span class="o">&gt;</span> <span class="n">internal_scores</span>
-            <span class="n">internal_scores</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">score_space</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
-            <span class="n">internal_rotations</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotation_index</span>
+
+            <span class="n">backend</span><span class="o">.</span><span class="n">max_score_over_rotations</span><span class="p">(</span>
+                <span class="n">score_space</span><span class="o">=</span><span class="n">score_space</span><span class="p">,</span>
+                <span class="n">internal_scores</span><span class="o">=</span><span class="n">internal_scores</span><span class="p">,</span>
+                <span class="n">internal_rotations</span><span class="o">=</span><span class="n">internal_rotations</span><span class="p">,</span>
+                <span class="n">rotation_index</span><span class="o">=</span><span class="n">rotation_index</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="MaxScoreOverRotations.merge">
 <a class="viewcode-back" href="../../reference/api/tme.analyzer.MaxScoreOverRotations.merge.html#tme.analyzer.MaxScoreOverRotations.merge">[docs]</a>
@@ -1671,14 +1831,22 @@ document.write(`
             <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
                 <span class="n">scores_out_filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">base_max</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">scores_out_dtype</span>
             <span class="p">)</span>
+            <span class="n">scores_out</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;score_threshold&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">scores_out</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
             <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
                 <span class="n">rotations_out_filename</span><span class="p">,</span>
                 <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">,</span>
                 <span class="n">shape</span><span class="o">=</span><span class="n">base_max</span><span class="p">,</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_out_dtype</span><span class="p">,</span>
             <span class="p">)</span>
+            <span class="n">rotations_out</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">rotations_out</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">base_max</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">scores_out_dtype</span><span class="p">)</span>
+            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+                <span class="n">base_max</span><span class="p">,</span>
+                <span class="n">fill_value</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;score_threshold&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">scores_out_dtype</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">base_max</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_out_dtype</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_stores</span><span class="p">)):</span>
@@ -1745,7 +1913,7 @@ document.write(`
 
 
 
-<span class="k">class</span> <span class="nc">MaxScoreOverTranslations</span><span class="p">(</span><span class="n">MaxScoreOverRotations</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">_MaxScoreOverTranslations</span><span class="p">(</span><span class="n">MaxScoreOverRotations</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Obtain the maximum translation score over various rotations.</span>
 
@@ -1912,6 +2080,8 @@ document.write(`
         <span class="n">rotation_string</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_translation</span><span class="p">[</span><span class="n">rotation_string</span><span class="p">]</span></div>
 
+
+
 </pre></div>
 
                 </article>
@@ -1964,7 +2134,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     <br/>
   </p>
 </div>

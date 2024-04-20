@@ -97,6 +97,9 @@
            PytorchBackend.max_filter_coordinates
          
          
+           PytorchBackend.max_score_over_rotations
+         
+         
            PytorchBackend.maximum
          
          

@@ -97,6 +97,9 @@
            NumpyFFTWBackend.max_filter_coordinates
          
          
+           NumpyFFTWBackend.max_score_over_rotations
+         
+         
            NumpyFFTWBackend.maximum
          
          

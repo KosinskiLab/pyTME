@@ -15,19 +15,49 @@
       :toctree:
       
          
+           Structure.record_type
          
          
+           Structure.atom_serial_number
          
          
+           Structure.atom_name
          
          
+           Structure.atom_coordinate
          
          
+           Structure.alternate_location_indicator
          
          
+           Structure.residue_name
          
          
+           Structure.chain_identifier
          
+         
+           Structure.residue_sequence_number
+         
+         
+           Structure.code_for_residue_insertion
+         
+         
+           Structure.occupancy
+         
+         
+           Structure.temperature_factor
+         
+         
+           Structure.segment_identifier
+         
+         
+           Structure.element_symbol
+         
+         
+           Structure.charge
+         
+         
+           Structure.details
          
    
    

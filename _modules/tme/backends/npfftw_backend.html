@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.backends.npfftw_backend &#8212; pytme 0.1.9 documentation</title>
+    <title>tme.backends.npfftw_backend &#8212; pytme 0.2.0b documentation</title>
   
   
   
@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=8618f531"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/documentation_options.js?v=fa31bc0e"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=4ea706d9"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.9 documentation</p>
+    <p class="title logo__title">pytme 0.2.0b documentation</p>
   
 </a></div>
     
@@ -765,7 +765,7 @@ document.write(`
 <div class="viewcode-block" id="NumpyFFTWBackend.sharedarr_to_arr">
 <a class="viewcode-back" href="../../../reference/api/tme.backends.npfftw_backend.NumpyFFTWBackend.sharedarr_to_arr.html#tme.backends.NumpyFFTWBackend.sharedarr_to_arr">[docs]</a>
     <span class="k">def</span> <span class="nf">sharedarr_to_arr</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shm</span><span class="p">:</span> <span class="n">shared_memory</span><span class="o">.</span><span class="n">SharedMemory</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">shm</span><span class="p">:</span> <span class="n">shared_memory</span><span class="o">.</span><span class="n">SharedMemory</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns an array of given shape and dtype from shared memory location.</span>
@@ -859,6 +859,7 @@ document.write(`
         <span class="n">real_dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
         <span class="n">complex_dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
         <span class="n">fftargs</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{},</span>
+        <span class="n">inverse_fast_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">temp_real</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">temp_fft</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">FFTW</span><span class="p">,</span> <span class="n">FFTW</span><span class="p">]:</span>
@@ -877,6 +878,8 @@ document.write(`
 <span class="sd">            Numpy dtype of the inverse fourier transform.</span>
 <span class="sd">        complex_dtype : dtype</span>
 <span class="sd">            Numpy dtype of the fourier transform.</span>
+<span class="sd">        inverse_fast_shape : tuple, optional</span>
+<span class="sd">            Output shape of the inverse Fourier transform. By default fast_shape.</span>
 <span class="sd">        fftargs : dict, optional</span>
 <span class="sd">            Dictionary passed to pyFFTW builders.</span>
 <span class="sd">        temp_real : NDArray, optional</span>
@@ -894,6 +897,8 @@ document.write(`
             <span class="n">temp_real</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">temp_fft</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">temp_fft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">inverse_fast_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inverse_fast_shape</span> <span class="o">=</span> <span class="n">fast_shape</span>
 
         <span class="n">default_values</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;planner_effort&quot;</span><span class="p">:</span> <span class="s2">&quot;FFTW_MEASURE&quot;</span><span class="p">,</span>
@@ -913,7 +918,7 @@ document.write(`
         <span class="n">overwrite_input</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="s2">&quot;overwrite_input&quot;</span> <span class="ow">in</span> <span class="n">fftargs</span><span class="p">:</span>
             <span class="n">overwrite_input</span> <span class="o">=</span> <span class="n">fftargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overwrite_input&quot;</span><span class="p">)</span>
-        <span class="n">irfftn</span> <span class="o">=</span> <span class="n">irfftn_builder</span><span class="p">(</span><span class="n">temp_fft</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">fast_shape</span><span class="p">,</span> <span class="o">**</span><span class="n">fftargs</span><span class="p">)</span>
+        <span class="n">irfftn</span> <span class="o">=</span> <span class="n">irfftn_builder</span><span class="p">(</span><span class="n">temp_fft</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">inverse_fast_shape</span><span class="p">,</span> <span class="o">**</span><span class="n">fftargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">overwrite_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">fftargs</span><span class="p">[</span><span class="s2">&quot;overwrite_input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">overwrite_input</span>
@@ -1301,6 +1306,35 @@ document.write(`
 <span class="sd">            Reversed array.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">arr</span><span class="p">[(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),)</span> <span class="o">*</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="NumpyFFTWBackend.max_score_over_rotations">
+<a class="viewcode-back" href="../../../reference/api/tme.backends.npfftw_backend.NumpyFFTWBackend.max_score_over_rotations.html#tme.backends.NumpyFFTWBackend.max_score_over_rotations">[docs]</a>
+    <span class="k">def</span> <span class="nf">max_score_over_rotations</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">score_space</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">internal_scores</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">internal_rotations</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">rotation_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Modify internal_scores and internal_rotations inplace with scores and rotation</span>
+<span class="sd">        index respectively, wherever score_sapce is larger than internal scores.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : numpy.ndarray</span>
+<span class="sd">            The score space to compare against internal_scores.</span>
+<span class="sd">        internal_scores : numpy.ndarray</span>
+<span class="sd">            The internal scores to update with maximum scores.</span>
+<span class="sd">        internal_rotations : numpy.ndarray</span>
+<span class="sd">            The internal rotations corresponding to the maximum scores.</span>
+<span class="sd">        rotation_index : int</span>
+<span class="sd">            The index representing the current rotation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">score_space</span> <span class="o">&gt;</span> <span class="n">internal_scores</span>
+        <span class="n">internal_scores</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">score_space</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+        <span class="n">internal_rotations</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotation_index</span></div>
 </div>
 
 </pre></div>
@@ -1355,7 +1389,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     <br/>
   </p>
 </div>

@@ -19,7 +19,22 @@
       
          
          
-           LaplaceCrossCorrelation.scoring_function
+           LaplaceCrossCorrelation.array_from_coordinates
+         
+         
+           LaplaceCrossCorrelation.map_coordinates_to_array
+         
+         
+           LaplaceCrossCorrelation.rigid_transform
+         
+         
+           LaplaceCrossCorrelation.score
+         
+         
+           LaplaceCrossCorrelation.score_angles
+         
+         
+           LaplaceCrossCorrelation.score_translation
          
    
    

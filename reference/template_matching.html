@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Template matching &#8212; pytme 0.1.9 documentation</title>
+    <title>Template matching &#8212; pytme 0.2.0b documentation</title>
   
   
   
@@ -40,12 +40,13 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=8618f531"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=fa31bc0e"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=4ea706d9"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/template_matching';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -123,7 +124,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.9 documentation</p>
+    <p class="title logo__title">pytme 0.2.0b documentation</p>
   
 </a></div>
     
@@ -433,10 +434,7 @@ document.write(`
 </li>
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Template matching</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="matching_optimization.html">Non-exhaustive</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.html">FitRefinement</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.refine.html">FitRefinement.refine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.array_from_coordinates.html">FitRefinement.array_from_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.map_coordinates_to_array.html">FitRefinement.map_coordinates_to_array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FLC.html">FLC</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html">CrossCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.html">LaplaceCrossCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html">NormalizedCrossCorrelation</a></li>
@@ -447,7 +445,10 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.html">MutualInformation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Envelope.html">Envelope</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MatchCoordinatesToDensity.html">MatchCoordinatesToDensity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html">Chamfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.create_score_object.html">create_score_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.optimize_match.html">optimize_match</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="matching_exhaustive.html">Exhaustive</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -668,6 +669,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.max_score_over_rotations.html">NumpyFFTWBackend.max_score_over_rotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.maximum.html">NumpyFFTWBackend.maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.mean.html">NumpyFFTWBackend.mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.min.html">NumpyFFTWBackend.min</a></li>
@@ -730,6 +732,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.indices.html">PytorchBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.max.html">PytorchBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.max_filter_coordinates.html">PytorchBackend.max_filter_coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.max_score_over_rotations.html">PytorchBackend.max_score_over_rotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.maximum.html">PytorchBackend.maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.mean.html">PytorchBackend.mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.min.html">PytorchBackend.min</a></li>
@@ -792,6 +795,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.indices.html">CupyBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.max.html">CupyBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.max_filter_coordinates.html">CupyBackend.max_filter_coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.max_score_over_rotations.html">CupyBackend.max_score_over_rotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.maximum.html">CupyBackend.maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.mean.html">CupyBackend.mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.min.html">CupyBackend.min</a></li>
@@ -824,7 +828,21 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.tril_indices.html">CupyBackend.tril_indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.unique.html">CupyBackend.unique</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.unravel_index.html">CupyBackend.unravel_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.var.html">CupyBackend.var</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.zeros.html">CupyBackend.zeros</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="orientations.html">Orientations</a><input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-30"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/tme.orientations.Orientations.html">Orientations</a><input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-31"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.translations.html">Orientations.translations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.rotations.html">Orientations.rotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.scores.html">Orientations.scores</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.details.html">Orientations.details</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.from_file.html">Orientations.from_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.get_extraction_slices.html">Orientations.get_extraction_slices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.to_file.html">Orientations.to_file</a></li>
 </ul>
 </li>
 </ul>
@@ -888,137 +906,342 @@ document.write(`
                   
   <section id="template-matching">
 <h1>Template matching<a class="headerlink" href="#template-matching" title="Link to this heading">#</a></h1>
-<p>Template matching is a signal processing technique, often employed in image analysis, to find parts of a larger dataset (often called the target) that match a smaller sample (referred to as the template). This is commonly applied in scenarios like searching an image for a smaller sub-image.</p>
-<p>Within tme we distinguish between exhaustive and non-exhaustive template mathcing. In exhaustive matching, the template is rotated across all possible angles, and all translations within the target are sampled using Fast Fourier Transform (FFT) operations. This contrasts with non-exhaustive template matching, where only selected rotations or translations are sampled subject to numerical optimization.</p>
+<p>Template matching is a signal processing technique, often employed in image analysis, to find parts of a larger dataset (often called the target) that match a smaller sample (referred to as the template). Within tme we distinguish between exhaustive and non-exhaustive template matching.</p>
+<p>Exhaustive template matching evaluates similarity along a provided set of rotations and all possible translations are sampled using Fast Fourier Transform (FFT) operations. Therefore, the algorithm is guaranteed to evaluate a provided set of configurations and to find a global optimum with a sufficiently high angular sampling rate.</p>
+<p>Non-exhaustive template aims to identify a global optimum without evaluating all possible configurations, by using mathematical optimization techniques. However, whether non-exhaustive template matching is able to find a global optimum is highly dependent on the topology of the score space and available constraints. Typically, non-exhaustive template matching is useful when the rough orientation is known.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="matching_optimization.html">Non-exhaustive</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="matching_optimization.html#constructor">Constructor</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.html">FitRefinement</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.html#tme.matching_optimization.FitRefinement"><code class="docutils literal notranslate"><span class="pre">FitRefinement</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.array_from_coordinates.html">FitRefinement.array_from_coordinates</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.array_from_coordinates.html#tme.matching_optimization.FitRefinement.array_from_coordinates"><code class="docutils literal notranslate"><span class="pre">FitRefinement.array_from_coordinates()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.FLC.html">FLC</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FLC.html#tme.matching_optimization.FLC"><code class="docutils literal notranslate"><span class="pre">FLC</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FLC.rigid_transform.html">FLC.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FLC.rigid_transform.html#tme.matching_optimization.FLC.rigid_transform"><code class="docutils literal notranslate"><span class="pre">FLC.rigid_transform()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.map_coordinates_to_array.html">FitRefinement.map_coordinates_to_array</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.map_coordinates_to_array.html#tme.matching_optimization.FitRefinement.map_coordinates_to_array"><code class="docutils literal notranslate"><span class="pre">FitRefinement.map_coordinates_to_array()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FLC.score.html">FLC.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FLC.score.html#tme.matching_optimization.FLC.score"><code class="docutils literal notranslate"><span class="pre">FLC.score()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.refine.html">FitRefinement.refine</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.refine.html#tme.matching_optimization.FitRefinement.refine"><code class="docutils literal notranslate"><span class="pre">FitRefinement.refine()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FLC.score_angles.html">FLC.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FLC.score_angles.html#tme.matching_optimization.FLC.score_angles"><code class="docutils literal notranslate"><span class="pre">FLC.score_angles()</span></code></a></li>
 </ul>
 </li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="matching_optimization.html#computations">Computations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.refine.html">FitRefinement.refine</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.refine.html#tme.matching_optimization.FitRefinement.refine"><code class="docutils literal notranslate"><span class="pre">FitRefinement.refine()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.array_from_coordinates.html">FitRefinement.array_from_coordinates</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.array_from_coordinates.html#tme.matching_optimization.FitRefinement.array_from_coordinates"><code class="docutils literal notranslate"><span class="pre">FitRefinement.array_from_coordinates()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.map_coordinates_to_array.html">FitRefinement.map_coordinates_to_array</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.map_coordinates_to_array.html#tme.matching_optimization.FitRefinement.map_coordinates_to_array"><code class="docutils literal notranslate"><span class="pre">FitRefinement.map_coordinates_to_array()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FLC.score_translation.html">FLC.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.FLC.score_translation.html#tme.matching_optimization.FLC.score_translation"><code class="docutils literal notranslate"><span class="pre">FLC.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="matching_optimization.html#available-scores">Available scores</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html">CrossCorrelation</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation"><code class="docutils literal notranslate"><span class="pre">CrossCorrelation</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.scoring_function.html">CrossCorrelation.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.scoring_function.html#tme.matching_optimization.CrossCorrelation.scoring_function"><code class="docutils literal notranslate"><span class="pre">CrossCorrelation.scoring_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html">CrossCorrelation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation"><code class="docutils literal notranslate"><span class="pre">CrossCorrelation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.array_from_coordinates.html">CrossCorrelation.array_from_coordinates</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.array_from_coordinates.html#tme.matching_optimization.CrossCorrelation.array_from_coordinates"><code class="docutils literal notranslate"><span class="pre">CrossCorrelation.array_from_coordinates()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.map_coordinates_to_array.html">CrossCorrelation.map_coordinates_to_array</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.map_coordinates_to_array.html#tme.matching_optimization.CrossCorrelation.map_coordinates_to_array"><code class="docutils literal notranslate"><span class="pre">CrossCorrelation.map_coordinates_to_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.rigid_transform.html">CrossCorrelation.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.rigid_transform.html#tme.matching_optimization.CrossCorrelation.rigid_transform"><code class="docutils literal notranslate"><span class="pre">CrossCorrelation.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.score.html">CrossCorrelation.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.score.html#tme.matching_optimization.CrossCorrelation.score"><code class="docutils literal notranslate"><span class="pre">CrossCorrelation.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.score_angles.html">CrossCorrelation.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.score_angles.html#tme.matching_optimization.CrossCorrelation.score_angles"><code class="docutils literal notranslate"><span class="pre">CrossCorrelation.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.score_translation.html">CrossCorrelation.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.score_translation.html#tme.matching_optimization.CrossCorrelation.score_translation"><code class="docutils literal notranslate"><span class="pre">CrossCorrelation.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.html">LaplaceCrossCorrelation</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.html#tme.matching_optimization.LaplaceCrossCorrelation"><code class="docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.scoring_function.html">LaplaceCrossCorrelation.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.scoring_function.html#tme.matching_optimization.LaplaceCrossCorrelation.scoring_function"><code class="docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation.scoring_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.html">LaplaceCrossCorrelation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.html#tme.matching_optimization.LaplaceCrossCorrelation"><code class="docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.array_from_coordinates.html">LaplaceCrossCorrelation.array_from_coordinates</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.array_from_coordinates.html#tme.matching_optimization.LaplaceCrossCorrelation.array_from_coordinates"><code class="docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation.array_from_coordinates()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.map_coordinates_to_array.html">LaplaceCrossCorrelation.map_coordinates_to_array</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.map_coordinates_to_array.html#tme.matching_optimization.LaplaceCrossCorrelation.map_coordinates_to_array"><code class="docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation.map_coordinates_to_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.rigid_transform.html">LaplaceCrossCorrelation.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.rigid_transform.html#tme.matching_optimization.LaplaceCrossCorrelation.rigid_transform"><code class="docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.score.html">LaplaceCrossCorrelation.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.score.html#tme.matching_optimization.LaplaceCrossCorrelation.score"><code class="docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.score_angles.html">LaplaceCrossCorrelation.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.score_angles.html#tme.matching_optimization.LaplaceCrossCorrelation.score_angles"><code class="docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.score_translation.html">LaplaceCrossCorrelation.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.score_translation.html#tme.matching_optimization.LaplaceCrossCorrelation.score_translation"><code class="docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html">NormalizedCrossCorrelation</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.scoring_function.html">NormalizedCrossCorrelation.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.scoring_function.html#tme.matching_optimization.NormalizedCrossCorrelation.scoring_function"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation.scoring_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html">NormalizedCrossCorrelation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.array_from_coordinates.html">NormalizedCrossCorrelation.array_from_coordinates</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.array_from_coordinates.html#tme.matching_optimization.NormalizedCrossCorrelation.array_from_coordinates"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation.array_from_coordinates()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.map_coordinates_to_array.html">NormalizedCrossCorrelation.map_coordinates_to_array</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.map_coordinates_to_array.html#tme.matching_optimization.NormalizedCrossCorrelation.map_coordinates_to_array"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation.map_coordinates_to_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.rigid_transform.html">NormalizedCrossCorrelation.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.rigid_transform.html#tme.matching_optimization.NormalizedCrossCorrelation.rigid_transform"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.score.html">NormalizedCrossCorrelation.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.score.html#tme.matching_optimization.NormalizedCrossCorrelation.score"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.score_angles.html">NormalizedCrossCorrelation.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.score_angles.html#tme.matching_optimization.NormalizedCrossCorrelation.score_angles"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.score_translation.html">NormalizedCrossCorrelation.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.score_translation.html#tme.matching_optimization.NormalizedCrossCorrelation.score_translation"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.html">NormalizedCrossCorrelationMean</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.html#tme.matching_optimization.NormalizedCrossCorrelationMean"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.scoring_function.html">NormalizedCrossCorrelationMean.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.scoring_function.html#tme.matching_optimization.NormalizedCrossCorrelationMean.scoring_function"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean.scoring_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.html">NormalizedCrossCorrelationMean</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.html#tme.matching_optimization.NormalizedCrossCorrelationMean"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.array_from_coordinates.html">NormalizedCrossCorrelationMean.array_from_coordinates</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.array_from_coordinates.html#tme.matching_optimization.NormalizedCrossCorrelationMean.array_from_coordinates"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean.array_from_coordinates()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.map_coordinates_to_array.html">NormalizedCrossCorrelationMean.map_coordinates_to_array</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.map_coordinates_to_array.html#tme.matching_optimization.NormalizedCrossCorrelationMean.map_coordinates_to_array"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean.map_coordinates_to_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.rigid_transform.html">NormalizedCrossCorrelationMean.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.rigid_transform.html#tme.matching_optimization.NormalizedCrossCorrelationMean.rigid_transform"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.score.html">NormalizedCrossCorrelationMean.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.score.html#tme.matching_optimization.NormalizedCrossCorrelationMean.score"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.score_angles.html">NormalizedCrossCorrelationMean.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.score_angles.html#tme.matching_optimization.NormalizedCrossCorrelationMean.score_angles"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.score_translation.html">NormalizedCrossCorrelationMean.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.score_translation.html#tme.matching_optimization.NormalizedCrossCorrelationMean.score_translation"><code class="docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.html">MaskedCrossCorrelation</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.html#tme.matching_optimization.MaskedCrossCorrelation"><code class="docutils literal notranslate"><span class="pre">MaskedCrossCorrelation</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.scoring_function.html">MaskedCrossCorrelation.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.scoring_function.html#tme.matching_optimization.MaskedCrossCorrelation.scoring_function"><code class="docutils literal notranslate"><span class="pre">MaskedCrossCorrelation.scoring_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.html">MaskedCrossCorrelation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.html#tme.matching_optimization.MaskedCrossCorrelation"><code class="docutils literal notranslate"><span class="pre">MaskedCrossCorrelation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.array_from_coordinates.html">MaskedCrossCorrelation.array_from_coordinates</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.array_from_coordinates.html#tme.matching_optimization.MaskedCrossCorrelation.array_from_coordinates"><code class="docutils literal notranslate"><span class="pre">MaskedCrossCorrelation.array_from_coordinates()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.map_coordinates_to_array.html">MaskedCrossCorrelation.map_coordinates_to_array</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.map_coordinates_to_array.html#tme.matching_optimization.MaskedCrossCorrelation.map_coordinates_to_array"><code class="docutils literal notranslate"><span class="pre">MaskedCrossCorrelation.map_coordinates_to_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.rigid_transform.html">MaskedCrossCorrelation.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.rigid_transform.html#tme.matching_optimization.MaskedCrossCorrelation.rigid_transform"><code class="docutils literal notranslate"><span class="pre">MaskedCrossCorrelation.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.score.html">MaskedCrossCorrelation.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.score.html#tme.matching_optimization.MaskedCrossCorrelation.score"><code class="docutils literal notranslate"><span class="pre">MaskedCrossCorrelation.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.score_angles.html">MaskedCrossCorrelation.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.score_angles.html#tme.matching_optimization.MaskedCrossCorrelation.score_angles"><code class="docutils literal notranslate"><span class="pre">MaskedCrossCorrelation.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.score_translation.html">MaskedCrossCorrelation.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.score_translation.html#tme.matching_optimization.MaskedCrossCorrelation.score_translation"><code class="docutils literal notranslate"><span class="pre">MaskedCrossCorrelation.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.html">PartialLeastSquareDifference</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.html#tme.matching_optimization.PartialLeastSquareDifference"><code class="docutils literal notranslate"><span class="pre">PartialLeastSquareDifference</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.scoring_function.html">PartialLeastSquareDifference.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.scoring_function.html#tme.matching_optimization.PartialLeastSquareDifference.scoring_function"><code class="docutils literal notranslate"><span class="pre">PartialLeastSquareDifference.scoring_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.html">PartialLeastSquareDifference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.html#tme.matching_optimization.PartialLeastSquareDifference"><code class="docutils literal notranslate"><span class="pre">PartialLeastSquareDifference</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.array_from_coordinates.html">PartialLeastSquareDifference.array_from_coordinates</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.array_from_coordinates.html#tme.matching_optimization.PartialLeastSquareDifference.array_from_coordinates"><code class="docutils literal notranslate"><span class="pre">PartialLeastSquareDifference.array_from_coordinates()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.map_coordinates_to_array.html">PartialLeastSquareDifference.map_coordinates_to_array</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.map_coordinates_to_array.html#tme.matching_optimization.PartialLeastSquareDifference.map_coordinates_to_array"><code class="docutils literal notranslate"><span class="pre">PartialLeastSquareDifference.map_coordinates_to_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.rigid_transform.html">PartialLeastSquareDifference.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.rigid_transform.html#tme.matching_optimization.PartialLeastSquareDifference.rigid_transform"><code class="docutils literal notranslate"><span class="pre">PartialLeastSquareDifference.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.score.html">PartialLeastSquareDifference.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.score.html#tme.matching_optimization.PartialLeastSquareDifference.score"><code class="docutils literal notranslate"><span class="pre">PartialLeastSquareDifference.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.score_angles.html">PartialLeastSquareDifference.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.score_angles.html#tme.matching_optimization.PartialLeastSquareDifference.score_angles"><code class="docutils literal notranslate"><span class="pre">PartialLeastSquareDifference.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.score_translation.html">PartialLeastSquareDifference.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.score_translation.html#tme.matching_optimization.PartialLeastSquareDifference.score_translation"><code class="docutils literal notranslate"><span class="pre">PartialLeastSquareDifference.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html">Chamfer</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html#tme.matching_optimization.Chamfer"><code class="docutils literal notranslate"><span class="pre">Chamfer</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.scoring_function.html">Chamfer.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.scoring_function.html#tme.matching_optimization.Chamfer.scoring_function"><code class="docutils literal notranslate"><span class="pre">Chamfer.scoring_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html">Chamfer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html#tme.matching_optimization.Chamfer"><code class="docutils literal notranslate"><span class="pre">Chamfer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.rigid_transform.html">Chamfer.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.rigid_transform.html#tme.matching_optimization.Chamfer.rigid_transform"><code class="docutils literal notranslate"><span class="pre">Chamfer.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score.html">Chamfer.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score.html#tme.matching_optimization.Chamfer.score"><code class="docutils literal notranslate"><span class="pre">Chamfer.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_angles.html">Chamfer.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_angles.html#tme.matching_optimization.Chamfer.score_angles"><code class="docutils literal notranslate"><span class="pre">Chamfer.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_translation.html">Chamfer.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_translation.html#tme.matching_optimization.Chamfer.score_translation"><code class="docutils literal notranslate"><span class="pre">Chamfer.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.html">MutualInformation</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.html#tme.matching_optimization.MutualInformation"><code class="docutils literal notranslate"><span class="pre">MutualInformation</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.scoring_function.html">MutualInformation.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.scoring_function.html#tme.matching_optimization.MutualInformation.scoring_function"><code class="docutils literal notranslate"><span class="pre">MutualInformation.scoring_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.html">MutualInformation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.html#tme.matching_optimization.MutualInformation"><code class="docutils literal notranslate"><span class="pre">MutualInformation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.array_from_coordinates.html">MutualInformation.array_from_coordinates</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.array_from_coordinates.html#tme.matching_optimization.MutualInformation.array_from_coordinates"><code class="docutils literal notranslate"><span class="pre">MutualInformation.array_from_coordinates()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.map_coordinates_to_array.html">MutualInformation.map_coordinates_to_array</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.map_coordinates_to_array.html#tme.matching_optimization.MutualInformation.map_coordinates_to_array"><code class="docutils literal notranslate"><span class="pre">MutualInformation.map_coordinates_to_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.rigid_transform.html">MutualInformation.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.rigid_transform.html#tme.matching_optimization.MutualInformation.rigid_transform"><code class="docutils literal notranslate"><span class="pre">MutualInformation.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.score.html">MutualInformation.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.score.html#tme.matching_optimization.MutualInformation.score"><code class="docutils literal notranslate"><span class="pre">MutualInformation.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.score_angles.html">MutualInformation.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.score_angles.html#tme.matching_optimization.MutualInformation.score_angles"><code class="docutils literal notranslate"><span class="pre">MutualInformation.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.score_translation.html">MutualInformation.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.score_translation.html#tme.matching_optimization.MutualInformation.score_translation"><code class="docutils literal notranslate"><span class="pre">MutualInformation.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Envelope.html">Envelope</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Envelope.html#tme.matching_optimization.Envelope"><code class="docutils literal notranslate"><span class="pre">Envelope</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Envelope.scoring_function.html">Envelope.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.Envelope.scoring_function.html#tme.matching_optimization.Envelope.scoring_function"><code class="docutils literal notranslate"><span class="pre">Envelope.scoring_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Envelope.html">Envelope</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Envelope.html#tme.matching_optimization.Envelope"><code class="docutils literal notranslate"><span class="pre">Envelope</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Envelope.array_from_coordinates.html">Envelope.array_from_coordinates</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Envelope.array_from_coordinates.html#tme.matching_optimization.Envelope.array_from_coordinates"><code class="docutils literal notranslate"><span class="pre">Envelope.array_from_coordinates()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Envelope.map_coordinates_to_array.html">Envelope.map_coordinates_to_array</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Envelope.map_coordinates_to_array.html#tme.matching_optimization.Envelope.map_coordinates_to_array"><code class="docutils literal notranslate"><span class="pre">Envelope.map_coordinates_to_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Envelope.rigid_transform.html">Envelope.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Envelope.rigid_transform.html#tme.matching_optimization.Envelope.rigid_transform"><code class="docutils literal notranslate"><span class="pre">Envelope.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Envelope.score.html">Envelope.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Envelope.score.html#tme.matching_optimization.Envelope.score"><code class="docutils literal notranslate"><span class="pre">Envelope.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Envelope.score_angles.html">Envelope.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Envelope.score_angles.html#tme.matching_optimization.Envelope.score_angles"><code class="docutils literal notranslate"><span class="pre">Envelope.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Envelope.score_translation.html">Envelope.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Envelope.score_translation.html#tme.matching_optimization.Envelope.score_translation"><code class="docutils literal notranslate"><span class="pre">Envelope.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html#tme.matching_optimization.NormalVectorScore"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.scoring_function.html">NormalVectorScore.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.scoring_function.html#tme.matching_optimization.NormalVectorScore.scoring_function"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore.scoring_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html#tme.matching_optimization.NormalVectorScore"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.rigid_transform.html">NormalVectorScore.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.rigid_transform.html#tme.matching_optimization.NormalVectorScore.rigid_transform"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score.html">NormalVectorScore.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score.html#tme.matching_optimization.NormalVectorScore.score"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_angles.html">NormalVectorScore.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_angles.html#tme.matching_optimization.NormalVectorScore.score_angles"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_translation.html">NormalVectorScore.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_translation.html#tme.matching_optimization.NormalVectorScore.score_translation"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html">Chamfer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html#tme.matching_optimization.Chamfer"><code class="docutils literal notranslate"><span class="pre">Chamfer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.rigid_transform.html">Chamfer.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.rigid_transform.html#tme.matching_optimization.Chamfer.rigid_transform"><code class="docutils literal notranslate"><span class="pre">Chamfer.rigid_transform()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="matching_optimization.html#helper-classes">Helper classes</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MatchCoordinatesToDensity.html">MatchCoordinatesToDensity</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MatchCoordinatesToDensity.html#tme.matching_optimization.MatchCoordinatesToDensity"><code class="docutils literal notranslate"><span class="pre">MatchCoordinatesToDensity</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.MatchCoordinatesToDensity.scoring_function.html">MatchCoordinatesToDensity.scoring_function</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="api/tme.matching_optimization.MatchCoordinatesToDensity.scoring_function.html#tme.matching_optimization.MatchCoordinatesToDensity.scoring_function"><code class="docutils literal notranslate"><span class="pre">MatchCoordinatesToDensity.scoring_function()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score.html">Chamfer.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score.html#tme.matching_optimization.Chamfer.score"><code class="docutils literal notranslate"><span class="pre">Chamfer.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_angles.html">Chamfer.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_angles.html#tme.matching_optimization.Chamfer.score_angles"><code class="docutils literal notranslate"><span class="pre">Chamfer.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_translation.html">Chamfer.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_translation.html#tme.matching_optimization.Chamfer.score_translation"><code class="docutils literal notranslate"><span class="pre">Chamfer.score_translation()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html#tme.matching_optimization.NormalVectorScore"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.rigid_transform.html">NormalVectorScore.rigid_transform</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.rigid_transform.html#tme.matching_optimization.NormalVectorScore.rigid_transform"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore.rigid_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score.html">NormalVectorScore.score</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score.html#tme.matching_optimization.NormalVectorScore.score"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore.score()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_angles.html">NormalVectorScore.score_angles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_angles.html#tme.matching_optimization.NormalVectorScore.score_angles"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore.score_angles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_translation.html">NormalVectorScore.score_translation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_translation.html#tme.matching_optimization.NormalVectorScore.score_translation"><code class="docutils literal notranslate"><span class="pre">NormalVectorScore.score_translation()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.create_score_object.html">create_score_object</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.create_score_object.html#tme.matching_optimization.create_score_object"><code class="docutils literal notranslate"><span class="pre">create_score_object()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.optimize_match.html">optimize_match</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.optimize_match.html#tme.matching_optimization.optimize_match"><code class="docutils literal notranslate"><span class="pre">optimize_match()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1404,7 +1627,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     <br/>
   </p>
 </div>

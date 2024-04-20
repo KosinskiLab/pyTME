@@ -19,7 +19,16 @@
       
          
          
-           Chamfer.scoring_function
+           Chamfer.rigid_transform
+         
+         
+           Chamfer.score
+         
+         
+           Chamfer.score_angles
+         
+         
+           Chamfer.score_translation
          
    
    

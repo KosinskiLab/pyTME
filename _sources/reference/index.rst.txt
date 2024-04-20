@@ -10,3 +10,4 @@ API reference
    analyzer
    utilities
    backends
+   orientations

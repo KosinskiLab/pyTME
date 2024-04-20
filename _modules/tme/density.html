@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.density &#8212; pytme 0.1.9 documentation</title>
+    <title>tme.density &#8212; pytme 0.2.0b documentation</title>
   
   
   
@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=8618f531"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/documentation_options.js?v=fa31bc0e"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=4ea706d9"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.9 documentation</p>
+    <p class="title logo__title">pytme 0.2.0b documentation</p>
   
 </a></div>
     
@@ -394,7 +394,6 @@ document.write(`
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">ConvexHull</span>
 
-<span class="kn">from</span> <span class="nn">.matching_optimization</span> <span class="kn">import</span> <span class="n">FitRefinement</span>
 <span class="kn">from</span> <span class="nn">.structure</span> <span class="kn">import</span> <span class="n">Structure</span>
 <span class="kn">from</span> <span class="nn">.matching_utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">minimum_enclosing_box</span><span class="p">,</span>
@@ -851,8 +850,11 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;Expected length of slices : </span><span class="si">{</span><span class="n">n_dims</span><span class="si">}</span><span class="s2">, got : </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">slices</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">slices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">stop</span> <span class="o">&gt;</span> <span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">or</span> <span class="n">slices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">start</span> <span class="o">&gt;</span> <span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_dims</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">slices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">stop</span> <span class="o">&gt;</span> <span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">or</span> <span class="n">slices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">start</span> <span class="o">&gt;</span> <span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_dims</span><span class="p">)</span>
+            <span class="p">]</span>
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subset exceeds data dimensions (</span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
 
@@ -1319,9 +1321,9 @@ document.write(`
         <span class="n">swap</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">gzip</span><span class="p">:</span>
             <span class="n">swap</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">()</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">splitext</span><span class="p">(</span>
-                <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">splitext</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)))[</span>
+                <span class="mi">1</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">skio</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">fname</span><span class="o">=</span><span class="n">swap</span><span class="p">,</span> <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">gzip</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">gzip_open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
@@ -1564,7 +1566,13 @@ document.write(`
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sampling_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns sampling rate along data axis.</span>
+<span class="sd">        Returns the value of the current instance&#39;s :py:attr:`Density.sampling_rate`</span>
+<span class="sd">        attribute.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Sampling rate along axis.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sampling_rate</span>
 
@@ -1580,7 +1588,12 @@ document.write(`
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns dictionary with metadata information, empty by default.</span>
+<span class="sd">        Returns the current instance&#39;s :py:attr:`Density.metadata` dictionary attribute.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Dict</span>
+<span class="sd">            Metadata dictionary. Empty by default.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span>
 
@@ -2584,7 +2597,7 @@ document.write(`
 
 <span class="sd">        If voxel sizes of target and template dont match coordinates are scaled</span>
 <span class="sd">        to the numerically smaller voxel size. Instances are prealigned based on their</span>
-<span class="sd">        center of mass. Finally :py:class:`tme.matching_optimization.FitRefinement` is</span>
+<span class="sd">        center of mass. Finally :py:meth:`tme.matching_optimization.optimize_match` is</span>
 <span class="sd">        used to determine translation and rotation to map template to target.</span>
 
 <span class="sd">        Parameters</span>
@@ -2599,7 +2612,7 @@ document.write(`
 <span class="sd">            The cutoff value for the template map, by default 0.</span>
 <span class="sd">        scoring_method : str, optional</span>
 <span class="sd">            The scoring method to use for alignment. See</span>
-<span class="sd">            :py:class:`tme.matching_optimization.FitRefinement` for available methods,</span>
+<span class="sd">            :py:class:`tme.matching_optimization.create_score_object` for available methods,</span>
 <span class="sd">            by default &quot;NormalizedCrossCorrelation&quot;.</span>
 
 <span class="sd">        Returns</span>
@@ -2612,6 +2625,8 @@ document.write(`
 <span class="sd">        -----</span>
 <span class="sd">        No densities below cutoff_template are present in the returned Density object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">.matching_optimization</span> <span class="kn">import</span> <span class="n">optimize_match</span><span class="p">,</span> <span class="n">create_score_object</span>
+
         <span class="n">target_sampling_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
         <span class="n">template_sampling_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
 
@@ -2621,7 +2636,6 @@ document.write(`
         <span class="n">template_sampling_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
             <span class="n">template_sampling_rate</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">//</span> <span class="n">template_sampling_rate</span><span class="o">.</span><span class="n">size</span>
         <span class="p">)</span>
-
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">target_sampling_rate</span><span class="p">,</span> <span class="n">template_sampling_rate</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="s2">&quot;Voxel size of target and template do not match. &quot;</span>
@@ -2629,7 +2643,6 @@ document.write(`
             <span class="p">)</span>
 
         <span class="n">target_coordinates</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to_pointcloud</span><span class="p">(</span><span class="n">cutoff_target</span><span class="p">)</span>
-        <span class="n">target_weights</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">target_coordinates</span><span class="p">)]</span>
 
         <span class="n">template_coordinates</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">to_pointcloud</span><span class="p">(</span><span class="n">cutoff_template</span><span class="p">)</span>
         <span class="n">template_weights</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">template_coordinates</span><span class="p">)]</span>
@@ -2642,21 +2655,22 @@ document.write(`
         <span class="n">target_coordinates</span> <span class="o">=</span> <span class="n">target_coordinates</span> <span class="o">*</span> <span class="n">target_scaling</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
         <span class="n">template_coordinates</span> <span class="o">=</span> <span class="n">template_coordinates</span> <span class="o">*</span> <span class="n">template_scaling</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
 
-        <span class="n">target_mass_center</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff_target</span><span class="p">)</span>
-        <span class="n">template_mass_center</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff_template</span><span class="p">)</span>
         <span class="n">mass_center_difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
-            <span class="n">target_mass_center</span><span class="p">,</span> <span class="n">template_mass_center</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff_target</span><span class="p">),</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff_template</span><span class="p">),</span>
         <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="n">template_coordinates</span> <span class="o">+=</span> <span class="n">mass_center_difference</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
 
-        <span class="n">matcher</span> <span class="o">=</span> <span class="n">FitRefinement</span><span class="p">()</span>
-        <span class="n">translation</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">refine</span><span class="p">(</span>
-            <span class="n">target_coordinates</span><span class="o">=</span><span class="n">target_coordinates</span><span class="p">,</span>
+        <span class="n">score_object</span> <span class="o">=</span> <span class="n">create_score_object</span><span class="p">(</span>
+            <span class="n">score</span><span class="o">=</span><span class="n">scoring_method</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
             <span class="n">template_coordinates</span><span class="o">=</span><span class="n">template_coordinates</span><span class="p">,</span>
-            <span class="n">target_weights</span><span class="o">=</span><span class="n">target_weights</span><span class="p">,</span>
             <span class="n">template_weights</span><span class="o">=</span><span class="n">template_weights</span><span class="p">,</span>
-            <span class="n">scoring_class</span><span class="o">=</span><span class="n">scoring_method</span><span class="p">,</span>
             <span class="n">sampling_rate</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="n">translation</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">optimize_match</span><span class="p">(</span>
+            <span class="n">score_object</span><span class="o">=</span><span class="n">score_object</span><span class="p">,</span> <span class="n">optimization_method</span><span class="o">=</span><span class="s2">&quot;basinhopping&quot;</span>
         <span class="p">)</span>
 
         <span class="n">translation</span> <span class="o">+=</span> <span class="n">mass_center_difference</span>
@@ -2688,7 +2702,7 @@ document.write(`
 
 <span class="sd">        If voxel sizes of target and template dont match coordinates are scaled</span>
 <span class="sd">        to the numerically smaller voxel size. Prealignment is done by center&#39;s</span>
-<span class="sd">        of mass. Finally :py:class:`tme.matching_optimization.FitRefinement` is used to</span>
+<span class="sd">        of mass. Finally :py:class:`tme.matching_optimization.optimize_match` is used to</span>
 <span class="sd">        determine translation and rotation to match a template to target.</span>
 
 <span class="sd">        Parameters</span>
@@ -2703,7 +2717,7 @@ document.write(`
 <span class="sd">            The cutoff value for the template map, by default 0.</span>
 <span class="sd">        scoring_method : str, optional</span>
 <span class="sd">            The scoring method to use for template matching. See</span>
-<span class="sd">            :py:class:`tme.matching_optimization.FitRefinement` for available methods,</span>
+<span class="sd">            :py:class:`tme.matching_optimization.create_score_object` for available methods,</span>
 <span class="sd">            by default &quot;NormalizedCrossCorrelation&quot;.</span>
 
 <span class="sd">        Returns</span>
@@ -2904,7 +2918,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     <br/>
   </p>
 </div>

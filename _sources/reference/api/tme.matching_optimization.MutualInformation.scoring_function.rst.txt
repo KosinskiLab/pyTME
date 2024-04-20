@@ -1,6 +1,0 @@
-MutualInformation.scoring\_function
-============================================================
-
-.. currentmodule:: tme.matching_optimization
-
-.. automethod:: MutualInformation.scoring_function

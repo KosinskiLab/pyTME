@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.backends.cupy_backend &#8212; pytme 0.1.9 documentation</title>
+    <title>tme.backends.cupy_backend &#8212; pytme 0.2.0b documentation</title>
   
   
   
@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=8618f531"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/documentation_options.js?v=fa31bc0e"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=4ea706d9"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.9 documentation</p>
+    <p class="title logo__title">pytme 0.2.0b documentation</p>
   
 </a></div>
     
@@ -386,6 +386,8 @@ document.write(`
 <span class="kn">from</span> <span class="nn">.npfftw_backend</span> <span class="kn">import</span> <span class="n">NumpyFFTWBackend</span>
 <span class="kn">from</span> <span class="nn">..types</span> <span class="kn">import</span> <span class="n">CupyArray</span>
 
+<span class="n">PLAN_CACHE</span> <span class="o">=</span> <span class="p">{}</span>
+
 
 <div class="viewcode-block" id="CupyBackend">
 <a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.html#tme.backends.CupyBackend">[docs]</a>
@@ -416,6 +418,15 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">affine_transform</span> <span class="o">=</span> <span class="n">affine_transform</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_filter</span> <span class="o">=</span> <span class="n">maximum_filter</span>
 
+        <span class="n">floating</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;float</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">default_dtype</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">8</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">integer</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;int</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">default_dtype_int</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">8</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_score_over_rotations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">ElementwiseKernel</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">floating</span><span class="si">}</span><span class="s2"> internal_scores, </span><span class="si">{</span><span class="n">floating</span><span class="si">}</span><span class="s2"> scores, </span><span class="si">{</span><span class="n">integer</span><span class="si">}</span><span class="s2"> rot_index&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">floating</span><span class="si">}</span><span class="s2"> out1, </span><span class="si">{</span><span class="n">integer</span><span class="si">}</span><span class="s2"> rotations&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;if (internal_scores &lt; scores) {out1 = scores; rotations = rot_index;}&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;max_score_over_rotations&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
 <div class="viewcode-block" id="CupyBackend.to_backend_array">
 <a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.to_backend_array.html#tme.backends.CupyBackend.to_backend_array">[docs]</a>
     <span class="k">def</span> <span class="nf">to_backend_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CupyArray</span><span class="p">:</span>
@@ -443,7 +454,7 @@ document.write(`
 <div class="viewcode-block" id="CupyBackend.sharedarr_to_arr">
 <a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.sharedarr_to_arr.html#tme.backends.CupyBackend.sharedarr_to_arr">[docs]</a>
     <span class="k">def</span> <span class="nf">sharedarr_to_arr</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shm</span><span class="p">:</span> <span class="n">CupyArray</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">shm</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CupyArray</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">shm</span></div>
 
@@ -507,8 +518,8 @@ document.write(`
         <span class="n">real_dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
         <span class="n">complex_dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
         <span class="n">fftargs</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{},</span>
-        <span class="n">temp_real</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">temp_fft</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">inverse_fast_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Build pyFFTW builder functions.</span>
@@ -517,40 +528,53 @@ document.write(`
 <span class="sd">        ----------</span>
 <span class="sd">        fast_shape : tuple</span>
 <span class="sd">            Tuple of integers corresponding to fast convolution shape</span>
-<span class="sd">            (see `compute_convolution_shapes`).</span>
+<span class="sd">            (see :py:meth:`CupyBackend.compute_convolution_shapes`).</span>
 <span class="sd">        fast_ft_shape : tuple</span>
 <span class="sd">            Tuple of integers corresponding to the shape of the fourier</span>
-<span class="sd">            transform array (see `compute_convolution_shapes`).</span>
+<span class="sd">            transform array (see :py:meth:`CupyBackend.compute_convolution_shapes`).</span>
 <span class="sd">        real_dtype : dtype</span>
 <span class="sd">            Numpy dtype of the inverse fourier transform.</span>
 <span class="sd">        complex_dtype : dtype</span>
 <span class="sd">            Numpy dtype of the fourier transform.</span>
+<span class="sd">        inverse_fast_shape : tuple, optional</span>
+<span class="sd">            Output shape of the inverse Fourier transform. By default fast_shape.</span>
 <span class="sd">        fftargs : dict, optional</span>
 <span class="sd">            Dictionary passed to pyFFTW builders.</span>
-<span class="sd">        temp_real : NDArray, optional</span>
-<span class="sd">            Temporary real numpy array, by default None.</span>
-<span class="sd">        temp_fft : NDArray, optional</span>
-<span class="sd">            Temporary fft numpy array, by default None.</span>
+<span class="sd">        **kwargs: dict, optional</span>
+<span class="sd">            Unused keyword arguments.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        tuple</span>
 <span class="sd">            Tupple containing callable rfft and irfft object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="n">temp_real</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">temp_real</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">temp_fft</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">temp_fft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
-
         <span class="n">cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_plan_cache</span><span class="p">()</span>
         <span class="n">cache</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">current_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">get_device_id</span><span class="p">()</span>
+
+        <span class="n">previous_transform</span> <span class="o">=</span> <span class="p">[</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">current_device</span> <span class="ow">in</span> <span class="n">PLAN_CACHE</span><span class="p">:</span>
+            <span class="n">previous_transform</span> <span class="o">=</span> <span class="n">PLAN_CACHE</span><span class="p">[</span><span class="n">current_device</span><span class="p">]</span>
+
+        <span class="n">real_diff</span><span class="p">,</span> <span class="n">cmplx_diff</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">previous_transform</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">real_diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">previous_transform</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">!=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">previous_transform</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">cmplx_diff</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">previous_transform</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">!=</span> <span class="mi">0</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">real_diff</span> <span class="ow">or</span> <span class="n">cmplx_diff</span><span class="p">:</span>
+            <span class="n">cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
         <span class="k">def</span> <span class="nf">rfftn</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">out</span><span class="p">[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">arr</span><span class="p">)[:]</span>
 
         <span class="k">def</span> <span class="nf">irfftn</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">out</span><span class="p">[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="n">arr</span><span class="p">)[:]</span>
+
+        <span class="n">PLAN_CACHE</span><span class="p">[</span><span class="n">current_device</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">rfftn</span><span class="p">,</span> <span class="n">irfftn</span></div>
 
@@ -580,6 +604,23 @@ document.write(`
 
         <span class="n">peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">max_filter</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
         <span class="k">return</span> <span class="n">peaks</span></div>
+
+
+    <span class="c1"># The default methods in Cupy were oddly slow</span>
+<div class="viewcode-block" id="CupyBackend.var">
+<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.var.html#tme.backends.CupyBackend.var">[docs]</a>
+    <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="CupyBackend.std">
+<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.std.html#tme.backends.CupyBackend.std">[docs]</a>
+    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">out</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="CupyBackend.rotate_array">
@@ -727,6 +768,39 @@ document.write(`
 <span class="sd">            Number of available GPU devices.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">getDeviceCount</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="CupyBackend.max_score_over_rotations">
+<a class="viewcode-back" href="../../../reference/api/tme.backends.CupyBackend.max_score_over_rotations.html#tme.backends.CupyBackend.max_score_over_rotations">[docs]</a>
+    <span class="k">def</span> <span class="nf">max_score_over_rotations</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">score_space</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">,</span>
+        <span class="n">internal_scores</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">,</span>
+        <span class="n">internal_rotations</span><span class="p">:</span> <span class="n">CupyArray</span><span class="p">,</span>
+        <span class="n">rotation_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Modify internal_scores and internal_rotations inplace with scores and rotation</span>
+<span class="sd">        index respectively, wherever score_sapce is larger than internal scores.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        score_space : CupyArray</span>
+<span class="sd">            The score space to compare against internal_scores.</span>
+<span class="sd">        internal_scores : CupyArray</span>
+<span class="sd">            The internal scores to update with maximum scores.</span>
+<span class="sd">        internal_rotations : CupyArray</span>
+<span class="sd">            The internal rotations corresponding to the maximum scores.</span>
+<span class="sd">        rotation_index : int</span>
+<span class="sd">            The index representing the current rotation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_score_over_rotations</span><span class="p">(</span>
+            <span class="n">internal_scores</span><span class="p">,</span>
+            <span class="n">score_space</span><span class="p">,</span>
+            <span class="n">rotation_index</span><span class="p">,</span>
+            <span class="n">internal_scores</span><span class="p">,</span>
+            <span class="n">internal_rotations</span><span class="p">,</span>
+        <span class="p">)</span></div>
 </div>
 
 </pre></div>
@@ -781,7 +855,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     <br/>
   </p>
 </div>

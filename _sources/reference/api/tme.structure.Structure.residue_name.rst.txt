@@ -1,4 +1,4 @@
-﻿Structure.residue\_name
+Structure.residue\_name
 ====================================
 
 .. currentmodule:: tme.structure

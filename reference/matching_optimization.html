@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Non-exhaustive &#8212; pytme 0.1.9 documentation</title>
+    <title>Non-exhaustive &#8212; pytme 0.2.0b documentation</title>
   
   
   
@@ -40,16 +40,17 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=8618f531"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=fa31bc0e"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=4ea706d9"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/matching_optimization';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="FitRefinement" href="api/tme.matching_optimization.FitRefinement.html" />
+    <link rel="next" title="FLC" href="api/tme.matching_optimization.FLC.html" />
     <link rel="prev" title="Template matching" href="template_matching.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -123,7 +124,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.9 documentation</p>
+    <p class="title logo__title">pytme 0.2.0b documentation</p>
   
 </a></div>
     
@@ -433,10 +434,7 @@ document.write(`
 </li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="template_matching.html">Template matching</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">Non-exhaustive</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.html">FitRefinement</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.refine.html">FitRefinement.refine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.array_from_coordinates.html">FitRefinement.array_from_coordinates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.map_coordinates_to_array.html">FitRefinement.map_coordinates_to_array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.FLC.html">FLC</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html">CrossCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.html">LaplaceCrossCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html">NormalizedCrossCorrelation</a></li>
@@ -447,7 +445,10 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.html">MutualInformation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Envelope.html">Envelope</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.MatchCoordinatesToDensity.html">MatchCoordinatesToDensity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html">Chamfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.create_score_object.html">create_score_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.matching_optimization.optimize_match.html">optimize_match</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="matching_exhaustive.html">Exhaustive</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -668,6 +669,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.max_score_over_rotations.html">NumpyFFTWBackend.max_score_over_rotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.maximum.html">NumpyFFTWBackend.maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.mean.html">NumpyFFTWBackend.mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.NumpyFFTWBackend.min.html">NumpyFFTWBackend.min</a></li>
@@ -730,6 +732,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.indices.html">PytorchBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.max.html">PytorchBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.max_filter_coordinates.html">PytorchBackend.max_filter_coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.max_score_over_rotations.html">PytorchBackend.max_score_over_rotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.maximum.html">PytorchBackend.maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.mean.html">PytorchBackend.mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.PytorchBackend.min.html">PytorchBackend.min</a></li>
@@ -792,6 +795,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.indices.html">CupyBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.max.html">CupyBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.max_filter_coordinates.html">CupyBackend.max_filter_coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.max_score_over_rotations.html">CupyBackend.max_score_over_rotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.maximum.html">CupyBackend.maximum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.mean.html">CupyBackend.mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.min.html">CupyBackend.min</a></li>
@@ -824,7 +828,21 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.tril_indices.html">CupyBackend.tril_indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.unique.html">CupyBackend.unique</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.unravel_index.html">CupyBackend.unravel_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.var.html">CupyBackend.var</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/tme.backends.CupyBackend.zeros.html">CupyBackend.zeros</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="orientations.html">Orientations</a><input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-30"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/tme.orientations.Orientations.html">Orientations</a><input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-31"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.translations.html">Orientations.translations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.rotations.html">Orientations.rotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.scores.html">Orientations.scores</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.details.html">Orientations.details</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.from_file.html">Orientations.from_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.get_extraction_slices.html">Orientations.get_extraction_slices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/tme.orientations.Orientations.to_file.html">Orientations.to_file</a></li>
 </ul>
 </li>
 </ul>
@@ -891,79 +909,161 @@ document.write(`
                   
   <section id="non-exhaustive">
 <h1>Non-exhaustive<a class="headerlink" href="#non-exhaustive" title="Link to this heading">#</a></h1>
-<section id="constructor">
-<h2>Constructor<a class="headerlink" href="#constructor" title="Link to this heading">#</a></h2>
+<p>Within tme, non-exhaustive template matching problems are distinguished based on whether they operate on <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> objects or coordinates. Therefore, we categorize them into three different classes of matching problems:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-0">
+Density to Density</label><div class="sd-tab-content docutils">
+<p>Analogous to exhaustive template matching operations in tme, the classes below identify the configuration maximizing the similarity
+between two densities.</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.html#tme.matching_optimization.FitRefinement" title="tme.matching_optimization.FitRefinement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FitRefinement</span></code></a></p></td>
-<td><p>A class to refine the fit between target and template coordinates.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.FLC.html#tme.matching_optimization.FLC" title="tme.matching_optimization.FLC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FLC</span></code></a>(target, template[, template_mask, ...])</p></td>
+<td><p>Implements various methods for non-exhaustive template matching based on numerical optimization.</p></td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="computations">
-<h2>Computations<a class="headerlink" href="#computations" title="Link to this heading">#</a></h2>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-1">
+Coordinates to Density</label><div class="sd-tab-content docutils">
+<p>The classes below maximize the similarity between a coordinate set with associated weights and a density. This case is commonly found when matching atomic structures to electron density maps.</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.refine.html#tme.matching_optimization.FitRefinement.refine" title="tme.matching_optimization.FitRefinement.refine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FitRefinement.refine</span></code></a>(target_coordinates, ...)</p></td>
-<td><p>Refines the alignment of template coordinates to target coordinates.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation" title="tme.matching_optimization.CrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CrossCorrelation</span></code></a>(target, ...[, ...])</p></td>
+<td><p>Computes the Cross-Correlation score as:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.array_from_coordinates.html#tme.matching_optimization.FitRefinement.array_from_coordinates" title="tme.matching_optimization.FitRefinement.array_from_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FitRefinement.array_from_coordinates</span></code></a>(...[, ...])</p></td>
-<td><p>Create a volume from coordinates, using given weights and voxel size.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.html#tme.matching_optimization.LaplaceCrossCorrelation" title="tme.matching_optimization.LaplaceCrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation</span></code></a>(target, ...[, ...])</p></td>
+<td><p>Uses the same formalism as <a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation" title="tme.matching_optimization.CrossCorrelation"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossCorrelation</span></code></a> but with Laplace filtered weights (<span class="math notranslate nohighlight">\(\nabla^{2}\)</span>):</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.FitRefinement.map_coordinates_to_array.html#tme.matching_optimization.FitRefinement.map_coordinates_to_array" title="tme.matching_optimization.FitRefinement.map_coordinates_to_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FitRefinement.map_coordinates_to_array</span></code></a>(...)</p></td>
-<td><p>Map coordinates to a volume based on given voxel size and origin.</p></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="available-scores">
-<h2>Available scores<a class="headerlink" href="#available-scores" title="Link to this heading">#</a></h2>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation" title="tme.matching_optimization.CrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CrossCorrelation</span></code></a>(**kwargs)</p></td>
-<td><p>Class representing the Cross-Correlation matching score.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.html#tme.matching_optimization.LaplaceCrossCorrelation" title="tme.matching_optimization.LaplaceCrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation</span></code></a>(**kwargs)</p></td>
-<td><p>Class representing the Laplace Cross-Correlation matching score.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation" title="tme.matching_optimization.NormalizedCrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation</span></code></a>(**kwargs)</p></td>
-<td><p>Class representing the Normalized Cross-Correlation matching score.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation" title="tme.matching_optimization.NormalizedCrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation</span></code></a>(target, ...[, ...])</p></td>
+<td><p>Computes a normalized version of the <a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation" title="tme.matching_optimization.CrossCorrelation"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossCorrelation</span></code></a> score based on the dot product of <cite>target_weights</cite> and <cite>template_weights</cite>, in order to reduce bias to regions of high local energy.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.html#tme.matching_optimization.NormalizedCrossCorrelationMean" title="tme.matching_optimization.NormalizedCrossCorrelationMean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean</span></code></a>(**kwargs)</p></td>
-<td><p>Class representing the Mean Normalized Cross-Correlation matching score.</p></td>
+<td><p>Computes a similar score than <a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation" title="tme.matching_optimization.NormalizedCrossCorrelation"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation</span></code></a>, but additionally factors in the mean of template and target.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.html#tme.matching_optimization.MaskedCrossCorrelation" title="tme.matching_optimization.MaskedCrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaskedCrossCorrelation</span></code></a>(**kwargs)</p></td>
-<td><p>Class representing the Masked Cross-Correlation matching score.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.html#tme.matching_optimization.MaskedCrossCorrelation" title="tme.matching_optimization.MaskedCrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaskedCrossCorrelation</span></code></a>(target, ...[, ...])</p></td>
+<td><p>The Masked Cross-Correlation computes the similarity between <cite>target_weights</cite> and <cite>template_weights</cite> under respective masks.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.html#tme.matching_optimization.PartialLeastSquareDifference" title="tme.matching_optimization.PartialLeastSquareDifference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PartialLeastSquareDifference</span></code></a>(**kwargs)</p></td>
-<td><p>Class representing the Partial Least Square Difference matching score.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.html#tme.matching_optimization.PartialLeastSquareDifference" title="tme.matching_optimization.PartialLeastSquareDifference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PartialLeastSquareDifference</span></code></a>(target, ...[, ...])</p></td>
+<td><p>The Partial Least Square Difference (PLSQ) between the target <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span> is calculated as:</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html#tme.matching_optimization.Chamfer" title="tme.matching_optimization.Chamfer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Chamfer</span></code></a>(**kwargs)</p></td>
-<td><p>Class representing the Chamfer matching score.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html#tme.matching_optimization.Chamfer" title="tme.matching_optimization.Chamfer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Chamfer</span></code></a>(target_coordinates, ...[, ...])</p></td>
+<td><p>The Chamfer distance between the target <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span> is calculated as:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.html#tme.matching_optimization.MutualInformation" title="tme.matching_optimization.MutualInformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MutualInformation</span></code></a>(**kwargs)</p></td>
-<td><p>Class representing the Mutual Information matching score.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.html#tme.matching_optimization.MutualInformation" title="tme.matching_optimization.MutualInformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MutualInformation</span></code></a>(target, ...[, ...])</p></td>
+<td><p>The Mutual Information (MI) score between the target <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span> is calculated as:</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.Envelope.html#tme.matching_optimization.Envelope" title="tme.matching_optimization.Envelope"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Envelope</span></code></a>(target_threshold, **kwargs)</p></td>
-<td><p>Class representing the Envelope matching score.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.Envelope.html#tme.matching_optimization.Envelope" title="tme.matching_optimization.Envelope"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Envelope</span></code></a>([target_threshold])</p></td>
+<td><p>The Envelope score (ENV) between the target <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span> is calculated as:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html#tme.matching_optimization.NormalVectorScore" title="tme.matching_optimization.NormalVectorScore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalVectorScore</span></code></a>(**kwargs)</p></td>
-<td><p>Class representing the Normal Vector matching score.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html#tme.matching_optimization.NormalVectorScore" title="tme.matching_optimization.NormalVectorScore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalVectorScore</span></code></a>(target_coordinates, ...[, ...])</p></td>
+<td><p>The Normal Vector Score (NVS) between the target's <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span>'s normal vectors is calculated as:</p></td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="helper-classes">
-<h2>Helper classes<a class="headerlink" href="#helper-classes" title="Link to this heading">#</a></h2>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-2">
+Coordinates to Coordinates</label><div class="sd-tab-content docutils">
+<p>The classes below maximize the similarity between two coordinate sets and associated weights. This could be special points within densities, regular coordinate sets, or vectors between template and target that should be aligned.</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.MatchCoordinatesToDensity.html#tme.matching_optimization.MatchCoordinatesToDensity" title="tme.matching_optimization.MatchCoordinatesToDensity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MatchCoordinatesToDensity</span></code></a>(...[, ...])</p></td>
-<td><p>A class to template match coordinate sets.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html#tme.matching_optimization.Chamfer" title="tme.matching_optimization.Chamfer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Chamfer</span></code></a>(target_coordinates, ...[, ...])</p></td>
+<td><p>The Chamfer distance between the target <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span> is calculated as:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html#tme.matching_optimization.NormalVectorScore" title="tme.matching_optimization.NormalVectorScore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalVectorScore</span></code></a>(target_coordinates, ...[, ...])</p></td>
+<td><p>The Normal Vector Score (NVS) between the target's <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span>'s normal vectors is calculated as:</p></td>
 </tr>
 </tbody>
 </table>
-</section>
+</div>
+</div>
+<p>In order to perform non-exhaustive template matching, we have to initialize one of the objects outlined above. The following will showcase <a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation" title="tme.matching_optimization.NormalizedCrossCorrelation"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation</span></code></a>, but the procedure can be extended analogously to all scores shown above. We can use __call__ method of the created <code class="docutils literal notranslate"><span class="pre">score_object</span></code> to compute the score of the current configuration.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="n">create_mask</span>
+<span class="kn">from</span> <span class="nn">tme.matching_optimization</span> <span class="kn">import</span> <span class="n">NormalizedCrossCorrelation</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+   <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+   <span class="n">radius</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+   <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">51</span><span class="p">,</span><span class="mi">51</span><span class="p">,</span><span class="mi">51</span><span class="p">),</span>
+   <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">25</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># Note this could also be any other template that can be expressed as</span>
+<span class="c1"># coordinates, e.g. an atomic structure.</span>
+<span class="n">template</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+   <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+   <span class="n">radius</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">),</span>
+   <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">51</span><span class="p">,</span><span class="mi">51</span><span class="p">,</span><span class="mi">51</span><span class="p">),</span>
+   <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">25</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">template_coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">template</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">template_weights</span> <span class="o">=</span> <span class="n">template</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">template_coordinates</span><span class="p">)]</span>
+
+<span class="n">score_object</span> <span class="o">=</span> <span class="n">NormalizedCrossCorrelation</span><span class="p">(</span>
+   <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+   <span class="n">template_coordinates</span><span class="o">=</span><span class="n">template_coordinates</span><span class="p">,</span>
+   <span class="n">template_weights</span><span class="o">=</span><span class="n">template_weights</span><span class="p">,</span>
+   <span class="n">negate_score</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># Multiply returned score with -1 for minimization</span>
+<span class="p">)</span>
+
+<span class="n">score_object</span><span class="p">()</span> <span class="c1"># -0.176930596285435</span>
+</pre></div>
+</div>
+<p>Alternatively, <code class="docutils literal notranslate"><span class="pre">score_object</span></code> could have been instantiated using the wrapper function <a class="reference internal" href="api/tme.matching_optimization.create_score_object.html#tme.matching_optimization.create_score_object" title="tme.matching_optimization.create_score_object"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_score_object()</span></code></a>.</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.create_score_object.html#tme.matching_optimization.create_score_object" title="tme.matching_optimization.create_score_object"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_score_object</span></code></a>(score, **kwargs)</p></td>
+<td><p>Initialize score object with name <code class="docutils literal notranslate"><span class="pre">score</span></code> using <cite>**kwargs`</cite>.</p></td>
+</tr>
+</tbody>
+</table>
+<p>tme defines <a class="reference internal" href="api/tme.matching_optimization.optimize_match.html#tme.matching_optimization.optimize_match" title="tme.matching_optimization.optimize_match"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize_match()</span></code></a>, which provides routines for non-exhaustive template matching given a <code class="docutils literal notranslate"><span class="pre">score_object</span></code> and bounds on possible translations and rotations.</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/tme.matching_optimization.optimize_match.html#tme.matching_optimization.optimize_match" title="tme.matching_optimization.optimize_match"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimize_match</span></code></a>(score_object[, ...])</p></td>
+<td><p>Find the translation and rotation optimizing the score returned by <cite>score_object</cite> with respect to provided bounds.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Given our previously defined <code class="docutils literal notranslate"><span class="pre">score_object</span></code>, we can find the optimal configuration:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tme.matching_optimization</span> <span class="kn">import</span> <span class="n">optimize_match</span>
+
+<span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">refined_score</span> <span class="o">=</span> <span class="n">optimize_match</span><span class="p">(</span>
+   <span class="n">score_object</span><span class="o">=</span><span class="n">score_object</span><span class="p">,</span>
+   <span class="n">optimization_method</span><span class="o">=</span><span class="s2">&quot;basinhopping&quot;</span><span class="p">,</span>
+   <span class="n">maxiter</span><span class="o">=</span><span class="mi">500</span>
+<span class="p">)</span>
+<span class="n">translation</span>
+<span class="c1"># array([-7.04120465,  8.17709819,  0.07964882])</span>
+<span class="n">rotation</span>
+<span class="c1"># array([[ 3.0803247e-03,  1.7386347e-04,  9.9999523e-01],</span>
+<span class="c1">#        [ 3.9309423e-02,  9.9922705e-01, -2.9481627e-04],</span>
+<span class="c1">#        [-9.9922234e-01,  3.9310146e-02,  3.0711093e-03]],</span>
+<span class="c1">#  dtype=float32)</span>
+<span class="n">refined_score</span>
+<span class="c1"># -1.0</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="api/tme.matching_optimization.optimize_match.html#tme.matching_optimization.optimize_match" title="tme.matching_optimization.optimize_match"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize_match()</span></code></a> will update <code class="docutils literal notranslate"><span class="pre">score_object</span></code> so using the __call__ afterwards will yield the values as <code class="docutils literal notranslate"><span class="pre">refined_score</span></code>. Smaller values of <cite>maxiter</cite> might yield suboptimal results.</p>
+</div>
+<p>The computed <code class="docutils literal notranslate"><span class="pre">translation</span></code> and <code class="docutils literal notranslate"><span class="pre">rotation</span></code> can then be used to recover the configuration of the template with maximal similarity to the target. This is functionally similar to the operation performed using <a class="reference internal" href="api/tme.density.Density.match_densities.html#tme.density.Density.match_densities" title="tme.density.Density.match_densities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.match_densities()</span></code></a> and <a class="reference internal" href="api/tme.density.Density.match_structure_to_density.html#tme.density.Density.match_structure_to_density" title="tme.density.Density.match_structure_to_density"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.match_structure_to_density()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+
+<span class="n">template_density</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+<span class="n">template_density</span> <span class="o">=</span> <span class="n">template_density</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
+   <span class="n">translation</span> <span class="o">=</span> <span class="n">translation</span><span class="p">,</span>
+   <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation</span><span class="p">,</span>
+   <span class="n">order</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+   <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="api/tme.matching_optimization.optimize_match.html#tme.matching_optimization.optimize_match" title="tme.matching_optimization.optimize_match"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize_match()</span></code></a> also supports a range of other optimization schemes that can lead more accurate results at a cost of runtime or find the optimal configuration faster if the initial configuration is close to the global optimum. Alternatively, developers can make use of the <a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.score.html#tme.matching_optimization.NormalizedCrossCorrelation.score" title="tme.matching_optimization.NormalizedCrossCorrelation.score"><code class="xref py py-meth docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation.score()</span></code></a> method that accepts a tuple of translations and Euler angles for us ein custom optimizers.</p>
 </section>
 
 
@@ -986,11 +1086,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="api/tme.matching_optimization.FitRefinement.html"
+       href="api/tme.matching_optimization.FLC.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">FitRefinement</p>
+        <p class="prev-next-title">FLC</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -1003,21 +1103,6 @@ document.write(`
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
-
-  <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#constructor">Constructor</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computations">Computations</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-scores">Available scores</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#helper-classes">Helper classes</a></li>
-</ul>
-  </nav></div>
 
   <div class="sidebar-secondary-item">
 
@@ -1062,7 +1147,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     <br/>
   </p>
 </div>

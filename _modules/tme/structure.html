@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.structure &#8212; pytme 0.1.9 documentation</title>
+    <title>tme.structure &#8212; pytme 0.2.0b documentation</title>
   
   
   
@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=8618f531"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/documentation_options.js?v=fa31bc0e"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=4ea706d9"></script>
@@ -121,7 +121,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.1.9 documentation</p>
+    <p class="title logo__title">pytme 0.2.0b documentation</p>
   
 </a></div>
     
@@ -395,44 +395,9 @@ document.write(`
 <a class="viewcode-back" href="../../reference/api/tme.structure.Structure.html#tme.structure.Structure">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Structure</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents atomic structures in accordance with the Protein Data Bank (PDB)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents atomic structures in accordance with the Protein Data Bank (PDB)</span>
 <span class="sd">    format specification.</span>
-
-<span class="sd">    Attributes</span>
-<span class="sd">    ----------</span>
-<span class="sd">    record_type : NDArray</span>
-<span class="sd">        Type of the record, e.g., ATOM, HETATM. Array shape = (n,)</span>
-<span class="sd">    atom_serial_number : NDArray</span>
-<span class="sd">        Serial number assigned to each atom.  Array shape = (n,)</span>
-<span class="sd">    atom_name : NDArray</span>
-<span class="sd">        Standardized names for each atom.  Array shape = (n,)</span>
-<span class="sd">    atom_coordinate : NDArray</span>
-<span class="sd">        The 3D Cartesian coordinates of each atom in x, y, z.  Array shape = (n,3 )</span>
-<span class="sd">    alternate_location_indicator : NDArray</span>
-<span class="sd">        Indicator for alternate locations of an atom if it exists in multiple places.</span>
-<span class="sd">        Array shape = (n,)</span>
-<span class="sd">    residue_name : NDArray</span>
-<span class="sd">        Standard residue names where each atom belongs. Array shape = (n,)</span>
-<span class="sd">    chain_identifier : NDArray</span>
-<span class="sd">        Identifier for the chain where each atom is located. Array shape = (n,)</span>
-<span class="sd">    residue_sequence_number : NDArray</span>
-<span class="sd">        Sequence number of the residue in the protein chain for each atom.</span>
-<span class="sd">        Array shape = (n,)</span>
-<span class="sd">    code_for_residue_insertion : NDArray</span>
-<span class="sd">        Code to denote any residue insertion. Array shape = (n,)</span>
-<span class="sd">    occupancy : NDArray</span>
-<span class="sd">        Occupancy factor of each atom, indicating the fraction of time the atom</span>
-<span class="sd">        is located at its position. Array shape = (n,)</span>
-<span class="sd">    temperature_factor : NDArray</span>
-<span class="sd">        Measure of the atomic displacement or B-factor for each atom. Array shape = (n,)</span>
-<span class="sd">    segment_identifier : NDArray</span>
-<span class="sd">        Identifier for the segment where each atom belongs. Array shape = (n,)</span>
-<span class="sd">    element_symbol : NDArray</span>
-<span class="sd">        Atomic element symbol for each atom. Array shape = (n,)</span>
-<span class="sd">    charge : NDArray</span>
-<span class="sd">        Charge on the atom. Array shape = (n,)</span>
-<span class="sd">    details : dict</span>
-<span class="sd">        Any additional or auxiliary details. Array shape = (n,)</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -1884,7 +1849,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     <br/>
   </p>
 </div>

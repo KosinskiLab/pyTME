@@ -19,7 +19,22 @@
       
          
          
-           MutualInformation.scoring_function
+           MutualInformation.array_from_coordinates
+         
+         
+           MutualInformation.map_coordinates_to_array
+         
+         
+           MutualInformation.rigid_transform
+         
+         
+           MutualInformation.score
+         
+         
+           MutualInformation.score_angles
+         
+         
+           MutualInformation.score_translation
          
    
    

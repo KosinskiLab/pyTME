@@ -19,7 +19,22 @@
       
          
          
-           NormalizedCrossCorrelationMean.scoring_function
+           NormalizedCrossCorrelationMean.array_from_coordinates
+         
+         
+           NormalizedCrossCorrelationMean.map_coordinates_to_array
+         
+         
+           NormalizedCrossCorrelationMean.rigid_transform
+         
+         
+           NormalizedCrossCorrelationMean.score
+         
+         
+           NormalizedCrossCorrelationMean.score_angles
+         
+         
+           NormalizedCrossCorrelationMean.score_translation
          
    
    
