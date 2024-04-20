@@ -222,6 +222,13 @@ def parse_args():
         help="Template matching scoring function.",
     )
     scoring_group.add_argument(
+        "-p",
+        dest="peak_calling",
+        action="store_true",
+        default=False,
+        help="Perform peak calling instead of score aggregation.",
+    )
+    scoring_group.add_argument(
         "-a",
         dest="angular_sampling",
         type=check_positive,
@@ -229,13 +236,7 @@ def parse_args():
         help="Angular sampling rate for template matching. "
         "A lower number yields more rotations. Values >= 180 sample only the identity.",
     )
-    scoring_group.add_argument(
-        "-p",
-        dest="peak_calling",
-        action="store_true",
-        default=False,
-        help="Perform peak calling instead of score aggregation.",
-    )
+
 
     computation_group = parser.add_argument_group("Computation")
     computation_group.add_argument(

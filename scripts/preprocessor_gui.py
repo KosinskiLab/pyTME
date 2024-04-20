@@ -605,8 +605,6 @@ class MaskWidget(widgets.Container):
             self._update_action_button_state
         )
 
-        self.align_button = widgets.PushButton(text="Align to axis", enabled=False)
-        self.align_button.changed.connect(self._align_with_axis)
         self.density_field = widgets.Label()
         # self.density_field.value = f"Positive Density in Mask: {0:.2f}%"
 
@@ -620,7 +618,6 @@ class MaskWidget(widgets.Container):
         self.append(self.adapt_button)
         self.append(self.percentile_range_edit)
 
-        self.append(self.align_button)
         self.append(self.action_button)
         self.append(self.density_field)
 
@@ -628,42 +625,8 @@ class MaskWidget(widgets.Container):
         self._on_method_changed(None)
 
     def _update_action_button_state(self, event):
-        self.align_button.enabled = bool(self.viewer.layers.selection.active)
         self.action_button.enabled = bool(self.viewer.layers.selection.active)
         self.adapt_button.enabled = bool(self.viewer.layers.selection.active)
-
-    def _align_with_axis(self):
-        active_layer = self.viewer.layers.selection.active
-
-        if active_layer.metadata.get("is_aligned", False):
-            return
-
-        coords = np.array(np.where(active_layer.data > 0)).T
-        centered_coords = coords - np.mean(coords, axis=0)
-        cov_matrix = np.cov(centered_coords, rowvar=False)
-
-        eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
-        principal_eigenvector = eigenvectors[:, np.argmax(eigenvalues)]
-
-        rotation_axis = np.cross(principal_eigenvector, [1, 0, 0])
-        rotation_angle = np.arccos(np.dot(principal_eigenvector, [1, 0, 0]))
-        k = rotation_axis / np.linalg.norm(rotation_axis)
-        K = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
-        rotation_matrix = np.eye(3)
-        rotation_matrix += np.sin(rotation_angle) * K
-        rotation_matrix += (1 - np.cos(rotation_angle)) * np.dot(K, K)
-
-        rotated_data = Density.rotate_array(
-            arr=active_layer.data,
-            rotation_matrix=rotation_matrix,
-            use_geometric_center=False,
-            order=1,
-        )
-        eps = np.finfo(rotated_data.dtype).eps
-        rotated_data[rotated_data < eps] = 0
-
-        active_layer.metadata["is_aligned"] = True
-        active_layer.data = rotated_data
 
     def _update_initial_values(self, event=None):
         active_layer = self.viewer.layers.selection.active
@@ -772,6 +735,103 @@ class MaskWidget(widgets.Container):
         #         in_mask /= np.sum(np.fmax(origin_layer.data, 0))
         #         in_mask *= 100
         #         self.density_field.value = f"Positive Density in Mask: {in_mask:.2f}%"
+
+
+class AlignmentWidget(widgets.Container):
+    def __init__(self, viewer):
+        super().__init__(layout="vertical")
+
+        self.viewer = viewer
+
+        align_button = widgets.PushButton(text="Align to axis", enabled=True)
+        self.align_axis = widgets.ComboBox(
+            value=None, nullable=True, choices=self._get_active_layer_dims
+        )
+        self.viewer.layers.selection.events.changed.connect(self._update_align_axis)
+
+        align_button.changed.connect(self._align_with_axis)
+        container = widgets.Container(
+            widgets=[align_button, self.align_axis], layout="horizontal"
+        )
+        self.append(container)
+
+        rot90 = widgets.PushButton(text="Rotate 90", enabled=True)
+        rotneg90 = widgets.PushButton(text="Rotate -90", enabled=True)
+
+        rot90.changed.connect(self._rot90)
+        rotneg90.changed.connect(self._rotneg90)
+
+        container = widgets.Container(widgets=[rot90, rotneg90], layout="horizontal")
+        self.append(container)
+
+    def _rot90(self, swap_axes: bool = False):
+        active_layer = self.viewer.layers.selection.active
+        if active_layer is None:
+            return None
+        elif self.viewer.dims.ndisplay != 2:
+            return None
+
+        align_axis = self.align_axis.value
+        if self.align_axis.value is None:
+            align_axis = self.viewer.dims.order[0]
+
+        axes = [
+            align_axis,
+            *[i for i in range(len(self.viewer.dims.order)) if i != align_axis],
+        ][:2]
+        axes = axes[::-1] if swap_axes else axes
+        active_layer.data = np.rot90(active_layer.data, k=1, axes=axes)
+
+    def _rotneg90(self):
+        return self._rot90(swap_axes=True)
+
+    def _get_active_layer_dims(self, *args):
+        active_layer = self.viewer.layers.selection.active
+        if active_layer is None:
+            return ()
+        return [i for i in range(active_layer.data.ndim)]
+
+    def _update_align_axis(self, *args):
+        self.align_axis.choices = self._get_active_layer_dims()
+
+    def _align_with_axis(self):
+        active_layer = self.viewer.layers.selection.active
+
+        if self.align_axis.value is None:
+            return None
+
+        if active_layer.metadata.get("is_aligned", None) == self.align_axis.value:
+            return None
+
+        alignment_axis = np.zeros(active_layer.data.ndim)
+        alignment_axis[int(self.align_axis.value)] = 1
+
+        coords = np.array(np.where(active_layer.data > 0)).T
+        centered_coords = coords - np.mean(coords, axis=0)
+        cov_matrix = np.cov(centered_coords, rowvar=False)
+
+        eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
+        principal_eigenvector = eigenvectors[:, np.argmax(eigenvalues)]
+
+        rotation_axis = np.cross(principal_eigenvector, alignment_axis)
+        rotation_angle = np.arccos(np.dot(principal_eigenvector, alignment_axis))
+        k = rotation_axis / np.linalg.norm(rotation_axis)
+        K = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
+        rotation_matrix = np.eye(3)
+        rotation_matrix += np.sin(rotation_angle) * K
+        rotation_matrix += (1 - np.cos(rotation_angle)) * np.dot(K, K)
+
+        rotated_data = Density.rotate_array(
+            arr=active_layer.data,
+            rotation_matrix=rotation_matrix,
+            use_geometric_center=False,
+            order=1,
+        )
+        eps = np.finfo(rotated_data.dtype).eps
+        rotated_data[rotated_data < eps] = 0
+
+        active_layer.metadata["is_aligned"] = int(self.align_axis.value)
+        active_layer.data = rotated_data
 
 
 class ExportWidget(widgets.Container):
@@ -975,8 +1035,12 @@ def main():
     export_widget = ExportWidget(viewer)
     point_cloud = PointCloudWidget(viewer)
     matching_widget = MatchingWidget(viewer)
+    alignment_widget = AlignmentWidget(viewer)
 
     viewer.window.add_dock_widget(widget=filter_widget, name="Preprocess", area="right")
+    viewer.window.add_dock_widget(
+        widget=alignment_widget, name="Alignment", area="right"
+    )
     viewer.window.add_dock_widget(widget=mask_widget, name="Mask", area="right")
     viewer.window.add_dock_widget(widget=point_cloud, name="PointCloud", area="left")
     viewer.window.add_dock_widget(widget=matching_widget, name="Matching", area="left")
