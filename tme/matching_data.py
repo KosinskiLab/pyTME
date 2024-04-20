@@ -182,7 +182,6 @@ class MatchingData:
             ret = (
                 -np.divide(np.subtract(ret, arr_min), np.subtract(arr_max, arr_min)) + 1
             )
-            # ret = np.divide(np.subtract(-ret, arr_min), np.subtract(arr_max, arr_min))
         return ret
 
     def subset_by_slice(
@@ -250,17 +249,18 @@ class MatchingData:
         )
         ret = self.__class__(target=target_subset, template=template_subset)
 
-        target_offset = np.zeros(len(self._output_target_shape), dtype = int)
+        target_offset = np.zeros(len(self._output_target_shape), dtype=int)
         target_offset[(target_offset.size - len(target_slice)) :] = [
             x.start for x in target_slice
         ]
-        template_offset = np.zeros(len(self._output_target_shape), dtype = int)
+        template_offset = np.zeros(len(self._output_target_shape), dtype=int)
         template_offset[(template_offset.size - len(template_slice)) :] = [
             x.start for x in template_slice
         ]
         ret._translation_offset = np.add(target_offset, template_offset)
 
         ret.template_filter = self.template_filter
+        ret.target_filter = self.target_filter
         ret._rotations, ret.indices = self.rotations, indices
         ret._target_pad, ret._template_pad = target_pad, template_pad
         ret._invert_target = self._invert_target
@@ -291,9 +291,13 @@ class MatchingData:
         """
         Transfer the class instance's numpy arrays to the current backend.
         """
+        backend_arr = type(backend.zeros((1), dtype=backend._default_dtype))
         for attr_name, attr_value in vars(self).items():
             if isinstance(attr_value, np.ndarray):
                 converted_array = backend.to_backend_array(attr_value.copy())
+                setattr(self, attr_name, converted_array)
+            elif isinstance(attr_value, backend_arr):
+                converted_array = backend.to_backend_array(attr_value)
                 setattr(self, attr_name, converted_array)
 
         self._default_dtype = backend._default_dtype
@@ -484,7 +488,11 @@ class MatchingData:
         fourier_shift = backend.zeros(len(fourier_pad))
 
         if not pad_fourier:
-            fourier_pad = backend.full(shape=len(fourier_pad), fill_value=1, dtype=int)
+            fourier_pad = backend.full(
+                shape=(len(fourier_pad),),
+                fill_value=1,
+                dtype=backend._default_dtype_int,
+            )
 
         fourier_pad = backend.to_backend_array(fourier_pad)
         if hasattr(self, "_batch_mask"):
@@ -499,6 +507,11 @@ class MatchingData:
             fourier_shift -= backend.mod(template_shape, 2)
             shape_diff = backend.subtract(fast_shape, convolution_shape)
             shape_diff = backend.astype(backend.divide(shape_diff, 2), int)
+
+            if hasattr(self, "_batch_mask"):
+                batch_mask = backend.to_backend_array(self._batch_mask)
+                shape_diff[batch_mask] = 0
+
             backend.add(fourier_shift, shape_diff, out=fourier_shift)
 
         return fast_shape, fast_ft_shape, fourier_shift
@@ -533,16 +546,19 @@ class MatchingData:
     def target(self):
         """Returns the target NDArray."""
         if isinstance(self._target, Density):
-            return self._target.data
-        return self._target
+            target = self._target.data
+        else:
+            target = self._target
+        out_shape = backend.to_numpy_array(self._output_target_shape)
+        return target.reshape(tuple(int(x) for x in out_shape))
 
     @property
     def template(self):
         """Returns the reversed template NDArray."""
+        template = self._template
         if isinstance(self._template, Density):
-            template = backend.reverse(self._template.data)
-        else:
-            template = backend.reverse(self._template)
+            template = self._template.data
+        template = backend.reverse(template)
         out_shape = backend.to_numpy_array(self._output_template_shape)
         return template.reshape(tuple(int(x) for x in out_shape))
 
@@ -571,9 +587,15 @@ class MatchingData:
     @property
     def target_mask(self):
         """Returns the target mask NDArray."""
+        target_mask = self._target_mask
         if isinstance(self._target_mask, Density):
-            return self._target_mask.data
-        return self._target_mask
+            target_mask = self._target_mask.data
+
+        if target_mask is not None:
+            out_shape = backend.to_numpy_array(self._output_target_shape)
+            target_mask = target_mask.reshape(tuple(int(x) for x in out_shape))
+
+        return target_mask
 
     @target_mask.setter
     def target_mask(self, mask: NDArray):
@@ -600,9 +622,15 @@ class MatchingData:
         template : NDArray
             Array to set as the template.
         """
+        mask = self._template_mask
         if isinstance(self._template_mask, Density):
-            return backend.reverse(self._template_mask.data)
-        return backend.reverse(self._template_mask)
+            mask = self._template_mask.data
+
+        if mask is not None:
+            mask = backend.reverse(mask)
+            out_shape = backend.to_numpy_array(self._output_template_shape)
+            mask = mask.reshape(tuple(int(x) for x in out_shape))
+        return mask
 
     @template_mask.setter
     def template_mask(self, mask: NDArray):

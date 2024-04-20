@@ -27,7 +27,6 @@ from scipy.ndimage import (
 )
 from scipy.spatial import ConvexHull
 
-from .matching_optimization import FitRefinement
 from .structure import Structure
 from .matching_utils import (
     minimum_enclosing_box,
@@ -479,8 +478,11 @@ class Density:
                 f"Expected length of slices : {n_dims}, got : {len(slices)}"
             )
 
-        if any([slices[i].stop > shape[i] or slices[i].start > shape[i]
-            for i in range(n_dims)]
+        if any(
+            [
+                slices[i].stop > shape[i] or slices[i].start > shape[i]
+                for i in range(n_dims)
+            ]
         ):
             raise ValueError(f"Subset exceeds data dimensions ({shape}).")
 
@@ -941,9 +943,9 @@ class Density:
         swap, kwargs = filename, {}
         if gzip:
             swap = BytesIO()
-            kwargs["format"] = splitext(
-                basename(filename.replace(".gz", ""))
-            )[1].replace(".", "")
+            kwargs["format"] = splitext(basename(filename.replace(".gz", "")))[
+                1
+            ].replace(".", "")
         skio.imsave(fname=swap, arr=self.data.astype("float32"), **kwargs)
         if gzip:
             with gzip_open(filename, "wb") as outfile:
@@ -1177,7 +1179,13 @@ class Density:
     @property
     def sampling_rate(self) -> NDArray:
         """
-        Returns sampling rate along data axis.
+        Returns the value of the current instance's :py:attr:`Density.sampling_rate`
+        attribute.
+
+        Returns
+        -------
+        NDArray
+            Sampling rate along axis.
         """
         return self._sampling_rate
 
@@ -1193,7 +1201,12 @@ class Density:
     @property
     def metadata(self) -> Dict:
         """
-        Returns dictionary with metadata information, empty by default.
+        Returns the current instance's :py:attr:`Density.metadata` dictionary attribute.
+
+        Returns
+        -------
+        Dict
+            Metadata dictionary. Empty by default.
         """
         return self._metadata
 
@@ -2147,7 +2160,7 @@ class Density:
 
         If voxel sizes of target and template dont match coordinates are scaled
         to the numerically smaller voxel size. Instances are prealigned based on their
-        center of mass. Finally :py:class:`tme.matching_optimization.FitRefinement` is
+        center of mass. Finally :py:meth:`tme.matching_optimization.optimize_match` is
         used to determine translation and rotation to map template to target.
 
         Parameters
@@ -2162,7 +2175,7 @@ class Density:
             The cutoff value for the template map, by default 0.
         scoring_method : str, optional
             The scoring method to use for alignment. See
-            :py:class:`tme.matching_optimization.FitRefinement` for available methods,
+            :py:class:`tme.matching_optimization.create_score_object` for available methods,
             by default "NormalizedCrossCorrelation".
 
         Returns
@@ -2175,6 +2188,8 @@ class Density:
         -----
         No densities below cutoff_template are present in the returned Density object.
         """
+        from .matching_optimization import optimize_match, create_score_object
+
         target_sampling_rate = np.array(target.sampling_rate)
         template_sampling_rate = np.array(template.sampling_rate)
 
@@ -2184,7 +2199,6 @@ class Density:
         template_sampling_rate = np.repeat(
             template_sampling_rate, template.data.ndim // template_sampling_rate.size
         )
-
         if not np.allclose(target_sampling_rate, template_sampling_rate):
             print(
                 "Voxel size of target and template do not match. "
@@ -2192,7 +2206,6 @@ class Density:
             )
 
         target_coordinates = target.to_pointcloud(cutoff_target)
-        target_weights = target.data[tuple(target_coordinates)]
 
         template_coordinates = template.to_pointcloud(cutoff_template)
         template_weights = template.data[tuple(template_coordinates)]
@@ -2205,21 +2218,22 @@ class Density:
         target_coordinates = target_coordinates * target_scaling[:, None]
         template_coordinates = template_coordinates * template_scaling[:, None]
 
-        target_mass_center = cls.center_of_mass(target.data, cutoff_target)
-        template_mass_center = cls.center_of_mass(template.data, cutoff_template)
         mass_center_difference = np.subtract(
-            target_mass_center, template_mass_center
+            cls.center_of_mass(target.data, cutoff_target),
+            cls.center_of_mass(template.data, cutoff_template),
         ).astype(int)
         template_coordinates += mass_center_difference[:, None]
 
-        matcher = FitRefinement()
-        translation, rotation_matrix, score = matcher.refine(
-            target_coordinates=target_coordinates,
+        score_object = create_score_object(
+            score=scoring_method,
+            target=target.data,
             template_coordinates=template_coordinates,
-            target_weights=target_weights,
             template_weights=template_weights,
-            scoring_class=scoring_method,
             sampling_rate=np.ones(template.data.ndim),
+        )
+
+        translation, rotation_matrix, score = optimize_match(
+            score_object=score_object, optimization_method="basinhopping"
         )
 
         translation += mass_center_difference
@@ -2248,7 +2262,7 @@ class Density:
 
         If voxel sizes of target and template dont match coordinates are scaled
         to the numerically smaller voxel size. Prealignment is done by center's
-        of mass. Finally :py:class:`tme.matching_optimization.FitRefinement` is used to
+        of mass. Finally :py:class:`tme.matching_optimization.optimize_match` is used to
         determine translation and rotation to match a template to target.
 
         Parameters
@@ -2263,7 +2277,7 @@ class Density:
             The cutoff value for the template map, by default 0.
         scoring_method : str, optional
             The scoring method to use for template matching. See
-            :py:class:`tme.matching_optimization.FitRefinement` for available methods,
+            :py:class:`tme.matching_optimization.create_score_object` for available methods,
             by default "NormalizedCrossCorrelation".
 
         Returns
