@@ -2,65 +2,135 @@ import numpy as np
 import pytest
 
 from tme.matching_optimization import (
-    FitRefinement,
     MATCHING_OPTIMIZATION_REGISTER,
     register_matching_optimization,
+    _MatchDensityToDensity,
+    _MatchCoordinatesToDensity,
+    _MatchCoordinatesToCoordinates,
+    optimize_match,
+    create_score_object,
 )
+from tme.matching_utils import euler_from_rotationmatrix
+
+density_to_density = ["FLC"]
+
+coordinate_to_density = [
+    k
+    for k, v in MATCHING_OPTIMIZATION_REGISTER.items()
+    if issubclass(v, _MatchCoordinatesToDensity)
+]
+
+coordinate_to_coordinate = [
+    k
+    for k, v in MATCHING_OPTIMIZATION_REGISTER.items()
+    if issubclass(v, _MatchCoordinatesToCoordinates)
+]
 
 
-class TestMatchOptimization:
+class TestMatchDensityToDensity:
+    def setup_method(self):
+        target = np.zeros((50, 50, 50))
+        target[20:30, 30:40, 12:17] = 1
+        self.target = target
+        self.template = target.copy()
+        self.template_mask = np.ones_like(target)
+
+    def teardown_method(self):
+        self.target = None
+        self.template = None
+        self.template_mask = None
+
+    @pytest.mark.parametrize("method", density_to_density)
+    def test_initialization(self, method: str, notest: bool = False):
+        instance = create_score_object(
+            score=method,
+            target=self.target,
+            template=self.template,
+            template_mask=self.template_mask,
+        )
+        if notest:
+            return instance
+
+    @pytest.mark.parametrize("method", density_to_density)
+    def test_call(self, method):
+        instance = self.test_initialization(method=method, notest=True)
+        score = instance()
+        assert isinstance(score, float)
+
+
+class TestMatchDensityToCoordinates:
     def setup_method(self):
         data = np.zeros((50, 50, 50))
         data[20:30, 30:40, 12:17] = 1
-        self.data = data
-        self.coordinates = np.array(np.where(data > 0))
-        self.coordinates_weights = self.data[tuple(self.coordinates)]
+        self.target = data
+        self.target_mask_density = data > 0
+        self.coordinates = np.array(np.where(self.target > 0))
+        self.coordinates_weights = self.target[tuple(self.coordinates)]
+
+        np.random.seed(42)
+        random_pixels = np.random.choice(
+            range(self.coordinates.shape[1]), self.coordinates.shape[1] // 2
+        )
+        self.coordinates_mask = self.coordinates[:, random_pixels]
 
         self.origin = np.zeros(self.coordinates.shape[0])
         self.sampling_rate = np.ones(self.coordinates.shape[0])
 
     def teardown_method(self):
-        self.data = None
+        self.target = None
+        self.target_mask_density = None
         self.coordinates = None
         self.coordinates_weights = None
+        self.coordinates_mask = None
 
-    def test_initialization(self):
-        _ = FitRefinement()
+    @pytest.mark.parametrize("method", coordinate_to_density)
+    def test_initialization(self, method: str, notest: bool = False):
+        instance = create_score_object(
+            score=method,
+            target=self.target,
+            target_mask=self.target_mask_density,
+            template_coordinates=self.coordinates,
+            template_weights=self.coordinates_weights,
+            template_mask_coordinates=self.coordinates_mask,
+        )
+        if notest:
+            return instance
+
+    @pytest.mark.parametrize("method", coordinate_to_density)
+    def test_call(self, method):
+        instance = self.test_initialization(method=method, notest=True)
+        score = instance()
+        assert isinstance(score, float)
 
     def test_map_coordinates_to_array(self):
-        ret = FitRefinement.map_coordinates_to_array(
-            coordinates=self.coordinates,
-            array_shape=self.data.shape,
-            array_origin=np.zeros(self.data.ndim),
-            sampling_rate=np.ones(self.data.ndim),
+        ret = _MatchCoordinatesToDensity.map_coordinates_to_array(
+            coordinates=self.coordinates.astype(np.float32),
+            array_shape=self.target.shape,
+            array_origin=np.zeros(self.target.ndim),
+            sampling_rate=np.ones(self.target.ndim),
         )
-        assert len(ret) == 4
+        assert len(ret) == 2
 
-        coord, coord_mask, in_vol, in_vol_mask = ret
+        in_vol, in_vol_mask = ret
 
-        assert coord_mask is None
         assert in_vol_mask is None
-
-        assert np.allclose(coord.shape, self.coordinates.shape)
         assert np.allclose(in_vol.shape, self.coordinates.shape[1])
 
     def test_map_coordinates_to_array_mask(self):
-        ret = FitRefinement.map_coordinates_to_array(
-            coordinates=self.coordinates,
-            array_shape=self.data.shape,
+        ret = _MatchCoordinatesToDensity.map_coordinates_to_array(
+            coordinates=self.coordinates.astype(np.float32),
+            array_shape=self.target.shape,
             array_origin=self.origin,
             sampling_rate=self.sampling_rate,
-            coordinates_mask=self.coordinates,
+            coordinates_mask=self.coordinates.astype(np.float32),
         )
-        assert len(ret) == 4
+        assert len(ret) == 2
 
-        coord, coord_mask, in_vol, in_vol_mask = ret
-
-        assert np.allclose(coord, coord_mask)
+        in_vol, in_vol_mask = ret
         assert np.allclose(in_vol, in_vol_mask)
 
     def test_array_from_coordinates(self):
-        ret = FitRefinement.array_from_coordinates(
+        ret = _MatchCoordinatesToDensity.array_from_coordinates(
             coordinates=self.coordinates,
             weights=self.coordinates_weights,
             sampling_rate=self.sampling_rate,
@@ -73,7 +143,7 @@ class TestMatchOptimization:
 
         assert np.allclose(origin, self.coordinates.min(axis=1))
 
-        ret = FitRefinement.array_from_coordinates(
+        ret = _MatchCoordinatesToDensity.array_from_coordinates(
             coordinates=self.coordinates,
             weights=self.coordinates_weights,
             sampling_rate=self.sampling_rate,
@@ -82,42 +152,119 @@ class TestMatchOptimization:
         arr, positions, origin = ret
         assert np.allclose(origin, self.origin)
 
-    @pytest.mark.parametrize(
-        "scoring_class", list(MATCHING_OPTIMIZATION_REGISTER.keys())
-    )
-    @pytest.mark.parametrize("local_optimization", (False, True))
-    def test_refine_base(self, scoring_class, local_optimization: bool):
-        class_object = FitRefinement()
-        target_coordinates = np.array(np.where(self.data > 0))
-        class_object.refine(
-            target_coordinates=target_coordinates,
-            target_weights=self.data[tuple(target_coordinates)],
+
+class TestMatchCoordinateToCoordinates:
+    def setup_method(self):
+        data = np.zeros((50, 50, 50))
+        data[20:30, 30:40, 12:17] = 1
+        self.target_coordinates = np.array(np.where(data > 0))
+        self.target_weights = data[tuple(self.target_coordinates)]
+
+        self.coordinates = np.array(np.where(data > 0))
+        self.coordinates_weights = data[tuple(self.coordinates)]
+
+        self.origin = np.zeros(self.coordinates.shape[0])
+        self.sampling_rate = np.ones(self.coordinates.shape[0])
+
+    def teardown_method(self):
+        self.target_coordinates = None
+        self.target_weights = None
+        self.coordinates = None
+        self.coordinates_weights = None
+
+    @pytest.mark.parametrize("method", coordinate_to_coordinate)
+    def test_initialization(self, method: str, notest: bool = False):
+        instance = create_score_object(
+            score=method,
+            target_coordinates=self.target_coordinates,
+            target_weights=self.target_weights,
             template_coordinates=self.coordinates,
             template_weights=self.coordinates_weights,
-            scoring_class=scoring_class,
-            maxiter=1,
-            scoring_class_parameters={
-                "target_threshold": 0.2,
-                "target_mask_coordinates": np.array(np.where(self.data > 0)),
-                "template_mask_coordinates": self.coordinates[:, 0:50],
-            },
-            local_optimization=local_optimization,
+        )
+        if notest:
+            return instance
+
+    @pytest.mark.parametrize("method", coordinate_to_coordinate)
+    def test_call(self, method):
+        instance = self.test_initialization(method=method, notest=True)
+        score = instance()
+        assert isinstance(score, float)
+
+
+class TestOptimizeMatch:
+    def setup_method(self):
+        data = np.zeros((50, 50, 50))
+        data[20:30, 30:40, 12:17] = 1
+        self.target = data
+        self.coordinates = np.array(np.where(self.target > 0))
+        self.coordinates_weights = self.target[tuple(self.coordinates)]
+
+        self.origin = np.zeros(self.coordinates.shape[0])
+        self.sampling_rate = np.ones(self.coordinates.shape[0])
+
+        self.score_object = MATCHING_OPTIMIZATION_REGISTER["CrossCorrelation"]
+        self.score_object = self.score_object(
+            target=self.target,
+            template_coordinates=self.coordinates,
+            template_weights=self.coordinates_weights,
         )
 
-    def test_refine_error(self):
-        class_object = FitRefinement()
+    def teardown_method(self):
+        self.target = None
+        self.coordinates = None
+        self.coordinates_weights = None
 
-        target_coordinates = np.array(np.where(self.data > 0))
-        with pytest.raises(NotImplementedError):
-            class_object.refine(
-                target_coordinates=target_coordinates,
-                target_weights=self.data[tuple(target_coordinates)],
-                template_coordinates=self.coordinates,
-                template_weights=self.coordinates_weights,
-                scoring_class=None,
-                maxiter=1,
+    @pytest.mark.parametrize(
+        "method", ("differential_evolution", "basinhopping", "minimize")
+    )
+    @pytest.mark.parametrize("bound_translation", (True, False))
+    @pytest.mark.parametrize("bound_rotation", (True, False))
+    def test_call(self, method, bound_translation, bound_rotation):
+        if bound_rotation:
+            bound_rotation = tuple((-90, 90) for _ in range(self.target.ndim))
+        else:
+            bound_rotation = None
+
+        if bound_translation:
+            bound_translation = tuple((-5, 5) for _ in range(self.target.ndim))
+        else:
+            bound_translation = None
+
+        translation, rotation, score = optimize_match(
+            score_object=self.score_object,
+            optimization_method=method,
+            bounds_rotation=bound_rotation,
+            bounds_translation=bound_translation,
+            maxiter=10,
+        )
+        assert translation.size == self.target.ndim
+        assert rotation.shape[0] == self.target.ndim
+        assert rotation.shape[1] == self.target.ndim
+        assert isinstance(score, float)
+
+        if bound_translation is not None:
+            lower_bound = np.array([x[0] for x in bound_translation])
+            upper_bound = np.array([x[1] for x in bound_translation])
+            assert np.all(
+                np.logical_and(translation >= lower_bound, translation <= upper_bound)
             )
 
+        if bound_rotation is not None:
+            angles = euler_from_rotationmatrix(rotation)
+            lower_bound = np.array([x[0] for x in bound_rotation])
+            upper_bound = np.array([x[1] for x in bound_rotation])
+            assert np.all(np.logical_and(angles >= lower_bound, angles <= upper_bound))
+
+    def test_call_error(self):
+        with pytest.raises(ValueError):
+            translation, rotation, score = optimize_match(
+                score_object=self.score_object,
+                optimization_method="RAISERROR",
+                maxiter=10,
+            )
+
+
+class TestUtils:
     def test_register_matching_optimization(self):
         new_class = list(MATCHING_OPTIMIZATION_REGISTER.keys())[0]
         register_matching_optimization(

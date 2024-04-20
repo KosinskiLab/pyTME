@@ -680,7 +680,6 @@ class TestDensity:
         aligned, *_ = Density.match_densities(
             target=target,
             template=template,
-            cutoff_target=0.2,
             cutoff_template=0.2,
             scoring_method=method,
         )
