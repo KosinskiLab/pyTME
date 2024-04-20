@@ -25,6 +25,7 @@ from .matching_utils import (
     conditional_execute,
 )
 from .matching_memory import MatchingMemoryUsage, MATCHING_MEMORY_REGISTRY
+# from .preprocessing import Compose
 from .preprocessor import Preprocessor
 from .matching_data import MatchingData
 from .backends import backend
@@ -41,6 +42,58 @@ def _run_inner(backend_name, backend_args, **kwargs):
 
     backend.change_backend(backend_name, **backend_args)
     return scan(**kwargs)
+
+
+def normalize_under_mask(template: NDArray, mask: NDArray, mask_intensity) -> None:
+    """
+    Standardizes the values in in template by subtracting the mean and dividing by the
+    standard deviation based on the elements in mask. Subsequently, the template is
+    multiplied by the mask.
+
+    Parameters
+    ----------
+    template : NDArray
+        The data array to be normalized. This array is modified in-place.
+    mask : NDArray
+        A boolean array of the same shape as `template`. True values indicate the positions in `template`
+        to consider for normalization.
+    mask_intensity : float
+        Mask intensity used to compute expectations.
+
+    References
+    ----------
+    .. [1]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
+            and F. Förster, J. Struct. Biol. 178, 177 (2012).
+    .. [2]  M. L. Chaillet, G. van der Schot, I. Gubins, S. Roet,
+            R. C. Veltkamp, and F. Förster, Int. J. Mol. Sci. 24,
+            13375 (2023)
+
+    Returns
+    -------
+    None
+        This function modifies `template` in-place and does not return any value.
+    """
+    masked_mean = backend.sum(backend.multiply(template, mask))
+    masked_mean = backend.divide(masked_mean, mask_intensity)
+    masked_std = backend.sum(backend.multiply(backend.square(template), mask))
+    masked_std = backend.subtract(
+        masked_std / mask_intensity, backend.square(masked_mean)
+    )
+    masked_std = backend.sqrt(backend.maximum(masked_std, 0))
+
+    backend.subtract(template, masked_mean, out=template)
+    backend.divide(template, masked_std, out=template)
+    backend.multiply(template, mask, out=template)
+    return None
+
+
+def apply_filter(ft_template, template_filter):
+    # This is an approximation to applying the mask, irfftn, normalize, rfftn
+    std_before = backend.std(ft_template)
+    backend.multiply(ft_template, template_filter, out=ft_template)
+    backend.multiply(
+        ft_template, std_before / backend.std(ft_template), out=ft_template
+    )
 
 
 def cc_setup(
@@ -313,49 +366,6 @@ def cam_setup(**kwargs):
     return corr_setup(**kwargs)
 
 
-def _normalize_under_mask(template: NDArray, mask: NDArray, mask_intensity) -> None:
-    """
-    Standardizes the values in in template by subtracting the mean and dividing by the
-    standard deviation based on the elements in mask. Subsequently, the template is
-    multiplied by the mask.
-
-    Parameters
-    ----------
-    template : NDArray
-        The data array to be normalized. This array is modified in-place.
-    mask : NDArray
-        A boolean array of the same shape as `template`. True values indicate the positions in `template`
-        to consider for normalization.
-    mask_intensity : float
-        Mask intensity used to compute expectations.
-
-    References
-    ----------
-    .. [1]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
-            and F. Förster, J. Struct. Biol. 178, 177 (2012).
-    .. [2]  M. L. Chaillet, G. van der Schot, I. Gubins, S. Roet,
-            R. C. Veltkamp, and F. Förster, Int. J. Mol. Sci. 24,
-            13375 (2023)
-
-    Returns
-    -------
-    None
-        This function modifies `template` in-place and does not return any value.
-    """
-    masked_mean = backend.sum(backend.multiply(template, mask))
-    masked_mean = backend.divide(masked_mean, mask_intensity)
-    masked_std = backend.sum(backend.multiply(backend.square(template), mask))
-    masked_std = backend.subtract(
-        masked_std / mask_intensity, backend.square(masked_mean)
-    )
-    masked_std = backend.sqrt(backend.maximum(masked_std, 0))
-
-    backend.subtract(template, masked_mean, out=template)
-    backend.divide(template, masked_std, out=template)
-    backend.multiply(template, mask, out=template)
-    return None
-
-
 def flc_setup(
     rfftn: Callable,
     irfftn: Callable,
@@ -418,7 +428,7 @@ def flc_setup(
         arr=ft_target2, shared_memory_handler=shared_memory_handler
     )
 
-    _normalize_under_mask(
+    normalize_under_mask(
         template=template, mask=template_mask, mask_intensity=backend.sum(template_mask)
     )
 
@@ -540,7 +550,7 @@ def flcSphericalMask_setup(
     backend.fill(temp2, 0)
     temp2[nonzero_indices] = 1 / temp[nonzero_indices]
 
-    _normalize_under_mask(
+    normalize_under_mask(
         template=template, mask=template_mask, mask_intensity=backend.sum(template_mask)
     )
 
@@ -727,10 +737,6 @@ def corr_scoring(
         datatype.
     numerator2 : Tuple[type, Tuple[int], type]
         Tuple containing a pointer to the numerator2 data, its shape, and its datatype.
-    targetshape : Tuple[int]
-        The shape of the target.
-    templateshape : Tuple[int]
-        The shape of the template.
     fast_shape : Tuple[int]
         The shape for fast Fourier transform.
     fast_ft_shape : Tuple[int]
@@ -749,8 +755,6 @@ def corr_scoring(
         instantiable.
     interpolation_order : int
         The order of interpolation to be used while rotating the template.
-    convolution_mode : str, optional
-        Mode to use for convolution, default is "full".
     **kwargs :
         Additional arguments to be passed to the function.
 
@@ -766,39 +770,23 @@ def corr_scoring(
     :py:meth:`cam_setup`
     :py:meth:`flcSphericalMask_setup`
     """
-    template_buffer, template_shape, template_dtype = template
-    ft_target_buffer, ft_target_shape, ft_target_dtype = ft_target
-    inv_denominator_buffer, inv_denominator_pointer_shape, _ = inv_denominator
-    numerator2_buffer, numerator2_shape, _ = numerator2
-    filter_buffer, filter_shape, filter_dtype = template_filter
-
+    callback = callback_class
     if callback_class is not None and isinstance(callback_class, type):
         callback = callback_class(**callback_class_args)
-    elif not isinstance(callback_class, type):
-        callback = callback_class
 
-    # Retrieve objects from shared memory
-    template = backend.sharedarr_to_arr(template_shape, template_dtype, template_buffer)
-    ft_target = backend.sharedarr_to_arr(
-        ft_target_shape, ft_target_dtype, ft_target_buffer
-    )
-    inv_denominator = backend.sharedarr_to_arr(
-        inv_denominator_pointer_shape, template_dtype, inv_denominator_buffer
-    )
-    numerator2 = backend.sharedarr_to_arr(
-        numerator2_shape, template_dtype, numerator2_buffer
-    )
-    template_filter = backend.sharedarr_to_arr(
-        filter_shape, filter_dtype, filter_buffer
-    )
+    template_buffer, template_shape, template_dtype = template
+    template = backend.sharedarr_to_arr(template_buffer, template_shape, template_dtype)
+    ft_target = backend.sharedarr_to_arr(*ft_target)
+    inv_denominator = backend.sharedarr_to_arr(*inv_denominator)
+    numerator2 = backend.sharedarr_to_arr(*numerator2)
+    template_filter = backend.sharedarr_to_arr(*template_filter)
 
     norm_template, template_mask, mask_sum = False, 1, 1
     if "template_mask" in kwargs:
         template_mask = backend.sharedarr_to_arr(
-            template_shape, template_dtype, kwargs["template_mask"][0]
+            kwargs["template_mask"][0], template_shape, template_dtype
         )
         norm_template, mask_sum = True, backend.sum(template_mask)
-    norm_template = conditional_execute(_normalize_under_mask, norm_template)
 
     arr = backend.preallocate_array(fast_shape, real_dtype)
     ft_temp = backend.preallocate_array(fast_ft_shape, complex_dtype)
@@ -817,17 +805,15 @@ def corr_scoring(
     norm_denominator = (backend.sum(inv_denominator) != 1) & (
         backend.size(inv_denominator) != 1
     )
-    filter_template = backend.size(template_filter) != 0
 
+    norm_template = conditional_execute(normalize_under_mask, norm_template)
+    callback_func = conditional_execute(callback, callback_class is not None)
     norm_func_numerator = conditional_execute(backend.subtract, norm_numerator)
     norm_func_denominator = conditional_execute(backend.multiply, norm_denominator)
-    template_filter_func = conditional_execute(backend.multiply, filter_template)
+    template_filter_func = conditional_execute(
+        apply_filter, backend.size(template_filter) != 1
+    )
 
-    axis = tuple(range(arr.ndim))
-    fourier_shift = callback_class_args.get("fourier_shift", backend.zeros(arr.ndim))
-    fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
-
-    template_sum = backend.sum(backend.abs(template))
     unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
@@ -839,33 +825,23 @@ def corr_scoring(
             use_geometric_center=False,
             order=interpolation_order,
         )
-        rotation_norm = template_sum / backend.sum(backend.abs(arr))
-        backend.multiply(arr, rotation_norm, out=arr)
+
         norm_template(arr[unpadded_slice], template_mask, mask_sum)
 
         rfftn(arr, ft_temp)
-        template_filter_func(ft_temp, template_filter, out=ft_temp)
-
+        template_filter_func(ft_template=ft_temp, template_filter=template_filter)
         backend.multiply(ft_target, ft_temp, out=ft_temp)
         irfftn(ft_temp, arr)
 
         norm_func_numerator(arr, numerator2, out=arr)
         norm_func_denominator(arr, inv_denominator, out=arr)
 
-        if fourier_shift_scores:
-            arr = backend.roll(arr, shift=fourier_shift, axis=axis)
-
-        score = apply_convolution_mode(
-            arr, convolution_mode=convolution_mode, s1=targetshape, s2=templateshape
+        callback_func(
+            arr,
+            rotation_matrix=rotation,
+            rotation_index=index,
+            **callback_class_args,
         )
-
-        if callback_class is not None:
-            callback(
-                score,
-                rotation_matrix=rotation,
-                rotation_index=index,
-                **callback_class_args,
-            )
 
     return callback
 
@@ -914,32 +890,15 @@ def flc_scoring(
     .. [2]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
             and F. Förster, J. Struct. Biol. 178, 177 (2012).
     """
-    template_buffer, template_shape, template_dtype = template
-    template_mask_buffer, *_ = template_mask
-    filter_buffer, filter_shape, filter_dtype = template_filter
-
-    ft_target_buffer, ft_target_shape, ft_target_dtype = ft_target
-    ft_target2_buffer, *_ = ft_target2
-
+    callback = callback_class
     if callback_class is not None and isinstance(callback_class, type):
         callback = callback_class(**callback_class_args)
-    elif not isinstance(callback_class, type):
-        callback = callback_class
 
-    # Retrieve objects from shared memory
-    template = backend.sharedarr_to_arr(template_shape, template_dtype, template_buffer)
-    template_mask = backend.sharedarr_to_arr(
-        template_shape, template_dtype, template_mask_buffer
-    )
-    ft_target = backend.sharedarr_to_arr(
-        ft_target_shape, ft_target_dtype, ft_target_buffer
-    )
-    ft_target2 = backend.sharedarr_to_arr(
-        ft_target_shape, ft_target_dtype, ft_target2_buffer
-    )
-    template_filter = backend.sharedarr_to_arr(
-        filter_shape, filter_dtype, filter_buffer
-    )
+    template = backend.sharedarr_to_arr(*template)
+    template_mask = backend.sharedarr_to_arr(*template_mask)
+    ft_target = backend.sharedarr_to_arr(*ft_target)
+    ft_target2 = backend.sharedarr_to_arr(*ft_target2)
+    template_filter = backend.sharedarr_to_arr(*template_filter)
 
     arr = backend.preallocate_array(fast_shape, real_dtype)
     temp = backend.preallocate_array(fast_shape, real_dtype)
@@ -958,12 +917,10 @@ def flc_scoring(
         temp_fft=ft_temp,
     )
     eps = backend.eps(real_dtype)
-    filter_template = backend.size(template_filter) != 0
-    template_filter_func = conditional_execute(backend.multiply, filter_template)
-
-    axis = tuple(range(arr.ndim))
-    fourier_shift = callback_class_args.get("fourier_shift", backend.zeros(arr.ndim))
-    fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
+    template_filter_func = conditional_execute(
+        apply_filter, backend.size(template_filter) != 1
+    )
+    callback_func = conditional_execute(callback, callback_class is not None)
 
     unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
     for index in range(rotations.shape[0]):
@@ -982,7 +939,7 @@ def flc_scoring(
         # Given the amount of FFTs, might aswell normalize properly
         n_observations = backend.sum(temp)
 
-        _normalize_under_mask(
+        normalize_under_mask(
             template=arr[unpadded_slice],
             mask=temp[unpadded_slice],
             mask_intensity=n_observations,
@@ -1005,7 +962,7 @@ def flc_scoring(
         backend.multiply(temp, n_observations, out=temp)
 
         rfftn(arr, ft_temp)
-        template_filter_func(ft_temp, template_filter, out=ft_temp)
+        template_filter_func(ft_template=ft_temp, template_filter=template_filter)
         backend.multiply(ft_target, ft_temp, out=ft_temp)
         irfftn(ft_temp, arr)
 
@@ -1014,23 +971,161 @@ def flc_scoring(
         backend.fill(temp2, 0)
         temp2[nonzero_indices] = arr[nonzero_indices] / temp[nonzero_indices]
 
-        convolution_mode = kwargs.get("convolution_mode", "full")
-
-        if fourier_shift_scores:
-            temp2 = backend.roll(temp2, shift=fourier_shift, axis=axis)
-
-        score = apply_convolution_mode(
-            temp2, convolution_mode=convolution_mode, s1=targetshape, s2=templateshape
+        callback_func(
+            temp2,
+            rotation_matrix=rotation,
+            rotation_index=index,
+            **callback_class_args,
         )
 
-        if callback_class is not None:
-            callback(
-                score,
-                rotation_matrix=rotation,
-                rotation_index=index,
-                **callback_class_args,
-            )
+    return callback
 
+
+def flc_scoring2(
+    template: Tuple[type, Tuple[int], type],
+    template_mask: Tuple[type, Tuple[int], type],
+    ft_target: Tuple[type, Tuple[int], type],
+    ft_target2: Tuple[type, Tuple[int], type],
+    template_filter: Tuple[type, Tuple[int], type],
+    targetshape: Tuple[int],
+    templateshape: Tuple[int],
+    fast_shape: Tuple[int],
+    fast_ft_shape: Tuple[int],
+    rotations: NDArray,
+    real_dtype: type,
+    complex_dtype: type,
+    callback_class: CallbackClass,
+    callback_class_args: Dict,
+    interpolation_order: int,
+    **kwargs,
+) -> CallbackClass:
+    """
+    Computes a normalized cross-correlation score of a target f a template g
+    and a mask m:
+
+    .. math::
+
+        \\frac{CC(f, \\frac{g*m - \\overline{g*m}}{\\sigma_{g*m}})}
+        {N_m * \\sqrt{
+            \\frac{CC(f^2, m)}{N_m} - (\\frac{CC(f, m)}{N_m})^2}
+        }
+
+    Where:
+
+    .. math::
+
+        CC(f,g) = \\mathcal{F}^{-1}(\\mathcal{F}(f) \\cdot \\mathcal{F}(g)^*)
+
+    and Nm is the number of voxels within the template mask m.
+
+    References
+    ----------
+    .. [1]  W. Wan, S. Khavnekar, J. Wagner, P. Erdmann, and W. Baumeister
+            Microsc. Microanal. 26, 2516 (2020)
+    .. [2]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
+            and F. Förster, J. Struct. Biol. 178, 177 (2012).
+    """
+    callback = callback_class
+    if callback_class is not None and isinstance(callback_class, type):
+        callback = callback_class(**callback_class_args)
+
+    # Retrieve objects from shared memory
+    template = backend.sharedarr_to_arr(*template)
+    template_mask = backend.sharedarr_to_arr(*template_mask)
+    ft_target = backend.sharedarr_to_arr(*ft_target)
+    ft_target2 = backend.sharedarr_to_arr(*ft_target2)
+    template_filter = backend.sharedarr_to_arr(*template_filter)
+
+    arr = backend.preallocate_array(fast_shape, real_dtype)
+    temp = backend.preallocate_array(fast_shape, real_dtype)
+    temp2 = backend.preallocate_array(fast_shape, real_dtype)
+
+    ft_temp = backend.preallocate_array(fast_ft_shape, complex_dtype)
+    ft_denom = backend.preallocate_array(fast_ft_shape, complex_dtype)
+
+    eps = backend.eps(real_dtype)
+    template_filter_func = conditional_execute(
+        apply_filter, backend.size(template_filter) != 1
+    )
+    callback_func = conditional_execute(callback, callback_class is not None)
+
+    squeeze_axis = tuple(i for i, x in enumerate(template.shape) if x == 1)
+    squeeze = tuple(
+        slice(0, stop) if i not in squeeze_axis else 0
+        for i, stop in enumerate(template.shape)
+    )
+    squeeze_fast = tuple(
+        slice(0, stop) if i not in squeeze_axis else 0
+        for i, stop in enumerate(fast_shape)
+    )
+    squeeze_fast_ft = tuple(
+        slice(0, stop) if i not in squeeze_axis else 0
+        for i, stop in enumerate(fast_ft_shape)
+    )
+
+    rfftn, irfftn = backend.build_fft(
+        fast_shape=temp[squeeze_fast].shape,
+        fast_ft_shape=fast_ft_shape,
+        real_dtype=real_dtype,
+        complex_dtype=complex_dtype,
+        fftargs=kwargs.get("fftargs", {}),
+        inverse_fast_shape=fast_shape,
+        temp_real=arr[squeeze_fast],
+        temp_fft=ft_temp,
+    )
+    for index in range(rotations.shape[0]):
+        rotation = rotations[index]
+        backend.fill(arr, 0)
+        backend.fill(temp, 0)
+        backend.rotate_array(
+            arr=template[squeeze],
+            arr_mask=template_mask[squeeze],
+            rotation_matrix=rotation,
+            out=arr[squeeze],
+            out_mask=temp[squeeze],
+            use_geometric_center=False,
+            order=interpolation_order,
+        )
+        # Given the amount of FFTs, might aswell normalize properly
+        n_observations = backend.sum(temp)
+
+        normalize_under_mask(
+            template=arr[squeeze],
+            mask=temp[squeeze],
+            mask_intensity=n_observations,
+        )
+        rfftn(temp[squeeze_fast], ft_temp[squeeze_fast_ft])
+
+        backend.multiply(ft_target, ft_temp[squeeze_fast_ft], out=ft_denom)
+        irfftn(ft_denom, temp)
+        backend.divide(temp, n_observations, out=temp)
+        backend.square(temp, out=temp)
+
+        backend.multiply(ft_target2, ft_temp[squeeze_fast_ft], out=ft_denom)
+        irfftn(ft_denom, temp2)
+        backend.divide(temp2, n_observations, out=temp2)
+
+        backend.subtract(temp2, temp, out=temp)
+        backend.maximum(temp, 0.0, out=temp)
+        backend.sqrt(temp, out=temp)
+        backend.multiply(temp, n_observations, out=temp)
+
+        rfftn(arr[squeeze_fast], ft_temp[squeeze_fast_ft])
+        template_filter_func(ft_template=ft_temp, template_filter=template_filter)
+        backend.multiply(ft_target, ft_temp[squeeze_fast_ft], out=ft_denom)
+        irfftn(ft_denom, arr)
+
+        tol = tol = 1e3 * eps * backend.max(backend.abs(temp))
+        nonzero_indices = temp > tol
+        backend.fill(temp2, 0)
+        temp2[nonzero_indices] = arr[nonzero_indices] / temp[nonzero_indices]
+
+        callback_func(
+            temp2,
+            rotation_matrix=rotation,
+            rotation_index=index,
+            **callback_class_args,
+        )
     return callback
 
 
@@ -1084,35 +1179,18 @@ def mcc_scoring(
     --------
     :py:class:`tme.matching_optimization.MaskedCrossCorrelation`
     """
-    template_buffer, template_shape, template_dtype = template
-    ft_target_buffer, ft_target_shape, ft_target_dtype = ft_target
-    ft_target2_buffer, ft_target_shape, ft_target_dtype = ft_target2
-    template_mask_buffer, _, _ = template
-    ft_target_mask_buffer, _, _ = ft_target
-    filter_buffer, filter_shape, filter_dtype = template_filter
-
+    callback = callback_class
     if callback_class is not None and isinstance(callback_class, type):
         callback = callback_class(**callback_class_args)
-    elif not isinstance(callback_class, type):
-        callback = callback_class
 
     # Retrieve objects from shared memory
-    template = backend.sharedarr_to_arr(template_shape, template_dtype, template_buffer)
-    target_ft = backend.sharedarr_to_arr(
-        ft_target_shape, ft_target_dtype, ft_target_buffer
-    )
-    target_ft2 = backend.sharedarr_to_arr(
-        ft_target_shape, ft_target_dtype, ft_target2_buffer
-    )
-    template_mask = backend.sharedarr_to_arr(
-        template_shape, template_dtype, template_mask_buffer
-    )
-    target_mask_ft = backend.sharedarr_to_arr(
-        ft_target_shape, ft_target_dtype, ft_target_mask_buffer
-    )
-    template_filter = backend.sharedarr_to_arr(
-        filter_shape, filter_dtype, filter_buffer
-    )
+    template_buffer, template_shape, template_dtype = template
+    template = backend.sharedarr_to_arr(*template)
+    target_ft = backend.sharedarr_to_arr(*ft_target)
+    target_ft2 = backend.sharedarr_to_arr(*ft_target2)
+    template_mask = backend.sharedarr_to_arr(*template_mask)
+    target_mask_ft = backend.sharedarr_to_arr(*ft_target_mask)
+    template_filter = backend.sharedarr_to_arr(*template_filter)
 
     axes = tuple(range(template.ndim))
     eps = backend.eps(real_dtype)
@@ -1137,14 +1215,10 @@ def mcc_scoring(
         temp_fft=temp_ft,
     )
 
-    filter_template = backend.size(template_filter) != 0
-    template_filter_func = conditional_execute(backend.multiply, filter_template)
-
-    axis = tuple(range(template.ndim))
-    fourier_shift = callback_class_args.get(
-        "fourier_shift", backend.zeros(template.ndim)
+    template_filter_func = conditional_execute(
+        apply_filter, backend.size(template_filter) != 1
     )
-    fourier_shift_scores = backend.sum(fourier_shift != 0) != 0
+    callback_func = conditional_execute(callback, callback_class is not None)
 
     # Calculate scores across all rotations
     for index in range(rotations.shape[0]):
@@ -1166,7 +1240,7 @@ def mcc_scoring(
 
         # template_rot_ft
         rfftn(template_rot, temp_ft)
-        template_filter_func(temp_ft, template_filter, out=temp_ft)
+        template_filter_func(ft_template=temp_ft, template_filter=template_filter)
         irfftn(target_mask_ft * temp_ft, temp2)
         irfftn(target_ft * temp_ft, numerator)
 
@@ -1222,23 +1296,67 @@ def mcc_scoring(
             mask_overlap, axis=axes, keepdims=True
         )
         temp[mask_overlap < number_px_threshold] = 0.0
-        convolution_mode = kwargs.get("convolution_mode", "full")
 
-        if fourier_shift_scores:
-            temp = backend.roll(temp, shift=fourier_shift, axis=axis)
-
-        score = apply_convolution_mode(
-            temp, convolution_mode=convolution_mode, s1=targetshape, s2=templateshape
+        callback_func(
+            temp,
+            rotation_matrix=rotation,
+            rotation_index=index,
+            **callback_class_args,
         )
-        if callback_class is not None:
-            callback(
-                score,
-                rotation_matrix=rotation,
-                rotation_index=index,
-                **callback_class_args,
-            )
 
     return callback
+
+
+def _setup_template_filter(
+    matching_data: MatchingData,
+    rfftn: Callable,
+    irfftn: Callable,
+    fast_shape: Tuple[int],
+    fast_ft_shape: Tuple[int],
+):
+    filter_template = isinstance(matching_data.template_filter, Compose)
+    filter_target = isinstance(matching_data.target_filter, Compose)
+
+    template_filter = backend.full(
+        shape=(1,), fill_value=1, dtype=backend._default_dtype
+    )
+
+    if not filter_template and not filter_target:
+        return template_filter
+
+    target_temp = backend.astype(
+        backend.topleft_pad(matching_data.target, fast_shape), backend._default_dtype
+    )
+    target_temp_ft = backend.preallocate_array(fast_ft_shape, backend._complex_dtype)
+    rfftn(target_temp, target_temp_ft)
+
+    if isinstance(matching_data.template_filter, Compose):
+        template_filter = matching_data.template_filter(
+            shape=fast_shape,
+            return_real_fourier=True,
+            shape_is_real_fourier=False,
+            data_rfft=target_temp_ft,
+        )
+        template_filter = template_filter["data"]
+        template_filter[tuple(0 for _ in range(template_filter.ndim))] = 0
+
+    if isinstance(matching_data.target_filter, Compose):
+        target_filter = matching_data.target_filter(
+            shape=fast_shape,
+            return_real_fourier=True,
+            shape_is_real_fourier=False,
+            data_rfft=target_temp_ft,
+            weight_type=None,
+        )
+        target_filter = target_filter["data"]
+        backend.multiply(target_temp_ft, target_filter, out=target_temp_ft)
+
+        irfftn(target_temp_ft, target_temp)
+        matching_data._target = backend.topleft_pad(
+            target_temp, matching_data.target.shape
+        )
+
+    return template_filter
 
 
 def device_memory_handler(func: Callable):
@@ -1311,19 +1429,17 @@ def scan(
     Tuple
         The merged results from callback_class if provided otherwise None.
     """
+    matching_data.to_backend()
     shape_diff = backend.subtract(
         matching_data._output_target_shape, matching_data._output_template_shape
     )
-    shape_diff = backend.multiply(shape_diff, matching_data._batch_mask)
+    shape_diff = backend.multiply(shape_diff, ~matching_data._batch_mask)
     if backend.sum(shape_diff < 0) and not pad_fourier:
         warnings.warn(
             "Target is larger than template and Fourier padding is turned off."
             " This can lead to shifted results. You can swap template and target, or"
             " zero-pad the target."
         )
-
-    matching_data.to_backend()
-
     fast_shape, fast_ft_shape, fourier_shift = matching_data.fourier_padding(
         pad_fourier=pad_fourier
     )
@@ -1336,6 +1452,15 @@ def scan(
         complex_dtype=matching_data._complex_dtype,
         fftargs=fftargs,
     )
+
+    # template_filter = _setup_template_filter(
+    #     matching_data=matching_data,
+    #     rfftn=rfftn,
+    #     irfftn=irfftn,
+    #     fast_shape=fast_shape,
+    #     fast_ft_shape=fast_ft_shape,
+    # )
+
     setup = matching_setup(
         rfftn=rfftn,
         irfftn=irfftn,
@@ -1353,6 +1478,7 @@ def scan(
     )
     rfftn, irfftn = None, None
 
+
     template_filter, preprocessor = None, Preprocessor()
     for method, parameters in matching_data.template_filter.items():
         parameters["shape"] = fast_shape
@@ -1366,9 +1492,8 @@ def scan(
         template_filter = backend.full(
             shape=(1,), fill_value=1, dtype=backend._default_dtype
         )
-    else:
-        template_filter = backend.to_backend_array(template_filter)
 
+    template_filter = backend.to_backend_array(template_filter)
     template_filter = backend.astype(template_filter, backend._default_dtype)
     template_filter_buffer = backend.arr_to_sharedarr(
         arr=template_filter,
@@ -1390,14 +1515,21 @@ def scan(
     callback_class = setup.pop("callback_class", callback_class)
     callback_class_args = setup.pop("callback_class_args", callback_class_args)
     callback_classes = [callback_class for _ in range(n_callback_classes)]
+
+    convolution_mode = "same"
+    if backend.sum(backend.to_backend_array(matching_data._target_pad)) > 0:
+        convolution_mode = "valid"
+
+
+    callback_class_args["fourier_shift"] = fourier_shift
+    callback_class_args["convolution_mode"] = convolution_mode
+    callback_class_args["targetshape"] = setup["targetshape"]
+    callback_class_args["templateshape"] = setup["templateshape"]
+
     if callback_class == MaxScoreOverRotations:
-        score_space_shape = backend.subtract(
-            matching_data.target.shape,
-            matching_data._target_pad,
-        )
         callback_classes = [
             class_name(
-                score_space_shape=score_space_shape,
+                score_space_shape=fast_shape,
                 score_space_dtype=matching_data._default_dtype,
                 shared_memory_handler=kwargs.get("shared_memory_handler", None),
                 rotation_space_dtype=backend._default_dtype_int,
@@ -1437,10 +1569,16 @@ def scan(
         for index, rotation in enumerate(rotation_list)
     )
 
+    callbacks = callbacks[0:n_callback_classes]
     callbacks = [
-        tuple(callback)
-        for callback in callbacks[0:n_callback_classes]
-        if callback is not None
+        tuple(callback._postprocess(
+            fourier_shift = fourier_shift,
+            convolution_mode = convolution_mode,
+            targetshape = setup["targetshape"],
+            templateshape = setup["templateshape"],
+            shared_memory_handler=kwargs.get("shared_memory_handler", None)
+        )) if hasattr(callback, "_postprocess") else tuple(callback)
+        for callback in callbacks if callback is not None
     ]
     backend.free_cache()
 
@@ -1551,11 +1689,13 @@ def scan_subsets(
     matching_data._target, matching_data._template = None, None
     matching_data._target_mask, matching_data._template_mask = None, None
 
+    candidates = None
     if callback_class is not None:
         candidates = callback_class.merge(
             results, **callback_class_args, inner_merge=False
         )
-        return candidates
+
+    return candidates
 
 
 MATCHING_EXHAUSTIVE_REGISTER = {
@@ -1565,6 +1705,7 @@ MATCHING_EXHAUSTIVE_REGISTER = {
     "CAM": (cam_setup, corr_scoring),
     "FLCSphericalMask": (flcSphericalMask_setup, corr_scoring),
     "FLC": (flc_setup, flc_scoring),
+    "FLC2": (flc_setup, flc_scoring2),
     "MCC": (mcc_setup, mcc_scoring),
 }
 

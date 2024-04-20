@@ -1,4 +1,4 @@
-""" Implements classes to analyze score spaces from systematic fitting.
+""" Implements classes to analyze outputs from exhaustive template matching.
 
     Copyright (c) 2023 European Molecular Biology Laboratory
 
@@ -16,19 +16,21 @@ from scipy.stats import entropy
 from sklearn.cluster import DBSCAN
 from skimage.feature import peak_local_max
 from skimage.registration._phase_cross_correlation import _upsampled_dft
-from .extensions import max_index_by_label, online_statistics
+from .extensions import max_index_by_label, online_statistics, find_candidate_indices
 from .matching_utils import (
     split_numpy_array_slices,
     array_to_memmap,
     generate_tempfile_name,
     euler_to_rotationmatrix,
+    apply_convolution_mode,
 )
 from .backends import backend
 
 
-def filter_points_indices(coordinates: NDArray, min_distance: Tuple[int]):
-    if min_distance <= 0:
-        return backend.arange(coordinates.shape[0])
+def filter_points_indices_bucket(
+    coordinates: NDArray, min_distance: Tuple[int]
+) -> NDArray:
+    coordinates = backend.subtract(coordinates, backend.min(coordinates, axis=0))
     bucket_indices = backend.astype(backend.divide(coordinates, min_distance), int)
     multiplier = backend.power(
         backend.max(bucket_indices, axis=0) + 1, backend.arange(bucket_indices.shape[1])
@@ -40,7 +42,24 @@ def filter_points_indices(coordinates: NDArray, min_distance: Tuple[int]):
     return unique_indices
 
 
-def filter_points(coordinates: NDArray, min_distance: Tuple[int]):
+def filter_points_indices(
+    coordinates: NDArray, min_distance: float, bucket_cutoff: int = 1e4
+) -> NDArray:
+    if min_distance <= 0:
+        return backend.arange(coordinates.shape[0])
+
+    if isinstance(coordinates, np.ndarray):
+        return find_candidate_indices(coordinates, min_distance)
+    elif coordinates.shape[0] > bucket_cutoff:
+        return filter_points_indices_bucket(coordinates, min_distance)
+    distances = np.linalg.norm(coordinates[:, None] - coordinates, axis=-1)
+    distances = np.tril(distances)
+    keep = np.sum(distances > min_distance, axis=1)
+    indices = np.arange(coordinates.shape[0])
+    return indices[keep == indices]
+
+
+def filter_points(coordinates: NDArray, min_distance: Tuple[int]) -> NDArray:
     unique_indices = filter_points_indices(coordinates, min_distance)
     coordinates = coordinates[unique_indices]
     return coordinates
@@ -94,6 +113,12 @@ class PeakCaller(ABC):
         self.min_distance = min_distance
         self.min_boundary_distance = min_boundary_distance
         self.number_of_peaks = number_of_peaks
+
+        # Postprocesing arguments
+        self.fourier_shift = kwargs.get("fourier_shift", None)
+        self.convolution_mode = kwargs.get("convolution_mode", None)
+        self.targetshape = kwargs.get("targetshape", None)
+        self.templateshape = kwargs.get("templateshape", None)
 
     def __iter__(self):
         """
@@ -362,6 +387,66 @@ class PeakCaller(ABC):
         self.peak_list[2] = peak_scores[final_order]
         self.peak_list[3] = peak_details[final_order]
 
+    def _postprocess(
+        self, fourier_shift, convolution_mode, targetshape, templateshape, **kwargs
+    ):
+        peak_positions = self.peak_list[0]
+        if not len(peak_positions):
+            return self
+
+        if targetshape is None or templateshape is None:
+            return self
+
+        # Remove padding to next fast fourier length
+        score_space_shape = backend.add(targetshape, templateshape) - 1
+
+        if fourier_shift is not None:
+            peak_positions = backend.add(peak_positions, fourier_shift)
+            backend.divide(peak_positions, score_space_shape).astype(int)
+
+            backend.subtract(
+                peak_positions,
+                backend.multiply(
+                    backend.divide(peak_positions, score_space_shape).astype(int),
+                    score_space_shape
+                ),
+                out = peak_positions
+            )
+
+        if convolution_mode is None:
+            return None
+
+        if convolution_mode == "full":
+            output_shape = score_space_shape
+        elif convolution_mode == "same":
+            output_shape = targetshape
+        elif convolution_mode == "valid":
+            output_shape = backend.add(
+                backend.subtract(targetshape, templateshape),
+                backend.mod(templateshape, 2)
+            )
+
+        output_shape = backend.to_backend_array(output_shape)
+        starts = backend.divide(
+            backend.subtract(score_space_shape, output_shape),
+            2
+        )
+        starts = backend.astype(starts, int)
+        stops = backend.add(starts, output_shape)
+
+        valid_peaks = (
+            backend.sum(
+                backend.multiply(
+                    peak_positions > starts,
+                    peak_positions <= stops
+                ),
+                axis=1,
+            )
+            == peak_positions.shape[1]
+        )
+        self.peak_list[0] = backend.subtract(peak_positions, starts)
+        self.peak_list = [x[valid_peaks] for x in self.peak_list]
+        return self
 
 class PeakCallerSort(PeakCaller):
     """
@@ -1121,7 +1206,67 @@ class MaxScoreOverRotations:
 
         self.use_memmap = use_memmap
         self.lock = Manager().Lock() if thread_safe else nullcontext()
+        self.lock_is_nullcontext = isinstance(self.score_space, type(backend.zeros((1))))
         self.observed_rotations = Manager().dict() if thread_safe else {}
+
+
+    def _postprocess(self,
+        fourier_shift,
+        convolution_mode,
+        targetshape,
+        templateshape,
+        shared_memory_handler=None,
+        **kwargs
+        ):
+        internal_scores = backend.sharedarr_to_arr(
+            shape=self.score_space_shape,
+            dtype=self.score_space_dtype,
+            shm=self.score_space,
+        )
+        internal_rotations = backend.sharedarr_to_arr(
+            shape=self.score_space_shape,
+            dtype=self.rotation_space_dtype,
+            shm=self.rotations,
+        )
+
+        if fourier_shift is not None:
+            axis = tuple(i for i in range(len(fourier_shift)))
+            internal_scores = backend.roll(
+                internal_scores,
+                shift=fourier_shift,
+                axis=axis
+            )
+            internal_rotations = backend.roll(
+                internal_rotations,
+                shift=fourier_shift,
+                axis=axis
+            )
+
+        if convolution_mode is not None:
+            internal_scores = apply_convolution_mode(
+                internal_scores,
+                convolution_mode=convolution_mode,
+                s1=targetshape,
+                s2=templateshape
+            )
+            internal_rotations = apply_convolution_mode(
+                internal_rotations,
+                convolution_mode=convolution_mode,
+                s1=targetshape,
+                s2=templateshape
+            )
+
+        self.score_space_shape = internal_scores.shape
+        self.score_space = backend.arr_to_sharedarr(
+            internal_scores,
+            shared_memory_handler
+        )
+        self.rotations = backend.arr_to_sharedarr(
+            internal_rotations,
+            shared_memory_handler
+        )
+        return self
+
 
     def __iter__(self):
         internal_scores = backend.sharedarr_to_arr(
@@ -1180,11 +1325,21 @@ class MaxScoreOverRotations:
         **kwargs
             Arbitrary keyword arguments.
         """
+        rotation = backend.tobytes(rotation_matrix)
+        rotation_index = self.observed_rotations.setdefault(
+            rotation, len(self.observed_rotations)
+        )
+
+        if self.lock_is_nullcontext:
+            backend.max_score_over_rotations(
+                score_space=score_space,
+                internal_scores=self.score_space,
+                internal_rotations=self.rotations,
+                rotation_index=rotation_index,
+            )
+            return None
+
         with self.lock:
-            rotation = backend.tobytes(rotation_matrix)
-            if rotation not in self.observed_rotations:
-                self.observed_rotations[rotation] = len(self.observed_rotations)
-            rotation_index = self.observed_rotations[rotation]
             internal_scores = backend.sharedarr_to_arr(
                 shape=self.score_space_shape,
                 dtype=self.score_space_dtype,
@@ -1195,9 +1350,14 @@ class MaxScoreOverRotations:
                 dtype=self.rotation_space_dtype,
                 shm=self.rotations,
             )
-            indices = score_space > internal_scores
-            internal_scores[indices] = score_space[indices]
-            internal_rotations[indices] = rotation_index
+
+            backend.max_score_over_rotations(
+                score_space=score_space,
+                internal_scores=internal_scores,
+                internal_rotations=internal_rotations,
+                rotation_index=rotation_index,
+            )
+            return None
 
     @classmethod
     def merge(cls, param_stores=List[Tuple], **kwargs) -> Tuple[NDArray]:
@@ -1249,14 +1409,22 @@ class MaxScoreOverRotations:
             scores_out = np.memmap(
                 scores_out_filename, mode="w+", shape=base_max, dtype=scores_out_dtype
             )
+            scores_out.fill(kwargs.get("score_threshold", 0))
+            scores_out.flush()
             rotations_out = np.memmap(
                 rotations_out_filename,
                 mode="w+",
                 shape=base_max,
                 dtype=rotations_out_dtype,
             )
+            rotations_out.fill(-1)
+            rotations_out.flush()
         else:
-            scores_out = np.zeros(base_max, dtype=scores_out_dtype)
+            scores_out = np.full(
+                base_max,
+                fill_value=kwargs.get("score_threshold", 0),
+                dtype=scores_out_dtype,
+            )
             rotations_out = np.full(base_max, fill_value=-1, dtype=rotations_out_dtype)
 
         for i in range(len(param_stores)):
@@ -1321,7 +1489,7 @@ class MaxScoreOverRotations:
         )
 
 
-class MaxScoreOverTranslations(MaxScoreOverRotations):
+class _MaxScoreOverTranslations(MaxScoreOverRotations):
     """
     Obtain the maximum translation score over various rotations.
 
@@ -1479,3 +1647,5 @@ class MemmapHandler:
         """
         rotation_string = "_".join(rotation_matrix.ravel().astype(str))
         return self._path_translation[rotation_string]
+
+
