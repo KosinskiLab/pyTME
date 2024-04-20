@@ -35,6 +35,12 @@ add_module_names = False
 numpydoc_show_class_members = False
 numpydoc_show_inherited_class_members = False
 
+autodoc_default_options = {
+    "show-inheritance": True,
+    "inherited_members": True,
+}
+
+autodoc_inherit_docstrings = True
 autodoc_typehints_format = "short"
 autodoc_typehints = "none"
 
@@ -76,6 +82,7 @@ html_theme_options = {
 intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable/", None),
     "skimage": ("https://scikit-image.org/docs/stable/", None),
+    "scipy": ("http://docs.scipy.org/doc/scipy/reference/", None),
 }
 
 plot_html_show_source_link = True

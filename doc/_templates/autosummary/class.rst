@@ -13,7 +13,7 @@
    .. autosummary::
       :toctree:
       {% for item in attributes %}
-         {% if item in members and not item.startswith('_') %}
+         {% if not item.startswith('_') %}
            {{ name }}.{{ item }}
          {% endif %}
       {%- endfor %}
