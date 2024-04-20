@@ -229,6 +229,7 @@ def compute_parallelization_schedule(
     max_cores: int,
     max_ram: int,
     matching_method: str,
+    split_axes: Tuple[int] = None,
     backend: str = None,
     split_only_outer: bool = False,
     shape1_padding: NDArray = None,
@@ -259,6 +260,8 @@ def compute_parallelization_schedule(
         The maximum amount of memory that can be used.
     matching_method : str
         The metric used for scoring the computations.
+    split_axes : tuple
+        Axes that can be used for splitting. By default all are considered.
     backend : str, optional
         Backend used for computations.
     split_only_outer : bool, optional
@@ -303,6 +306,13 @@ def compute_parallelization_schedule(
         core_assignments = [(1, max_cores)]
 
     possible_params, split_axis = [], np.argmax(shape1)
+
+    split_axis_index = split_axis
+    if split_axes is not None:
+        split_axis, split_axis_index = split_axes[0], 0
+    else:
+        split_axes = tuple(i for i in range(len(shape1)))
+
     split_factor, n_splits = [1 for _ in range(len(shape1))], 0
     while n_splits <= max_splits:
         splits = {k: split_factor[k] for k in range(len(split_factor))}
@@ -341,9 +351,11 @@ def compute_parallelization_schedule(
                     (*split_factor, outer_cores, inner_cores, n_splits, inits)
                 )
         split_factor[split_axis] += 1
-        split_axis += 1
-        if split_axis == shape1.size:
-            split_axis = 0
+
+        split_axis_index += 1
+        if split_axis_index == len(split_axes):
+            split_axis_index = 0
+        split_axis = split_axes[split_axis_index]
 
     possible_params = np.array(possible_params)
     if not len(possible_params):
@@ -609,6 +621,91 @@ def get_rotation_matrices(
     return ret
 
 
+def get_rotations_around_vector(
+    cone_angle: float,
+    cone_sampling: float,
+    axis_angle: float = 360.0,
+    axis_sampling: float = None,
+    vector: Tuple[float] = (1, 0, 0),
+    n_symmetry: int = 1,
+    convention: str = None,
+) -> NDArray:
+    """
+    Generate rotations describing the possible placements of a vector in a cone.
+
+    Parameters
+    ----------
+    cone_angle : float
+        The half-angle of the cone in degrees.
+    cone_sampling : float
+        Angular increment used for sampling points on the cone in degrees.
+    axis_angle : float, optional
+        The total angle of rotation around the vector axis in degrees (default is 360.0).
+    axis_sampling : float, optional
+        Angular increment used for sampling points around the vector axis in degrees.
+        If None, it takes the value of `cone_sampling`.
+    vector : Tuple[float], optional
+        Cartesian coordinates in zyx convention.
+    n_symmetry : int, optional
+        Number of symmetry axis around the vector axis.
+    convention : str, optional
+        Convention for angles. By default returns rotation matrices.
+
+    Returns
+    -------
+    NDArray
+        An array of rotation angles represented as Euler angles (phi, theta, psi) in degrees.
+        The shape of the array is (n, 3), where `n` is the total number of rotation angles.
+        Each row represents a set of rotation angles.
+
+    References
+    ----------
+    .. [1] https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
+
+    """
+    if axis_sampling is None:
+        axis_sampling = cone_sampling
+
+    # Heuristic to estimate necessary number of points on sphere
+    theta = np.linspace(0, cone_angle, round(cone_angle / cone_sampling) + 1)
+    number_of_points = np.ceil(
+        360 * np.divide(np.sin(np.radians(theta)), cone_sampling),
+    )
+    number_of_points = int(np.sum(number_of_points + 1) + 2)
+
+    # Golden Spiral
+    indices = np.arange(0, number_of_points, dtype=float) + 0.5
+    radius = cone_angle * np.sqrt(indices / number_of_points)
+    theta = np.pi * (1 + np.sqrt(5)) * indices
+
+    angles_vector = Rotation.from_euler(
+        angles=rotation_aligning_vectors([1, 0, 0], vector, convention="zyx"),
+        seq="zyx",
+        degrees=True,
+    )
+
+    # phi, theta, psi
+    axis_angle /= n_symmetry
+    phi_steps = np.max(np.round(axis_angle / axis_sampling), 1)
+    phi = np.linspace(0, axis_angle, phi_steps + 1)[:-1]
+    np.add(phi, angles_vector.as_euler("zyx", degrees=True)[0], out=phi)
+    angles = np.stack(
+        [radius * np.cos(theta), radius * np.sin(theta), np.zeros_like(radius)], axis=1
+    )
+    angles = np.repeat(angles, phi_steps, axis=0)
+    angles[:, 2] = np.tile(phi, radius.size)
+
+    angles = Rotation.from_euler(angles=angles, seq="zyx", degrees=True)
+    angles = angles_vector * angles
+
+    if convention is None:
+        rotation_angles = angles.as_matrix()
+    else:
+        rotation_angles = angles.as_euler(seq=convention, degrees=True)
+
+    return rotation_angles
+
+
 def minimum_enclosing_box(
     coordinates: NDArray,
     margin: NDArray = None,
@@ -749,7 +846,7 @@ def crop_input(
     return reference_fit
 
 
-def euler_to_rotationmatrix(angles: Tuple[float]) -> NDArray:
+def euler_to_rotationmatrix(angles: Tuple[float], convention: str = "zyx") -> NDArray:
     """
     Convert Euler angles to a rotation matrix.
 
@@ -757,6 +854,8 @@ def euler_to_rotationmatrix(angles: Tuple[float]) -> NDArray:
     ----------
     angles : tuple
         A tuple representing the Euler angles in degrees.
+    convention : str, optional
+        Euler angle convention.
 
     Returns
     -------
@@ -764,7 +863,7 @@ def euler_to_rotationmatrix(angles: Tuple[float]) -> NDArray:
         The generated rotation matrix.
     """
     n_angles = len(angles)
-    angle_convention = "zyx"[:n_angles]
+    angle_convention = convention[:n_angles]
     if n_angles == 1:
         angles = (angles, 0, 0)
     rotation_matrix = (
@@ -775,7 +874,9 @@ def euler_to_rotationmatrix(angles: Tuple[float]) -> NDArray:
     return rotation_matrix
 
 
-def euler_from_rotationmatrix(rotation_matrix: NDArray) -> Tuple:
+def euler_from_rotationmatrix(
+    rotation_matrix: NDArray, convention: str = "zyx"
+) -> Tuple:
     """
     Convert a rotation matrix to euler angles.
 
@@ -783,7 +884,8 @@ def euler_from_rotationmatrix(rotation_matrix: NDArray) -> Tuple:
     ----------
     rotation_matrix : NDArray
         A 2 x 2 or 3 x 3 rotation matrix in z y x form.
-
+    convention : str, optional
+        Euler angle convention.
     Returns
     -------
     Tuple
@@ -795,10 +897,52 @@ def euler_from_rotationmatrix(rotation_matrix: NDArray) -> Tuple:
         rotation_matrix = temp_matrix
     euler_angles = (
         Rotation.from_matrix(rotation_matrix)
-        .as_euler("zyx", degrees=True)
+        .as_euler(convention, degrees=True)
         .astype(np.float32)
     )
     return euler_angles
+
+
+def rotation_aligning_vectors(
+    initial_vector: NDArray, target_vector: NDArray = [1, 0, 0], convention: str = None
+):
+    """
+    Compute the rotation matrix or Euler angles required to align an initial vector with a target vector.
+
+    Parameters
+    ----------
+    initial_vector : NDArray
+        The initial vector to be rotated.
+    target_vector : NDArray, optional
+        The target vector to align the initial vector with. Default is [1, 0, 0].
+    convention : str, optional
+        The generate euler angles in degrees. If None returns a rotation matrix instead.
+
+    Returns
+    -------
+    rotation_matrix_or_angles : NDArray or tuple
+        Rotation matrix if convention is None else tuple of euler angles.
+    """
+    initial_vector = np.asarray(initial_vector, dtype=np.float32)
+    target_vector = np.asarray(target_vector, dtype=np.float32)
+    initial_vector /= np.linalg.norm(initial_vector)
+    target_vector /= np.linalg.norm(target_vector)
+
+    rotation_matrix = np.eye(len(initial_vector))
+    if not np.allclose(initial_vector, target_vector):
+        rotation_axis = np.cross(initial_vector, target_vector)
+        rotation_angle = np.arccos(np.dot(initial_vector, target_vector))
+        k = rotation_axis / np.linalg.norm(rotation_axis)
+        K = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
+        rotation_matrix = np.eye(3)
+        rotation_matrix += np.sin(rotation_angle) * K
+        rotation_matrix += (1 - np.cos(rotation_angle)) * np.dot(K, K)
+
+    if convention is None:
+        return rotation_matrix
+
+    angles = euler_from_rotationmatrix(rotation_matrix, convention=convention)
+    return angles
 
 
 def rigid_transform(

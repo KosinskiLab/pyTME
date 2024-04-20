@@ -276,6 +276,7 @@ MATCHING_MEMORY_REGISTRY = {
     "MCC": MCCMemoryUsage,
     "FLCSphericalMask": FLCSphericalMaskMemoryUsage,
     "FLC": FLCMemoryUsage,
+    "FLC2": FLCMemoryUsage,
     "MaxScoreOverRotations": MaxScoreOverRotationsMemoryUsage,
     "PeakCallerMaximumFilter": PeakCallerMaximumFilterMemoryUsage,
     "cupy": CupyBackendMemoryUsage,
