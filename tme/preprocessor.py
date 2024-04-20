@@ -654,12 +654,9 @@ class Preprocessor:
         array = template.copy()
         interpolation_box = array.shape
 
-        print(array.shape)
-
         for k in range(template.ndim):
             array = decimate(array, q=level, axis=k)
 
-        print(array.shape)
         template = zoom(array, np.divide(template.shape, array.shape))
         template = self.interpolate_box(box=interpolation_box, arr=template)
 
@@ -768,21 +765,24 @@ class Preprocessor:
         sigma = sigma_factor * resolution
         sigma_grid = sigma / sampling_rate
         sigma_grid2 = sigma_grid * sigma_grid
-        for index, point in enumerate(np.rollaxis(positions, 0)):
-            starts = np.maximum(np.ceil(point - cutoff_value * sigma_grid), 0).astype(
-                int
-            )
-            stops = np.minimum(
-                np.floor(point + cutoff_value * sigma_grid), shape
-            ).astype(int)
 
-            grid_index = np.meshgrid(
-                *[range(start, stop) for start, stop in zip(starts, stops)]
-            )
-            distances = np.einsum(
-                "aijk->ijk",
-                np.array([(grid_index[i] - point[i]) ** 2 for i in range(len(point))]),
-                dtype=np.float64,
+        starts = np.maximum(np.ceil(positions - cutoff_value * sigma_grid), 0).astype(
+            int
+        )
+        stops = np.minimum(
+            np.floor(positions + cutoff_value * sigma_grid), shape
+        ).astype(int)
+        ranges = tuple(tuple(zip(start, stop)) for start, stop in zip(starts, stops))
+
+        positions = positions.reshape(
+            *positions.shape, *tuple(1 for _ in range(positions.shape[1]))
+        )
+        for index in range(positions.shape[0]):
+            grid_index = np.meshgrid(*[range(*coord) for coord in ranges[index]])
+            distances = np.sum(
+                np.square(np.subtract(grid_index, positions[index])),
+                dtype=np.float32,
+                axis=0,
             )
             np.add.at(
                 out,
@@ -1131,6 +1131,7 @@ class Preprocessor:
         stop_tilt: float,
         tilt_step: float,
         shape: Tuple[int],
+        tilt_angles: Tuple[float] = None,
         opening_axis: int = 0,
         tilt_axis: int = 2,
         sigma: float = 0,
@@ -1184,7 +1185,9 @@ class Preprocessor:
         :py:meth:`Preprocessor.wedge_mask`
         :py:meth:`Preprocessor.continuous_wedge_mask`
         """
-        tilt_angles = np.arange(-start_tilt, stop_tilt + tilt_step, tilt_step)
+        if tilt_angles is None:
+            tilt_angles = np.arange(-start_tilt, stop_tilt + tilt_step, tilt_step)
+
         plane = np.zeros((shape[opening_axis], shape[tilt_axis]), dtype=np.float32)
         subset = tuple(
             slice(None) if i != 0 else slice(x // 2, x // 2 + 1)

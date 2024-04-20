@@ -26,44 +26,9 @@ from .types import NDArray
 
 @dataclass(repr=False)
 class Structure:
-    """Represents atomic structures in accordance with the Protein Data Bank (PDB)
+    """
+    Represents atomic structures in accordance with the Protein Data Bank (PDB)
     format specification.
-
-    Attributes
-    ----------
-    record_type : NDArray
-        Type of the record, e.g., ATOM, HETATM. Array shape = (n,)
-    atom_serial_number : NDArray
-        Serial number assigned to each atom.  Array shape = (n,)
-    atom_name : NDArray
-        Standardized names for each atom.  Array shape = (n,)
-    atom_coordinate : NDArray
-        The 3D Cartesian coordinates of each atom in x, y, z.  Array shape = (n,3 )
-    alternate_location_indicator : NDArray
-        Indicator for alternate locations of an atom if it exists in multiple places.
-        Array shape = (n,)
-    residue_name : NDArray
-        Standard residue names where each atom belongs. Array shape = (n,)
-    chain_identifier : NDArray
-        Identifier for the chain where each atom is located. Array shape = (n,)
-    residue_sequence_number : NDArray
-        Sequence number of the residue in the protein chain for each atom.
-        Array shape = (n,)
-    code_for_residue_insertion : NDArray
-        Code to denote any residue insertion. Array shape = (n,)
-    occupancy : NDArray
-        Occupancy factor of each atom, indicating the fraction of time the atom
-        is located at its position. Array shape = (n,)
-    temperature_factor : NDArray
-        Measure of the atomic displacement or B-factor for each atom. Array shape = (n,)
-    segment_identifier : NDArray
-        Identifier for the segment where each atom belongs. Array shape = (n,)
-    element_symbol : NDArray
-        Atomic element symbol for each atom. Array shape = (n,)
-    charge : NDArray
-        Charge on the atom. Array shape = (n,)
-    details : dict
-        Any additional or auxiliary details. Array shape = (n,)
 
     References
     ----------
