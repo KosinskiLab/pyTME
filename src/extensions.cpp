@@ -100,11 +100,11 @@ inline py::array_t<int, py::array::c_style> find_candidate_indices(
         ik = i * k;
         for (int candidate_index : candidate_indices) {
             jk = candidate_index * k;
-            T distance = std::abs(coordinates_data[ik] - coordinates_data[jk]);
+            T distance = std::pow(coordinates_data[ik] - coordinates_data[jk], 2);
             for (int p = 1; p < k; ++p) {
-                distance = std::max(distance,
-                    std::abs(coordinates_data[ik + p] - coordinates_data[jk + p]));
+                distance += std::pow(coordinates_data[ik + p] - coordinates_data[jk + p], 2);
             }
+            distance = std::sqrt(distance);
             if (distance <= min_distance) {
                 is_candidate = false;
                 break;
