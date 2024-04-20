@@ -16,6 +16,8 @@ from numpy.typing import NDArray
 from .npfftw_backend import NumpyFFTWBackend
 from ..types import CupyArray
 
+PLAN_CACHE = {}
+
 
 class CupyBackend(NumpyFFTWBackend):
     """
@@ -44,6 +46,15 @@ class CupyBackend(NumpyFFTWBackend):
         self.affine_transform = affine_transform
         self.maximum_filter = maximum_filter
 
+        floating = f"float{self.datatype_bytes(default_dtype) * 8}"
+        integer = f"int{self.datatype_bytes(default_dtype_int) * 8}"
+        self._max_score_over_rotations = self._array_backend.ElementwiseKernel(
+            f"{floating} internal_scores, {floating} scores, {integer} rot_index",
+            f"{floating} out1, {integer} rotations",
+            "if (internal_scores < scores) {out1 = scores; rotations = rot_index;}",
+            "max_score_over_rotations",
+        )
+
     def to_backend_array(self, arr: NDArray) -> CupyArray:
         current_device = self._array_backend.cuda.device.get_device_id()
         if (
@@ -60,7 +71,7 @@ class CupyBackend(NumpyFFTWBackend):
         return self.to_numpy_array(arr)
 
     def sharedarr_to_arr(
-        self, shape: Tuple[int], dtype: str, shm: CupyArray
+        self, shm: CupyArray, shape: Tuple[int], dtype: str
     ) -> CupyArray:
         return shm
 
@@ -109,8 +120,8 @@ class CupyBackend(NumpyFFTWBackend):
         real_dtype: type,
         complex_dtype: type,
         fftargs: Dict = {},
-        temp_real: NDArray = None,
-        temp_fft: NDArray = None,
+        inverse_fast_shape: Tuple[int] = None,
+        **kwargs,
     ) -> Tuple[Callable, Callable]:
         """
         Build pyFFTW builder functions.
@@ -119,40 +130,53 @@ class CupyBackend(NumpyFFTWBackend):
         ----------
         fast_shape : tuple
             Tuple of integers corresponding to fast convolution shape
-            (see `compute_convolution_shapes`).
+            (see :py:meth:`CupyBackend.compute_convolution_shapes`).
         fast_ft_shape : tuple
             Tuple of integers corresponding to the shape of the fourier
-            transform array (see `compute_convolution_shapes`).
+            transform array (see :py:meth:`CupyBackend.compute_convolution_shapes`).
         real_dtype : dtype
             Numpy dtype of the inverse fourier transform.
         complex_dtype : dtype
             Numpy dtype of the fourier transform.
+        inverse_fast_shape : tuple, optional
+            Output shape of the inverse Fourier transform. By default fast_shape.
         fftargs : dict, optional
             Dictionary passed to pyFFTW builders.
-        temp_real : NDArray, optional
-            Temporary real numpy array, by default None.
-        temp_fft : NDArray, optional
-            Temporary fft numpy array, by default None.
+        **kwargs: dict, optional
+            Unused keyword arguments.
 
         Returns
         -------
         tuple
             Tupple containing callable rfft and irfft object.
         """
-
-        if temp_real is None:
-            temp_real = self.preallocate_array(fast_shape, real_dtype)
-        if temp_fft is None:
-            temp_fft = self.preallocate_array(fast_ft_shape, complex_dtype)
-
         cache = self._array_backend.fft.config.get_plan_cache()
         cache.set_size(2)
+
+        current_device = self._array_backend.cuda.device.get_device_id()
+
+        previous_transform = [fast_shape, fast_ft_shape]
+        if current_device in PLAN_CACHE:
+            previous_transform = PLAN_CACHE[current_device]
+
+        real_diff, cmplx_diff = True, True
+        if len(fast_shape) == len(previous_transform[0]):
+            real_diff = self.sum(self.subtract(fast_shape, previous_transform[0])) != 0
+        if len(fast_ft_shape) == len(previous_transform[1]):
+            cmplx_diff = (
+                self.sum(self.subtract(fast_ft_shape, previous_transform[1])) != 0
+            )
+
+        if real_diff or cmplx_diff:
+            cache.clear()
 
         def rfftn(arr: CupyArray, out: CupyArray) -> None:
             out[:] = self.fft.rfftn(arr)[:]
 
         def irfftn(arr: CupyArray, out: CupyArray) -> None:
             out[:] = self.fft.irfftn(arr)[:]
+
+        PLAN_CACHE[current_device] = [fast_shape, fast_ft_shape]
 
         return rfftn, irfftn
 
@@ -176,6 +200,17 @@ class CupyBackend(NumpyFFTWBackend):
 
         peaks = self._array_backend.array(self._array_backend.nonzero(max_filter)).T
         return peaks
+
+    # The default methods in Cupy were oddly slow
+    def var(self, a, *args, **kwargs):
+        out = a - self._array_backend.mean(a, *args, **kwargs)
+        self._array_backend.square(out, out)
+        out = self._array_backend.mean(out, *args, **kwargs)
+        return out
+
+    def std(self, a, *args, **kwargs):
+        out = self.var(a, *args, **kwargs)
+        return self._array_backend.sqrt(out)
 
     def rotate_array(
         self,
@@ -311,3 +346,33 @@ class CupyBackend(NumpyFFTWBackend):
             Number of available GPU devices.
         """
         return self._array_backend.cuda.runtime.getDeviceCount()
+
+    def max_score_over_rotations(
+        self,
+        score_space: CupyArray,
+        internal_scores: CupyArray,
+        internal_rotations: CupyArray,
+        rotation_index: int,
+    ):
+        """
+        Modify internal_scores and internal_rotations inplace with scores and rotation
+        index respectively, wherever score_sapce is larger than internal scores.
+
+        Parameters
+        ----------
+        score_space : CupyArray
+            The score space to compare against internal_scores.
+        internal_scores : CupyArray
+            The internal scores to update with maximum scores.
+        internal_rotations : CupyArray
+            The internal rotations corresponding to the maximum scores.
+        rotation_index : int
+            The index representing the current rotation.
+        """
+        self._max_score_over_rotations(
+            internal_scores,
+            score_space,
+            rotation_index,
+            internal_scores,
+            internal_rotations,
+        )

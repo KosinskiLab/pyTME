@@ -256,7 +256,7 @@ class NumpyFFTWBackend(MatchingBackend):
         return arr
 
     def sharedarr_to_arr(
-        self, shape: Tuple[int], dtype: str, shm: shared_memory.SharedMemory
+        self, shm: shared_memory.SharedMemory, shape: Tuple[int], dtype: str
     ) -> NDArray:
         """
         Returns an array of given shape and dtype from shared memory location.
@@ -341,6 +341,7 @@ class NumpyFFTWBackend(MatchingBackend):
         real_dtype: type,
         complex_dtype: type,
         fftargs: Dict = {},
+        inverse_fast_shape: Tuple[int] = None,
         temp_real: NDArray = None,
         temp_fft: NDArray = None,
     ) -> Tuple[FFTW, FFTW]:
@@ -359,6 +360,8 @@ class NumpyFFTWBackend(MatchingBackend):
             Numpy dtype of the inverse fourier transform.
         complex_dtype : dtype
             Numpy dtype of the fourier transform.
+        inverse_fast_shape : tuple, optional
+            Output shape of the inverse Fourier transform. By default fast_shape.
         fftargs : dict, optional
             Dictionary passed to pyFFTW builders.
         temp_real : NDArray, optional
@@ -376,6 +379,8 @@ class NumpyFFTWBackend(MatchingBackend):
             temp_real = self.preallocate_array(fast_shape, real_dtype)
         if temp_fft is None:
             temp_fft = self.preallocate_array(fast_ft_shape, complex_dtype)
+        if inverse_fast_shape is None:
+            inverse_fast_shape = fast_shape
 
         default_values = {
             "planner_effort": "FFTW_MEASURE",
@@ -395,7 +400,7 @@ class NumpyFFTWBackend(MatchingBackend):
         overwrite_input = None
         if "overwrite_input" in fftargs:
             overwrite_input = fftargs.pop("overwrite_input")
-        irfftn = irfftn_builder(temp_fft, s=fast_shape, **fftargs)
+        irfftn = irfftn_builder(temp_fft, s=inverse_fast_shape, **fftargs)
 
         if overwrite_input is not None:
             fftargs["overwrite_input"] = overwrite_input
@@ -756,3 +761,29 @@ class NumpyFFTWBackend(MatchingBackend):
             Reversed array.
         """
         return arr[(slice(None, None, -1),) * arr.ndim]
+
+    def max_score_over_rotations(
+        self,
+        score_space: NDArray,
+        internal_scores: NDArray,
+        internal_rotations: NDArray,
+        rotation_index: int,
+    ) -> None:
+        """
+        Modify internal_scores and internal_rotations inplace with scores and rotation
+        index respectively, wherever score_sapce is larger than internal scores.
+
+        Parameters
+        ----------
+        score_space : numpy.ndarray
+            The score space to compare against internal_scores.
+        internal_scores : numpy.ndarray
+            The internal scores to update with maximum scores.
+        internal_rotations : numpy.ndarray
+            The internal rotations corresponding to the maximum scores.
+        rotation_index : int
+            The index representing the current rotation.
+        """
+        indices = score_space > internal_scores
+        internal_scores[indices] = score_space[indices]
+        internal_rotations[indices] = rotation_index

@@ -237,7 +237,7 @@ class PytorchBackend(NumpyFFTWBackend):
         return self._array_backend.repeat_interleave(*args, **kwargs)
 
     def sharedarr_to_arr(
-        self, shape: Tuple[int], dtype: str, shm: TorchTensor
+        self, shm: TorchTensor, shape: Tuple[int], dtype: str
     ) -> TorchTensor:
         if self.device == "cuda":
             return shm
@@ -385,7 +385,11 @@ class PytorchBackend(NumpyFFTWBackend):
                 return out, out_mask
 
     def build_fft(
-        self, fast_shape: Tuple[int], fast_ft_shape: Tuple[int], **kwargs
+        self,
+        fast_shape: Tuple[int],
+        fast_ft_shape: Tuple[int],
+        inverse_fast_shape: Tuple[int] = None,
+        **kwargs,
     ) -> Tuple[Callable, Callable]:
         """
         Build fft builder functions.
@@ -394,18 +398,22 @@ class PytorchBackend(NumpyFFTWBackend):
         ----------
         fast_shape : tuple
             Tuple of integers corresponding to fast convolution shape
-            (see `compute_convolution_shapes`).
+            (see :py:meth:`PytorchBackend.compute_convolution_shapes`).
         fast_ft_shape : tuple
-            Tuple of integers corresponding to the shape of the fourier
-            transform array (see `compute_convolution_shapes`).
+            Tuple of integers corresponding to the shape of the Fourier
+            transform array (see :py:meth:`PytorchBackend.compute_convolution_shapes`).
+        inverse_fast_shape : tuple, optional
+            Output shape of the inverse Fourier transform. By default fast_shape.
         **kwargs : dict, optional
-            Additional parameters that are not used for now.
+            Unused keyword arguments.
 
         Returns
         -------
         tuple
             Tupple containing callable rfft and irfft object.
         """
+        if inverse_fast_shape is None:
+            inverse_fast_shape = fast_shape
 
         def rfftn(
             arr: TorchTensor, out: TorchTensor, shape: Tuple[int] = fast_shape
@@ -413,7 +421,7 @@ class PytorchBackend(NumpyFFTWBackend):
             return self._array_backend.fft.rfftn(arr, s=shape, out=out)
 
         def irfftn(
-            arr: TorchTensor, out: TorchTensor, shape: Tuple[int] = fast_shape
+            arr: TorchTensor, out: TorchTensor, shape: Tuple[int] = inverse_fast_shape
         ) -> None:
             return self._array_backend.fft.irfftn(arr, s=shape, out=out)
 
