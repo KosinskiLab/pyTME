@@ -689,7 +689,7 @@ document.write(`
             <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Cannot open gzipped file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> as memmap.&quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot; Please gunzip </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> to use memmap functionality.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; Please run &#39;gunzip </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&#39; to use memmap functionality.&quot;</span>
                 <span class="p">)</span>
             <span class="n">use_memmap</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -1949,34 +1949,35 @@ document.write(`
 <span class="sd">        --------</span>
 <span class="sd">        :py:meth:`Density.centered` returns a tuple containing a centered version</span>
 <span class="sd">        of the current :py:class:`Density` instance, as well as an array with</span>
-<span class="sd">        translations. The translation corresponds to the shift that between the</span>
-<span class="sd">        center of mass and the center of the internal :py:attr:`Density.data` attribute.</span>
+<span class="sd">        translations. The translation corresponds to the shift between the original and</span>
+<span class="sd">        current center of mass.</span>
 
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">        &gt;&gt;&gt; from tme import Density</span>
 <span class="sd">        &gt;&gt;&gt; dens = Density(np.ones((5,5)))</span>
 <span class="sd">        &gt;&gt;&gt; centered_dens, translation = dens.centered(0)</span>
 <span class="sd">        &gt;&gt;&gt; translation</span>
-<span class="sd">        array([-4.4408921e-16,  4.4408921e-16])</span>
+<span class="sd">        array([-0.5, -0.5])</span>
 
 <span class="sd">        :py:meth:`Density.centered` extended the :py:attr:`Density.data` attribute</span>
 <span class="sd">        of the current :py:class:`Density` instance and modified</span>
 <span class="sd">        :py:attr:`Density.origin` accordingly.</span>
 
 <span class="sd">        &gt;&gt;&gt; centered_dens</span>
-<span class="sd">        Origin: (-1.0, -1.0), sampling_rate: (1, 1), Shape: (7, 7)</span>
+<span class="sd">        Origin: (-1.0, -1.0), sampling_rate: (1, 1), Shape: (8, 8)</span>
 
-<span class="sd">        :py:meth:`Density.centered` achieves centering via zero-padding the</span>
-<span class="sd">        internal :py:attr:`Density.data` attribute:</span>
+<span class="sd">        :py:meth:`Density.centered` achieves centering via zero-padding and</span>
+<span class="sd">        transforming the internal :py:attr:`Density.data` attribute:</span>
 
 <span class="sd">        &gt;&gt;&gt; centered_dens.data</span>
-<span class="sd">        array([[0., 0., 0., 0., 0., 0., 0.],</span>
-<span class="sd">               [0., 1., 1., 1., 1., 1., 0.],</span>
-<span class="sd">               [0., 1., 1., 1., 1., 1., 0.],</span>
-<span class="sd">               [0., 1., 1., 1., 1., 1., 0.],</span>
-<span class="sd">               [0., 1., 1., 1., 1., 1., 0.],</span>
-<span class="sd">               [0., 1., 1., 1., 1., 1., 0.],</span>
-<span class="sd">               [0., 0., 0., 0., 0., 0., 0.]])</span>
+<span class="sd">        array([[0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  ],</span>
+<span class="sd">               [0.  , 0.25, 0.5 , 0.5 , 0.5 , 0.5 , 0.25, 0.  ],</span>
+<span class="sd">               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],</span>
+<span class="sd">               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],</span>
+<span class="sd">               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],</span>
+<span class="sd">               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],</span>
+<span class="sd">               [0.  , 0.25, 0.5 , 0.5 , 0.5 , 0.5 , 0.25, 0.  ],</span>
+<span class="sd">               [0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  ]])</span>
 
 <span class="sd">        `centered_dens` is sufficiently large to represent all rotations that</span>
 <span class="sd">        could be applied to the :py:attr:`Density.data` attribute. Lets look</span>
@@ -1999,10 +2000,14 @@ document.write(`
         <span class="n">ret</span><span class="o">.</span><span class="n">adjust_box</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
 
         <span class="n">new_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_shape</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">new_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
         <span class="n">ret</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
 
         <span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">)</span>
-        <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">center</span><span class="p">)</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+           <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span>
+           <span class="n">center</span>
+        <span class="p">)</span>
 
         <span class="n">ret</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
             <span class="n">translation</span><span class="o">=</span><span class="n">shift</span><span class="p">,</span>
