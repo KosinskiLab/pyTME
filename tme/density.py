@@ -317,7 +317,7 @@ class Density:
             if use_memmap:
                 warnings.warn(
                     f"Cannot open gzipped file {filename} as memmap."
-                    f" Please gunzip {filename} to use memmap functionality."
+                    f" Please run 'gunzip {filename}' to use memmap functionality."
                 )
             use_memmap = False
 
@@ -1545,34 +1545,35 @@ class Density:
         --------
         :py:meth:`Density.centered` returns a tuple containing a centered version
         of the current :py:class:`Density` instance, as well as an array with
-        translations. The translation corresponds to the shift that between the
-        center of mass and the center of the internal :py:attr:`Density.data` attribute.
+        translations. The translation corresponds to the shift between the original and
+        current center of mass.
 
         >>> import numpy as np
         >>> from tme import Density
         >>> dens = Density(np.ones((5,5)))
         >>> centered_dens, translation = dens.centered(0)
         >>> translation
-        array([-4.4408921e-16,  4.4408921e-16])
+        array([-0.5, -0.5])
 
         :py:meth:`Density.centered` extended the :py:attr:`Density.data` attribute
         of the current :py:class:`Density` instance and modified
         :py:attr:`Density.origin` accordingly.
 
         >>> centered_dens
-        Origin: (-1.0, -1.0), sampling_rate: (1, 1), Shape: (7, 7)
+        Origin: (-1.0, -1.0), sampling_rate: (1, 1), Shape: (8, 8)
 
-        :py:meth:`Density.centered` achieves centering via zero-padding the
-        internal :py:attr:`Density.data` attribute:
+        :py:meth:`Density.centered` achieves centering via zero-padding and
+        transforming the internal :py:attr:`Density.data` attribute:
 
         >>> centered_dens.data
-        array([[0., 0., 0., 0., 0., 0., 0.],
-               [0., 1., 1., 1., 1., 1., 0.],
-               [0., 1., 1., 1., 1., 1., 0.],
-               [0., 1., 1., 1., 1., 1., 0.],
-               [0., 1., 1., 1., 1., 1., 0.],
-               [0., 1., 1., 1., 1., 1., 0.],
-               [0., 0., 0., 0., 0., 0., 0.]])
+        array([[0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  ],
+               [0.  , 0.25, 0.5 , 0.5 , 0.5 , 0.5 , 0.25, 0.  ],
+               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],
+               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],
+               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],
+               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],
+               [0.  , 0.25, 0.5 , 0.5 , 0.5 , 0.5 , 0.25, 0.  ],
+               [0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  ]])
 
         `centered_dens` is sufficiently large to represent all rotations that
         could be applied to the :py:attr:`Density.data` attribute. Lets look
@@ -1595,10 +1596,14 @@ class Density:
         ret.adjust_box(box)
 
         new_shape = np.maximum(ret.shape, self.shape)
+        new_shape = np.add(new_shape, np.mod(new_shape, 2))
         ret.pad(new_shape)
 
         center = self.center_of_mass(ret.data, cutoff)
-        shift = np.subtract(np.divide(ret.shape, 2), center)
+        shift = np.subtract(
+           np.divide(np.subtract(ret.shape, 1), 2),
+           center
+        )
 
         ret = ret.rigid_transform(
             translation=shift,

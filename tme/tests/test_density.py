@@ -1,3 +1,4 @@
+tme/tests/test_density.py
 from tempfile import mkstemp
 from itertools import permutations
 from os import remove
@@ -666,7 +667,7 @@ class TestDensity:
         template = target.copy()
 
         initial_translation = np.array([-1, 3, 0])
-        initial_rotation = euler_to_rotationmatrix((180, 0, 0))
+        initial_rotation = euler_to_rotationmatrix((-10, 2, 5))
 
         template = template.rigid_transform(
             rotation_matrix=initial_rotation,
@@ -677,16 +678,15 @@ class TestDensity:
         target.sampling_rate = np.array(target.sampling_rate[0])
         template.sampling_rate = np.array(template.sampling_rate[0])
 
-        aligned, *_ = Density.match_densities(
+        aligned, translation, rotation = Density.match_densities(
             target=target,
             template=template,
-            cutoff_template=0.2,
             scoring_method=method,
         )
-
         aligned = Density.align_coordinate_systems(target=target, template=aligned)
+        assert np.allclose(-translation, initial_translation, atol = 3)
+        assert np.allclose(np.linalg.inv(rotation), initial_rotation, atol = 5)
 
-        assert np.allclose(target.data, aligned.data, rtol=0.5)
 
         template.sampling_rate = template.sampling_rate * 2
 
@@ -697,6 +697,7 @@ class TestDensity:
             cutoff_template=0.2,
             scoring_method=method,
         )
+
 
     def test_match_structure_to_density(self):
         density = Density.from_file("tme/tests/data/Maps/emd_8621.mrc.gz")
