@@ -19,8 +19,8 @@ RUN apt-get update && \
     make install && \
     rm -rf /python
 
-RUN python3 -mpip --no-cache-dir install \
-    git+https://github.com/KosinskiLab/pyTME.git \
-    cupy-cuda12x
+COPY . /pyTME
+RUN python3 -mpip --no-cache-dir install pyTME/ cupy-cuda12x \
+    && rm -rf /pyTME
 
 ENTRYPOINT ["bash"]

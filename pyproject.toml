@@ -23,7 +23,7 @@ dependencies=[
     "scipy>=1.9.1",
     "pybind11",
     "psutil",
-    "tifffile[all]",
+    "tifffile",
     "h5py"
 ]
 license = {text = "Proprietary"}
