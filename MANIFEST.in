@@ -60,7 +60,6 @@ global-exclude .DS_Store
 global-exclude .gitconfig
 global-exclude *.pickle
 prune tme/temp
-prune tme/preprocessing
 global-exclude doc/compileApiReference.sh
 prune public
 global-exclude tme/matching_backend.py

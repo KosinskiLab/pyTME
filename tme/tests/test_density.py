@@ -1,4 +1,3 @@
-tme/tests/test_density.py
 from tempfile import mkstemp
 from itertools import permutations
 from os import remove
@@ -684,9 +683,8 @@ class TestDensity:
             scoring_method=method,
         )
         aligned = Density.align_coordinate_systems(target=target, template=aligned)
-        assert np.allclose(-translation, initial_translation, atol = 3)
-        assert np.allclose(np.linalg.inv(rotation), initial_rotation, atol = 5)
-
+        assert np.allclose(-translation, initial_translation, atol=3)
+        assert np.allclose(np.linalg.inv(rotation), initial_rotation, atol=5)
 
         template.sampling_rate = template.sampling_rate * 2
 
@@ -697,7 +695,6 @@ class TestDensity:
             cutoff_template=0.2,
             scoring_method=method,
         )
-
 
     def test_match_structure_to_density(self):
         density = Density.from_file("tme/tests/data/Maps/emd_8621.mrc.gz")

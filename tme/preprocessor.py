@@ -47,7 +47,7 @@ class Preprocessor:
 
     def apply_method(self, method: str, parameters: Dict):
         """
-        Apply a method on the atomic structure.
+        Invoke ``Preprocessor.method`` using ``parameters``.
 
         Parameters
         ----------
@@ -1135,6 +1135,7 @@ class Preprocessor:
         opening_axis: int = 0,
         tilt_axis: int = 2,
         sigma: float = 0,
+        weights: float = 1,
         omit_negative_frequencies: bool = True,
     ) -> NDArray:
         """
@@ -1165,6 +1166,8 @@ class Preprocessor:
             - 2 for X-axis
         sigma : float, optional
             Standard deviation for Gaussian kernel used for smoothing the wedge.
+        weights : float, tuple of float
+            Weight of each element in the wedge. Defaults to one.
         omit_negative_frequencies : bool, optional
             Whether the wedge mask should omit negative frequencies, i.e. be
             applicable to symmetric Fourier transforms (see :obj:`numpy.fft.fftn`)
@@ -1188,16 +1191,17 @@ class Preprocessor:
         if tilt_angles is None:
             tilt_angles = np.arange(-start_tilt, stop_tilt + tilt_step, tilt_step)
 
+        weights = np.asarray(weights)
+        weights = np.repeat(weights, tilt_angles.size // weights.size)
         plane = np.zeros((shape[opening_axis], shape[tilt_axis]), dtype=np.float32)
         subset = tuple(
             slice(None) if i != 0 else slice(x // 2, x // 2 + 1)
             for i, x in enumerate(plane.shape)
         )
-        plane[subset] = 1
         plane_rotated, wedge_volume = np.zeros_like(plane), np.zeros_like(plane)
         for index in range(tilt_angles.shape[0]):
             plane_rotated.fill(0)
-
+            plane[subset] = weights[index]
             rotation_matrix = euler_to_rotationmatrix((tilt_angles[index], 0))
             rotation_matrix = rotation_matrix[np.ix_((0, 1), (0, 1))]
 
@@ -1210,10 +1214,13 @@ class Preprocessor:
             )
             wedge_volume += plane_rotated
 
-        wedge_volume = self.gaussian_filter(
-            template=wedge_volume, sigma=sigma, fourier=False
-        )
-        wedge_volume = np.where(wedge_volume > np.exp(-2), 1, 0)
+        # Ramp filtering would be more accurate
+        np.fmin(wedge_volume, np.max(weights), wedge_volume)
+
+        if sigma > 0:
+            wedge_volume = self.gaussian_filter(
+                template=wedge_volume, sigma=sigma, fourier=False
+            )
 
         if opening_axis > tilt_axis:
             wedge_volume = np.moveaxis(wedge_volume, 1, 0)

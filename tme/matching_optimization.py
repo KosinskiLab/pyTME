@@ -521,6 +521,33 @@ class _MatchCoordinatesToCoordinates(_MatchDensityToDensity):
 
 
 class FLC(_MatchDensityToDensity):
+    """
+    Computes a normalized cross-correlation score of a target f a template g
+    and a mask m:
+
+    .. math::
+
+        \\frac{CC(f, \\frac{g*m - \\overline{g*m}}{\\sigma_{g*m}})}
+        {N_m * \\sqrt{
+            \\frac{CC(f^2, m)}{N_m} - (\\frac{CC(f, m)}{N_m})^2}
+        }
+
+    Where:
+
+    .. math::
+
+        CC(f,g) = \\mathcal{F}^{-1}(\\mathcal{F}(f) \\cdot \\mathcal{F}(g)^*)
+
+    and Nm is the number of voxels within the template mask m.
+
+    References
+    ----------
+    .. [1]  W. Wan, S. Khavnekar, J. Wagner, P. Erdmann, and W. Baumeister
+            Microsc. Microanal. 26, 2516 (2020)
+    .. [2]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
+            and F. Förster, J. Struct. Biol. 178, 177 (2012).
+    """
+
     __doc__ += _MatchDensityToDensity.__doc__
 
     def _post_init(self, **kwargs: Dict):

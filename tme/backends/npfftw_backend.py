@@ -656,10 +656,8 @@ class NumpyFFTWBackend(MatchingBackend):
         if rotate_mask:
             mask_rotated = mask_rotated.astype(int)
             if out_mask is None:
-                mask_rotated -= out_offset[:, None]
-                out_mask = np.zeros(
-                    coordinates_rotated.max(axis=1) + 1, dtype=arr.dtype
-                )
+                # mask_rotated -= out_offset[:, None]
+                out_mask = np.zeros(mask_rotated.max(axis=1) + 1, dtype=arr.dtype)
 
             in_box = np.logical_and(
                 mask_rotated < np.array(out_mask.shape)[:, None],

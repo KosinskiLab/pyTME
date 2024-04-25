@@ -19,14 +19,12 @@ from scipy.ndimage import laplace
 
 from .analyzer import MaxScoreOverRotations
 from .matching_utils import (
-    apply_convolution_mode,
     handle_traceback,
     split_numpy_array_slices,
     conditional_execute,
 )
 from .matching_memory import MatchingMemoryUsage, MATCHING_MEMORY_REGISTRY
-# from .preprocessing import Compose
-from .preprocessor import Preprocessor
+from .preprocessing import Compose
 from .matching_data import MatchingData
 from .backends import backend
 from .types import NDArray, CallbackClass
@@ -1307,7 +1305,7 @@ def mcc_scoring(
     return callback
 
 
-def _setup_template_filter(
+def _setup_template_filter_apply_target_filter(
     matching_data: MatchingData,
     rfftn: Callable,
     irfftn: Callable,
@@ -1329,7 +1327,6 @@ def _setup_template_filter(
     )
     target_temp_ft = backend.preallocate_array(fast_ft_shape, backend._complex_dtype)
     rfftn(target_temp, target_temp_ft)
-
     if isinstance(matching_data.template_filter, Compose):
         template_filter = matching_data.template_filter(
             shape=fast_shape,
@@ -1437,8 +1434,8 @@ def scan(
     if backend.sum(shape_diff < 0) and not pad_fourier:
         warnings.warn(
             "Target is larger than template and Fourier padding is turned off."
-            " This can lead to shifted results. You can swap template and target, or"
-            " zero-pad the target."
+            " This can lead to shifted results. You can swap template and target, "
+            " zero-pad the target or turn off template centering."
         )
     fast_shape, fast_ft_shape, fourier_shift = matching_data.fourier_padding(
         pad_fourier=pad_fourier
@@ -1453,13 +1450,13 @@ def scan(
         fftargs=fftargs,
     )
 
-    # template_filter = _setup_template_filter(
-    #     matching_data=matching_data,
-    #     rfftn=rfftn,
-    #     irfftn=irfftn,
-    #     fast_shape=fast_shape,
-    #     fast_ft_shape=fast_ft_shape,
-    # )
+    template_filter = _setup_template_filter_apply_target_filter(
+        matching_data=matching_data,
+        rfftn=rfftn,
+        irfftn=irfftn,
+        fast_shape=fast_shape,
+        fast_ft_shape=fast_ft_shape,
+    )
 
     setup = matching_setup(
         rfftn=rfftn,
@@ -1477,21 +1474,6 @@ def scan(
         **kwargs,
     )
     rfftn, irfftn = None, None
-
-
-    template_filter, preprocessor = None, Preprocessor()
-    for method, parameters in matching_data.template_filter.items():
-        parameters["shape"] = fast_shape
-        parameters["omit_negative_frequencies"] = True
-        out = preprocessor.apply_method(method=method, parameters=parameters)
-        if template_filter is None:
-            template_filter = out
-        np.multiply(template_filter, out, out=template_filter)
-
-    if template_filter is None:
-        template_filter = backend.full(
-            shape=(1,), fill_value=1, dtype=backend._default_dtype
-        )
 
     template_filter = backend.to_backend_array(template_filter)
     template_filter = backend.astype(template_filter, backend._default_dtype)
@@ -1519,7 +1501,6 @@ def scan(
     convolution_mode = "same"
     if backend.sum(backend.to_backend_array(matching_data._target_pad)) > 0:
         convolution_mode = "valid"
-
 
     callback_class_args["fourier_shift"] = fourier_shift
     callback_class_args["convolution_mode"] = convolution_mode
@@ -1571,14 +1552,19 @@ def scan(
 
     callbacks = callbacks[0:n_callback_classes]
     callbacks = [
-        tuple(callback._postprocess(
-            fourier_shift = fourier_shift,
-            convolution_mode = convolution_mode,
-            targetshape = setup["targetshape"],
-            templateshape = setup["templateshape"],
-            shared_memory_handler=kwargs.get("shared_memory_handler", None)
-        )) if hasattr(callback, "_postprocess") else tuple(callback)
-        for callback in callbacks if callback is not None
+        tuple(
+            callback._postprocess(
+                fourier_shift=fourier_shift,
+                convolution_mode=convolution_mode,
+                targetshape=setup["targetshape"],
+                templateshape=setup["templateshape"],
+                shared_memory_handler=kwargs.get("shared_memory_handler", None),
+            )
+        )
+        if hasattr(callback, "_postprocess")
+        else tuple(callback)
+        for callback in callbacks
+        if callback is not None
     ]
     backend.free_cache()
 

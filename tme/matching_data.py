@@ -514,6 +514,8 @@ class MatchingData:
 
             backend.add(fourier_shift, shape_diff, out=fourier_shift)
 
+        fourier_shift = backend.astype(fourier_shift, backend._default_dtype_int)
+
         return fast_shape, fast_ft_shape, fourier_shift
 
     @property

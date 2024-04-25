@@ -1600,10 +1600,7 @@ class Density:
         ret.pad(new_shape)
 
         center = self.center_of_mass(ret.data, cutoff)
-        shift = np.subtract(
-           np.divide(np.subtract(ret.shape, 1), 2),
-           center
-        )
+        shift = np.subtract(np.divide(np.subtract(ret.shape, 1), 2), center)
 
         ret = ret.rigid_transform(
             translation=shift,

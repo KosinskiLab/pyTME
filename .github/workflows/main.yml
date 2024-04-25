@@ -6,6 +6,33 @@ on:
     types: [created]
 
 jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.11.5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up cache for pip
+        uses: actions/cache@v2
+        with:
+          path: .cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+
+      - name: Install Dependencies & Test
+        run: |
+          python --version
+          python -mpip install pytest
+          python -mpip install .
+          # pytest -vvv .
+
+
   build:
     runs-on: ubuntu-latest
     container:

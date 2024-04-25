@@ -408,9 +408,9 @@ class PeakCaller(ABC):
                 peak_positions,
                 backend.multiply(
                     backend.divide(peak_positions, score_space_shape).astype(int),
-                    score_space_shape
+                    score_space_shape,
                 ),
-                out = peak_positions
+                out=peak_positions,
             )
 
         if convolution_mode is None:
@@ -423,23 +423,17 @@ class PeakCaller(ABC):
         elif convolution_mode == "valid":
             output_shape = backend.add(
                 backend.subtract(targetshape, templateshape),
-                backend.mod(templateshape, 2)
+                backend.mod(templateshape, 2),
             )
 
         output_shape = backend.to_backend_array(output_shape)
-        starts = backend.divide(
-            backend.subtract(score_space_shape, output_shape),
-            2
-        )
+        starts = backend.divide(backend.subtract(score_space_shape, output_shape), 2)
         starts = backend.astype(starts, int)
         stops = backend.add(starts, output_shape)
 
         valid_peaks = (
             backend.sum(
-                backend.multiply(
-                    peak_positions > starts,
-                    peak_positions <= stops
-                ),
+                backend.multiply(peak_positions > starts, peak_positions <= stops),
                 axis=1,
             )
             == peak_positions.shape[1]
@@ -447,6 +441,7 @@ class PeakCaller(ABC):
         self.peak_list[0] = backend.subtract(peak_positions, starts)
         self.peak_list = [x[valid_peaks] for x in self.peak_list]
         return self
+
 
 class PeakCallerSort(PeakCaller):
     """
@@ -1206,18 +1201,20 @@ class MaxScoreOverRotations:
 
         self.use_memmap = use_memmap
         self.lock = Manager().Lock() if thread_safe else nullcontext()
-        self.lock_is_nullcontext = isinstance(self.score_space, type(backend.zeros((1))))
+        self.lock_is_nullcontext = isinstance(
+            self.score_space, type(backend.zeros((1)))
+        )
         self.observed_rotations = Manager().dict() if thread_safe else {}
 
-
-    def _postprocess(self,
+    def _postprocess(
+        self,
         fourier_shift,
         convolution_mode,
         targetshape,
         templateshape,
         shared_memory_handler=None,
-        **kwargs
-        ):
+        **kwargs,
+    ):
         internal_scores = backend.sharedarr_to_arr(
             shape=self.score_space_shape,
             dtype=self.score_space_dtype,
@@ -1232,14 +1229,10 @@ class MaxScoreOverRotations:
         if fourier_shift is not None:
             axis = tuple(i for i in range(len(fourier_shift)))
             internal_scores = backend.roll(
-                internal_scores,
-                shift=fourier_shift,
-                axis=axis
+                internal_scores, shift=fourier_shift, axis=axis
             )
             internal_rotations = backend.roll(
-                internal_rotations,
-                shift=fourier_shift,
-                axis=axis
+                internal_rotations, shift=fourier_shift, axis=axis
             )
 
         if convolution_mode is not None:
@@ -1247,26 +1240,23 @@ class MaxScoreOverRotations:
                 internal_scores,
                 convolution_mode=convolution_mode,
                 s1=targetshape,
-                s2=templateshape
+                s2=templateshape,
             )
             internal_rotations = apply_convolution_mode(
                 internal_rotations,
                 convolution_mode=convolution_mode,
                 s1=targetshape,
-                s2=templateshape
+                s2=templateshape,
             )
 
         self.score_space_shape = internal_scores.shape
         self.score_space = backend.arr_to_sharedarr(
-            internal_scores,
-            shared_memory_handler
+            internal_scores, shared_memory_handler
         )
         self.rotations = backend.arr_to_sharedarr(
-            internal_rotations,
-            shared_memory_handler
+            internal_rotations, shared_memory_handler
         )
         return self
-
 
     def __iter__(self):
         internal_scores = backend.sharedarr_to_arr(
@@ -1647,5 +1637,3 @@ class MemmapHandler:
         """
         rotation_string = "_".join(rotation_matrix.ravel().astype(str))
         return self._path_translation[rotation_string]
-
-

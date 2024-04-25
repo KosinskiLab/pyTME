@@ -686,7 +686,7 @@ def get_rotations_around_vector(
 
     # phi, theta, psi
     axis_angle /= n_symmetry
-    phi_steps = np.max(np.round(axis_angle / axis_sampling), 1)
+    phi_steps = np.maximum(np.round(axis_angle / axis_sampling), 1).astype(int)
     phi = np.linspace(0, axis_angle, phi_steps + 1)[:-1]
     np.add(phi, angles_vector.as_euler("zyx", degrees=True)[0], out=phi)
     angles = np.stack(
