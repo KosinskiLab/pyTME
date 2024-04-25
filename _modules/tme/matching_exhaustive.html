@@ -386,14 +386,12 @@ document.write(`
 
 <span class="kn">from</span> <span class="nn">.analyzer</span> <span class="kn">import</span> <span class="n">MaxScoreOverRotations</span>
 <span class="kn">from</span> <span class="nn">.matching_utils</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">apply_convolution_mode</span><span class="p">,</span>
     <span class="n">handle_traceback</span><span class="p">,</span>
     <span class="n">split_numpy_array_slices</span><span class="p">,</span>
     <span class="n">conditional_execute</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.matching_memory</span> <span class="kn">import</span> <span class="n">MatchingMemoryUsage</span><span class="p">,</span> <span class="n">MATCHING_MEMORY_REGISTRY</span>
-<span class="c1"># from .preprocessing import Compose</span>
-<span class="kn">from</span> <span class="nn">.preprocessor</span> <span class="kn">import</span> <span class="n">Preprocessor</span>
+<span class="kn">from</span> <span class="nn">.preprocessing</span> <span class="kn">import</span> <span class="n">Compose</span>
 <span class="kn">from</span> <span class="nn">.matching_data</span> <span class="kn">import</span> <span class="n">MatchingData</span>
 <span class="kn">from</span> <span class="nn">.backends</span> <span class="kn">import</span> <span class="n">backend</span>
 <span class="kn">from</span> <span class="nn">.types</span> <span class="kn">import</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">CallbackClass</span>
@@ -1704,7 +1702,7 @@ document.write(`
 
 
 
-<span class="k">def</span> <span class="nf">_setup_template_filter</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">_setup_template_filter_apply_target_filter</span><span class="p">(</span>
     <span class="n">matching_data</span><span class="p">:</span> <span class="n">MatchingData</span><span class="p">,</span>
     <span class="n">rfftn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
     <span class="n">irfftn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
@@ -1726,7 +1724,6 @@ document.write(`
     <span class="p">)</span>
     <span class="n">target_temp_ft</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span><span class="p">)</span>
     <span class="n">rfftn</span><span class="p">(</span><span class="n">target_temp</span><span class="p">,</span> <span class="n">target_temp_ft</span><span class="p">)</span>
-
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span><span class="p">,</span> <span class="n">Compose</span><span class="p">):</span>
         <span class="n">template_filter</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span><span class="p">(</span>
             <span class="n">shape</span><span class="o">=</span><span class="n">fast_shape</span><span class="p">,</span>
@@ -1836,8 +1833,8 @@ document.write(`
     <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">shape_diff</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pad_fourier</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="s2">&quot;Target is larger than template and Fourier padding is turned off.&quot;</span>
-            <span class="s2">&quot; This can lead to shifted results. You can swap template and target, or&quot;</span>
-            <span class="s2">&quot; zero-pad the target.&quot;</span>
+            <span class="s2">&quot; This can lead to shifted results. You can swap template and target, &quot;</span>
+            <span class="s2">&quot; zero-pad the target or turn off template centering.&quot;</span>
         <span class="p">)</span>
     <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">fourier_padding</span><span class="p">(</span>
         <span class="n">pad_fourier</span><span class="o">=</span><span class="n">pad_fourier</span>
@@ -1852,13 +1849,13 @@ document.write(`
         <span class="n">fftargs</span><span class="o">=</span><span class="n">fftargs</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="c1"># template_filter = _setup_template_filter(</span>
-    <span class="c1">#     matching_data=matching_data,</span>
-    <span class="c1">#     rfftn=rfftn,</span>
-    <span class="c1">#     irfftn=irfftn,</span>
-    <span class="c1">#     fast_shape=fast_shape,</span>
-    <span class="c1">#     fast_ft_shape=fast_ft_shape,</span>
-    <span class="c1"># )</span>
+    <span class="n">template_filter</span> <span class="o">=</span> <span class="n">_setup_template_filter_apply_target_filter</span><span class="p">(</span>
+        <span class="n">matching_data</span><span class="o">=</span><span class="n">matching_data</span><span class="p">,</span>
+        <span class="n">rfftn</span><span class="o">=</span><span class="n">rfftn</span><span class="p">,</span>
+        <span class="n">irfftn</span><span class="o">=</span><span class="n">irfftn</span><span class="p">,</span>
+        <span class="n">fast_shape</span><span class="o">=</span><span class="n">fast_shape</span><span class="p">,</span>
+        <span class="n">fast_ft_shape</span><span class="o">=</span><span class="n">fast_ft_shape</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">setup</span> <span class="o">=</span> <span class="n">matching_setup</span><span class="p">(</span>
         <span class="n">rfftn</span><span class="o">=</span><span class="n">rfftn</span><span class="p">,</span>
@@ -1876,21 +1873,6 @@ document.write(`
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">rfftn</span><span class="p">,</span> <span class="n">irfftn</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-
-
-    <span class="n">template_filter</span><span class="p">,</span> <span class="n">preprocessor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Preprocessor</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">method</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fast_shape</span>
-        <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;omit_negative_frequencies&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">preprocessor</span><span class="o">.</span><span class="n">apply_method</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">template_filter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">template_filter</span> <span class="o">=</span> <span class="n">out</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template_filter</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template_filter</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">template_filter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">template_filter</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
-            <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype</span>
-        <span class="p">)</span>
 
     <span class="n">template_filter</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">template_filter</span><span class="p">)</span>
     <span class="n">template_filter</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">template_filter</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype</span><span class="p">)</span>
@@ -1918,7 +1900,6 @@ document.write(`
     <span class="n">convolution_mode</span> <span class="o">=</span> <span class="s2">&quot;same&quot;</span>
     <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_target_pad</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">convolution_mode</span> <span class="o">=</span> <span class="s2">&quot;valid&quot;</span>
-
 
     <span class="n">callback_class_args</span><span class="p">[</span><span class="s2">&quot;fourier_shift&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fourier_shift</span>
     <span class="n">callback_class_args</span><span class="p">[</span><span class="s2">&quot;convolution_mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">convolution_mode</span>
@@ -1970,14 +1951,19 @@ document.write(`
 
     <span class="n">callbacks</span> <span class="o">=</span> <span class="n">callbacks</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n_callback_classes</span><span class="p">]</span>
     <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">tuple</span><span class="p">(</span><span class="n">callback</span><span class="o">.</span><span class="n">_postprocess</span><span class="p">(</span>
-            <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">fourier_shift</span><span class="p">,</span>
-            <span class="n">convolution_mode</span> <span class="o">=</span> <span class="n">convolution_mode</span><span class="p">,</span>
-            <span class="n">targetshape</span> <span class="o">=</span> <span class="n">setup</span><span class="p">[</span><span class="s2">&quot;targetshape&quot;</span><span class="p">],</span>
-            <span class="n">templateshape</span> <span class="o">=</span> <span class="n">setup</span><span class="p">[</span><span class="s2">&quot;templateshape&quot;</span><span class="p">],</span>
-            <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;shared_memory_handler&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="p">))</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="s2">&quot;_postprocess&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span> <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">callback</span><span class="o">.</span><span class="n">_postprocess</span><span class="p">(</span>
+                <span class="n">fourier_shift</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">,</span>
+                <span class="n">convolution_mode</span><span class="o">=</span><span class="n">convolution_mode</span><span class="p">,</span>
+                <span class="n">targetshape</span><span class="o">=</span><span class="n">setup</span><span class="p">[</span><span class="s2">&quot;targetshape&quot;</span><span class="p">],</span>
+                <span class="n">templateshape</span><span class="o">=</span><span class="n">setup</span><span class="p">[</span><span class="s2">&quot;templateshape&quot;</span><span class="p">],</span>
+                <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;shared_memory_handler&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="s2">&quot;_postprocess&quot;</span><span class="p">)</span>
+        <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span>
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="p">]</span>
     <span class="n">backend</span><span class="o">.</span><span class="n">free_cache</span><span class="p">()</span>
 

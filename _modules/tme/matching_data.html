@@ -897,6 +897,8 @@ document.write(`
 
             <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">,</span> <span class="n">shape_diff</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">)</span>
 
+        <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype_int</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">fourier_shift</span></div>
 
 

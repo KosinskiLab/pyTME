@@ -2004,10 +2004,7 @@ document.write(`
         <span class="n">ret</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
 
         <span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">)</span>
-        <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
-           <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span>
-           <span class="n">center</span>
-        <span class="p">)</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span> <span class="n">center</span><span class="p">)</span>
 
         <span class="n">ret</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
             <span class="n">translation</span><span class="o">=</span><span class="n">shift</span><span class="p">,</span>

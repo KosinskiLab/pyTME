@@ -890,6 +890,33 @@ document.write(`
 <div class="viewcode-block" id="FLC">
 <a class="viewcode-back" href="../../reference/api/tme.matching_optimization.FLC.html#tme.matching_optimization.FLC">[docs]</a>
 <span class="k">class</span> <span class="nc">FLC</span><span class="p">(</span><span class="n">_MatchDensityToDensity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes a normalized cross-correlation score of a target f a template g</span>
+<span class="sd">    and a mask m:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\frac{CC(f, \\frac{g*m - \\overline{g*m}}{\\sigma_{g*m}})}</span>
+<span class="sd">        {N_m * \\sqrt{</span>
+<span class="sd">            \\frac{CC(f^2, m)}{N_m} - (\\frac{CC(f, m)}{N_m})^2}</span>
+<span class="sd">        }</span>
+
+<span class="sd">    Where:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        CC(f,g) = \\mathcal{F}^{-1}(\\mathcal{F}(f) \\cdot \\mathcal{F}(g)^*)</span>
+
+<span class="sd">    and Nm is the number of voxels within the template mask m.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  W. Wan, S. Khavnekar, J. Wagner, P. Erdmann, and W. Baumeister</span>
+<span class="sd">            Microsc. Microanal. 26, 2516 (2020)</span>
+<span class="sd">    .. [2]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,</span>
+<span class="sd">            and F. Förster, J. Struct. Biol. 178, 177 (2012).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="vm">__doc__</span> <span class="o">+=</span> <span class="n">_MatchDensityToDensity</span><span class="o">.</span><span class="vm">__doc__</span>
 
     <span class="k">def</span> <span class="nf">_post_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>

@@ -418,7 +418,7 @@ document.write(`
 <a class="viewcode-back" href="../../reference/api/tme.preprocessor.Preprocessor.apply_method.html#tme.preprocessor.Preprocessor.apply_method">[docs]</a>
     <span class="k">def</span> <span class="nf">apply_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Apply a method on the atomic structure.</span>
+<span class="sd">        Invoke ``Preprocessor.method`` using ``parameters``.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1572,6 +1572,7 @@ document.write(`
         <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
         <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">weights</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">omit_negative_frequencies</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1602,6 +1603,8 @@ document.write(`
 <span class="sd">            - 2 for X-axis</span>
 <span class="sd">        sigma : float, optional</span>
 <span class="sd">            Standard deviation for Gaussian kernel used for smoothing the wedge.</span>
+<span class="sd">        weights : float, tuple of float</span>
+<span class="sd">            Weight of each element in the wedge. Defaults to one.</span>
 <span class="sd">        omit_negative_frequencies : bool, optional</span>
 <span class="sd">            Whether the wedge mask should omit negative frequencies, i.e. be</span>
 <span class="sd">            applicable to symmetric Fourier transforms (see :obj:`numpy.fft.fftn`)</span>
@@ -1625,16 +1628,17 @@ document.write(`
         <span class="k">if</span> <span class="n">tilt_angles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">tilt_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">start_tilt</span><span class="p">,</span> <span class="n">stop_tilt</span> <span class="o">+</span> <span class="n">tilt_step</span><span class="p">,</span> <span class="n">tilt_step</span><span class="p">)</span>
 
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">tilt_angles</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">weights</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
         <span class="n">plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">shape</span><span class="p">[</span><span class="n">opening_axis</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">subset</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">slice</span><span class="p">(</span><span class="n">x</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">plane</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">plane</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">plane_rotated</span><span class="p">,</span> <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">plane</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tilt_angles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">plane_rotated</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
+            <span class="n">plane</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
             <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">euler_to_rotationmatrix</span><span class="p">((</span><span class="n">tilt_angles</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>
             <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))]</span>
 
@@ -1647,10 +1651,13 @@ document.write(`
             <span class="p">)</span>
             <span class="n">wedge_volume</span> <span class="o">+=</span> <span class="n">plane_rotated</span>
 
-        <span class="n">wedge_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span>
-            <span class="n">template</span><span class="o">=</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">fourier</span><span class="o">=</span><span class="kc">False</span>
-        <span class="p">)</span>
-        <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">wedge_volume</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Ramp filtering would be more accurate</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">wedge_volume</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sigma</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">wedge_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span>
+                <span class="n">template</span><span class="o">=</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">fourier</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">opening_axis</span> <span class="o">&gt;</span> <span class="n">tilt_axis</span><span class="p">:</span>
             <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>

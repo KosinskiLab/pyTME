@@ -46,6 +46,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=4ea706d9"></script>
     <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/tme.matching_optimization.FLC';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -917,10 +918,17 @@ document.write(`
 <dt class="sig sig-object py" id="tme.matching_optimization.FLC">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FLC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_target_edges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_fourier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotate_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negate_score</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/matching_optimization.html#FLC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.matching_optimization.FLC" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_MatchDensityToDensity</span></code></p>
-<p>Implements various methods for non-exhaustive template matching
-based on numerical optimization.</p>
-<p>Copyright (c) 2023 European Molecular Biology Laboratory</p>
-<p>Author: Valentin Maurer &lt;<a class="reference external" href="mailto:valentin&#46;maurer&#37;&#52;&#48;embl-hamburg&#46;de">valentin<span>&#46;</span>maurer<span>&#64;</span>embl-hamburg<span>&#46;</span>de</a>&gt;</p>
+<p>Computes a normalized cross-correlation score of a target f a template g
+and a mask m:</p>
+<div class="math notranslate nohighlight">
+\[\frac{CC(f, \frac{g*m - \overline{g*m}}{\sigma_{g*m}})}
+{N_m * \sqrt{
+    \frac{CC(f^2, m)}{N_m} - (\frac{CC(f, m)}{N_m})^2}
+}\]</div>
+<p>Where:</p>
+<div class="math notranslate nohighlight">
+\[CC(f,g) = \mathcal{F}^{-1}(\mathcal{F}(f) \cdot \mathcal{F}(g)^*)\]</div>
+<p>and Nm is the number of voxels within the template mask m.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -947,6 +955,19 @@ based on numerical optimization.</p>
 </dl>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<div role="list" class="citation-list">
+<div class="citation" id="r79a99e8f8cda-1" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>W. Wan, S. Khavnekar, J. Wagner, P. Erdmann, and W. Baumeister
+Microsc. Microanal. 26, 2516 (2020)</p>
+</div>
+<div class="citation" id="r79a99e8f8cda-2" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
+and F. Förster, J. Struct. Biol. 178, 177 (2012).</p>
+</div>
+</div>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>

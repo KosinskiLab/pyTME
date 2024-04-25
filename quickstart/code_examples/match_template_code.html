@@ -380,14 +380,16 @@ document.write(`
 <span class="kn">import</span> <span class="nn">importlib.util</span>
 <span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">exit</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">abspath</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">abspath</span><span class="p">,</span> <span class="n">exists</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span><span class="p">,</span> <span class="n">Preprocessor</span><span class="p">,</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span><span class="p">,</span> <span class="n">__version__</span>
 <span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">get_rotation_matrices</span><span class="p">,</span>
+    <span class="n">get_rotations_around_vector</span><span class="p">,</span>
     <span class="n">compute_parallelization_schedule</span><span class="p">,</span>
     <span class="n">euler_from_rotationmatrix</span><span class="p">,</span>
     <span class="n">scramble_phases</span><span class="p">,</span>
@@ -401,6 +403,7 @@ document.write(`
     <span class="n">PeakCallerMaximumFilter</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">tme.backends</span> <span class="kn">import</span> <span class="n">backend</span>
+<span class="kn">from</span> <span class="nn">tme.preprocessing</span> <span class="kn">import</span> <span class="n">Compose</span>
 
 
 <span class="k">def</span> <span class="nf">get_func_fullname</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -519,6 +522,152 @@ document.write(`
     <span class="k">return</span> <span class="kc">True</span>
 
 
+<span class="k">def</span> <span class="nf">parse_rotation_logic</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rotations</span> <span class="o">=</span> <span class="n">get_rotation_matrices</span><span class="p">(</span>
+            <span class="n">angular_sampling</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">,</span>
+            <span class="n">dim</span><span class="o">=</span><span class="n">ndim</span><span class="p">,</span>
+            <span class="n">use_optimized_set</span><span class="o">=</span><span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_use_optimized_set</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span> <span class="o">&gt;=</span> <span class="mi">180</span><span class="p">:</span>
+            <span class="n">rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rotations</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">axis_sampling</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">axis_sampling</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">cone_sampling</span>
+
+    <span class="n">rotations</span> <span class="o">=</span> <span class="n">get_rotations_around_vector</span><span class="p">(</span>
+        <span class="n">cone_angle</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cone_angle</span><span class="p">,</span>
+        <span class="n">cone_sampling</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cone_sampling</span><span class="p">,</span>
+        <span class="n">axis_angle</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">axis_angle</span><span class="p">,</span>
+        <span class="n">axis_sampling</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">axis_sampling</span><span class="p">,</span>
+        <span class="n">n_symmetry</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">axis_symmetry</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">rotations</span>
+
+
+<span class="c1"># TODO: Think about whether wedge mask should also be added to target</span>
+<span class="c1"># For now leave it at the cost of incorrect upper bound on the scores</span>
+<span class="k">def</span> <span class="nf">setup_filter</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">Density</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Density</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Compose</span><span class="p">,</span> <span class="n">Compose</span><span class="p">]:</span>
+    <span class="kn">from</span> <span class="nn">tme.preprocessing</span> <span class="kn">import</span> <span class="n">LinearWhiteningFilter</span><span class="p">,</span> <span class="n">BandPassFilter</span>
+    <span class="kn">from</span> <span class="nn">tme.preprocessing.tilt_series</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">Wedge</span><span class="p">,</span>
+        <span class="n">WedgeReconstructed</span><span class="p">,</span>
+        <span class="n">ReconstructFromTilt</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">template_filter</span><span class="p">,</span> <span class="n">target_filter</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_angles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">wedge</span> <span class="o">=</span> <span class="n">Wedge</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">tilt_angles</span><span class="p">)</span>
+            <span class="n">wedge</span><span class="o">.</span><span class="n">weight_type</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_weighting</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_weighting</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">wedge</span> <span class="o">=</span> <span class="n">WedgeReconstructed</span><span class="p">(</span>
+                    <span class="n">angles</span><span class="o">=</span><span class="n">wedge</span><span class="o">.</span><span class="n">angles</span><span class="p">,</span> <span class="n">weight_wedge</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">tilt_weighting</span> <span class="o">==</span> <span class="s2">&quot;angle&quot;</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="n">tilt_step</span><span class="p">,</span> <span class="n">create_continuous_wedge</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span>
+            <span class="n">tilt_start</span><span class="p">,</span> <span class="n">tilt_stop</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_angles</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">tilt_stop</span><span class="p">:</span>
+                <span class="n">create_continuous_wedge</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">tilt_stop</span><span class="p">,</span> <span class="n">tilt_step</span> <span class="o">=</span> <span class="n">tilt_stop</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+            <span class="n">tilt_start</span><span class="p">,</span> <span class="n">tilt_stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tilt_start</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">tilt_stop</span><span class="p">)</span>
+            <span class="n">tilt_angles</span> <span class="o">=</span> <span class="p">(</span><span class="n">tilt_start</span><span class="p">,</span> <span class="n">tilt_stop</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tilt_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tilt_step</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tilt_step</span><span class="p">)</span>
+                <span class="n">tilt_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+                    <span class="o">-</span><span class="n">tilt_start</span><span class="p">,</span> <span class="n">tilt_stop</span> <span class="o">+</span> <span class="n">tilt_step</span><span class="p">,</span> <span class="n">tilt_step</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_weighting</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tilt_step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Tilt weighting is not supported for continuous wedges.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_weighting</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Tilt weighting schemes other than &#39;angle&#39; or &#39;None&#39; require &quot;</span>
+                    <span class="s2">&quot;a specification of electron doses.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="n">wedge</span> <span class="o">=</span> <span class="n">Wedge</span><span class="p">(</span>
+                <span class="n">angles</span><span class="o">=</span><span class="n">tilt_angles</span><span class="p">,</span>
+                <span class="n">opening_axis</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">tilt_axis</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">weight_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">tilt_angles</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_weighting</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">wedge</span> <span class="o">=</span> <span class="n">WedgeReconstructed</span><span class="p">(</span>
+                    <span class="n">angles</span><span class="o">=</span><span class="n">tilt_angles</span><span class="p">,</span>
+                    <span class="n">weight_wedge</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">tilt_weighting</span> <span class="o">==</span> <span class="s2">&quot;angle&quot;</span><span class="p">,</span>
+                    <span class="n">create_continuous_wedge</span><span class="o">=</span><span class="n">create_continuous_wedge</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="n">wedge</span><span class="o">.</span><span class="n">opening_axis</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">wedge</span><span class="o">.</span><span class="n">tilt_axis</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">wedge</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="n">template_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wedge</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wedge</span><span class="p">,</span> <span class="n">WedgeReconstructed</span><span class="p">):</span>
+            <span class="n">template_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ReconstructFromTilt</span><span class="p">(</span>
+                <span class="n">reconstruction_filter</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">reconstruction_filter</span>
+            <span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">tme.preprocessing.tilt_series</span> <span class="kn">import</span> <span class="n">CTF</span>
+
+        <span class="n">ctf</span> <span class="o">=</span> <span class="n">CTF</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span><span class="p">)</span>
+        <span class="n">n_tilts_ctfs</span><span class="p">,</span> <span class="n">n_tils_angles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ctf</span><span class="o">.</span><span class="n">defocus_x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">wedge</span><span class="o">.</span><span class="n">angles</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_tilts_ctfs</span> <span class="o">!=</span> <span class="n">n_tils_angles</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;CTF file contains </span><span class="si">{</span><span class="n">n_tilts_ctfs</span><span class="si">}</span><span class="s2"> micrographs, but match_template &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;recieved </span><span class="si">{</span><span class="n">n_tils_angles</span><span class="si">}</span><span class="s2"> tilt angles. Expected one angle &quot;</span>
+                <span class="s2">&quot;per micrograph.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">ctf</span><span class="o">.</span><span class="n">angles</span> <span class="o">=</span> <span class="n">wedge</span><span class="o">.</span><span class="n">angles</span>
+        <span class="n">ctf</span><span class="o">.</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">ctf</span><span class="o">.</span><span class="n">tilt_axis</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">template_filter</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">ReconstructFromTilt</span><span class="p">):</span>
+            <span class="n">template_filter</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ctf</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">template_filter</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ctf</span><span class="p">)</span>
+            <span class="n">template_filter</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ReconstructFromTilt</span><span class="p">(</span>
+                <span class="n">reconstruction_filter</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">reconstruction_filter</span>
+            <span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">lowpass</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">highpass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">lowpass</span><span class="p">,</span> <span class="n">highpass</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">lowpass</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">highpass</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">pass_format</span> <span class="o">==</span> <span class="s2">&quot;voxel&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">lowpass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">lowpass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">lowpass</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">highpass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">highpass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">highpass</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">pass_format</span> <span class="o">==</span> <span class="s2">&quot;frequency&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">lowpass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">lowpass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">lowpass</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">highpass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">highpass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">highpass</span><span class="p">))</span>
+
+        <span class="n">bandpass</span> <span class="o">=</span> <span class="n">BandPassFilter</span><span class="p">(</span>
+            <span class="n">use_gaussian</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">no_pass_smooth</span><span class="p">,</span>
+            <span class="n">lowpass</span><span class="o">=</span><span class="n">lowpass</span><span class="p">,</span>
+            <span class="n">highpass</span><span class="o">=</span><span class="n">highpass</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">template_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+        <span class="n">target_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">whiten_spectrum</span><span class="p">:</span>
+        <span class="n">whitening_filter</span> <span class="o">=</span> <span class="n">LinearWhiteningFilter</span><span class="p">()</span>
+        <span class="n">template_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">whitening_filter</span><span class="p">)</span>
+        <span class="n">target_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">whitening_filter</span><span class="p">)</span>
+
+    <span class="n">template_filter</span> <span class="o">=</span> <span class="n">Compose</span><span class="p">(</span><span class="n">template_filter</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_filter</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">target_filter</span> <span class="o">=</span> <span class="n">Compose</span><span class="p">(</span><span class="n">target_filter</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_filter</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">template_filter</span><span class="p">,</span> <span class="n">target_filter</span>
+
+
 <span class="k">def</span> <span class="nf">parse_args</span><span class="p">():</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Perform template matching.&quot;</span><span class="p">)</span>
 
@@ -597,15 +746,65 @@ document.write(`
         <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Perform peak calling instead of score aggregation.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">scoring_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+
+    <span class="n">angular_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Angular Sampling&quot;</span><span class="p">)</span>
+    <span class="n">angular_exclusive</span> <span class="o">=</span> <span class="n">angular_group</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">angular_exclusive</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-a&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;angular_sampling&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="n">check_positive</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Angular sampling rate for template matching. &quot;</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Angular sampling rate using optimized rotational sets.&quot;</span>
         <span class="s2">&quot;A lower number yields more rotations. Values &gt;= 180 sample only the identity.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-
+    <span class="n">angular_exclusive</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--cone_angle&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;cone_angle&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">check_positive</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Half-angle of the cone to be sampled in degrees. Allows to sample a &quot;</span>
+        <span class="s2">&quot;narrow interval around a known orientation, e.g. for surface oversampling.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">angular_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--cone_sampling&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;cone_sampling&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">check_positive</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Sampling rate of the cone in degrees.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">angular_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--axis_angle&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;axis_angle&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">check_positive</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">360.0</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Sampling angle along the z-axis of the cone. Defaults to 360.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">angular_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--axis_sampling&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;axis_sampling&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">check_positive</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Sampling rate along the z-axis of the cone. Defaults to --cone_sampling.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">angular_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--axis_symmetry&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;axis_symmetry&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">check_positive</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;N-fold symmetry around z-axis of the cone.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">angular_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--no_use_optimized_set&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;no_use_optimized_set&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Whether to use random uniform instead of optimized rotation sets.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">computation_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Computation&quot;</span><span class="p">)</span>
     <span class="n">computation_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
@@ -652,21 +851,6 @@ document.write(`
         <span class="s2">&quot;ignored if --ram is set&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">computation_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--use_mixed_precision&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;use_mixed_precision&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use float16 for real values operations where possible.&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">computation_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--use_memmap&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;use_memmap&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use memmaps to offload large data objects to disk. &quot;</span>
-        <span class="s2">&quot;Particularly useful for large inputs in combination with --use_gpu.&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">computation_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--temp_directory&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;temp_directory&quot;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -675,61 +859,93 @@ document.write(`
 
     <span class="n">filter_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Filters&quot;</span><span class="p">)</span>
     <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--gaussian_sigma&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;gaussian_sigma&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--lowpass&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;lowpass&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Sigma parameter for Gaussian filtering the template.&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Resolution to lowpass filter template and target to in the same unit &quot;</span>
+        <span class="s2">&quot;as the sampling rate of template and target (typically Ångstrom).&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--bandpass_band&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;bandpass_band&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--highpass&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;highpass&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Resolution to highpass filter template and target to in the same unit &quot;</span>
+        <span class="s2">&quot;as the sampling rate of template and target (typically Ångstrom).&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--no_pass_smooth&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;no_pass_smooth&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_false&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Whether a hard edge filter should be used for --lowpass and --highpass.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--pass_format&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;pass_format&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Comma separated start and stop frequency for bandpass filtering the&quot;</span>
-        <span class="s2">&quot; template, e.g. 0.1, 0.5&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sampling_rate&quot;</span><span class="p">,</span> <span class="s2">&quot;voxel&quot;</span><span class="p">,</span> <span class="s2">&quot;frequency&quot;</span><span class="p">],</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;How values passed to --lowpass and --highpass should be interpreted. &quot;</span>
+        <span class="s2">&quot;By default, they are assumed to be in units of sampling rate, e.g. Ångstrom.&quot;</span>
     <span class="p">)</span>
     <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--bandpass_smooth&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;bandpass_smooth&quot;</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;--whiten_spectrum&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;whiten_spectrum&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Sigma smooth parameter for the bandpass filter.&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--tilt_range&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;tilt_range&quot;</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Comma separated start and stop stage tilt angle, e.g. &#39;50,45&#39;. Used&quot;</span>
-        <span class="s2">&quot; to create a wedge mask to be applied to the template.&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--tilt_step&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;tilt_step&quot;</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Step size between tilts. e.g. &#39;5&#39;. When set the wedge mask&quot;</span>
-        <span class="s2">&quot; reflects the individual tilts, otherwise a continuous mask is used.&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Apply spectral whitening to template and target based on target spectrum.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--wedge_axes&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;wedge_axes&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;0,2&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Axis index of wedge opening and tilt axis, e.g. 0,2 for a wedge that is open in&quot;</span>
-        <span class="s2">&quot; z and tilted over x.&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Indices of wedge opening and tilt axis, e.g. 0,2 for a wedge that is open &quot;</span>
+        <span class="s2">&quot;in z-direction and tilted over the x axis.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--wedge_smooth&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;wedge_smooth&quot;</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="s2">&quot;--tilt_angles&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;tilt_angles&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Sigma smooth parameter for the wedge mask.&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a tab-separated file containing the column angles and optionally &quot;</span>
+        <span class="s2">&quot; weights, or comma separated start and stop stage tilt angle, e.g. 50,45, which &quot;</span>
+        <span class="s2">&quot; yields a continuous wedge mask. Alternatively, a tilt step size can be &quot;</span>
+        <span class="s2">&quot;specified like 50,45:5.0 to sample 5.0 degree tilt angle steps.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--tilt_weighting&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;tilt_weighting&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="s2">&quot;relion&quot;</span><span class="p">,</span> <span class="s2">&quot;grigorieff&quot;</span><span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Weighting scheme used to reweight individual tilts. Available options: &quot;</span>
+        <span class="s2">&quot;angle (cosine based weighting), &quot;</span>
+        <span class="s2">&quot;relion (relion formalism for wedge weighting) requires,&quot;</span>
+        <span class="s2">&quot;grigorieff (exposure filter as defined in Grant and Grigorieff 2015).&quot;</span>
+        <span class="s2">&quot;relion and grigorieff require electron doses in --tilt_angles weights column.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># filter_group.add_argument(</span>
+    <span class="c1">#     &quot;--ctf_file&quot;,</span>
+    <span class="c1">#     dest=&quot;ctf_file&quot;,</span>
+    <span class="c1">#     type=str,</span>
+    <span class="c1">#     required=False,</span>
+    <span class="c1">#     default=None,</span>
+    <span class="c1">#     help=&quot;Path to a file with CTF parameters from CTFFIND4.&quot;,</span>
+    <span class="c1"># )</span>
+    <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--reconstruction_filter&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;reconstruction_filter&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ram-lak&quot;</span><span class="p">,</span> <span class="s2">&quot;ramp&quot;</span><span class="p">,</span> <span class="s2">&quot;shepp-logan&quot;</span><span class="p">,</span> <span class="s2">&quot;cosine&quot;</span><span class="p">,</span> <span class="s2">&quot;hamming&quot;</span><span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Filter applied when reconstructing (N+1)-D from N-D filters.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">performance_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Performance&quot;</span><span class="p">)</span>
@@ -781,6 +997,21 @@ document.write(`
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Spline interpolation used for template rotations. If less than zero &quot;</span>
         <span class="s2">&quot;no interpolation is performed.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">performance_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--use_mixed_precision&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;use_mixed_precision&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use float16 for real values operations where possible.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">performance_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--use_memmap&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;use_memmap&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use memmaps to offload large data objects to disk. &quot;</span>
+        <span class="s2">&quot;Particularly useful for large inputs in combination with --use_gpu.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">analyzer_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Analyzer&quot;</span><span class="p">)</span>
     <span class="n">analyzer_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
@@ -796,6 +1027,8 @@ document.write(`
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">temp_directory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">default</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
@@ -828,6 +1061,21 @@ document.write(`
         <span class="n">args</span><span class="o">.</span><span class="n">gpu_indices</span> <span class="o">=</span> <span class="p">[</span>
             <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
         <span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_angles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Need to specify --wedge_axes when --tilt_angles is set.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">tilt_angles</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">tilt_angles</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">tilt_angles</span><span class="si">}</span><span class="s2"> is not a file nor a range.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_angles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Need to specify --tilt_angles when --ctf_file is set.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">args</span>
 
@@ -904,51 +1152,6 @@ document.write(`
             <span class="s2">&quot;Final Shape&quot;</span><span class="p">:</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">)</span>
-
-    <span class="n">template_filter</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">gaussian_sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="p">()</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span>
-            <span class="n">sigma</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">gaussian_sigma</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">data</span>
-        <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">bandpass_band</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">bandpass_start</span><span class="p">,</span> <span class="n">bandpass_stop</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">bandpass_band</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
-        <span class="p">]</span>
-        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">bandpass_smooth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">args</span><span class="o">.</span><span class="n">bandpass_smooth</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;bandpass_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;minimum_frequency&quot;</span><span class="p">:</span> <span class="n">bandpass_start</span><span class="p">,</span>
-            <span class="s2">&quot;maximum_frequency&quot;</span><span class="p">:</span> <span class="n">bandpass_stop</span><span class="p">,</span>
-            <span class="s2">&quot;gaussian_sigma&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">bandpass_smooth</span><span class="p">,</span>
-        <span class="p">}</span>
-
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
-        <span class="n">tilt_start</span><span class="p">,</span> <span class="n">tilt_stop</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_range</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
-        <span class="n">opening_axis</span><span class="p">,</span> <span class="n">tilt_axis</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
-
-        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;step_wedge_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;start_tilt&quot;</span><span class="p">:</span> <span class="n">tilt_start</span><span class="p">,</span>
-                <span class="s2">&quot;stop_tilt&quot;</span><span class="p">:</span> <span class="n">tilt_stop</span><span class="p">,</span>
-                <span class="s2">&quot;tilt_step&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_step</span><span class="p">,</span>
-                <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span><span class="p">,</span>
-                <span class="s2">&quot;opening_axis&quot;</span><span class="p">:</span> <span class="n">opening_axis</span><span class="p">,</span>
-                <span class="s2">&quot;tilt_axis&quot;</span><span class="p">:</span> <span class="n">tilt_axis</span><span class="p">,</span>
-                <span class="s2">&quot;omit_negative_frequencies&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="p">}</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;continuous_wedge_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;start_tilt&quot;</span><span class="p">:</span> <span class="n">tilt_start</span><span class="p">,</span>
-                <span class="s2">&quot;stop_tilt&quot;</span><span class="p">:</span> <span class="n">tilt_stop</span><span class="p">,</span>
-                <span class="s2">&quot;tilt_axis&quot;</span><span class="p">:</span> <span class="n">tilt_axis</span><span class="p">,</span>
-                <span class="s2">&quot;opening_axis&quot;</span><span class="p">:</span> <span class="n">opening_axis</span><span class="p">,</span>
-                <span class="s2">&quot;infinite_plane&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_smooth</span><span class="p">,</span>
-                <span class="s2">&quot;omit_negative_frequencies&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="p">}</span>
 
     <span class="k">if</span> <span class="n">template_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">template_mask</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">empty</span>
@@ -1063,21 +1266,13 @@ document.write(`
         <span class="p">)</span>
         <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="n">analyzer_args</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;score_threshold&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">score_threshold</span><span class="p">,</span>
-        <span class="s2">&quot;number_of_peaks&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
-        <span class="s2">&quot;convolution_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;use_memmap&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">use_memmap</span><span class="p">,</span>
-    <span class="p">}</span>
-
     <span class="n">matching_setup</span><span class="p">,</span> <span class="n">matching_score</span> <span class="o">=</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">score</span><span class="p">]</span>
     <span class="n">matching_data</span> <span class="o">=</span> <span class="n">MatchingData</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">get_rotation_matrices</span><span class="p">(</span>
-        <span class="n">angular_sampling</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span>
-    <span class="p">)</span>
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">angular_sampling</span> <span class="o">&gt;=</span> <span class="mi">180</span><span class="p">:</span>
-        <span class="n">ndim</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span>
-        <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">parse_rotation_logic</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
+
+    <span class="n">template_filter</span><span class="p">,</span> <span class="n">target_filter</span> <span class="o">=</span> <span class="n">setup_filter</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">target_filter</span> <span class="o">=</span> <span class="n">target_filter</span>
 
     <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span>
     <span class="n">matching_data</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">invert_target_contrast</span>
@@ -1115,10 +1310,35 @@ document.write(`
         <span class="n">label_width</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Analyzer&quot;</span><span class="p">:</span> <span class="n">callback_class</span><span class="p">,</span> <span class="o">**</span><span class="n">analyzer_args</span><span class="p">}</span>
+    <span class="n">filter_args</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Lowpass&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">lowpass</span><span class="p">,</span>
+        <span class="s2">&quot;Highpass&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">highpass</span><span class="p">,</span>
+        <span class="s2">&quot;Smooth Pass&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">no_pass_smooth</span><span class="p">,</span>
+        <span class="s2">&quot;Pass Format&quot;</span> <span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">pass_format</span><span class="p">,</span>
+        <span class="s2">&quot;Spectral Whitening&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">whiten_spectrum</span><span class="p">,</span>
+        <span class="s2">&quot;Wedge Axes&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span><span class="p">,</span>
+        <span class="s2">&quot;Tilt Angles&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_angles</span><span class="p">,</span>
+        <span class="s2">&quot;Tilt Weighting&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_weighting</span><span class="p">,</span>
+        <span class="s2">&quot;CTF&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">filter_args</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">filter_args</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filter_args</span><span class="p">):</span>
+        <span class="n">print_block</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Filters&quot;</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">filter_args</span><span class="p">,</span>
+            <span class="n">label_width</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">analyzer_args</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;score_threshold&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">score_threshold</span><span class="p">,</span>
+        <span class="s2">&quot;number_of_peaks&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="s2">&quot;convolution_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;use_memmap&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">use_memmap</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">analyzer_args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Analyzer&quot;</span><span class="p">:</span> <span class="n">callback_class</span><span class="p">,</span> <span class="o">**</span><span class="n">analyzer_args</span><span class="p">}</span>
     <span class="n">print_block</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Score Analysis Options&quot;</span><span class="p">,</span>
-        <span class="n">data</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">analyzer_args</span><span class="p">,</span>
         <span class="n">label_width</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
@@ -1157,7 +1377,6 @@ document.write(`
                 <span class="p">)</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="p">}</span>
-
     <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">target</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
     <span class="n">write_pickle</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">candidates</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
 

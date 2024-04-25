@@ -1186,10 +1186,8 @@ document.write(`
         <span class="k">if</span> <span class="n">rotate_mask</span><span class="p">:</span>
             <span class="n">mask_rotated</span> <span class="o">=</span> <span class="n">mask_rotated</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">out_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">mask_rotated</span> <span class="o">-=</span> <span class="n">out_offset</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
-                <span class="n">out_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-                    <span class="n">coordinates_rotated</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span>
-                <span class="p">)</span>
+                <span class="c1"># mask_rotated -= out_offset[:, None]</span>
+                <span class="n">out_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mask_rotated</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
             <span class="n">in_box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
                 <span class="n">mask_rotated</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">out_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">],</span>
