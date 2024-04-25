@@ -11,14 +11,16 @@ import warnings
 import importlib.util
 from sys import exit
 from time import time
+from typing import Tuple
 from copy import deepcopy
-from os.path import abspath
+from os.path import abspath, exists
 
 import numpy as np
 
-from tme import Density, Preprocessor, __version__
+from tme import Density, __version__
 from tme.matching_utils import (
     get_rotation_matrices,
+    get_rotations_around_vector,
     compute_parallelization_schedule,
     euler_from_rotationmatrix,
     scramble_phases,
@@ -32,6 +34,7 @@ from tme.analyzer import (
     PeakCallerMaximumFilter,
 )
 from tme.backends import backend
+from tme.preprocessing import Compose
 
 
 def get_func_fullname(func) -> str:
@@ -150,6 +153,152 @@ def crop_data(data: Density, cutoff: float, data_mask: Density = None) -> bool:
     return True
 
 
+def parse_rotation_logic(args, ndim):
+    if args.angular_sampling is not None:
+        rotations = get_rotation_matrices(
+            angular_sampling=args.angular_sampling,
+            dim=ndim,
+            use_optimized_set=not args.no_use_optimized_set,
+        )
+        if args.angular_sampling >= 180:
+            rotations = np.eye(ndim).reshape(1, ndim, ndim)
+        return rotations
+
+    if args.axis_sampling is None:
+        args.axis_sampling = args.cone_sampling
+
+    rotations = get_rotations_around_vector(
+        cone_angle=args.cone_angle,
+        cone_sampling=args.cone_sampling,
+        axis_angle=args.axis_angle,
+        axis_sampling=args.axis_sampling,
+        n_symmetry=args.axis_symmetry,
+    )
+    return rotations
+
+
+# TODO: Think about whether wedge mask should also be added to target
+# For now leave it at the cost of incorrect upper bound on the scores
+def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Compose]:
+    from tme.preprocessing import LinearWhiteningFilter, BandPassFilter
+    from tme.preprocessing.tilt_series import (
+        Wedge,
+        WedgeReconstructed,
+        ReconstructFromTilt,
+    )
+
+    template_filter, target_filter = [], []
+    if args.tilt_angles is not None:
+        try:
+            wedge = Wedge.from_file(args.tilt_angles)
+            wedge.weight_type = args.tilt_weighting
+            if args.tilt_weighting in ("angle", None) and args.ctf_file is None:
+                wedge = WedgeReconstructed(
+                    angles=wedge.angles, weight_wedge=args.tilt_weighting == "angle"
+                )
+        except FileNotFoundError:
+            tilt_step, create_continuous_wedge = None, True
+            tilt_start, tilt_stop = args.tilt_angles.split(",")
+            if ":" in tilt_stop:
+                create_continuous_wedge = False
+                tilt_stop, tilt_step = tilt_stop.split(":")
+            tilt_start, tilt_stop = float(tilt_start), float(tilt_stop)
+            tilt_angles = (tilt_start, tilt_stop)
+            if tilt_step is not None:
+                tilt_step = float(tilt_step)
+                tilt_angles = np.arange(
+                    -tilt_start, tilt_stop + tilt_step, tilt_step
+                ).tolist()
+
+            if args.tilt_weighting is not None and tilt_step is None:
+                raise ValueError(
+                    "Tilt weighting is not supported for continuous wedges."
+                )
+            if args.tilt_weighting not in ("angle", None):
+                raise ValueError(
+                    "Tilt weighting schemes other than 'angle' or 'None' require "
+                    "a specification of electron doses."
+                )
+
+            wedge = Wedge(
+                angles=tilt_angles,
+                opening_axis=args.wedge_axes[0],
+                tilt_axis=args.wedge_axes[1],
+                shape=None,
+                weight_type=None,
+                weights=np.ones_like(tilt_angles),
+            )
+            if args.tilt_weighting in ("angle", None) and args.ctf_file is None:
+                wedge = WedgeReconstructed(
+                    angles=tilt_angles,
+                    weight_wedge=args.tilt_weighting == "angle",
+                    create_continuous_wedge=create_continuous_wedge,
+                )
+
+        wedge.opening_axis = args.wedge_axes[0]
+        wedge.tilt_axis = args.wedge_axes[1]
+        wedge.sampling_rate = template.sampling_rate
+        template_filter.append(wedge)
+        if not isinstance(wedge, WedgeReconstructed):
+            template_filter.append(ReconstructFromTilt(
+                reconstruction_filter = args.reconstruction_filter
+            ))
+
+    if args.ctf_file is not None:
+        from tme.preprocessing.tilt_series import CTF
+
+        ctf = CTF.from_file(args.ctf_file)
+        n_tilts_ctfs, n_tils_angles = len(ctf.defocus_x), len(wedge.angles)
+        if n_tilts_ctfs != n_tils_angles:
+            raise ValueError(
+                f"CTF file contains {n_tilts_ctfs} micrographs, but match_template "
+                f"recieved {n_tils_angles} tilt angles. Expected one angle "
+                "per micrograph."
+            )
+        ctf.angles = wedge.angles
+        ctf.opening_axis, ctf.tilt_axis = args.wedge_axes
+
+        if isinstance(template_filter[-1], ReconstructFromTilt):
+            template_filter.insert(-1, ctf)
+        else:
+            template_filter.insert(0, ctf)
+            template_filter.insert(1, ReconstructFromTilt(
+                reconstruction_filter = args.reconstruction_filter
+            ))
+
+    if args.lowpass or args.highpass is not None:
+        lowpass, highpass = args.lowpass, args.highpass
+        if args.pass_format == "voxel":
+            if lowpass is not None:
+                lowpass = np.max(np.multiply(lowpass, template.sampling_rate))
+            if highpass is not None:
+                highpass = np.max(np.multiply(highpass, template.sampling_rate))
+        elif args.pass_format == "frequency":
+            if lowpass is not None:
+                lowpass = np.max(np.divide(template.sampling_rate, lowpass))
+            if highpass is not None:
+                highpass = np.max(np.divide(template.sampling_rate, highpass))
+
+        bandpass = BandPassFilter(
+            use_gaussian=args.no_pass_smooth,
+            lowpass=lowpass,
+            highpass=highpass,
+            sampling_rate=template.sampling_rate,
+        )
+        template_filter.append(bandpass)
+        target_filter.append(bandpass)
+
+    if args.whiten_spectrum:
+        whitening_filter = LinearWhiteningFilter()
+        template_filter.append(whitening_filter)
+        target_filter.append(whitening_filter)
+
+    template_filter = Compose(template_filter) if len(template_filter) else None
+    target_filter = Compose(target_filter) if len(target_filter) else None
+
+    return template_filter, target_filter
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Perform template matching.")
 
@@ -228,15 +377,65 @@ def parse_args():
         default=False,
         help="Perform peak calling instead of score aggregation.",
     )
-    scoring_group.add_argument(
+
+    angular_group = parser.add_argument_group("Angular Sampling")
+    angular_exclusive = angular_group.add_mutually_exclusive_group(required=True)
+
+    angular_exclusive.add_argument(
         "-a",
         dest="angular_sampling",
         type=check_positive,
-        default=40.0,
-        help="Angular sampling rate for template matching. "
+        default=None,
+        help="Angular sampling rate using optimized rotational sets."
         "A lower number yields more rotations. Values >= 180 sample only the identity.",
     )
-
+    angular_exclusive.add_argument(
+        "--cone_angle",
+        dest="cone_angle",
+        type=check_positive,
+        default=None,
+        help="Half-angle of the cone to be sampled in degrees. Allows to sample a "
+        "narrow interval around a known orientation, e.g. for surface oversampling.",
+    )
+    angular_group.add_argument(
+        "--cone_sampling",
+        dest="cone_sampling",
+        type=check_positive,
+        default=None,
+        help="Sampling rate of the cone in degrees.",
+    )
+    angular_group.add_argument(
+        "--axis_angle",
+        dest="axis_angle",
+        type=check_positive,
+        default=360.0,
+        required=False,
+        help="Sampling angle along the z-axis of the cone. Defaults to 360.",
+    )
+    angular_group.add_argument(
+        "--axis_sampling",
+        dest="axis_sampling",
+        type=check_positive,
+        default=None,
+        required=False,
+        help="Sampling rate along the z-axis of the cone. Defaults to --cone_sampling.",
+    )
+    angular_group.add_argument(
+        "--axis_symmetry",
+        dest="axis_symmetry",
+        type=check_positive,
+        default=1,
+        required=False,
+        help="N-fold symmetry around z-axis of the cone.",
+    )
+    angular_group.add_argument(
+        "--no_use_optimized_set",
+        dest="no_use_optimized_set",
+        action="store_true",
+        default=False,
+        required=False,
+        help="Whether to use random uniform instead of optimized rotation sets.",
+    )
 
     computation_group = parser.add_argument_group("Computation")
     computation_group.add_argument(
@@ -283,21 +482,6 @@ def parse_args():
         "ignored if --ram is set",
     )
     computation_group.add_argument(
-        "--use_mixed_precision",
-        dest="use_mixed_precision",
-        action="store_true",
-        default=False,
-        help="Use float16 for real values operations where possible.",
-    )
-    computation_group.add_argument(
-        "--use_memmap",
-        dest="use_memmap",
-        action="store_true",
-        default=False,
-        help="Use memmaps to offload large data objects to disk. "
-        "Particularly useful for large inputs in combination with --use_gpu.",
-    )
-    computation_group.add_argument(
         "--temp_directory",
         dest="temp_directory",
         default=None,
@@ -306,61 +490,93 @@ def parse_args():
 
     filter_group = parser.add_argument_group("Filters")
     filter_group.add_argument(
-        "--gaussian_sigma",
-        dest="gaussian_sigma",
+        "--lowpass",
+        dest="lowpass",
         type=float,
         required=False,
-        help="Sigma parameter for Gaussian filtering the template.",
+        help="Resolution to lowpass filter template and target to in the same unit "
+        "as the sampling rate of template and target (typically Ångstrom).",
     )
     filter_group.add_argument(
-        "--bandpass_band",
-        dest="bandpass_band",
+        "--highpass",
+        dest="highpass",
+        type=float,
+        required=False,
+        help="Resolution to highpass filter template and target to in the same unit "
+        "as the sampling rate of template and target (typically Ångstrom).",
+    )
+    filter_group.add_argument(
+        "--no_pass_smooth",
+        dest="no_pass_smooth",
+        action="store_false",
+        default=True,
+        help="Whether a hard edge filter should be used for --lowpass and --highpass."
+    )
+    filter_group.add_argument(
+        "--pass_format",
+        dest="pass_format",
         type=str,
         required=False,
-        help="Comma separated start and stop frequency for bandpass filtering the"
-        " template, e.g. 0.1, 0.5",
+        choices=["sampling_rate", "voxel", "frequency"],
+        help="How values passed to --lowpass and --highpass should be interpreted. "
+        "By default, they are assumed to be in units of sampling rate, e.g. Ångstrom."
     )
     filter_group.add_argument(
-        "--bandpass_smooth",
-        dest="bandpass_smooth",
-        type=float,
-        required=False,
+        "--whiten_spectrum",
+        dest="whiten_spectrum",
+        action="store_true",
         default=None,
-        help="Sigma smooth parameter for the bandpass filter.",
-    )
-    filter_group.add_argument(
-        "--tilt_range",
-        dest="tilt_range",
-        type=str,
-        required=False,
-        help="Comma separated start and stop stage tilt angle, e.g. '50,45'. Used"
-        " to create a wedge mask to be applied to the template.",
-    )
-    filter_group.add_argument(
-        "--tilt_step",
-        dest="tilt_step",
-        type=float,
-        required=False,
-        default=None,
-        help="Step size between tilts. e.g. '5'. When set the wedge mask"
-        " reflects the individual tilts, otherwise a continuous mask is used.",
+        help="Apply spectral whitening to template and target based on target spectrum.",
     )
     filter_group.add_argument(
         "--wedge_axes",
         dest="wedge_axes",
         type=str,
         required=False,
-        default="0,2",
-        help="Axis index of wedge opening and tilt axis, e.g. 0,2 for a wedge that is open in"
-        " z and tilted over x.",
+        default=None,
+        help="Indices of wedge opening and tilt axis, e.g. 0,2 for a wedge that is open "
+        "in z-direction and tilted over the x axis.",
     )
     filter_group.add_argument(
-        "--wedge_smooth",
-        dest="wedge_smooth",
-        type=float,
+        "--tilt_angles",
+        dest="tilt_angles",
+        type=str,
         required=False,
         default=None,
-        help="Sigma smooth parameter for the wedge mask.",
+        help="Path to a tab-separated file containing the column angles and optionally "
+        " weights, or comma separated start and stop stage tilt angle, e.g. 50,45, which "
+        " yields a continuous wedge mask. Alternatively, a tilt step size can be "
+        "specified like 50,45:5.0 to sample 5.0 degree tilt angle steps.",
+    )
+    filter_group.add_argument(
+        "--tilt_weighting",
+        dest="tilt_weighting",
+        type=str,
+        required=False,
+        choices=["angle", "relion", "grigorieff"],
+        default=None,
+        help="Weighting scheme used to reweight individual tilts. Available options: "
+        "angle (cosine based weighting), "
+        "relion (relion formalism for wedge weighting) requires,"
+        "grigorieff (exposure filter as defined in Grant and Grigorieff 2015)."
+        "relion and grigorieff require electron doses in --tilt_angles weights column.",
+    )
+    # filter_group.add_argument(
+    #     "--ctf_file",
+    #     dest="ctf_file",
+    #     type=str,
+    #     required=False,
+    #     default=None,
+    #     help="Path to a file with CTF parameters from CTFFIND4.",
+    # )
+    filter_group.add_argument(
+        "--reconstruction_filter",
+        dest="reconstruction_filter",
+        type=str,
+        required=False,
+        choices = ["ram-lak", "ramp", "shepp-logan", "cosine", "hamming"],
+        default=None,
+        help="Filter applied when reconstructing (N+1)-D from N-D filters.",
     )
 
     performance_group = parser.add_argument_group("Performance")
@@ -412,6 +628,21 @@ def parse_args():
         help="Spline interpolation used for template rotations. If less than zero "
         "no interpolation is performed.",
     )
+    performance_group.add_argument(
+        "--use_mixed_precision",
+        dest="use_mixed_precision",
+        action="store_true",
+        default=False,
+        help="Use float16 for real values operations where possible.",
+    )
+    performance_group.add_argument(
+        "--use_memmap",
+        dest="use_memmap",
+        action="store_true",
+        default=False,
+        help="Use memmaps to offload large data objects to disk. "
+        "Particularly useful for large inputs in combination with --use_gpu.",
+    )
 
     analyzer_group = parser.add_argument_group("Analyzer")
     analyzer_group.add_argument(
@@ -427,6 +658,8 @@ def parse_args():
 
     if args.interpolation_order < 0:
         args.interpolation_order = None
+
+    args.ctf_file = None
 
     if args.temp_directory is None:
         default = abspath(".")
@@ -459,6 +692,21 @@ def parse_args():
         args.gpu_indices = [
             int(x) for x in os.environ["CUDA_VISIBLE_DEVICES"].split(",")
         ]
+
+    if args.tilt_angles is not None:
+        if args.wedge_axes is None:
+            raise ValueError("Need to specify --wedge_axes when --tilt_angles is set.")
+        if not exists(args.tilt_angles):
+            try:
+                float(args.tilt_angles.split(",")[0])
+            except ValueError:
+                raise ValueError(f"{args.tilt_angles} is not a file nor a range.")
+
+    if args.ctf_file is not None and args.tilt_angles is None:
+        raise ValueError("Need to specify --tilt_angles when --ctf_file is set.")
+
+    if args.wedge_axes is not None:
+        args.wedge_axes = tuple(int(i) for i in args.wedge_axes.split(","))
 
     return args
 
@@ -535,51 +783,6 @@ def main():
             "Final Shape": template.shape,
         },
     )
-
-    template_filter = {}
-    if args.gaussian_sigma is not None:
-        template.data = Preprocessor().gaussian_filter(
-            sigma=args.gaussian_sigma, template=template.data
-        )
-
-    if args.bandpass_band is not None:
-        bandpass_start, bandpass_stop = [
-            float(x) for x in args.bandpass_band.split(",")
-        ]
-        if args.bandpass_smooth is None:
-            args.bandpass_smooth = 0
-
-        template_filter["bandpass_mask"] = {
-            "minimum_frequency": bandpass_start,
-            "maximum_frequency": bandpass_stop,
-            "gaussian_sigma": args.bandpass_smooth,
-        }
-
-    if args.tilt_range is not None:
-        args.wedge_smooth if args.wedge_smooth is not None else 0
-        tilt_start, tilt_stop = [float(x) for x in args.tilt_range.split(",")]
-        opening_axis, tilt_axis = [int(x) for x in args.wedge_axes.split(",")]
-
-        if args.tilt_step is not None:
-            template_filter["step_wedge_mask"] = {
-                "start_tilt": tilt_start,
-                "stop_tilt": tilt_stop,
-                "tilt_step": args.tilt_step,
-                "sigma": args.wedge_smooth,
-                "opening_axis": opening_axis,
-                "tilt_axis": tilt_axis,
-                "omit_negative_frequencies": True,
-            }
-        else:
-            template_filter["continuous_wedge_mask"] = {
-                "start_tilt": tilt_start,
-                "stop_tilt": tilt_stop,
-                "tilt_axis": tilt_axis,
-                "opening_axis": opening_axis,
-                "infinite_plane": True,
-                "sigma": args.wedge_smooth,
-                "omit_negative_frequencies": True,
-            }
 
     if template_mask is None:
         template_mask = template.empty
@@ -694,21 +897,13 @@ def main():
         )
         exit(-1)
 
-    analyzer_args = {
-        "score_threshold": args.score_threshold,
-        "number_of_peaks": 1000,
-        "convolution_mode": "valid",
-        "use_memmap": args.use_memmap,
-    }
-
     matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[args.score]
     matching_data = MatchingData(target=target, template=template.data)
-    matching_data.rotations = get_rotation_matrices(
-        angular_sampling=args.angular_sampling, dim=target.data.ndim
-    )
-    if args.angular_sampling >= 180:
-        ndim = target.data.ndim
-        matching_data.rotations = np.eye(ndim).reshape(1, ndim, ndim)
+    matching_data.rotations = parse_rotation_logic(args=args, ndim=target.data.ndim)
+
+    template_filter, target_filter = setup_filter(args, template, target)
+    matching_data.template_filter = template_filter
+    matching_data.target_filter = target_filter
 
     matching_data.template_filter = template_filter
     matching_data._invert_target = args.invert_target_contrast
@@ -746,10 +941,35 @@ def main():
         label_width=max(len(key) for key in options.keys()) + 2,
     )
 
-    options = {"Analyzer": callback_class, **analyzer_args}
+    filter_args = {
+        "Lowpass": args.lowpass,
+        "Highpass": args.highpass,
+        "Smooth Pass": args.no_pass_smooth,
+        "Pass Format" : args.pass_format,
+        "Spectral Whitening": args.whiten_spectrum,
+        "Wedge Axes": args.wedge_axes,
+        "Tilt Angles": args.tilt_angles,
+        "Tilt Weighting": args.tilt_weighting,
+        "CTF": args.ctf_file,
+    }
+    filter_args = {k: v for k, v in filter_args.items() if v is not None}
+    if len(filter_args):
+        print_block(
+            name="Filters",
+            data=filter_args,
+            label_width=max(len(key) for key in options.keys()) + 2,
+        )
+
+    analyzer_args = {
+        "score_threshold": args.score_threshold,
+        "number_of_peaks": 1000,
+        "convolution_mode": "valid",
+        "use_memmap": args.use_memmap,
+    }
+    analyzer_args = {"Analyzer": callback_class, **analyzer_args}
     print_block(
         name="Score Analysis Options",
-        data=options,
+        data=analyzer_args,
         label_width=max(len(key) for key in options.keys()) + 2,
     )
     print("\n" + "-" * 80)
@@ -788,7 +1008,6 @@ def main():
                 )
                 for i, x in candidates[3].items()
             }
-
     candidates.append((target.origin, template.origin, target.sampling_rate, args))
     write_pickle(data=candidates, filename=args.output)
 
