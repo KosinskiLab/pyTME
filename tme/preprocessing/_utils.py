@@ -1,4 +1,3 @@
-#!python3
 """ Utilities for the generation of frequency grids.
 
     Copyright (c) 2024 European Molecular Biology Laboratory

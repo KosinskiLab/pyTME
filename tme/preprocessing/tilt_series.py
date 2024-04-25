@@ -1,4 +1,3 @@
-#!python3
 """ Defines filters on tomographic tilt series.
 
     Copyright (c) 2024 European Molecular Biology Laboratory

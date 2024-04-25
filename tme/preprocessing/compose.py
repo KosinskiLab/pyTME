@@ -1,4 +1,3 @@
-#!python3
 """ Combine filters using an interface analogous to pytorch's Compose.
 
     Copyright (c) 2024 European Molecular Biology Laboratory

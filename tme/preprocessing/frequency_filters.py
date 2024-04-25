@@ -1,4 +1,3 @@
-#!python3
 """ Defines Fourier frequency filters.
 
     Copyright (c) 2024 European Molecular Biology Laboratory

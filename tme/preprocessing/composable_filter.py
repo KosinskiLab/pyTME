@@ -1,4 +1,3 @@
-#!python3
 """ Defines a specification for filters that can be used with
     :py:class:`tme.preprocessing.compose.Compose`.
 
