@@ -1736,11 +1736,11 @@ document.write(`
 <span class="sd">            Arbitrary keyword arguments.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rotation</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
-        <span class="n">rotation_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
-            <span class="n">rotation</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">)</span>
-        <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock_is_nullcontext</span><span class="p">:</span>
+            <span class="n">rotation_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="n">rotation</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">)</span>
+            <span class="p">)</span>
             <span class="n">backend</span><span class="o">.</span><span class="n">max_score_over_rotations</span><span class="p">(</span>
                 <span class="n">score_space</span><span class="o">=</span><span class="n">score_space</span><span class="p">,</span>
                 <span class="n">internal_scores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space</span><span class="p">,</span>
@@ -1750,6 +1750,9 @@ document.write(`
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="n">rotation_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="n">rotation</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_rotations</span><span class="p">)</span>
+            <span class="p">)</span>
             <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
                 <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_shape</span><span class="p">,</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">score_space_dtype</span><span class="p">,</span>
