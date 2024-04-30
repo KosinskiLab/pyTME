@@ -1316,11 +1316,11 @@ class MaxScoreOverRotations:
             Arbitrary keyword arguments.
         """
         rotation = backend.tobytes(rotation_matrix)
-        rotation_index = self.observed_rotations.setdefault(
-            rotation, len(self.observed_rotations)
-        )
 
         if self.lock_is_nullcontext:
+            rotation_index = self.observed_rotations.setdefault(
+                rotation, len(self.observed_rotations)
+            )
             backend.max_score_over_rotations(
                 score_space=score_space,
                 internal_scores=self.score_space,
@@ -1330,6 +1330,9 @@ class MaxScoreOverRotations:
             return None
 
         with self.lock:
+            rotation_index = self.observed_rotations.setdefault(
+                rotation, len(self.observed_rotations)
+            )
             internal_scores = backend.sharedarr_to_arr(
                 shape=self.score_space_shape,
                 dtype=self.score_space_dtype,

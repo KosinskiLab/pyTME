@@ -39,7 +39,6 @@ class Compose:
 
         meta = self.transforms[0](**kwargs)
         for transform in self.transforms[1:]:
-
             kwargs.update(meta)
             ret = transform(**kwargs)
 

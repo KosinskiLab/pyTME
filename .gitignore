@@ -79,3 +79,4 @@ scripts/refine_matches.py
 scripts/extract_candidates.py
 update_github.sh
 doc/quickstart/plot.py
+tme/backends/jax_backend.py

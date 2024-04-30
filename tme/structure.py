@@ -480,7 +480,6 @@ class Structure:
         filename : str
             The filename of the file to write.
         """
-        data_out = []
         if np.any(np.vectorize(len)(self.chain_identifier) > 2):
             warnings.warn("Chain identifiers longer than one will be shortened.")
 

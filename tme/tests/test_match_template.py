@@ -9,7 +9,7 @@ from tme import Density
 BACKEND_CLASSES = ["NumpyFFTWBackend", "PytorchBackend", "CupyBackend", "MLXBackend"]
 BACKENDS_TO_TEST = []
 
-test_gpu = (False, )
+test_gpu = (False,)
 for backend_class in BACKEND_CLASSES:
     try:
         BackendClass = getattr(
@@ -24,24 +24,29 @@ for backend_class in BACKEND_CLASSES:
 
 
 class TestMatchTemplate:
-
     def setup_method(self):
         np.random.seed(42)
-        target = np.random.rand(20,20,20)
-        template = np.random.rand(5,5,5)
+        target = np.random.rand(20, 20, 20)
+        template = np.random.rand(5, 5, 5)
 
-        target_mask = 1.0 * (target > .5)
-        template_mask = 1.0 * (template > .5)
+        target_mask = 1.0 * (target > 0.5)
+        template_mask = 1.0 * (template > 0.5)
 
-        self.target_path = tempfile.NamedTemporaryFile(delete = False, suffix = ".mrc").name
-        self.template_path = tempfile.NamedTemporaryFile(delete = False,  suffix = ".mrc").name
-        self.target_mask_path = tempfile.NamedTemporaryFile(delete = False, suffix = ".mrc").name
-        self.template_mask_path = tempfile.NamedTemporaryFile(delete = False, suffix = ".mrc").name
+        self.target_path = tempfile.NamedTemporaryFile(delete=False, suffix=".mrc").name
+        self.template_path = tempfile.NamedTemporaryFile(
+            delete=False, suffix=".mrc"
+        ).name
+        self.target_mask_path = tempfile.NamedTemporaryFile(
+            delete=False, suffix=".mrc"
+        ).name
+        self.template_mask_path = tempfile.NamedTemporaryFile(
+            delete=False, suffix=".mrc"
+        ).name
 
-        Density(target, sampling_rate = 5).to_file(self.target_path)
-        Density(template, sampling_rate = 5).to_file(self.template_path)
-        Density(target_mask, sampling_rate = 5).to_file(self.target_mask_path)
-        Density(template_mask, sampling_rate = 5).to_file(self.template_mask_path)
+        Density(target, sampling_rate=5).to_file(self.target_path)
+        Density(template, sampling_rate=5).to_file(self.template_path)
+        Density(target_mask, sampling_rate=5).to_file(self.target_mask_path)
+        Density(template_mask, sampling_rate=5).to_file(self.template_mask_path)
 
     def teardown_method(self):
         remove(self.target_path)
@@ -54,15 +59,22 @@ class TestMatchTemplate:
     @pytest.mark.parametrize("edge_padding", (False, True))
     @pytest.mark.parametrize("fourier_padding", (False, True))
     @pytest.mark.parametrize("use_gpu", test_gpu)
-    def test_match_template(self,use_template_mask, use_target_mask, edge_padding,fourier_padding, use_gpu):
-        output_path = tempfile.NamedTemporaryFile(delete = False, suffix = "mrc").name
+    def test_match_template(
+        self, use_template_mask, use_target_mask, edge_padding, fourier_padding, use_gpu
+    ):
+        output_path = tempfile.NamedTemporaryFile(delete=False, suffix="mrc").name
         cmd = [
             "match_template.py",
-            "-m", self.target_path,
-            "-i", self.template_path,
-            "-n", "1",
-            "-a", "60",
-            "-o", output_path,
+            "-m",
+            self.target_path,
+            "-i",
+            self.template_path,
+            "-n",
+            "1",
+            "-a",
+            "60",
+            "-o",
+            output_path,
         ]
 
         if use_template_mask:
@@ -80,5 +92,5 @@ class TestMatchTemplate:
         if use_gpu:
             cmd.append("--use_gpu")
 
-        ret = subprocess.run(cmd, capture_output = True)
+        ret = subprocess.run(cmd, capture_output=True)
         assert ret.returncode == 0

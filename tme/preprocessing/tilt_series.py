@@ -20,11 +20,11 @@ from ._utils import (
     compute_tilt_shape,
     crop_real_fourier,
     centered_grid,
-    fftfreqn
+    fftfreqn,
 )
 
 
-def create_reconstruction_filter(filter_shape : Tuple[int], filter_type : str):
+def create_reconstruction_filter(filter_shape: Tuple[int], filter_type: str):
     """Create a reconstruction filter of given filter_type.
 
     Parameters
@@ -58,9 +58,9 @@ def create_reconstruction_filter(filter_shape : Tuple[int], filter_type : str):
     .. [2]  https://odlgroup.github.io/odl/index.html
     """
     filter_type = str(filter_type).lower()
-    freq = fftfreqn(filter_shape, sampling_rate = .5, compute_euclidean_norm = True)
+    freq = fftfreqn(filter_shape, sampling_rate=0.5, compute_euclidean_norm=True)
 
-    if filter_type == 'ram-lak':
+    if filter_type == "ram-lak":
         ret = np.copy(freq)
     elif filter_type == "ramp":
         ret, ndim = None, len(filter_shape)
@@ -81,20 +81,22 @@ def create_reconstruction_filter(filter_shape : Tuple[int], filter_type : str):
             else:
                 ret = ret * ret1d
         ret = 2 * np.real(np.fft.fftn(ret))
-    elif filter_type == 'shepp-logan':
+    elif filter_type == "shepp-logan":
         ret = freq * np.sinc(freq / 2)
-    elif filter_type == 'cosine':
+    elif filter_type == "cosine":
         ret = freq * np.cos(freq * np.pi / 2)
-    elif filter_type == 'hamming':
+    elif filter_type == "hamming":
         ret = freq * (0.54 + 0.46 * np.cos(freq * np.pi))
     else:
         raise ValueError("Unsupported filter type")
 
     return ret
 
+
 @dataclass
 class ReconstructFromTilt:
     """Reconstruct a volume from a tilt series."""
+
     #: Shape of the reconstruction.
     shape: Tuple[int] = None
     #: Angle of each individual tilt.
@@ -135,7 +137,7 @@ class ReconstructFromTilt:
         tilt_axis: int,
         interpolation_order: int = 1,
         return_real_fourier: bool = True,
-        reconstruction_filter:str = None,
+        reconstruction_filter: str = None,
         **kwargs,
     ):
         """
@@ -187,8 +189,8 @@ class ReconstructFromTilt:
         rec_filter = 1
         if reconstruction_filter is not None:
             rec_filter = create_reconstruction_filter(
-                filter_type = reconstruction_filter,
-                filter_shape = tuple(x for x in wedges[0].shape if x != 1)
+                filter_type=reconstruction_filter,
+                filter_shape=tuple(x for x in wedges[0].shape if x != 1),
             )
 
         for index in range(len(angles)):
@@ -353,10 +355,7 @@ class Wedge:
             func_args["weights"] = np.cos(np.radians(self.angles))
 
         ret = weight_types[weight_type](**func_args)
-        ret = backend.astype(
-            backend.to_backend_array(ret),
-            backend._default_dtype
-        )
+        ret = backend.astype(backend.to_backend_array(ret), backend._default_dtype)
 
         return {
             "data": ret,
@@ -456,7 +455,9 @@ class Wedge:
         .. [1]  Timothy GrantNikolaus Grigorieff (2015), eLife 4:e06980.
         """
         tilt_shape = compute_tilt_shape(
-            shape=self.shape, opening_axis=self.opening_axis, reduce_dim=True,
+            shape=self.shape,
+            opening_axis=self.opening_axis,
+            reduce_dim=True,
         )
 
         wedges = np.zeros((len(self.angles), *tilt_shape), dtype=backend._default_dtype)
@@ -471,10 +472,10 @@ class Wedge:
             frequency_mask = frequency_grid <= self.frequency_cutoff
 
             with np.errstate(divide="ignore"):
-                np.power(frequency_grid, power, out = frequency_grid)
-                np.multiply(amplitude, frequency_grid, out = frequency_grid)
-                np.add(frequency_grid, offset, out = frequency_grid)
-                np.multiply(-2, frequency_grid, out = frequency_grid)
+                np.power(frequency_grid, power, out=frequency_grid)
+                np.multiply(amplitude, frequency_grid, out=frequency_grid)
+                np.add(frequency_grid, offset, out=frequency_grid)
+                np.multiply(-2, frequency_grid, out=frequency_grid)
                 np.divide(
                     self.weights[index],
                     frequency_grid,
@@ -512,8 +513,8 @@ class WedgeReconstructed:
         stop_tilt: float = None,
         opening_axis: int = 0,
         tilt_axis: int = 2,
-        weight_wedge : bool = False,
-        create_continuous_wedge : bool = False,
+        weight_wedge: bool = False,
+        create_continuous_wedge: bool = False,
         **kwargs: Dict,
     ):
         self.angles = angles
@@ -549,10 +550,7 @@ class WedgeReconstructed:
             func = self.continuous_wedge
 
         ret = func(shape=shape, **func_args)
-        ret = backend.astype(
-            backend.to_backend_array(ret),
-            backend._default_dtype
-        )
+        ret = backend.astype(backend.to_backend_array(ret), backend._default_dtype)
 
         return {
             "data": ret,
@@ -561,7 +559,7 @@ class WedgeReconstructed:
             "tilt_axis": func_args["tilt_axis"],
             "opening_axis": func_args["opening_axis"],
             "is_multiplicative_filter": True,
-            "angles" : func_args["angles"],
+            "angles": func_args["angles"],
         }
 
     @staticmethod
@@ -828,10 +826,7 @@ class CTF:
         func_args.update(kwargs)
 
         ret = self.weight(**func_args)
-        ret = backend.astype(
-            backend.to_backend_array(ret),
-            backend._default_dtype
-        )
+        ret = backend.astype(backend.to_backend_array(ret), backend._default_dtype)
         return {
             "data": ret,
             "angles": func_args["angles"],

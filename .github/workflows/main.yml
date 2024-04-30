@@ -131,6 +131,7 @@ jobs:
     steps:
       - name: Push to PyPI
         run: |
+          python -mpip install twine
           python -m twine upload --repository pypi dist/*
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}

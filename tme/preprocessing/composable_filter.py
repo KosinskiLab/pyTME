@@ -8,6 +8,7 @@
 from typing import Dict
 from abc import ABC, abstractmethod
 
+
 class ComposableFilter(ABC):
     """
     Strategy class for composable filters.

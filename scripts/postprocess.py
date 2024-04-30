@@ -195,7 +195,7 @@ def parse_args():
 
     if args.minimum_score is not None or args.n_false_positives is not None:
         args.number_of_peaks = np.iinfo(np.int64).max
-    else:
+    elif args.number_of_peaks is None:
         args.number_of_peaks = 1000
 
     return args
