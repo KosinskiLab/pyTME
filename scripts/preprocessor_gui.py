@@ -789,7 +789,10 @@ class AlignmentWidget(widgets.Container):
         active_layer = self.viewer.layers.selection.active
         if active_layer is None:
             return ()
-        return [i for i in range(active_layer.data.ndim)]
+        try:
+            return [i for i in range(active_layer.data.ndim)]
+        except Exception:
+            return ()
 
     def _update_align_axis(self, *args):
         self.align_axis.choices = self._get_active_layer_dims()

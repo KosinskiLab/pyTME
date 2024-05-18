@@ -5,6 +5,7 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+import warnings
 import argparse
 from sys import exit
 from os import getcwd
@@ -351,8 +352,6 @@ def main():
                 min_distance=args.min_distance,
                 min_boundary_distance=args.min_boundary_distance,
             )
-            if args.minimum_score is not None:
-                args.number_of_peaks = np.inf
 
             peak_caller(
                 scores,
@@ -369,8 +368,10 @@ def main():
                 min_boundary_distance=args.min_boundary_distance,
             )
             if len(candidates) == 0:
-                print("Found no peaks. Consider changing peak calling parameters.")
-                exit(-1)
+                candidates = [[], [], [], []]
+                warnings.warn(
+                    "Found no peaks, consider changing peak calling parameters."
+                )
 
             for translation, _, score, detail in zip(*candidates):
                 rotations.append(rotation_mapping[rotation_array[tuple(translation)]])
@@ -381,7 +382,8 @@ def main():
             for i in range(translation.shape[0]):
                 rotations.append(euler_from_rotationmatrix(rotation[i]))
 
-        rotations = np.vstack(rotations).astype(float)
+        if len(rotations):
+            rotations = np.vstack(rotations).astype(float)
         translations, scores, details = candidates[0], candidates[2], candidates[3]
         orientations = Orientations(
             translations=translations,
@@ -390,13 +392,27 @@ def main():
             details=details,
         )
 
-    if args.minimum_score is not None:
+    if args.minimum_score is not None and len(orientations.scores):
         keep = orientations.scores >= args.minimum_score
         orientations = orientations[keep]
 
-    if args.maximum_score is not None:
+    if args.maximum_score is not None and len(orientations.scores):
         keep = orientations.scores <= args.maximum_score
         orientations = orientations[keep]
+
+    if args.peak_oversampling > 1:
+        peak_caller = peak_caller = PEAK_CALLERS[args.peak_caller]()
+        if data[0].ndim != data[2].ndim:
+            print(
+                "Input pickle does not contain template matching scores."
+                " Cannot oversample peaks."
+            )
+            exit(-1)
+        orientations.translations = peak_caller.oversample_peaks(
+            score_space=data[0],
+            peak_positions=orientations.translations,
+            oversampling_factor=args.peak_oversampling,
+        )
 
     if args.output_format == "orientations":
         orientations.to_file(filename=f"{args.output_prefix}.tsv", file_format="text")
@@ -525,20 +541,6 @@ def main():
         ret.pad(template.shape, center=True)
         ret.to_file(f"{args.output_prefix}_average.mrc")
         exit(0)
-
-    if args.peak_oversampling > 1:
-        peak_caller = peak_caller = PEAK_CALLERS[args.peak_caller]()
-        if data[0].ndim != data[2].ndim:
-            print(
-                "Input pickle does not contain template matching scores."
-                " Cannot oversample peaks."
-            )
-            exit(-1)
-        orientations.translations = peak_caller.oversample_peaks(
-            score_space=data[0],
-            translations=orientations.translations,
-            oversampling_factor=args.oversampling_factor,
-        )
 
     for index, (translation, angles, *_) in enumerate(orientations):
         rotation_matrix = euler_to_rotationmatrix(angles)
