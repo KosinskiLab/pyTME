@@ -1213,7 +1213,6 @@ document.write(`
             <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="n">interpolation_order</span><span class="p">,</span>
         <span class="p">)</span>
-
         <span class="n">norm_template</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">unpadded_slice</span><span class="p">],</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">mask_sum</span><span class="p">)</span>
 
         <span class="n">rfftn</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">ft_temp</span><span class="p">)</span>
@@ -1816,7 +1815,7 @@ document.write(`
 <span class="sd">        Order of spline interpolation for rotations.</span>
 <span class="sd">    jobs_per_callback_class : int, optional</span>
 <span class="sd">        How many jobs should be processed by a single callback_class instance,</span>
-<span class="sd">        if ones is provided.</span>
+<span class="sd">        if one is provided.</span>
 <span class="sd">    **kwargs : various</span>
 <span class="sd">        Additional arguments.</span>
 
@@ -1829,7 +1828,12 @@ document.write(`
     <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
         <span class="n">matching_data</span><span class="o">.</span><span class="n">_output_target_shape</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_output_template_shape</span>
     <span class="p">)</span>
-    <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">shape_diff</span><span class="p">,</span> <span class="o">~</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_mask</span><span class="p">)</span>
+    <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+        <span class="n">shape_diff</span><span class="p">,</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span>
+            <span class="p">[</span><span class="mi">0</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_mask</span><span class="p">]</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
     <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">shape_diff</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pad_fourier</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="s2">&quot;Target is larger than template and Fourier padding is turned off.&quot;</span>
