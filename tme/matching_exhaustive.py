@@ -823,7 +823,6 @@ def corr_scoring(
             use_geometric_center=False,
             order=interpolation_order,
         )
-
         norm_template(arr[unpadded_slice], template_mask, mask_sum)
 
         rfftn(arr, ft_temp)
@@ -1417,7 +1416,7 @@ def scan(
         Order of spline interpolation for rotations.
     jobs_per_callback_class : int, optional
         How many jobs should be processed by a single callback_class instance,
-        if ones is provided.
+        if one is provided.
     **kwargs : various
         Additional arguments.
 
@@ -1430,7 +1429,12 @@ def scan(
     shape_diff = backend.subtract(
         matching_data._output_target_shape, matching_data._output_template_shape
     )
-    shape_diff = backend.multiply(shape_diff, ~matching_data._batch_mask)
+    shape_diff = backend.multiply(
+        shape_diff,
+        backend.to_backend_array(
+            [0 if x != 0 else 1 for x in matching_data._batch_mask]
+        ),
+    )
     if backend.sum(shape_diff < 0) and not pad_fourier:
         warnings.warn(
             "Target is larger than template and Fourier padding is turned off."

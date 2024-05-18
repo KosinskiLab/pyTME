@@ -240,9 +240,9 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
         wedge.sampling_rate = template.sampling_rate
         template_filter.append(wedge)
         if not isinstance(wedge, WedgeReconstructed):
-            template_filter.append(ReconstructFromTilt(
-                reconstruction_filter = args.reconstruction_filter
-            ))
+            template_filter.append(
+                ReconstructFromTilt(reconstruction_filter=args.reconstruction_filter)
+            )
 
     if args.ctf_file is not None:
         from tme.preprocessing.tilt_series import CTF
@@ -262,9 +262,9 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
             template_filter.insert(-1, ctf)
         else:
             template_filter.insert(0, ctf)
-            template_filter.insert(1, ReconstructFromTilt(
-                reconstruction_filter = args.reconstruction_filter
-            ))
+            template_filter.insert(
+                1, ReconstructFromTilt(reconstruction_filter=args.reconstruction_filter)
+            )
 
     if args.lowpass or args.highpass is not None:
         lowpass, highpass = args.lowpass, args.highpass
@@ -510,7 +510,7 @@ def parse_args():
         dest="no_pass_smooth",
         action="store_false",
         default=True,
-        help="Whether a hard edge filter should be used for --lowpass and --highpass."
+        help="Whether a hard edge filter should be used for --lowpass and --highpass.",
     )
     filter_group.add_argument(
         "--pass_format",
@@ -519,7 +519,7 @@ def parse_args():
         required=False,
         choices=["sampling_rate", "voxel", "frequency"],
         help="How values passed to --lowpass and --highpass should be interpreted. "
-        "By default, they are assumed to be in units of sampling rate, e.g. Ångstrom."
+        "By default, they are assumed to be in units of sampling rate, e.g. Ångstrom.",
     )
     filter_group.add_argument(
         "--whiten_spectrum",
@@ -574,7 +574,7 @@ def parse_args():
         dest="reconstruction_filter",
         type=str,
         required=False,
-        choices = ["ram-lak", "ramp", "shepp-logan", "cosine", "hamming"],
+        choices=["ram-lak", "ramp", "shepp-logan", "cosine", "hamming"],
         default=None,
         help="Filter applied when reconstructing (N+1)-D from N-D filters.",
     )
@@ -945,7 +945,7 @@ def main():
         "Lowpass": args.lowpass,
         "Highpass": args.highpass,
         "Smooth Pass": args.no_pass_smooth,
-        "Pass Format" : args.pass_format,
+        "Pass Format": args.pass_format,
         "Spectral Whitening": args.whiten_spectrum,
         "Wedge Axes": args.wedge_axes,
         "Tilt Angles": args.tilt_angles,

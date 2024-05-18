@@ -507,8 +507,9 @@ class Orientations:
         left_pad = np.divide(extraction_shape, 2).astype(int)
         right_pad = np.add(left_pad, np.mod(extraction_shape, 2)).astype(int)
 
-        obs_start = np.subtract(self.translations, left_pad)
-        obs_stop = np.add(self.translations, right_pad)
+        peaks = self.translations.astype(int)
+        obs_start = np.subtract(peaks, left_pad)
+        obs_stop = np.add(peaks, right_pad)
 
         cand_start = np.subtract(np.maximum(obs_start, 0), obs_start)
         cand_stop = np.subtract(obs_stop, np.minimum(obs_stop, target_shape))
@@ -524,13 +525,13 @@ class Orientations:
                     np.multiply(cand_start == 0, stops == 0),
                     axis=1,
                 )
-                == self.translations.shape[1]
+                == peaks.shape[1]
             )
             n_remaining = keep_peaks.sum()
             if n_remaining == 0:
                 print(
                     "No peak remaining after filtering. Started with"
-                    f" {self.translations.shape[0]} filtered to {n_remaining}."
+                    f" {peaks.shape[0]} filtered to {n_remaining}."
                     " Consider reducing min_distance, increase num_peaks or use"
                     " a different peak caller."
                 )
