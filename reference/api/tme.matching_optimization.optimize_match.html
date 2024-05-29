@@ -14,38 +14,38 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=3fd87a63" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
-  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
     <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=4ea706d9"></script>
-    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/tme.matching_optimization.optimize_match';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -60,27 +60,23 @@
 
   
   
-  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -102,12 +98,17 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
+  <button class="sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
-  </label>
+  </button>
   
   
   <div class="col-lg-3 navbar-header-items__start">
@@ -137,26 +138,26 @@
 <nav class="navbar-nav">
   <ul class="bd-navbar-elements navbar-nav">
     
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="../../quickstart/index.html">
-                        Quickstart
-                      </a>
-                    </li>
-                
+<li class="nav-item pst-header-nav-item">
+  <a class="nav-link nav-internal" href="../../quickstart/index.html">
+    Quickstart
+  </a>
+</li>
 
-                    <li class="nav-item current active">
-                      <a class="nav-link nav-internal" href="../index.html">
-                        API reference
-                      </a>
-                    </li>
-                
 
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="../../genindex.html">
-                        Index
-                      </a>
-                    </li>
-                
+<li class="nav-item pst-header-nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item pst-header-nav-item">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
   </ul>
 </nav></div>
       
@@ -228,9 +229,9 @@ document.write(`
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+    <button class="sidebar-toggle secondary-toggle" aria-label="On this page">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+    </button>
   
 </div>
 
@@ -251,32 +252,35 @@ document.write(`
     
       <div class="sidebar-header-items__center">
         
-          <div class="navbar-item">
+          
+          
+            <div class="navbar-item">
 <nav class="navbar-nav">
   <ul class="bd-navbar-elements navbar-nav">
     
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="../../quickstart/index.html">
-                        Quickstart
-                      </a>
-                    </li>
-                
+<li class="nav-item pst-header-nav-item">
+  <a class="nav-link nav-internal" href="../../quickstart/index.html">
+    Quickstart
+  </a>
+</li>
 
-                    <li class="nav-item current active">
-                      <a class="nav-link nav-internal" href="../index.html">
-                        API reference
-                      </a>
-                    </li>
-                
 
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="../../genindex.html">
-                        Index
-                      </a>
-                    </li>
-                
+<li class="nav-item pst-header-nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item pst-header-nav-item">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
   </ul>
 </nav></div>
+          
         
       </div>
     
@@ -322,8 +326,8 @@ document.write(`
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../data_structure.html">Data structures</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../density.html">Density</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../data_structure.html">Data structures</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../density.html">Density</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.density.Density.html">Density</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.density.Density.data.html">Density.data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.density.Density.origin.html">Density.origin</a></li>
@@ -357,8 +361,8 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.density.Density.match_structure_to_density.html">Density.match_structure_to_density</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.density.Density.fourier_shell_correlation.html">Density.fourier_shell_correlation</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../structure.html">Structure</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../structure.html">Structure</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.structure.Structure.html">Structure</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.structure.Structure.record_type.html">Structure.record_type</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.structure.Structure.atom_serial_number.html">Structure.atom_serial_number</a></li>
@@ -388,8 +392,8 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.structure.Structure.center_of_mass.html">Structure.center_of_mass</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.structure.Structure.centered.html">Structure.centered</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../matching_data.html">MatchingData</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../matching_data.html">MatchingData</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_data.MatchingData.html">MatchingData</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_data.MatchingData.to_backend.html">MatchingData.to_backend</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_data.MatchingData.target.html">MatchingData.target</a></li>
@@ -400,11 +404,11 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_data.MatchingData.subset_array.html">MatchingData.subset_array</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_data.MatchingData.subset_by_slice.html">MatchingData.subset_by_slice</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../preprocessing.html">Preprocessing</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../preprocessor.html">Preprocessor</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../preprocessing.html">Preprocessing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../preprocessor.html">Preprocessor</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.html">Preprocessor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.wedge_mask.html">Preprocessor.wedge_mask</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.continuous_wedge_mask.html">Preprocessor.continuous_wedge_mask</a></li>
@@ -428,11 +432,11 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.fourier_uncrop.html">Preprocessor.fourier_uncrop</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.preprocessor.Preprocessor.interpolate_box.html">Preprocessor.interpolate_box</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
-</li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../template_matching.html">Template matching</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="../matching_optimization.html">Non-exhaustive</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../template_matching.html">Template matching</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../matching_optimization.html">Non-exhaustive</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.FLC.html">FLC</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.CrossCorrelation.html">CrossCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.LaplaceCrossCorrelation.html">LaplaceCrossCorrelation</a></li>
@@ -449,8 +453,8 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_optimization.create_score_object.html">create_score_object</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">optimize_match</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../matching_exhaustive.html">Exhaustive</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../matching_exhaustive.html">Exhaustive</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_exhaustive.scan.html">scan</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_exhaustive.scan_subsets.html">scan_subsets</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_exhaustive.cc_setup.html">cc_setup</a></li>
@@ -465,8 +469,8 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_exhaustive.mcc_scoring.html">mcc_scoring</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_exhaustive.register_matching_exhaustive.html">register_matching_exhaustive</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../matching_utils.html">Utilities</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../matching_utils.html">Utilities</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_utils.rigid_transform.html">rigid_transform</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_utils.euler_from_rotationmatrix.html">euler_from_rotationmatrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_utils.euler_to_rotationmatrix.html">euler_to_rotationmatrix</a></li>
@@ -486,8 +490,8 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_utils.write_pickle.html">write_pickle</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_utils.load_pickle.html">load_pickle</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../matching_memory.html">Memory Usage</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../matching_memory.html">Memory Usage</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.estimate_ram_usage.html">estimate_ram_usage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.MatchingMemoryUsage.html">MatchingMemoryUsage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.CCMemoryUsage.html">CCMemoryUsage</a></li>
@@ -501,68 +505,68 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.PeakCallerMaximumFilterMemoryUsage.html">PeakCallerMaximumFilterMemoryUsage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.matching_memory.CupyBackendMemoryUsage.html">CupyBackendMemoryUsage</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../analyzer.html">Template matching score analysis</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.MemmapHandler.html">MemmapHandler</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../analyzer.html">Template matching score analysis</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.MemmapHandler.html">MemmapHandler</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MemmapHandler.merge.html">MemmapHandler.merge</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MemmapHandler.update_indices.html">MemmapHandler.update_indices</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.html">MaxScoreOverRotations</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.html">MaxScoreOverRotations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.merge.html">MaxScoreOverRotations.merge</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCaller.html">PeakCaller</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCaller.html">PeakCaller</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.call_peaks.html">PeakCaller.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.merge.html">PeakCaller.merge</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCaller.oversample_peaks.html">PeakCaller.oversample_peaks</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerSort.html">PeakCallerSort</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerSort.html">PeakCallerSort</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.call_peaks.html">PeakCallerSort.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.merge.html">PeakCallerSort.merge</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerSort.oversample_peaks.html">PeakCallerSort.oversample_peaks</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.html">PeakCallerMaximumFilter</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.html">PeakCallerMaximumFilter</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.call_peaks.html">PeakCallerMaximumFilter.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.merge.html">PeakCallerMaximumFilter.merge</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerMaximumFilter.oversample_peaks.html">PeakCallerMaximumFilter.oversample_peaks</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerFast.html">PeakCallerFast</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerFast.html">PeakCallerFast</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.call_peaks.html">PeakCallerFast.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.merge.html">PeakCallerFast.merge</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerFast.oversample_peaks.html">PeakCallerFast.oversample_peaks</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.html">PeakCallerRecursiveMasking</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.html">PeakCallerRecursiveMasking</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.call_peaks.html">PeakCallerRecursiveMasking.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.merge.html">PeakCallerRecursiveMasking.merge</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerRecursiveMasking.oversample_peaks.html">PeakCallerRecursiveMasking.oversample_peaks</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.html">PeakCallerScipy</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.html">PeakCallerScipy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.call_peaks.html">PeakCallerScipy.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.merge.html">PeakCallerScipy.merge</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.PeakCallerScipy.oversample_peaks.html">PeakCallerScipy.oversample_peaks</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.ScoreStatistics.html">ScoreStatistics</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.analyzer.ScoreStatistics.html">ScoreStatistics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.call_peaks.html">ScoreStatistics.call_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.merge.html">ScoreStatistics.merge</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.oversample_peaks.html">ScoreStatistics.oversample_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.analyzer.ScoreStatistics.set_reference.html">ScoreStatistics.set_reference</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../utilities.html">Utilities</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-22"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../utilities.html">Utilities</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../helpers.html">Helpers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../extensions.html">Extensions</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../parser.html">Parser</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-23"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../parser.html">Parser</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.parser.Parser.html">Parser</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.parser.Parser.get.html">Parser.get</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.parser.Parser.keys.html">Parser.keys</a></li>
@@ -572,16 +576,16 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.parser.PDBParser.html">PDBParser</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.parser.MMCIFParser.html">MMCIFParser</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../backends.html">Backends</a><input class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-24"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.BackendManager.html">BackendManager</a><input class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-25"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../backends.html">Backends</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.BackendManager.html">BackendManager</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.BackendManager.add_backend.html">BackendManager.add_backend</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.BackendManager.change_backend.html">BackendManager.change_backend</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.MatchingBackend.html">MatchingBackend</a><input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-26"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.MatchingBackend.html">MatchingBackend</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.abs.html">MatchingBackend.abs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.add.html">MatchingBackend.add</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.arange.html">MatchingBackend.arange</a></li>
@@ -640,8 +644,8 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.unravel_index.html">MatchingBackend.unravel_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.MatchingBackend.zeros.html">MatchingBackend.zeros</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.html">NumpyFFTWBackend</a><input class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-27"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.html">NumpyFFTWBackend</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.abs.html">NumpyFFTWBackend.abs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.add.html">NumpyFFTWBackend.add</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.arange.html">NumpyFFTWBackend.arange</a></li>
@@ -703,8 +707,8 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.unravel_index.html">NumpyFFTWBackend.unravel_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.zeros.html">NumpyFFTWBackend.zeros</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.PytorchBackend.html">PytorchBackend</a><input class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-28"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.PytorchBackend.html">PytorchBackend</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.abs.html">PytorchBackend.abs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.add.html">PytorchBackend.add</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.arange.html">PytorchBackend.arange</a></li>
@@ -766,8 +770,8 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.unravel_index.html">PytorchBackend.unravel_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.zeros.html">PytorchBackend.zeros</a></li>
 </ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.CupyBackend.html">CupyBackend</a><input class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-29"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.backends.CupyBackend.html">CupyBackend</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.abs.html">CupyBackend.abs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.add.html">CupyBackend.add</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.arange.html">CupyBackend.arange</a></li>
@@ -830,11 +834,11 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.var.html">CupyBackend.var</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.zeros.html">CupyBackend.zeros</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../orientations.html">Orientations</a><input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-30"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="tme.orientations.Orientations.html">Orientations</a><input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-31"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../orientations.html">Orientations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="tme.orientations.Orientations.html">Orientations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.translations.html">Orientations.translations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.rotations.html">Orientations.rotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.scores.html">Orientations.scores</a></li>
@@ -843,9 +847,9 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.get_extraction_slices.html">Orientations.get_extraction_slices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.orientations.Orientations.to_file.html">Orientations.to_file</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
-</li>
+</details></li>
 </ul>
 </div>
 </nav></div>
@@ -860,13 +864,13 @@ document.write(`
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article">
+              <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
@@ -877,7 +881,7 @@ document.write(`
 
 
 
-<nav aria-label="Breadcrumb">
+<nav aria-label="Breadcrumb" class="d-print-none">
   <ul class="bd-breadcrumbs">
     
     <li class="breadcrumb-item breadcrumb-home">
@@ -933,8 +937,8 @@ as tuple of (min, max). Default is None.</p>
 as tuple of (min, max). Default is None.</p>
 </dd>
 <dt><strong>optimization_method</strong><span class="classifier">str, optional</span></dt><dd><p>Optimizer that will be used, by default basinhopping. For further
-information refer to <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/optimize.html" title="(in SciPy v1.13.0)"><span>Optimization and root finding (scipy.optimize)</span></a>.</p>
-<table class="table">
+information refer to <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/optimize.html" title="(in SciPy v1.13.1)"><span>Optimization and root finding (scipy.optimize)</span></a>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
 <tbody>
 <tr class="row-odd"><td><p>‘differential_evolution’</p></td>
 <td><p>Highest accuracy but long runtime.
@@ -949,6 +953,7 @@ decent performance, short runtime.</p></td>
 </tr>
 </tbody>
 </table>
+</div>
 </dd>
 <dt><strong>maxiter</strong><span class="classifier">int, optional</span></dt><dd><p>The maximum number of iterations. Default is 500. Not considered for
 <cite>optimization_method</cite> ‘minimize’.</p>
@@ -982,7 +987,7 @@ decent performance, short runtime.</p></td>
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
     <a class="left-prev"
@@ -1047,8 +1052,8 @@ decent performance, short runtime.</p></td>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1081,7 +1086,7 @@ decent performance, short runtime.</p></td>
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.3.
 </p></div>
       
     </div>
