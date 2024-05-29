@@ -218,6 +218,7 @@ class _MatchDensityToDensity(ABC):
             The matching score obtained for the transformation.
         """
         translation, rotation_matrix = _format_rigid_transform(x)
+        self.template_rot.fill(0)
         kw_dict = {
             "arr": self.template,
             "rotation_matrix": rotation_matrix,
@@ -227,10 +228,11 @@ class _MatchDensityToDensity(ABC):
             "order": self.interpolation_order,
         }
         if self.rotate_mask:
+            self.template_mask_rot.fill(0)
             kw_dict["arr_mask"] = self.template_mask
             kw_dict["out_mask"] = self.template_mask_rot
 
-        self.rigid_transform(**kw_dict)
+        backend.rotate_array(**kw_dict)
 
         return self()
 
@@ -595,7 +597,6 @@ class FLC(_MatchDensityToDensity):
         denominator = backend.multiply(denominator, n_observations)
 
         overlap = backend.sum(backend.multiply(self.template_rot, self.target))
-
         score = backend.divide(overlap, denominator) * self.score_sign
         return score
 
@@ -613,29 +614,14 @@ class CrossCorrelation(_MatchCoordinatesToDensity):
 
     def __call__(self) -> float:
         """Returns the score of the current configuration."""
-        try:
-            score = np.dot(
-                self.target_density[
-                    tuple(
-                        self.template_coordinates_rotated[:, self.in_volume].astype(int)
-                    )
-                ],
-                self.template_weights[self.in_volume],
-            )
-        except:
-            print(self.template_coordinates_rotated[:, self.in_volume].astype(int))
-            print(self.target_density.shape)
-            print(self.in_volume)
-            coordinates = self.template_coordinates_rotated[:, self.in_volume].astype(
-                int
-            )
-            in_volume = np.logical_and(
-                coordinates < np.array(self.target_density.shape)[:, None],
-                coordinates >= 0,
-            ).min(axis=0)
-            print(in_volume)
-
-            raise ValueError()
+        score = np.dot(
+            self.target_density[
+                tuple(
+                    self.template_coordinates_rotated[:, self.in_volume].astype(int)
+                )
+            ],
+            self.template_weights[self.in_volume],
+        )
         score /= self.denominator
         return score * self.score_sign
 
@@ -690,11 +676,25 @@ class NormalizedCrossCorrelation(CrossCorrelation):
 
     __doc__ += _MatchCoordinatesToDensity.__doc__
 
-    def _post_init(self, **kwargs):
-        target_norm = np.linalg.norm(self.target_density[self.target_density != 0])
-        template_norm = np.linalg.norm(self.template_weights)
-        self.denominator = np.fmax(target_norm * template_norm, np.finfo(float).eps)
+    def __call__(self) -> float:
+        n_observations = backend.sum(self.in_volume_mask)
+        target_coordinates = backend.astype(
+            self.template_mask_coordinates_rotated[:, self.in_volume_mask], int
+        )
+        target_weight = self.target_density[tuple(target_coordinates)]
+        ex2 = backend.divide(
+            backend.sum(backend.square(target_weight)), n_observations
+        )
+        e2x = backend.square(
+            backend.divide(backend.sum(target_weight), n_observations)
+        )
 
+        denominator = backend.maximum(backend.subtract(ex2, e2x), 0.0)
+        denominator = backend.sqrt(denominator)
+        denominator = backend.multiply(denominator, n_observations)
+        self.denominator = denominator
+
+        return super().__call__()
 
 class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
     """
@@ -1191,7 +1191,7 @@ def optimize_match(
             np.eye(len(bounds)), np.min(bounds, axis=1), np.max(bounds, axis=1)
         )
 
-    initial_score = score_object()
+    initial_score = score_object.score(x = np.zeros(2 * ndim))
     if optimization_method == "basinhopping":
         result = basinhopping(
             x0=np.zeros(2 * ndim),
@@ -1212,6 +1212,7 @@ def optimize_match(
             fun=score_object.score,
             bounds=bounds,
             constraints=linear_constraint,
+            options = {"maxiter" : maxiter}
         )
     print(f"Niter: {result.nit}, success : {result.success} ({result.message}).")
     print(f"Initial score: {initial_score} - Refined score: {result.fun}")

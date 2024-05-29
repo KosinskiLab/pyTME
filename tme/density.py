@@ -2155,6 +2155,8 @@ class Density:
         cutoff_target: float = 0,
         cutoff_template: float = 0,
         scoring_method: str = "NormalizedCrossCorrelation",
+        optimization_method : str = "basinhopping",
+        maxiter : int = 500
     ) -> Tuple["Density", NDArray, NDArray, NDArray]:
         """
         Aligns two :py:class:`Density` instances target and template and returns
@@ -2179,6 +2181,12 @@ class Density:
             The scoring method to use for alignment. See
             :py:class:`tme.matching_optimization.create_score_object` for available methods,
             by default "NormalizedCrossCorrelation".
+        optimization_method : str, optional
+            Optimizer that is used.
+            See :py:meth:`tme.matching_optimization.optimize_match`.
+        maxiter : int, optional
+            Maximum number of iterations for the optimizer.
+            See :py:meth:`tme.matching_optimization.optimize_match`.
 
         Returns
         -------
@@ -2190,7 +2198,17 @@ class Density:
         -----
         No densities below cutoff_template are present in the returned Density object.
         """
+        from .matching_exhaustive import normalize_under_mask
         from .matching_optimization import optimize_match, create_score_object
+
+        template_mask = template.empty
+        template_mask.data[:] = 1
+
+        normalize_under_mask(
+            template=template.data,
+            mask=template_mask.data,
+            mask_intensity=template_mask.data.sum(),
+        )
 
         target_sampling_rate = np.array(target.sampling_rate)
         template_sampling_rate = np.array(template.sampling_rate)
@@ -2226,16 +2244,23 @@ class Density:
         ).astype(int)
         template_coordinates += mass_center_difference[:, None]
 
+        coordinates_mask = template_mask.to_pointcloud()
+        coordinates_mask = coordinates_mask * template_scaling[:, None]
+        coordinates_mask +=  mass_center_difference[:, None]
+
         score_object = create_score_object(
             score=scoring_method,
             target=target.data,
             template_coordinates=template_coordinates,
+            template_mask_coordinates=coordinates_mask,
             template_weights=template_weights,
             sampling_rate=np.ones(template.data.ndim),
         )
 
         translation, rotation_matrix, score = optimize_match(
-            score_object=score_object, optimization_method="basinhopping"
+            score_object=score_object,
+            optimization_method=optimization_method,
+            maxiter = maxiter
         )
 
         translation += mass_center_difference
@@ -2257,6 +2282,8 @@ class Density:
         template: "Structure",
         cutoff_target: float = 0,
         scoring_method: str = "NormalizedCrossCorrelation",
+        optimization_method : str = "basinhopping",
+        maxiter : int = 500
     ) -> Tuple["Structure", NDArray, NDArray]:
         """
         Aligns a :py:class:`tme.structure.Structure` template to :py:class:`Density`
@@ -2281,6 +2308,12 @@ class Density:
             The scoring method to use for template matching. See
             :py:class:`tme.matching_optimization.create_score_object` for available methods,
             by default "NormalizedCrossCorrelation".
+        optimization_method : str, optional
+            Optimizer that is used.
+            See :py:meth:`tme.matching_optimization.optimize_match`.
+        maxiter : int, optional
+            Maximum number of iterations for the optimizer.
+            See :py:meth:`tme.matching_optimization.optimize_match`.
 
         Returns
         -------
@@ -2304,18 +2337,17 @@ class Density:
             cutoff_target=cutoff_target,
             cutoff_template=0,
             scoring_method=scoring_method,
+            optimization_method=optimization_method,
+            maxiter=maxiter
         )
         out = template.copy()
-        final_translation = np.add(
-            -template_density.origin,
-            np.multiply(translation, template_density.sampling_rate),
-        )
+        final_translation = np.subtract(ret.origin, template_density.origin)
 
         # Atom coordinates are in xyz
         final_translation = final_translation[::-1]
         rotation_matrix = rotation_matrix[::-1, ::-1]
 
-        out.rigid_transform(
+        out = out.rigid_transform(
             translation=final_translation, rotation_matrix=rotation_matrix
         )
 
