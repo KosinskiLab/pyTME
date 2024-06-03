@@ -207,7 +207,7 @@ def load_template(filepath: str, sampling_rate: NDArray, center: bool = True):
         template = Density.from_file(filepath)
         center_of_mass = template.center_of_mass(template.data)
         template_is_density = True
-    except ValueError:
+    except Exception:
         template = Structure.from_file(filepath)
         center_of_mass = template.center_of_mass()[::-1]
         template = Density.from_structure(template, sampling_rate=sampling_rate)
