@@ -58,9 +58,16 @@ class TestMatchTemplate:
     @pytest.mark.parametrize("use_target_mask", (False, True))
     @pytest.mark.parametrize("edge_padding", (False, True))
     @pytest.mark.parametrize("fourier_padding", (False, True))
+    @pytest.mark.parametrize("test_filter", (False, True))
     @pytest.mark.parametrize("use_gpu", test_gpu)
     def test_match_template(
-        self, use_template_mask, use_target_mask, edge_padding, fourier_padding, use_gpu
+        self,
+        use_template_mask,
+        use_target_mask,
+        edge_padding,
+        fourier_padding,
+        use_gpu,
+        test_filter,
     ):
         output_path = tempfile.NamedTemporaryFile(delete=False, suffix="mrc").name
         cmd = [
@@ -91,6 +98,20 @@ class TestMatchTemplate:
 
         if use_gpu:
             cmd.append("--use_gpu")
+
+        if test_filter:
+            cmd.extend(
+                [
+                    "--lowpass",
+                    "30",
+                    "--defocus",
+                    "3000",
+                    "--tilt_angles",
+                    "40,40:10",
+                    "--wedge_axes",
+                    "0,2",
+                ]
+            )
 
         ret = subprocess.run(cmd, capture_output=True)
         assert ret.returncode == 0

@@ -119,7 +119,7 @@ class TestBackends:
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     @pytest.mark.parametrize("shape", ((10, 15), (10, 15, 20)))
     @pytest.mark.parametrize(
-        "dtype", (("_default_dtype", "_complex_dtype", "_default_dtype_int"))
+        "dtype", (("_float_dtype", "_complex_dtype", "_int_dtype"))
     )
     def test_preallocate_array(self, shape, backend, dtype):
         dtype_base = getattr(self.backend, dtype)
@@ -172,10 +172,10 @@ class TestBackends:
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     @pytest.mark.parametrize(
-        "dtype", (("_default_dtype", "_complex_dtype", "_default_dtype_int"))
+        "dtype", (("_float_dtype", "_complex_dtype", "_int_dtype"))
     )
     @pytest.mark.parametrize(
-        "dtype_target", (("_default_dtype_int", "_complex_dtype", "_default_dtype"))
+        "dtype_target", (("_int_dtype", "_complex_dtype", "_float_dtype"))
     )
     def test_astype(self, dtype, backend, dtype_target):
         dtype_base = getattr(backend, dtype)
@@ -304,19 +304,19 @@ class TestBackends:
         rfftn, irfftn = backend.build_fft(
             fast_shape=fast_shape,
             fast_ft_shape=fast_ft_shape,
-            real_dtype=backend._default_dtype,
+            real_dtype=backend._float_dtype,
             complex_dtype=backend._complex_dtype,
         )
         arr = np.random.rand(*fast_shape)
         out = np.zeros(fast_ft_shape)
 
-        real_arr = backend.astype(backend.to_backend_array(arr), backend._default_dtype)
+        real_arr = backend.astype(backend.to_backend_array(arr), backend._float_dtype)
         complex_arr = backend.astype(
             backend.to_backend_array(out), backend._complex_dtype
         )
 
         rfftn(
-            backend.astype(backend.to_backend_array(arr), backend._default_dtype),
+            backend.astype(backend.to_backend_array(arr), backend._float_dtype),
             complex_arr,
         )
         irfftn(complex_arr, real_arr)
@@ -379,6 +379,6 @@ class TestBackends:
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     def test_datatype_bytes(self, backend):
-        assert isinstance(backend.datatype_bytes(backend._default_dtype), int)
+        assert isinstance(backend.datatype_bytes(backend._float_dtype), int)
         assert isinstance(backend.datatype_bytes(backend._complex_dtype), int)
-        assert isinstance(backend.datatype_bytes(backend._default_dtype_int), int)
+        assert isinstance(backend.datatype_bytes(backend._int_dtype), int)
