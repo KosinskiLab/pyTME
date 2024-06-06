@@ -29,16 +29,18 @@ class NumpyFFTWBackend(MatchingBackend):
     def __init__(
         self,
         array_backend=np,
-        default_dtype=np.float32,
+        float_dtype=np.float32,
         complex_dtype=np.complex64,
-        default_dtype_int=np.int32,
+        int_dtype=np.int32,
+        overflow_safe_dtype=np.float32,
         **kwargs,
     ):
         super().__init__(
             array_backend=array_backend,
-            default_dtype=default_dtype,
+            float_dtype=float_dtype,
             complex_dtype=complex_dtype,
-            default_dtype_int=default_dtype_int,
+            int_dtype=int_dtype,
+            overflow_safe_dtype=overflow_safe_dtype,
         )
         self.affine_transform = affine_transform
 
@@ -52,6 +54,16 @@ class NumpyFFTWBackend(MatchingBackend):
 
     def to_cpu_array(self, arr: NDArray) -> NDArray:
         return arr
+
+    def get_fundamental_dtype(self, arr):
+        dt = arr.dtype
+        if self._array_backend.issubdtype(dt, self._array_backend.integer):
+            return int
+        elif self._array_backend.issubdtype(dt, self._array_backend.floating):
+            return float
+        elif self._array_backend.issubdtype(dt, self._array_backend.complexfloating):
+            return complex
+        return float
 
     def free_cache(self):
         pass
@@ -429,8 +441,8 @@ class NumpyFFTWBackend(MatchingBackend):
         new_shape = self.to_backend_array(newshape)
         current_shape = self.to_backend_array(arr.shape)
         starts = self.subtract(current_shape, new_shape)
-        starts = self.astype(self.divide(starts, 2), self._default_dtype_int)
-        stops = self.astype(self.add(starts, newshape), self._default_dtype_int)
+        starts = self.astype(self.divide(starts, 2), self._int_dtype)
+        stops = self.astype(self.add(starts, newshape), self._int_dtype)
         box = tuple(slice(start, stop) for start, stop in zip(starts, stops))
         return arr[box]
 
@@ -722,11 +734,11 @@ class NumpyFFTWBackend(MatchingBackend):
         arr = self._array_backend.where(arr > cutoff, arr, 0)
         denominator = self.sum(arr)
         grids = self._array_backend.ogrid[tuple(slice(0, i) for i in arr.shape)]
-        grids = [grid.astype(self._default_dtype) for grid in grids]
+        grids = [grid.astype(self._float_dtype) for grid in grids]
 
         center_of_mass = self.array(
             [
-                self.sum(self.multiply(arr, grids[dim])) / denominator
+                self.sum(self.multiply(arr, grids[dim]) / denominator)
                 for dim in range(arr.ndim)
             ]
         )

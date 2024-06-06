@@ -1,4 +1,4 @@
-""" Backend Apple's MLX library for template matching.
+""" Backend using Apple's MLX library for template matching.
 
     Copyright (c) 2024 European Molecular Biology Laboratory
 
@@ -20,23 +20,27 @@ class MLXBackend(NumpyFFTWBackend):
     def __init__(
         self,
         device="cpu",
-        default_dtype=None,
+        float_dtype=None,
         complex_dtype=None,
-        default_dtype_int=None,
+        int_dtype=None,
+        overflow_safe_dtype=None,
         **kwargs,
     ):
         import mlx.core as mx
 
         device = mx.cpu if device == "cpu" else mx.gpu
-        default_dtype = mx.float32 if default_dtype is None else default_dtype
+        float_dtype = mx.float32 if float_dtype is None else float_dtype
         complex_dtype = mx.complex64 if complex_dtype is None else complex_dtype
-        default_dtype_int = mx.int32 if default_dtype_int is None else default_dtype_int
+        int_dtype = mx.int32 if int_dtype is None else int_dtype
+        if overflow_safe_dtype is None:
+            overflow_safe_dtype = mx.float32
 
         super().__init__(
             array_backend=mx,
-            default_dtype=default_dtype,
+            float_dtype=float_dtype,
             complex_dtype=complex_dtype,
-            default_dtype_int=default_dtype_int,
+            int_dtype=int_dtype,
+            overflow_safe_dtype=overflow_safe_dtype,
         )
 
         self.device = device
@@ -141,8 +145,8 @@ class MLXBackend(NumpyFFTWBackend):
         new_shape = self.to_backend_array(newshape)
         current_shape = self.to_backend_array(arr.shape)
         starts = self.subtract(current_shape, new_shape)
-        starts = self.astype(self.divide(starts, 2), self._default_dtype_int)
-        stops = self.astype(self.add(starts, newshape), self._default_dtype_int)
+        starts = self.astype(self.divide(starts, 2), self._int_dtype)
+        stops = self.astype(self.add(starts, newshape), self._int_dtype)
         starts, stops = starts.tolist(), stops.tolist()
         box = tuple(slice(start, stop) for start, stop in zip(starts, stops))
         return arr[box]

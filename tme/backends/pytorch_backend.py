@@ -24,25 +24,27 @@ class PytorchBackend(NumpyFFTWBackend):
     def __init__(
         self,
         device="cuda",
-        default_dtype=None,
+        float_dtype=None,
         complex_dtype=None,
-        default_dtype_int=None,
+        int_dtype=None,
+        overflow_safe_dtype=None,
         **kwargs,
     ):
         import torch
         import torch.nn.functional as F
 
-        default_dtype = torch.float32 if default_dtype is None else default_dtype
+        float_dtype = torch.float32 if float_dtype is None else float_dtype
         complex_dtype = torch.complex64 if complex_dtype is None else complex_dtype
-        default_dtype_int = (
-            torch.int32 if default_dtype_int is None else default_dtype_int
-        )
+        int_dtype = torch.int32 if int_dtype is None else int_dtype
+        if overflow_safe_dtype is None:
+            overflow_safe_dtype = torch.float32
 
         super().__init__(
             array_backend=torch,
-            default_dtype=default_dtype,
+            float_dtype=float_dtype,
             complex_dtype=complex_dtype,
-            default_dtype_int=default_dtype_int,
+            int_dtype=int_dtype,
+            overflow_safe_dtype=overflow_safe_dtype,
         )
         self.device = device
         self.F = F
@@ -57,10 +59,19 @@ class PytorchBackend(NumpyFFTWBackend):
     def to_numpy_array(self, arr: TorchTensor) -> NDArray:
         if isinstance(arr, np.ndarray):
             return arr
-        return arr.cpu().numpy()
+        elif isinstance(arr, self._array_backend.Tensor):
+            return arr.cpu().numpy()
+        return np.array(arr)
 
     def to_cpu_array(self, arr: TorchTensor) -> NDArray:
         return arr.cpu()
+
+    def get_fundamental_dtype(self, arr):
+        if self._array_backend.is_floating_point(arr):
+            return float
+        elif self._array_backend.is_complex(arr):
+            return complex
+        return int
 
     def free_cache(self):
         self._array_backend.cuda.empty_cache()

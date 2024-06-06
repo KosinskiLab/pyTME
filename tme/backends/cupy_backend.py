@@ -25,29 +25,37 @@ class CupyBackend(NumpyFFTWBackend):
     """
 
     def __init__(
-        self, default_dtype=None, complex_dtype=None, default_dtype_int=None, **kwargs
+        self,
+        float_dtype=None,
+        complex_dtype=None,
+        int_dtype=None,
+        overflow_safe_dtype=None,
+        **kwargs,
     ):
         import cupy as cp
         from cupyx.scipy.fft import get_fft_plan
         from cupyx.scipy.ndimage import affine_transform
         from cupyx.scipy.ndimage import maximum_filter
 
-        default_dtype = cp.float32 if default_dtype is None else default_dtype
+        float_dtype = cp.float32 if float_dtype is None else float_dtype
         complex_dtype = cp.complex64 if complex_dtype is None else complex_dtype
-        default_dtype_int = cp.int32 if default_dtype_int is None else default_dtype_int
+        int_dtype = cp.int32 if int_dtype is None else int_dtype
+        if overflow_safe_dtype is None:
+            overflow_safe_dtype = cp.float32
 
         super().__init__(
             array_backend=cp,
-            default_dtype=default_dtype,
+            float_dtype=float_dtype,
             complex_dtype=complex_dtype,
-            default_dtype_int=default_dtype_int,
+            int_dtype=int_dtype,
+            overflow_safe_dtype=overflow_safe_dtype,
         )
         self.get_fft_plan = get_fft_plan
         self.affine_transform = affine_transform
         self.maximum_filter = maximum_filter
 
-        floating = f"float{self.datatype_bytes(default_dtype) * 8}"
-        integer = f"int{self.datatype_bytes(default_dtype_int) * 8}"
+        floating = f"float{self.datatype_bytes(float_dtype) * 8}"
+        integer = f"int{self.datatype_bytes(int_dtype) * 8}"
         self._max_score_over_rotations = self._array_backend.ElementwiseKernel(
             f"{floating} internal_scores, {floating} scores, {integer} rot_index",
             f"{floating} out1, {integer} rotations",
@@ -119,12 +127,11 @@ class CupyBackend(NumpyFFTWBackend):
         fast_ft_shape: Tuple[int],
         real_dtype: type,
         complex_dtype: type,
-        fftargs: Dict = {},
         inverse_fast_shape: Tuple[int] = None,
         **kwargs,
     ) -> Tuple[Callable, Callable]:
         """
-        Build pyFFTW builder functions.
+        Build rfftn and irfftn functions.
 
         Parameters
         ----------
@@ -140,8 +147,6 @@ class CupyBackend(NumpyFFTWBackend):
             Numpy dtype of the fourier transform.
         inverse_fast_shape : tuple, optional
             Output shape of the inverse Fourier transform. By default fast_shape.
-        fftargs : dict, optional
-            Dictionary passed to pyFFTW builders.
         **kwargs: dict, optional
             Unused keyword arguments.
 
@@ -260,11 +265,13 @@ class CupyBackend(NumpyFFTWBackend):
         return_type = (out is None) + 2 * rotate_mask * (out_mask is None)
         translation = self.zeros(arr.ndim) if translation is None else translation
 
-        center = self.divide(self.to_backend_array(arr.shape), 2)
+        center = self.divide(arr.shape, 2)
         if not use_geometric_center:
             center = self.center_of_mass(arr, cutoff=0)
 
-        rotation_matrix_inverted = self.linalg.inv(rotation_matrix)
+        rotation_matrix_inverted = self.linalg.inv(
+            rotation_matrix.astype(self._overflow_safe_dtype)
+        ).astype(self._float_dtype)
         transformed_center = rotation_matrix_inverted @ center.reshape(-1, 1)
         transformed_center = transformed_center.reshape(-1)
         base_offset = self.subtract(center, transformed_center)

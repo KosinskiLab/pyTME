@@ -57,6 +57,7 @@ class BackendManager:
             "cpu_backend": NumpyFFTWBackend,
             "pytorch": PytorchBackend,
             "cupy": CupyBackend,
+            "mlx": MLXBackend,
         }
         self._backend = NumpyFFTWBackend()
         self._backend_name = "cpu_backend"

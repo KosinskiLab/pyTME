@@ -29,32 +29,39 @@ class MatchingBackend(ABC):
     ----------
     array_backend : object
         The backend object providing array functionalities.
-    default_dtype : type
+    float_dtype : type
         Data type of real array instances, e.g. np.float32.
     complex_dtype : type
         Data type of complex array instances, e.g. np.complex64.
-    default_dtype_int : type
+    int_dtype : type
         Data type of integer array instances, e.g. np.int32.
+    overflow_safe_dtype : type
+        Data type than can be used for reduction operations to avoid overflows.
 
     Attributes
     ----------
     _array_backend : object
         The backend object used to delegate method and attribute calls.
-    _default_dtype : type
+    _float_dtype : type
         Data type of real array instances, e.g. np.float32.
     _complex_dtype : type
         Data type of complex array instances, e.g. np.complex64.
-    _default_dtype_int : type
+    _int_dtype : type
         Data type of integer array instances, e.g. np.int32.
+    _overflow_safe_dtype : type
+        Data type than can be used for reduction operations to avoid overflows.
+    _fundamental_dtypes : Dict
+        Mapping between fundamental int, float and complex python types to
+        array backend specific data types.
 
     Examples
     --------
     >>> import numpy as np
     >>> backend = MatchingBackend(
         array_backend = np,
-        default_dtype = np.float32,
+        float_dtype = np.float32,
         complex_dtype = np.complex64,
-        default_dtype_int = np.int32
+        int_dtype = np.int32
     )
     >>> arr = backend.array([1, 2, 3])
     >>> print(arr)
@@ -69,14 +76,22 @@ class MatchingBackend(ABC):
     def __init__(
         self,
         array_backend,
-        default_dtype: type,
+        float_dtype: type,
         complex_dtype: type,
-        default_dtype_int: type,
+        int_dtype: type,
+        overflow_safe_dtype: type,
     ):
         self._array_backend = array_backend
-        self._default_dtype = default_dtype
+        self._float_dtype = float_dtype
         self._complex_dtype = complex_dtype
-        self._default_dtype_int = default_dtype_int
+        self._int_dtype = int_dtype
+        self._overflow_safe_dtype = overflow_safe_dtype
+
+        self._fundamental_dtypes = {
+            int: self._int_dtype,
+            float: self._float_dtype,
+            complex: self._complex_dtype,
+        }
 
     def __getattr__(self, name: str):
         """
