@@ -1,5 +1,5 @@
 #!python3
-""" Handle template matching peaks and convert between formats.
+""" Handle template matching orientations and conversion between formats.
 
     Copyright (c) 2024 European Molecular Biology Laboratory
 
@@ -17,7 +17,38 @@ from scipy.spatial.transform import Rotation
 @dataclass
 class Orientations:
     """
-    Handle template matching peaks and convert between formats.
+    Handle template matching orientations and conversion between formats.
+
+    Examples
+    --------
+    The following achieves the minimal definition of an :py:class:`Orientations` instance
+
+    >>> import numpy as np
+    >>> from tme import Orientations
+    >>> translations = np.random.randint(low = 0, high = 100, size = (100,3))
+    >>> rotations = np.random.rand(100, 3)
+    >>> scores = np.random.rand(100)
+    >>> details = np.full((100,), fill_value = -1)
+    >>> orientations = Orientations(
+    >>>     translations = translations,
+    >>>     rotations = rotations,
+    >>>     scores = scores,
+    >>>     details = details,
+    >>> )
+
+    The created ``orientations`` object can be written to disk in a range of formats.
+    See :py:meth:`Orientations.to_file` for available formats. The following creates
+    a STAR file
+
+    >>> orientations.to_file("test.star")
+
+    :py:meth:`Orientations.from_file` can create :py:class:`Orientations` instances
+    from a range of formats, to enable conversion between formats
+
+    >>> orientations_star = Orientations.from_file("test.star")
+    >>> np.all(orientations.translations == orientations_star.translations)
+    True
+
     """
 
     #: Return a numpy array with translations of each orientation (n x d).
@@ -77,7 +108,17 @@ class Orientations:
         filename : str
             The name of the file where the orientations will be saved.
         file_format : type, optional
-            The format in which to save the orientations. Supported formats are 'text' and 'relion'.
+            The format in which to save the orientations. Defaults to None and infers
+            the file_format from the typical extension. Supported formats are
+
+            +---------------+----------------------------------------------------+
+            | text          | pyTME's standard tab-separated orientations file   |
+            +---------------+----------------------------------------------------+
+            | relion        | Creates a STAR file of orientations                |
+            +---------------+----------------------------------------------------+
+            | dynamo        | Creates a dynamo table                             |
+            +---------------+----------------------------------------------------+
+
         **kwargs : dict
             Additional keyword arguments specific to the file format.
 
@@ -316,7 +357,15 @@ class Orientations:
         filename : str
             The name of the file from which to read the orientations.
         file_format : type, optional
-            The format of the file. Currently, only 'text' format is supported.
+            The format of the file. Defaults to None and infers
+            the file_format from the typical extension. Supported formats are
+
+            +---------------+----------------------------------------------------+
+            | text          | pyTME's standard tab-separated orientations file   |
+            +---------------+----------------------------------------------------+
+            | relion        | Relion 4+ style STAR file                          |
+            +---------------+----------------------------------------------------+
+
         **kwargs : dict
             Additional keyword arguments specific to the file format.
 

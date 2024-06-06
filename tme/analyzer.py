@@ -47,10 +47,14 @@ def filter_points_indices(
 ) -> NDArray:
     if min_distance <= 0:
         return backend.arange(coordinates.shape[0])
+    if coordinates.shape[0] == 0:
+        return ()
 
     if isinstance(coordinates, np.ndarray):
         return find_candidate_indices(coordinates, min_distance)
-    elif coordinates.shape[0] > bucket_cutoff:
+    elif coordinates.shape[0] > bucket_cutoff or not isinstance(
+        coordinates, np.ndarray
+    ):
         return filter_points_indices_bucket(coordinates, min_distance)
     distances = np.linalg.norm(coordinates[:, None] - coordinates, axis=-1)
     distances = np.tril(distances)
@@ -169,7 +173,7 @@ class PeakCaller(ABC):
 
         peak_positions = backend.astype(peak_positions, int)
         if peak_details is None:
-            peak_details = backend.to_backend_array([-1] * peak_positions.shape[0])
+            peak_details = backend.full((peak_positions.shape[0],), fill_value=-1)
 
         if self.min_boundary_distance > 0:
             upper_limit = backend.subtract(
@@ -430,12 +434,13 @@ class PeakCaller(ABC):
 
         if fourier_shift is not None:
             peak_positions = backend.add(peak_positions, fourier_shift)
-            backend.divide(peak_positions, score_space_shape).astype(int)
 
             backend.subtract(
                 peak_positions,
                 backend.multiply(
-                    backend.divide(peak_positions, score_space_shape).astype(int),
+                    backend.astype(
+                        backend.divide(peak_positions, score_space_shape), int
+                    ),
                     score_space_shape,
                 ),
                 out=peak_positions,
@@ -651,7 +656,7 @@ class PeakCallerRecursiveMasking(PeakCaller):
         if mask is None:
             masking_function = self._mask_scores_box
             shape = tuple(self.min_distance for _ in range(score_space.ndim))
-            mask = backend.zeros(shape, dtype=backend._default_dtype)
+            mask = backend.zeros(shape, dtype=backend._float_dtype)
 
         rotated_template = backend.zeros(mask.shape, dtype=mask.dtype)
 
@@ -1163,6 +1168,53 @@ class MaxScoreOverRotations:
         Whether to offload internal data arrays to disk
     thread_safe: bool, optional
         Whether access to internal data arrays should be thread safe
+
+    Examples
+    --------
+    The following achieves the minimal definition of a :py:class:`MaxScoreOverRotations`
+    instance
+
+    >>> from tme.analyzer import MaxScoreOverRotations
+    >>> analyzer = MaxScoreOverRotations(
+    >>>    score_space_shape = (50, 50),
+    >>>    score_space_dtype = np.float32,
+    >>>    rotation_space_dtype = np.int32,
+    >>> )
+
+    The following simulates a template matching run by creating random data for a range
+    of rotations and sending it to ``analyzer`` via its __call__ method
+
+    >>> for rotation_number in range(10):
+    >>>     scores = np.random.rand(50,50)
+    >>>     rotation = np.random.rand(scores.ndim, scores.ndim)
+    >>>     analyzer(score_space = scores, rotation_matrix = rotation)
+
+    The aggregated scores can be exctracted by invoking the __iter__ method of
+    ``analyzer``
+
+    >>> results = tuple(analyzer)
+
+    The ``results`` tuple contains (1) the maximum scores for each translation,
+    (2) an offset which is relevant when merging results from split template matching
+    using :py:meth:`MaxScoreOverRotations.merge`, (3) the rotation used to obtain a
+    score for a given translation, (4) a dictionary mapping rotation matrices to the
+    indices used in (2).
+
+    We can extract the ``optimal_score`, ``optimal_translation`` and ``optimal_rotation``
+    as follows
+
+    >>> optimal_score = results[0].max()
+    >>> optimal_translation = np.where(results[0] == results[0].max())
+    >>> optimal_rotation_index = results[2][optimal_translation]
+    >>> for key, value in results[3].items():
+    >>>     if value != optimal_rotation_index:
+    >>>         continue
+    >>>     optimal_rotation = np.frombuffer(key, rotation.dtype)
+    >>>     optimal_rotation = optimal_rotation.reshape(scores.ndim, scores.ndim)
+
+    The outlined procedure is a trivial method to identify high scoring peaks.
+    Alternatively, :py:class:`PeakCaller` offers a range of more elaborate approaches
+    that can be used.
     """
 
     def __init__(

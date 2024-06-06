@@ -2155,8 +2155,8 @@ class Density:
         cutoff_target: float = 0,
         cutoff_template: float = 0,
         scoring_method: str = "NormalizedCrossCorrelation",
-        optimization_method : str = "basinhopping",
-        maxiter : int = 500
+        optimization_method: str = "basinhopping",
+        maxiter: int = 500,
     ) -> Tuple["Density", NDArray, NDArray, NDArray]:
         """
         Aligns two :py:class:`Density` instances target and template and returns
@@ -2246,7 +2246,7 @@ class Density:
 
         coordinates_mask = template_mask.to_pointcloud()
         coordinates_mask = coordinates_mask * template_scaling[:, None]
-        coordinates_mask +=  mass_center_difference[:, None]
+        coordinates_mask += mass_center_difference[:, None]
 
         score_object = create_score_object(
             score=scoring_method,
@@ -2260,7 +2260,7 @@ class Density:
         translation, rotation_matrix, score = optimize_match(
             score_object=score_object,
             optimization_method=optimization_method,
-            maxiter = maxiter
+            maxiter=maxiter,
         )
 
         translation += mass_center_difference
@@ -2282,8 +2282,8 @@ class Density:
         template: "Structure",
         cutoff_target: float = 0,
         scoring_method: str = "NormalizedCrossCorrelation",
-        optimization_method : str = "basinhopping",
-        maxiter : int = 500
+        optimization_method: str = "basinhopping",
+        maxiter: int = 500,
     ) -> Tuple["Structure", NDArray, NDArray]:
         """
         Aligns a :py:class:`tme.structure.Structure` template to :py:class:`Density`
@@ -2338,7 +2338,7 @@ class Density:
             cutoff_template=0,
             scoring_method=scoring_method,
             optimization_method=optimization_method,
-            maxiter=maxiter
+            maxiter=maxiter,
         )
         out = template.copy()
         final_translation = np.subtract(ret.origin, template_density.origin)
