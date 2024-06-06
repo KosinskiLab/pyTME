@@ -27,10 +27,20 @@ class MatchingData:
     template : np.ndarray or Density
         Template data array for template matching.
 
+    Examples
+    --------
+    The following achieves the minimal definition of a :py:class:`MatchingData` instance.
+
+    >>> import numpy as np
+    >>> from tme.matching_data import MatchingData
+    >>> target = np.random.rand(50,40,60)
+    >>> template = target[15:25, 10:20, 30:40]
+    >>> matching_data = MatchingData(target=target, template=template)
+
     """
 
     def __init__(self, target: NDArray, template: NDArray):
-        self._default_dtype = np.float32
+        self._float_dtype = np.float32
         self._complex_dtype = np.complex64
 
         self._target = target
@@ -289,18 +299,26 @@ class MatchingData:
 
     def to_backend(self) -> None:
         """
-        Transfer the class instance's numpy arrays to the current backend.
+        Transfer and convert types of class instance's data arrays to the current backend
         """
-        backend_arr = type(backend.zeros((1), dtype=backend._default_dtype))
+        backend_arr = type(backend.zeros((1), dtype=backend._float_dtype))
         for attr_name, attr_value in vars(self).items():
+            converted_array = None
             if isinstance(attr_value, np.ndarray):
                 converted_array = backend.to_backend_array(attr_value.copy())
-                setattr(self, attr_name, converted_array)
             elif isinstance(attr_value, backend_arr):
                 converted_array = backend.to_backend_array(attr_value)
-                setattr(self, attr_name, converted_array)
+            else:
+                continue
 
-        self._default_dtype = backend._default_dtype
+            current_dtype = backend.get_fundamental_dtype(converted_array)
+            target_dtype = backend._fundamental_dtypes[current_dtype]
+            if target_dtype != current_dtype:
+                converted_array = backend.astype(converted_array, target_dtype)
+
+            setattr(self, attr_name, converted_array)
+
+        self._float_dtype = backend._float_dtype
         self._complex_dtype = backend._complex_dtype
 
     def _set_batch_dimension(
@@ -350,12 +368,14 @@ class MatchingData:
         matching_dims = target_measurement_dims + batch_dims
 
         target_shape = backend.full(
-            shape=(matching_dims,), fill_value=1, dtype=backend._default_dtype_int
+            shape=(matching_dims,), fill_value=1, dtype=backend._int_dtype
         )
         template_shape = backend.full(
-            shape=(matching_dims,), fill_value=1, dtype=backend._default_dtype_int
+            shape=(matching_dims,), fill_value=1, dtype=backend._int_dtype
         )
-        batch_mask = backend.full(shape=(matching_dims,), fill_value=1, dtype=bool)
+        batch_mask = backend.full(
+            shape=(matching_dims,), fill_value=1, dtype=backend._int_dtype
+        )
 
         target_index, template_index = 0, 0
         for k in range(matching_dims):
@@ -440,7 +460,7 @@ class MatchingData:
             An array indicating the padding for each dimension of the target.
         """
         target_padding = backend.zeros(
-            len(self._output_target_shape), dtype=backend._default_dtype_int
+            len(self._output_target_shape), dtype=backend._int_dtype
         )
 
         if pad_target:
@@ -491,13 +511,14 @@ class MatchingData:
             fourier_pad = backend.full(
                 shape=(len(fourier_pad),),
                 fill_value=1,
-                dtype=backend._default_dtype_int,
+                dtype=backend._int_dtype,
             )
 
         fourier_pad = backend.to_backend_array(fourier_pad)
         if hasattr(self, "_batch_mask"):
             batch_mask = backend.to_backend_array(self._batch_mask)
-            fourier_pad[batch_mask] = 1
+            backend.multiply(fourier_pad, 1 - batch_mask, out=fourier_pad)
+            backend.add(fourier_pad, batch_mask, out=fourier_pad)
 
         pad_shape = backend.maximum(target_shape, template_shape)
         ret = backend.compute_convolution_shapes(pad_shape, fourier_pad)
@@ -510,11 +531,11 @@ class MatchingData:
 
             if hasattr(self, "_batch_mask"):
                 batch_mask = backend.to_backend_array(self._batch_mask)
-                shape_diff[batch_mask] = 0
+                backend.multiply(batch_mask, 1 - batch_mask, out=shape_diff)
 
             backend.add(fourier_shift, shape_diff, out=fourier_shift)
 
-        fourier_shift = backend.astype(fourier_shift, backend._default_dtype_int)
+        fourier_shift = backend.astype(fourier_shift, backend._int_dtype)
 
         return fast_shape, fast_ft_shape, fourier_shift
 
@@ -542,7 +563,7 @@ class MatchingData:
             pass
         else:
             raise ValueError("Rotations have to be a rank 2 or 3 array.")
-        self._rotations = rotations.astype(self._default_dtype)
+        self._rotations = rotations.astype(self._float_dtype)
 
     @property
     def target(self):
@@ -584,7 +605,7 @@ class MatchingData:
 
         if type(template) == Density:
             template = template.data
-        self._template = template.astype(self._default_dtype, copy=False)
+        self._template = template.astype(self._float_dtype, copy=False)
 
     @property
     def target_mask(self):
@@ -606,12 +627,12 @@ class MatchingData:
             raise ValueError("Target and its mask have to have the same shape.")
 
         if type(mask) == Density:
-            mask.data = mask.data.astype(self._default_dtype, copy=False)
+            mask.data = mask.data.astype(self._float_dtype, copy=False)
             self._target_mask = mask
             self._targetmaskshape = self._target_mask.shape[::-1]
             return None
 
-        self._target_mask = mask.astype(self._default_dtype, copy=False)
+        self._target_mask = mask.astype(self._float_dtype, copy=False)
         self._targetmaskshape = self._target_mask.shape
 
     @property
@@ -641,12 +662,12 @@ class MatchingData:
             raise ValueError("Target and its mask have to have the same shape.")
 
         if type(mask) == Density:
-            mask.data = mask.data.astype(self._default_dtype, copy=False)
+            mask.data = mask.data.astype(self._float_dtype, copy=False)
             self._template_mask = mask
             self._templatemaskshape = self._template_mask.shape[::-1]
             return None
 
-        self._template_mask = mask.astype(self._default_dtype, copy=False)
+        self._template_mask = mask.astype(self._float_dtype, copy=False)
         self._templatemaskshape = self._template_mask.shape[::-1]
 
     def _split_rotations_on_jobs(self, n_jobs: int) -> List[NDArray]:
