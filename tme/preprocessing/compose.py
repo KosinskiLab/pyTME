@@ -43,7 +43,7 @@ class Compose:
             ret = transform(**kwargs)
 
             if ret.get("is_multiplicative_filter", False):
-                backend.multiply(ret["data"], meta["data"], ret["data"])
+                backend.multiply(ret["data"], meta["data"], out=ret["data"])
                 ret["merge"] = None
 
             meta = ret

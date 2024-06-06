@@ -4,13 +4,14 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+from math import log, sqrt
 from typing import Tuple, Dict
 
 import numpy as np
 from numpy.typing import NDArray
 from scipy.ndimage import mean as ndimean
 
-from ._utils import fftfreqn, crop_real_fourier
+from ._utils import fftfreqn, crop_real_fourier, shift_fourier
 from ..backends import backend
 
 
@@ -87,6 +88,9 @@ class BandPassFilter:
         NDArray
             The bandpass filter in Fourier space.
         """
+        if shape_is_real_fourier:
+            return_real_fourier = False
+
         grid = fftfreqn(
             shape=shape,
             sampling_rate=0.5,
@@ -103,15 +107,9 @@ class BandPassFilter:
         lowcut = np.max(2 * sampling_rate / highpass)
 
         bandpass_filter = ((grid <= highcut) & (grid >= lowcut)) * 1.0
-        shift = backend.add(
-            backend.astype(backend.divide(bandpass_filter.shape, 2), int),
-            backend.mod(bandpass_filter.shape, 2),
-        )
-        if shape_is_real_fourier:
-            shift[-1] = 0
 
-        bandpass_filter = backend.roll(
-            bandpass_filter, shift, tuple(i for i in range(len(shift)))
+        bandpass_filter = shift_fourier(
+            data=bandpass_filter, shape_is_real_fourier=shape_is_real_fourier
         )
 
         if return_real_fourier:
@@ -166,15 +164,15 @@ class BandPassFilter:
         grid = -backend.square(grid)
 
         lowpass_filter, highpass_filter = 1, 1
-        norm = float(backend.sqrt(2 * backend.log(2)))
+        norm = float(sqrt(2 * log(2)))
         upper_sampling = float(backend.max(backend.multiply(2, sampling_rate)))
 
         if lowpass is not None:
             lowpass = float(lowpass)
-            lowpass = backend.maximum(lowpass, backend.eps(lowpass))
+            lowpass = backend.maximum(lowpass, backend.eps(backend._float_dtype))
         if highpass is not None:
             highpass = float(highpass)
-            highpass = backend.maximum(highpass, backend.eps(highpass))
+            highpass = backend.maximum(highpass, backend.eps(backend._float_dtype))
 
         if lowpass is not None:
             lowpass = upper_sampling / (lowpass * norm)
@@ -185,16 +183,10 @@ class BandPassFilter:
             highpass = backend.multiply(2, backend.square(highpass))
             highpass_filter = 1 - backend.exp(backend.divide(grid, highpass))
 
-        lowpass_filter = backend.multiply(lowpass_filter, highpass_filter)
-        shift = backend.add(
-            backend.astype(backend.divide(lowpass_filter.shape, 2), int),
-            backend.mod(lowpass_filter.shape, 2),
-        )
-        if shape_is_real_fourier:
-            shift[-1] = 0
-
-        lowpass_filter = backend.roll(
-            lowpass_filter, shift, tuple(i for i in range(len(shift)))
+        # lowpass_filter becomes the bandpass_filter at this point
+        backend.multiply(lowpass_filter, highpass_filter, out=lowpass_filter)
+        lowpass_filter = shift_fourier(
+            data=lowpass_filter, shape_is_real_fourier=shape_is_real_fourier
         )
 
         if return_real_fourier:

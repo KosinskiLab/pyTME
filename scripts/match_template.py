@@ -217,7 +217,7 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
             if args.tilt_weighting not in ("angle", None):
                 raise ValueError(
                     "Tilt weighting schemes other than 'angle' or 'None' require "
-                    "a specification of electron doses."
+                    "a specification of electron doses via --tilt_angles."
                 )
 
             wedge = Wedge(
@@ -241,29 +241,56 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
         template_filter.append(wedge)
         if not isinstance(wedge, WedgeReconstructed):
             template_filter.append(
-                ReconstructFromTilt(reconstruction_filter=args.reconstruction_filter)
+                ReconstructFromTilt(
+                    reconstruction_filter=args.reconstruction_filter,
+                    interpolation_order=args.reconstruction_interpolation_order,
+                )
             )
 
-    if args.ctf_file is not None:
+    if args.ctf_file is not None or args.defocus is not None:
         from tme.preprocessing.tilt_series import CTF
 
-        ctf = CTF.from_file(args.ctf_file)
-        n_tilts_ctfs, n_tils_angles = len(ctf.defocus_x), len(wedge.angles)
-        if n_tilts_ctfs != n_tils_angles:
-            raise ValueError(
-                f"CTF file contains {n_tilts_ctfs} micrographs, but match_template "
-                f"recieved {n_tils_angles} tilt angles. Expected one angle "
-                "per micrograph."
+        needs_reconstruction = True
+        if args.ctf_file is not None:
+            ctf = CTF.from_file(args.ctf_file)
+            n_tilts_ctfs, n_tils_angles = len(ctf.defocus_x), len(wedge.angles)
+            if n_tilts_ctfs != n_tils_angles:
+                raise ValueError(
+                    f"CTF file contains {n_tilts_ctfs} micrographs, but match_template "
+                    f"recieved {n_tils_angles} tilt angles. Expected one angle "
+                    "per micrograph."
+                )
+            ctf.angles = wedge.angles
+            ctf.opening_axis, ctf.tilt_axis = args.wedge_axes
+        else:
+            needs_reconstruction = False
+            ctf = CTF(
+                defocus_x=[args.defocus],
+                phase_shift=[args.phase_shift],
+                defocus_y=None,
+                angles=[0],
+                shape=None,
+                return_real_fourier=True,
             )
-        ctf.angles = wedge.angles
-        ctf.opening_axis, ctf.tilt_axis = args.wedge_axes
+        ctf.sampling_rate = template.sampling_rate
+        ctf.flip_phase = not args.no_flip_phase
+        ctf.amplitude_contrast = args.amplitude_contrast
+        ctf.spherical_aberration = args.spherical_aberration
+        ctf.acceleration_voltage = args.acceleration_voltage * 1e3
+        ctf.correct_defocus_gradient = args.correct_defocus_gradient
 
-        if isinstance(template_filter[-1], ReconstructFromTilt):
+        if not needs_reconstruction:
+            template_filter.append(ctf)
+        elif isinstance(template_filter[-1], ReconstructFromTilt):
             template_filter.insert(-1, ctf)
         else:
             template_filter.insert(0, ctf)
             template_filter.insert(
-                1, ReconstructFromTilt(reconstruction_filter=args.reconstruction_filter)
+                1,
+                ReconstructFromTilt(
+                    reconstruction_filter=args.reconstruction_filter,
+                    interpolation_order=args.reconstruction_interpolation_order,
+                ),
             )
 
     if args.lowpass or args.highpass is not None:
@@ -292,6 +319,14 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
         whitening_filter = LinearWhiteningFilter()
         template_filter.append(whitening_filter)
         target_filter.append(whitening_filter)
+
+    needs_reconstruction = any(
+        [isinstance(t, ReconstructFromTilt) for t in template_filter]
+    )
+    if needs_reconstruction and args.reconstruction_filter is None:
+        warnings.warn(
+            "Consider using a --reconstruction_filter such as 'ramp' to avoid artifacts."
+        )
 
     template_filter = Compose(template_filter) if len(template_filter) else None
     target_filter = Compose(target_filter) if len(target_filter) else None
@@ -561,22 +596,89 @@ def parse_args():
         "grigorieff (exposure filter as defined in Grant and Grigorieff 2015)."
         "relion and grigorieff require electron doses in --tilt_angles weights column.",
     )
-    # filter_group.add_argument(
-    #     "--ctf_file",
-    #     dest="ctf_file",
-    #     type=str,
-    #     required=False,
-    #     default=None,
-    #     help="Path to a file with CTF parameters from CTFFIND4.",
-    # )
     filter_group.add_argument(
         "--reconstruction_filter",
         dest="reconstruction_filter",
         type=str,
         required=False,
-        choices=["ram-lak", "ramp", "shepp-logan", "cosine", "hamming"],
+        choices=["ram-lak", "ramp", "ramp-cont", "shepp-logan", "cosine", "hamming"],
         default=None,
         help="Filter applied when reconstructing (N+1)-D from N-D filters.",
+    )
+    filter_group.add_argument(
+        "--reconstruction_interpolation_order",
+        dest="reconstruction_interpolation_order",
+        type=int,
+        default=1,
+        required=False,
+        help="Analogous to --interpolation_order but for reconstruction.",
+    )
+
+    ctf_group = parser.add_argument_group("Contrast Transfer Function")
+    ctf_group.add_argument(
+        "--ctf_file",
+        dest="ctf_file",
+        type=str,
+        required=False,
+        default=None,
+        help="Path to a file with CTF parameters from CTFFIND4. Each line will be "
+        "interpreted as tilt obtained at the angle specified in --tilt_angles. ",
+    )
+    ctf_group.add_argument(
+        "--defocus",
+        dest="defocus",
+        type=float,
+        required=False,
+        default=None,
+        help="Defocus in units of sampling rate (typically Ångstrom). "
+        "Superseded by --ctf_file.",
+    )
+    ctf_group.add_argument(
+        "--phase_shift",
+        dest="phase_shift",
+        type=float,
+        required=False,
+        default=0,
+        help="Phase shift in degrees. Superseded by --ctf_file.",
+    )
+    ctf_group.add_argument(
+        "--acceleration_voltage",
+        dest="acceleration_voltage",
+        type=float,
+        required=False,
+        default=300,
+        help="Acceleration voltage in kV, defaults to 300.",
+    )
+    ctf_group.add_argument(
+        "--spherical_aberration",
+        dest="spherical_aberration",
+        type=float,
+        required=False,
+        default=2.7e7,
+        help="Spherical aberration in units of sampling rate (typically Ångstrom).",
+    )
+    ctf_group.add_argument(
+        "--amplitude_contrast",
+        dest="amplitude_contrast",
+        type=float,
+        required=False,
+        default=0.07,
+        help="Amplitude contrast, defaults to 0.07.",
+    )
+    ctf_group.add_argument(
+        "--no_flip_phase",
+        dest="no_flip_phase",
+        action="store_false",
+        required=False,
+        help="Whether the phase of the computed CTF should not be flipped.",
+    )
+    ctf_group.add_argument(
+        "--correct_defocus_gradient",
+        dest="correct_defocus_gradient",
+        action="store_true",
+        required=False,
+        help="[Experimental] Whether to compute a more accurate 3D CTF incorporating "
+        "defocus gradients.",
     )
 
     performance_group = parser.add_argument_group("Performance")
@@ -658,8 +760,6 @@ def parse_args():
 
     if args.interpolation_order < 0:
         args.interpolation_order = None
-
-    args.ctf_file = None
 
     if args.temp_directory is None:
         default = abspath(".")
@@ -885,9 +985,9 @@ def main():
         matching_method=args.score,
         analyzer_method=callback_class.__name__,
         backend=backend._backend_name,
-        float_nbytes=backend.datatype_bytes(backend._default_dtype),
+        float_nbytes=backend.datatype_bytes(backend._float_dtype),
         complex_nbytes=backend.datatype_bytes(backend._complex_dtype),
-        integer_nbytes=backend.datatype_bytes(backend._default_dtype_int),
+        integer_nbytes=backend.datatype_bytes(backend._int_dtype),
     )
 
     if splits is None:
@@ -950,8 +1050,18 @@ def main():
         "Wedge Axes": args.wedge_axes,
         "Tilt Angles": args.tilt_angles,
         "Tilt Weighting": args.tilt_weighting,
-        "CTF": args.ctf_file,
+        "Reconstruction Filter": args.reconstruction_filter,
     }
+    if args.ctf_file is not None or args.defocus is not None:
+        filter_args["CTF File"] = args.ctf_file
+        filter_args["Defocus"] = args.defocus
+        filter_args["Phase Shift"] = args.phase_shift
+        filter_args["No Flip Phase"] = args.no_flip_phase
+        filter_args["Acceleration Voltage"] = args.acceleration_voltage
+        filter_args["Spherical Aberration"] = args.spherical_aberration
+        filter_args["Amplitude Contrast"] = args.amplitude_contrast
+        filter_args["Correct Defocus"] = args.correct_defocus_gradient
+
     filter_args = {k: v for k, v in filter_args.items() if v is not None}
     if len(filter_args):
         print_block(
@@ -1000,9 +1110,11 @@ def main():
             candidates[0] *= target_mask.data
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=UserWarning)
+            nbytes = backend.datatype_bytes(backend._float_dtype)
+            dtype = np.float32 if nbytes == 4 else np.float16
             candidates[3] = {
                 x: euler_from_rotationmatrix(
-                    np.frombuffer(i, dtype=matching_data.rotations.dtype).reshape(
+                    np.frombuffer(i, dtype=dtype).reshape(
                         candidates[0].ndim, candidates[0].ndim
                     )
                 )

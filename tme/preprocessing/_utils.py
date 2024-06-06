@@ -133,11 +133,11 @@ def fftfreqn(
     NDArray
         The sample frequencies.
     """
-    center = backend.astype(backend.divide(shape, 2), backend._default_dtype_int)
+    center = backend.astype(backend.divide(shape, 2), backend._int_dtype)
 
     norm = np.ones(3)
     if sampling_rate is not None:
-        norm = backend.multiply(shape, sampling_rate).astype(int)
+        norm = backend.astype(backend.multiply(shape, sampling_rate), int)
 
     if shape_is_real_fourier:
         center[-1] = 0
@@ -151,9 +151,9 @@ def fftfreqn(
     indices = backend.transpose(indices)
 
     if compute_euclidean_norm:
-        backend.square(indices, indices)
+        indices = backend.square(indices)
         indices = backend.sum(indices, axis=0)
-        indices = backend.sqrt(indices)
+        backend.sqrt(indices, out=indices)
 
     return indices
 
@@ -174,3 +174,15 @@ def crop_real_fourier(data: NDArray) -> NDArray:
     """
     stop = 1 + (data.shape[-1] // 2)
     return data[..., :stop]
+
+
+def shift_fourier(data: NDArray, shape_is_real_fourier: bool = False):
+    shift = backend.add(
+        backend.astype(backend.divide(data.shape, 2), int),
+        backend.mod(data.shape, 2),
+    )
+    if shape_is_real_fourier:
+        shift[-1] = 0
+
+    data = backend.roll(data, shift, tuple(i for i in range(len(shift))))
+    return data

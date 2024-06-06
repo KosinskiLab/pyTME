@@ -21,10 +21,13 @@ from ._utils import (
     crop_real_fourier,
     centered_grid,
     fftfreqn,
+    shift_fourier,
 )
 
 
-def create_reconstruction_filter(filter_shape: Tuple[int], filter_type: str):
+def create_reconstruction_filter(
+    filter_shape: Tuple[int], filter_type: str, **kwargs: Dict
+):
     """Create a reconstruction filter of given filter_type.
 
     Parameters
@@ -32,20 +35,25 @@ def create_reconstruction_filter(filter_shape: Tuple[int], filter_type: str):
     filter_shape : tuple of int
         Shape of the returned filter
     filter_type: str
-        The type of created filter, available options include:
+        The type of created filter, available options are:
 
         +---------------+----------------------------------------------------+
-        | 'ram-lak'     | Returns |w|                                        |
+        | ram-lak       | Returns |w|                                        |
         +---------------+----------------------------------------------------+
-        | 'ramp'        | Principles of Computerized Tomographic Imaging Avin|
+        | ramp-cont     | Principles of Computerized Tomographic Imaging Avin|
         |               | ash C. Kak and Malcolm Slaney Chap 3 Eq. 61 [1]_   |
         +---------------+----------------------------------------------------+
-        | 'shepp-logan' | |w| * sinc(|w| / 2) [2]_                           |
+        | ramp          | Like ramp-cont but considering tilt angles         |
         +---------------+----------------------------------------------------+
-        | 'cosine'      | |w| * cos(|w| * pi / 2) [2]_                       |
+        | shepp-logan   | |w| * sinc(|w| / 2) [2]_                           |
         +---------------+----------------------------------------------------+
-        | 'hamming'     | |w| * (.54 + .46 ( cos(|w| * pi))) [2]_            |
+        | cosine        | |w| * cos(|w| * pi / 2) [2]_                       |
         +---------------+----------------------------------------------------+
+        | hamming       | |w| * (.54 + .46 ( cos(|w| * pi))) [2]_            |
+        +---------------+----------------------------------------------------+
+
+    kwargs: Dict
+        Keyword arguments for particular filter_types.
 
     Returns
     -------
@@ -62,7 +70,7 @@ def create_reconstruction_filter(filter_shape: Tuple[int], filter_type: str):
 
     if filter_type == "ram-lak":
         ret = np.copy(freq)
-    elif filter_type == "ramp":
+    elif filter_type == "ramp-cont":
         ret, ndim = None, len(filter_shape)
         for dim, size in enumerate(filter_shape):
             n = np.concatenate(
@@ -81,6 +89,22 @@ def create_reconstruction_filter(filter_shape: Tuple[int], filter_type: str):
             else:
                 ret = ret * ret1d
         ret = 2 * np.real(np.fft.fftn(ret))
+    elif filter_type == "ramp":
+        tilt_angles = kwargs.get("tilt_angles", False)
+        if tilt_angles is False:
+            raise ValueError("'ramp' filter requires specifying tilt angles.")
+        size, odd = filter_shape[0], filter_shape[0] % 2
+        ret = np.arange(-size // 2 + odd, size // 2 + odd, 1, dtype=np.float32)
+        ret /= size // 2
+        ret *= 0.5
+        np.abs(ret, out=ret)
+
+        min_increment = np.radians(np.min(np.abs(np.diff(np.sort(tilt_angles)))))
+        ret *= min_increment * size
+        np.fmin(ret, 1, out=ret)
+
+        ret = np.tile(ret[:, np.newaxis], (1, filter_shape[1]))
+
     elif filter_type == "shepp-logan":
         ret = freq * np.sinc(freq / 2)
     elif filter_type == "cosine":
@@ -113,7 +137,7 @@ class ReconstructFromTilt:
     reconstruction_filter: str = None
 
     def __call__(self, **kwargs):
-        func_args = vars(self)
+        func_args = vars(self).copy()
         func_args.update(kwargs)
 
         ret = self.reconstruct(**func_args)
@@ -141,7 +165,7 @@ class ReconstructFromTilt:
         **kwargs,
     ):
         """
-        Reconstruct the volume from tilt series.
+        Reconstruct a volume from a tilt series.
 
         Parameters:
         -----------
@@ -158,7 +182,7 @@ class ReconstructFromTilt:
         interpolation_order : int, optional
             Interpolation order used for rotation, defautls to 1.
         return_real_fourier : bool, optional
-           Whether to return a share compliant with rfftn, defaults to True.
+           Whether to return a shape compliant with rfftn, defaults to True.
         reconstruction_filter : bool, optional
            Filter window applied during reconstruction.
            See :py:meth:`create_reconstruction_filter` for available options.
@@ -172,11 +196,13 @@ class ReconstructFromTilt:
             return data
 
         data = backend.to_backend_array(data)
-        volume_temp = backend.zeros(shape, dtype=backend._default_dtype)
-        volume_temp_rotated = backend.zeros(shape, dtype=backend._default_dtype)
-        volume = backend.zeros(shape, dtype=backend._default_dtype)
+        volume_temp = backend.zeros(shape, dtype=backend._float_dtype)
+        volume_temp_rotated = backend.zeros(shape, dtype=backend._float_dtype)
+        volume = backend.zeros(shape, dtype=backend._float_dtype)
 
-        slices = tuple(slice(a, a + 1) for a in backend.divide(shape, 2).astype(int))
+        slices = tuple(
+            slice(a, a + 1) for a in backend.astype(backend.divide(shape, 2), int)
+        )
         subset = tuple(
             slice(None) if i != opening_axis else slices[opening_axis]
             for i in range(len(shape))
@@ -191,7 +217,17 @@ class ReconstructFromTilt:
             rec_filter = create_reconstruction_filter(
                 filter_type=reconstruction_filter,
                 filter_shape=tuple(x for x in wedges[0].shape if x != 1),
+                tilt_angles=angles,
             )
+            if tilt_axis > 0:
+                rec_filter = rec_filter.T
+
+            # This is most likely an upstream bug
+            if tilt_axis == 1 and opening_axis == 0:
+                rec_filter = rec_filter.T
+
+            rec_filter = backend.to_backend_array(rec_filter)
+            rec_filter = backend.reshape(rec_filter, wedges[0].shape)
 
         for index in range(len(angles)):
             backend.fill(angles_loop, 0)
@@ -201,7 +237,7 @@ class ReconstructFromTilt:
             volume_temp[subset] = wedges[index] * rec_filter
 
             angles_loop[tilt_axis] = angles[index]
-            angles_loop = backend.roll(angles_loop, opening_axis - 1, axis=0)
+            angles_loop = backend.roll(angles_loop, (opening_axis - 1,), axis=0)
             rotation_matrix = euler_to_rotationmatrix(
                 backend.to_numpy_array(angles_loop)
             )
@@ -216,11 +252,7 @@ class ReconstructFromTilt:
             )
             backend.add(volume, volume_temp_rotated, out=volume)
 
-        shift = backend.add(
-            backend.astype(backend.divide(volume.shape, 2), int),
-            backend.mod(volume.shape, 2),
-        )
-        volume = backend.roll(volume, shift, tuple(i for i in range(len(shift))))
+        volume = shift_fourier(data=volume, shape_is_real_fourier=False)
 
         if return_real_fourier:
             volume = crop_real_fourier(volume)
@@ -335,7 +367,7 @@ class Wedge:
         return ret
 
     def __call__(self, **kwargs: Dict) -> NDArray:
-        func_args = vars(self)
+        func_args = vars(self).copy()
         func_args.update(kwargs)
 
         weight_types = {
@@ -355,7 +387,7 @@ class Wedge:
             func_args["weights"] = np.cos(np.radians(self.angles))
 
         ret = weight_types[weight_type](**func_args)
-        ret = backend.astype(backend.to_backend_array(ret), backend._default_dtype)
+        ret = backend.astype(backend.to_backend_array(ret), backend._float_dtype)
 
         return {
             "data": ret,
@@ -373,7 +405,6 @@ class Wedge:
         angles: Tuple[float],
         opening_axis: int,
         tilt_axis: int,
-        frequency_cutoff: float = 0.5,
         **kwargs,
     ) -> NDArray:
         """
@@ -385,14 +416,6 @@ class Wedge:
         wedge, wedges = np.ones(tilt_shape), np.zeros((len(angles), *tilt_shape))
         for index, angle in enumerate(angles):
             wedge.fill(weights[index])
-            frequency_grid = frequency_grid_at_angle(
-                shape=shape,
-                opening_axis=opening_axis,
-                tilt_axis=tilt_axis,
-                angle=angle,
-                sampling_rate=1,
-            )
-            np.multiply(wedge, frequency_grid <= frequency_cutoff, out=wedge)
             wedges[index] = wedge
 
         return wedges
@@ -421,7 +444,7 @@ class Wedge:
                 angle=angle,
                 sampling_rate=1,
             )
-            frequency_mask = frequency_grid <= self.frequency_cutoff
+            # frequency_mask = frequency_grid <= self.frequency_cutoff
 
             sigma = np.sqrt(self.weights[index] * 4 / (8 * np.pi**2))
             sigma = -2 * np.pi**2 * sigma**2
@@ -429,7 +452,7 @@ class Wedge:
             np.multiply(sigma, frequency_grid, out=frequency_grid)
             np.exp(frequency_grid, out=frequency_grid)
             np.multiply(frequency_grid, np.cos(np.radians(angle)), out=frequency_grid)
-            np.multiply(frequency_grid, frequency_mask, out=frequency_grid)
+            # np.multiply(frequency_grid, frequency_mask, out=frequency_grid)
 
             wedges[index] = frequency_grid
 
@@ -460,7 +483,7 @@ class Wedge:
             reduce_dim=True,
         )
 
-        wedges = np.zeros((len(self.angles), *tilt_shape), dtype=backend._default_dtype)
+        wedges = np.zeros((len(self.angles), *tilt_shape), dtype=backend._float_dtype)
         for index, angle in enumerate(self.angles):
             frequency_grid = frequency_grid_at_angle(
                 shape=self.shape,
@@ -469,7 +492,7 @@ class Wedge:
                 angle=angle,
                 sampling_rate=1,
             )
-            frequency_mask = frequency_grid <= self.frequency_cutoff
+            # frequency_mask = frequency_grid <= self.frequency_cutoff
 
             with np.errstate(divide="ignore"):
                 np.power(frequency_grid, power, out=frequency_grid)
@@ -483,7 +506,7 @@ class Wedge:
                 )
 
             np.exp(frequency_grid, out=frequency_grid)
-            np.multiply(frequency_grid, frequency_mask, out=frequency_grid)
+            # np.multiply(frequency_grid, frequency_mask, out=frequency_grid)
 
             wedges[index] = frequency_grid
 
@@ -539,7 +562,7 @@ class WedgeReconstructed:
         Dict
             A dictionary containing the reconstructed wedge and related information.
         """
-        func_args = vars(self)
+        func_args = vars(self).copy()
         func_args.update(kwargs)
 
         if kwargs.get("is_fourier_shape", False):
@@ -550,7 +573,7 @@ class WedgeReconstructed:
             func = self.continuous_wedge
 
         ret = func(shape=shape, **func_args)
-        ret = backend.astype(backend.to_backend_array(ret), backend._default_dtype)
+        ret = backend.astype(backend.to_backend_array(ret), backend._float_dtype)
 
         return {
             "data": ret,
@@ -676,7 +699,7 @@ class CTF:
     #: The defocus value in x direction.
     defocus_x: float
     #: The tilt angles.
-    angles: Tuple[float]
+    angles: Tuple[float] = None
     #: The axis around which the wedge is opened, defaults to None.
     opening_axis: int = None
     #: The axis along which the tilt is applied, defaults to None.
@@ -687,8 +710,8 @@ class CTF:
     sampling_rate: Tuple[float] = 1
     #: The acceleration voltage in Volts, defaults to 300e3.
     acceleration_voltage: float = 300e3
-    #: The spherical aberration coefficient, defaults to 2.7e3.
-    spherical_aberration: float = 2.7e3
+    #: The spherical aberration coefficient, defaults to 2.7e7.
+    spherical_aberration: float = 2.7e7
     #: The amplitude contrast, defaults to 0.07.
     amplitude_contrast: float = 0.07
     #: The phase shift, defaults to 0.
@@ -697,6 +720,10 @@ class CTF:
     defocus_angle: float = 0
     #: The defocus value in y direction, defaults to None.
     defocus_y: float = None
+    #: Whether the returned CTF should be phase-flipped.
+    flip_phase: bool = True
+    #: Whether to return a format compliant with rfft. Only relevant for single angles.
+    return_real_fourier: bool = False
 
     @classmethod
     def from_file(cls, filename: str) -> "CTF":
@@ -809,7 +836,6 @@ class CTF:
             "defocus_x",
             "defocus_y",
         ]
-
         if "sampling_rate" in kwargs:
             self.sampling_rate = kwargs["sampling_rate"]
 
@@ -817,16 +843,22 @@ class CTF:
             kwargs["electron_wavelength"] = self._compute_electron_wavelength()
 
         for key, value in kwargs.items():
-            if key in voxel_based:
-                value = value / self.sampling_rate
+            if key in voxel_based and value is not None:
+                value = np.divide(value, np.max(self.sampling_rate))
             setattr(self, key, value)
 
     def __call__(self, **kwargs) -> NDArray:
-        func_args = vars(self)
+        func_args = vars(self).copy()
         func_args.update(kwargs)
 
+        if len(func_args["angles"]) != len(func_args["defocus_x"]):
+            func_args["angles"] = self.angles
+            func_args["return_real_fourier"] = False
+            func_args["tilt_axis"] = None
+            func_args["opening_axis"] = None
+
         ret = self.weight(**func_args)
-        ret = backend.astype(backend.to_backend_array(ret), backend._default_dtype)
+        ret = backend.astype(backend.to_backend_array(ret), backend._float_dtype)
         return {
             "data": ret,
             "angles": func_args["angles"],
@@ -851,6 +883,8 @@ class CTF:
         sampling_rate: Tuple[float] = 1,
         acceleration_voltage: float = 300e3,
         spherical_aberration: float = 2.7e3,
+        flip_phase: bool = True,
+        return_real_fourier: bool = False,
         **kwargs: Dict,
     ) -> NDArray:
         """
@@ -886,6 +920,8 @@ class CTF:
             The acceleration voltage in electron microscopy, defaults to 300e3.
         spherical_aberration : float, optional
             The spherical aberration coefficient, defaults to 2.7e3.
+        flip_phase : bool, optional
+            Whether the returned CTF should be phase-flipped.
         **kwargs : Dict
             Additional keyword arguments.
 
@@ -894,21 +930,31 @@ class CTF:
         NDArray
             A stack containing the CTF weight.
         """
+        defoci_x = np.atleast_1d(defocus_x)
+        defoci_y = np.atleast_1d(defocus_y)
+        phase_shift = np.atleast_1d(phase_shift)
+        angles = np.atleast_1d(angles)
+        defocus_angle = np.atleast_1d(defocus_angle)
+
+        sampling_rate = np.max(sampling_rate)
         tilt_shape = compute_tilt_shape(
             shape=shape, opening_axis=opening_axis, reduce_dim=True
         )
         stack = np.zeros((len(angles), *tilt_shape))
-        electron_wavelength = self._compute_electron_wavelength()
-        defoci_x = defocus_x
-        defoci_y = defocus_y
+        electron_wavelength = self._compute_electron_wavelength() / sampling_rate
+
+        correct_defocus_gradient &= len(shape) == 3
+        correct_defocus_gradient &= tilt_axis is not None
+        correct_defocus_gradient &= opening_axis is not None
+
         for index, angle in enumerate(angles):
-            grid = centered_grid(shape=tilt_shape)
-            grid = np.divide(grid.T, (sampling_rate, sampling_rate)).T
+            grid = backend.to_numpy_array(centered_grid(shape=tilt_shape))
+            grid = np.divide(grid.T, sampling_rate).T
 
             defocus_x, defocus_y = defoci_x[index], defoci_y[index]
 
             # This should be done after defocus_x computation
-            if correct_defocus_gradient and len(shape) == 3:
+            if correct_defocus_gradient:
                 angle_rad = np.radians(angle)
 
                 defocus_gradient = np.multiply(grid[1], np.sin(angle_rad))
@@ -918,13 +964,9 @@ class CTF:
                 )[0]
 
                 if tilt_axis > remaining_axis:
-                    defocus_x = np.add(
-                        defocus_x, np.multiply(defocus_gradient, np.sin(angle_rad))
-                    )
+                    defocus_x = np.add(defocus_x, defocus_gradient)
                 elif tilt_axis < remaining_axis and defocus_y is not None:
-                    defocus_y = np.add(
-                        defocus_y, np.multiply(defocus_gradient.T, np.sin(angle_rad))
-                    )
+                    defocus_y = np.add(defocus_y, defocus_gradient.T)
 
             if defocus_y is not None:
                 defocus_sum = np.add(defocus_x, defocus_y)
@@ -941,10 +983,10 @@ class CTF:
                 angle=angle,
                 sampling_rate=1,
             )
-
+            frequency_grid *= frequency_grid <= 0.5
             np.square(frequency_grid, out=frequency_grid)
-            electron_aberration = spherical_aberration * electron_wavelength**2
 
+            electron_aberration = spherical_aberration * electron_wavelength**2
             chi = defocus_x - 0.5 * electron_aberration * frequency_grid
             np.multiply(chi, np.pi * electron_wavelength, out=chi)
             np.multiply(chi, frequency_grid, out=chi)
@@ -958,5 +1000,18 @@ class CTF:
             )
             np.sin(-chi, out=chi)
             stack[index] = chi
+
+        if flip_phase:
+            np.abs(stack, out=stack)
+
+        np.negative(stack, out=stack)
+        stack = np.squeeze(stack)
+
+        stack = backend.to_backend_array(stack)
+
+        if len(angles) == 1:
+            stack = shift_fourier(data=stack, shape_is_real_fourier=False)
+            if return_real_fourier:
+                stack = crop_real_fourier(stack)
 
         return stack
