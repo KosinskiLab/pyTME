@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>MaxScoreOverRotations &#8212; pytme 0.2.0 documentation</title>
+    <title>MaxScoreOverRotations &#8212; pytme 0.2.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../../_static/documentation_options.js?v=37f418d5"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,7 +124,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.2.0 documentation</p>
+    <p class="title logo__title">pytme 0.2.1 documentation</p>
   
 </a></div>
     
@@ -669,6 +669,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.free_sharedarr.html">NumpyFFTWBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.full.html">NumpyFFTWBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_available_memory.html">NumpyFFTWBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_fundamental_dtype.html">NumpyFFTWBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
@@ -732,6 +733,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.free_sharedarr.html">PytorchBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.full.html">PytorchBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_available_memory.html">PytorchBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_fundamental_dtype.html">PytorchBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.indices.html">PytorchBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max.html">PytorchBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max_filter_coordinates.html">PytorchBackend.max_filter_coordinates</a></li>
@@ -795,6 +797,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.free_sharedarr.html">CupyBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.full.html">CupyBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_available_memory.html">CupyBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_fundamental_dtype.html">CupyBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.indices.html">CupyBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max.html">CupyBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max_filter_coordinates.html">CupyBackend.max_filter_coordinates</a></li>
@@ -917,6 +920,50 @@ document.write(`
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MaxScoreOverRotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score_space_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_space_dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation_offset=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_threshold=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_memory_handler=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_space_dtype=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_memmap=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread_safe=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/analyzer.html#MaxScoreOverRotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.analyzer.MaxScoreOverRotations" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Obtain the maximum translation score over various rotations.</p>
+<p class="rubric">Examples</p>
+<p>The following achieves the minimal definition of a <a class="reference internal" href="#tme.analyzer.MaxScoreOverRotations" title="tme.analyzer.MaxScoreOverRotations"><code class="xref py py-class docutils literal notranslate"><span class="pre">MaxScoreOverRotations</span></code></a>
+instance</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme.analyzer</span> <span class="kn">import</span> <span class="n">MaxScoreOverRotations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">MaxScoreOverRotations</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">score_space_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">score_space_dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">rotation_space_dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The following simulates a template matching run by creating random data for a range
+of rotations and sending it to <code class="docutils literal notranslate"><span class="pre">analyzer</span></code> via its __call__ method</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">rotation_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">rotation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">scores</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">analyzer</span><span class="p">(</span><span class="n">score_space</span> <span class="o">=</span> <span class="n">scores</span><span class="p">,</span> <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The aggregated scores can be exctracted by invoking the __iter__ method of
+<code class="docutils literal notranslate"><span class="pre">analyzer</span></code></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">analyzer</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">results</span></code> tuple contains (1) the maximum scores for each translation,
+(2) an offset which is relevant when merging results from split template matching
+using <a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.merge.html#tme.analyzer.MaxScoreOverRotations.merge" title="tme.analyzer.MaxScoreOverRotations.merge"><code class="xref py py-meth docutils literal notranslate"><span class="pre">MaxScoreOverRotations.merge()</span></code></a>, (3) the rotation used to obtain a
+score for a given translation, (4) a dictionary mapping rotation matrices to the
+indices used in (2).</p>
+<p>We can extract the <code class="docutils literal notranslate"><span class="pre">optimal_score`,</span> <span class="pre">``optimal_translation</span></code> and <code class="docutils literal notranslate"><span class="pre">optimal_rotation</span></code>
+as follows</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">optimal_score</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">optimal_translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">optimal_rotation_index</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="n">optimal_translation</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">optimal_rotation_index</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="k">continue</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">optimal_rotation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">optimal_rotation</span> <span class="o">=</span> <span class="n">optimal_rotation</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">scores</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The outlined procedure is a trivial method to identify high scoring peaks.
+Alternatively, <a class="reference internal" href="tme.analyzer.PeakCaller.html#tme.analyzer.PeakCaller" title="tme.analyzer.PeakCaller"><code class="xref py py-class docutils literal notranslate"><span class="pre">PeakCaller</span></code></a> offers a range of more elaborate approaches
+that can be used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">

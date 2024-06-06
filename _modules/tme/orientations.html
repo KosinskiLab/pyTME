@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.orientations &#8212; pytme 0.2.0 documentation</title>
+    <title>tme.orientations &#8212; pytme 0.2.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../../_static/documentation_options.js?v=37f418d5"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -122,7 +122,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.2.0 documentation</p>
+    <p class="title logo__title">pytme 0.2.1 documentation</p>
   
 </a></div>
     
@@ -370,7 +370,7 @@ document.write(`
                   
   <h1>Source code for tme.orientations</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!python3</span>
-<span class="sd">&quot;&quot;&quot; Handle template matching peaks and convert between formats.</span>
+<span class="sd">&quot;&quot;&quot; Handle template matching orientations and conversion between formats.</span>
 
 <span class="sd">    Copyright (c) 2024 European Molecular Biology Laboratory</span>
 
@@ -390,7 +390,38 @@ document.write(`
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Orientations</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Handle template matching peaks and convert between formats.</span>
+<span class="sd">    Handle template matching orientations and conversion between formats.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The following achieves the minimal definition of an :py:class:`Orientations` instance</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from tme import Orientations</span>
+<span class="sd">    &gt;&gt;&gt; translations = np.random.randint(low = 0, high = 100, size = (100,3))</span>
+<span class="sd">    &gt;&gt;&gt; rotations = np.random.rand(100, 3)</span>
+<span class="sd">    &gt;&gt;&gt; scores = np.random.rand(100)</span>
+<span class="sd">    &gt;&gt;&gt; details = np.full((100,), fill_value = -1)</span>
+<span class="sd">    &gt;&gt;&gt; orientations = Orientations(</span>
+<span class="sd">    &gt;&gt;&gt;     translations = translations,</span>
+<span class="sd">    &gt;&gt;&gt;     rotations = rotations,</span>
+<span class="sd">    &gt;&gt;&gt;     scores = scores,</span>
+<span class="sd">    &gt;&gt;&gt;     details = details,</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+
+<span class="sd">    The created ``orientations`` object can be written to disk in a range of formats.</span>
+<span class="sd">    See :py:meth:`Orientations.to_file` for available formats. The following creates</span>
+<span class="sd">    a STAR file</span>
+
+<span class="sd">    &gt;&gt;&gt; orientations.to_file(&quot;test.star&quot;)</span>
+
+<span class="sd">    :py:meth:`Orientations.from_file` can create :py:class:`Orientations` instances</span>
+<span class="sd">    from a range of formats, to enable conversion between formats</span>
+
+<span class="sd">    &gt;&gt;&gt; orientations_star = Orientations.from_file(&quot;test.star&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; np.all(orientations.translations == orientations_star.translations)</span>
+<span class="sd">    True</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">#: Return a numpy array with translations of each orientation (n x d).</span>
@@ -452,7 +483,17 @@ document.write(`
 <span class="sd">        filename : str</span>
 <span class="sd">            The name of the file where the orientations will be saved.</span>
 <span class="sd">        file_format : type, optional</span>
-<span class="sd">            The format in which to save the orientations. Supported formats are &#39;text&#39; and &#39;relion&#39;.</span>
+<span class="sd">            The format in which to save the orientations. Defaults to None and infers</span>
+<span class="sd">            the file_format from the typical extension. Supported formats are</span>
+
+<span class="sd">            +---------------+----------------------------------------------------+</span>
+<span class="sd">            | text          | pyTME&#39;s standard tab-separated orientations file   |</span>
+<span class="sd">            +---------------+----------------------------------------------------+</span>
+<span class="sd">            | relion        | Creates a STAR file of orientations                |</span>
+<span class="sd">            +---------------+----------------------------------------------------+</span>
+<span class="sd">            | dynamo        | Creates a dynamo table                             |</span>
+<span class="sd">            +---------------+----------------------------------------------------+</span>
+
 <span class="sd">        **kwargs : dict</span>
 <span class="sd">            Additional keyword arguments specific to the file format.</span>
 
@@ -694,7 +735,15 @@ document.write(`
 <span class="sd">        filename : str</span>
 <span class="sd">            The name of the file from which to read the orientations.</span>
 <span class="sd">        file_format : type, optional</span>
-<span class="sd">            The format of the file. Currently, only &#39;text&#39; format is supported.</span>
+<span class="sd">            The format of the file. Defaults to None and infers</span>
+<span class="sd">            the file_format from the typical extension. Supported formats are</span>
+
+<span class="sd">            +---------------+----------------------------------------------------+</span>
+<span class="sd">            | text          | pyTME&#39;s standard tab-separated orientations file   |</span>
+<span class="sd">            +---------------+----------------------------------------------------+</span>
+<span class="sd">            | relion        | Relion 4+ style STAR file                          |</span>
+<span class="sd">            +---------------+----------------------------------------------------+</span>
+
 <span class="sd">        **kwargs : dict</span>
 <span class="sd">            Additional keyword arguments specific to the file format.</span>
 

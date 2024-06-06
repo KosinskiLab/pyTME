@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.backends.npfftw_backend &#8212; pytme 0.2.0 documentation</title>
+    <title>tme.backends.npfftw_backend &#8212; pytme 0.2.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../../../_static/documentation_options.js?v=37f418d5"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -122,7 +122,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.2.0 documentation</p>
+    <p class="title logo__title">pytme 0.2.1 documentation</p>
   
 </a></div>
     
@@ -405,16 +405,18 @@ document.write(`
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">array_backend</span><span class="o">=</span><span class="n">np</span><span class="p">,</span>
-        <span class="n">default_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+        <span class="n">float_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
         <span class="n">complex_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex64</span><span class="p">,</span>
-        <span class="n">default_dtype_int</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+        <span class="n">int_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+        <span class="n">overflow_safe_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">array_backend</span><span class="o">=</span><span class="n">array_backend</span><span class="p">,</span>
-            <span class="n">default_dtype</span><span class="o">=</span><span class="n">default_dtype</span><span class="p">,</span>
+            <span class="n">float_dtype</span><span class="o">=</span><span class="n">float_dtype</span><span class="p">,</span>
             <span class="n">complex_dtype</span><span class="o">=</span><span class="n">complex_dtype</span><span class="p">,</span>
-            <span class="n">default_dtype_int</span><span class="o">=</span><span class="n">default_dtype_int</span><span class="p">,</span>
+            <span class="n">int_dtype</span><span class="o">=</span><span class="n">int_dtype</span><span class="p">,</span>
+            <span class="n">overflow_safe_dtype</span><span class="o">=</span><span class="n">overflow_safe_dtype</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">affine_transform</span> <span class="o">=</span> <span class="n">affine_transform</span>
 
@@ -436,6 +438,19 @@ document.write(`
 <a class="viewcode-back" href="../../../reference/api/tme.backends.npfftw_backend.NumpyFFTWBackend.to_cpu_array.html#tme.backends.NumpyFFTWBackend.to_cpu_array">[docs]</a>
     <span class="k">def</span> <span class="nf">to_cpu_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">arr</span></div>
+
+
+<div class="viewcode-block" id="NumpyFFTWBackend.get_fundamental_dtype">
+<a class="viewcode-back" href="../../../reference/api/tme.backends.npfftw_backend.NumpyFFTWBackend.get_fundamental_dtype.html#tme.backends.NumpyFFTWBackend.get_fundamental_dtype">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_fundamental_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">):</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">int</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">float</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">complexfloating</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">complex</span>
+        <span class="k">return</span> <span class="nb">float</span></div>
 
 
 <div class="viewcode-block" id="NumpyFFTWBackend.free_cache">
@@ -954,8 +969,8 @@ document.write(`
         <span class="n">new_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">newshape</span><span class="p">)</span>
         <span class="n">current_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="n">starts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">current_shape</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">)</span>
-        <span class="n">starts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_dtype_int</span><span class="p">)</span>
-        <span class="n">stops</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">newshape</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_dtype_int</span><span class="p">)</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_int_dtype</span><span class="p">)</span>
+        <span class="n">stops</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">newshape</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_int_dtype</span><span class="p">)</span>
         <span class="n">box</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">stops</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">arr</span><span class="p">[</span><span class="n">box</span><span class="p">]</span></div>
 
@@ -1259,11 +1274,11 @@ document.write(`
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">arr</span> <span class="o">&gt;</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">denominator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
         <span class="n">grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_backend</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">)]</span>
-        <span class="n">grids</span> <span class="o">=</span> <span class="p">[</span><span class="n">grid</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">grid</span> <span class="ow">in</span> <span class="n">grids</span><span class="p">]</span>
+        <span class="n">grids</span> <span class="o">=</span> <span class="p">[</span><span class="n">grid</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">grid</span> <span class="ow">in</span> <span class="n">grids</span><span class="p">]</span>
 
         <span class="n">center_of_mass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
             <span class="p">[</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">grids</span><span class="p">[</span><span class="n">dim</span><span class="p">]))</span> <span class="o">/</span> <span class="n">denominator</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">grids</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span> <span class="o">/</span> <span class="n">denominator</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
             <span class="p">]</span>
         <span class="p">)</span>

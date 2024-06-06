@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Orientations.to_file &#8212; pytme 0.2.0 documentation</title>
+    <title>Orientations.to_file &#8212; pytme 0.2.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../../_static/documentation_options.js?v=37f418d5"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,7 +124,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.2.0 documentation</p>
+    <p class="title logo__title">pytme 0.2.1 documentation</p>
   
 </a></div>
     
@@ -669,6 +669,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.free_sharedarr.html">NumpyFFTWBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.full.html">NumpyFFTWBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_available_memory.html">NumpyFFTWBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_fundamental_dtype.html">NumpyFFTWBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
@@ -732,6 +733,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.free_sharedarr.html">PytorchBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.full.html">PytorchBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_available_memory.html">PytorchBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_fundamental_dtype.html">PytorchBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.indices.html">PytorchBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max.html">PytorchBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max_filter_coordinates.html">PytorchBackend.max_filter_coordinates</a></li>
@@ -795,6 +797,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.free_sharedarr.html">CupyBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.full.html">CupyBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_available_memory.html">CupyBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_fundamental_dtype.html">CupyBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.indices.html">CupyBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max.html">CupyBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max_filter_coordinates.html">CupyBackend.max_filter_coordinates</a></li>
@@ -921,12 +924,27 @@ document.write(`
 <dt class="sig sig-object py" id="tme.orientations.Orientations.to_file">
 <span class="sig-prename descclassname"><span class="pre">Orientations.</span></span><span class="sig-name descname"><span class="pre">to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/orientations.html#Orientations.to_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.orientations.Orientations.to_file" title="Link to this definition">#</a></dt>
 <dd><p>Save the current class instance to a file in the specified format.</p>
-<dl class="field-list simple">
+<dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
+<dd class="field-odd"><dl>
 <dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The name of the file where the orientations will be saved.</p>
 </dd>
-<dt><strong>file_format</strong><span class="classifier">type, optional</span></dt><dd><p>The format in which to save the orientations. Supported formats are ‘text’ and ‘relion’.</p>
+<dt><strong>file_format</strong><span class="classifier">type, optional</span></dt><dd><p>The format in which to save the orientations. Defaults to None and infers
+the file_format from the typical extension. Supported formats are</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>text</p></td>
+<td><p>pyTME’s standard tab-separated orientations file</p></td>
+</tr>
+<tr class="row-even"><td><p>relion</p></td>
+<td><p>Creates a STAR file of orientations</p></td>
+</tr>
+<tr class="row-odd"><td><p>dynamo</p></td>
+<td><p>Creates a dynamo table</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </dd>
 <dt><strong>**kwargs</strong><span class="classifier">dict</span></dt><dd><p>Additional keyword arguments specific to the file format.</p>
 </dd>

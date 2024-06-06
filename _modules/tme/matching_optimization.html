@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tme.matching_optimization &#8212; pytme 0.2.0 documentation</title>
+    <title>tme.matching_optimization &#8212; pytme 0.2.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../../_static/documentation_options.js?v=37f418d5"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -122,7 +122,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.2.0 documentation</p>
+    <p class="title logo__title">pytme 0.2.1 documentation</p>
   
 </a></div>
     
@@ -482,9 +482,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">target_mask</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">template_rot</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span>
-            <span class="n">fast_shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_rot</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">template_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
         <span class="n">rotate_mask</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rotate_mask</span>
@@ -992,9 +990,7 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the score of the current configuration.&quot;&quot;&quot;</span>
         <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="p">[</span>
-                <span class="nb">tuple</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates_rotated</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_volume</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-                <span class="p">)</span>
+                <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_coordinates_rotated</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_volume</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
             <span class="p">],</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">template_weights</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">in_volume</span><span class="p">],</span>
         <span class="p">)</span>
@@ -1064,12 +1060,8 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_coordinates_rotated</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_volume_mask</span><span class="p">],</span> <span class="nb">int</span>
         <span class="p">)</span>
         <span class="n">target_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_density</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">target_coordinates</span><span class="p">)]</span>
-        <span class="n">ex2</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">target_weight</span><span class="p">)),</span> <span class="n">n_observations</span>
-        <span class="p">)</span>
-        <span class="n">e2x</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">target_weight</span><span class="p">),</span> <span class="n">n_observations</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">ex2</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">target_weight</span><span class="p">)),</span> <span class="n">n_observations</span><span class="p">)</span>
+        <span class="n">e2x</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">target_weight</span><span class="p">),</span> <span class="n">n_observations</span><span class="p">))</span>
 
         <span class="n">denominator</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">ex2</span><span class="p">,</span> <span class="n">e2x</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
         <span class="n">denominator</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">denominator</span><span class="p">)</span>
@@ -1077,6 +1069,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">denominator</span> <span class="o">=</span> <span class="n">denominator</span>
 
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">()</span></div>
+
 
 
 <div class="viewcode-block" id="NormalizedCrossCorrelationMean">
@@ -1600,7 +1593,7 @@ document.write(`
             <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="n">initial_score</span> <span class="o">=</span> <span class="n">score_object</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">))</span>
+    <span class="n">initial_score</span> <span class="o">=</span> <span class="n">score_object</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">optimization_method</span> <span class="o">==</span> <span class="s2">&quot;basinhopping&quot;</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">basinhopping</span><span class="p">(</span>
             <span class="n">x0</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">),</span>
@@ -1621,7 +1614,7 @@ document.write(`
             <span class="n">fun</span><span class="o">=</span><span class="n">score_object</span><span class="o">.</span><span class="n">score</span><span class="p">,</span>
             <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
             <span class="n">constraints</span><span class="o">=</span><span class="n">linear_constraint</span><span class="p">,</span>
-            <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;maxiter&quot;</span> <span class="p">:</span> <span class="n">maxiter</span><span class="p">}</span>
+            <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="n">maxiter</span><span class="p">},</span>
         <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Niter: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">nit</span><span class="si">}</span><span class="s2">, success : </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initial score: </span><span class="si">{</span><span class="n">initial_score</span><span class="si">}</span><span class="s2"> - Refined score: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">fun</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

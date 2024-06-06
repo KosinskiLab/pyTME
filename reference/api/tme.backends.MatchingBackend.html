@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>MatchingBackend &#8212; pytme 0.2.0 documentation</title>
+    <title>MatchingBackend &#8212; pytme 0.2.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../../_static/documentation_options.js?v=37f418d5"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,7 +124,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.2.0 documentation</p>
+    <p class="title logo__title">pytme 0.2.1 documentation</p>
   
 </a></div>
     
@@ -669,6 +669,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.free_sharedarr.html">NumpyFFTWBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.full.html">NumpyFFTWBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_available_memory.html">NumpyFFTWBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_fundamental_dtype.html">NumpyFFTWBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
@@ -732,6 +733,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.free_sharedarr.html">PytorchBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.full.html">PytorchBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_available_memory.html">PytorchBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_fundamental_dtype.html">PytorchBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.indices.html">PytorchBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max.html">PytorchBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max_filter_coordinates.html">PytorchBackend.max_filter_coordinates</a></li>
@@ -795,6 +797,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.free_sharedarr.html">CupyBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.full.html">CupyBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_available_memory.html">CupyBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_fundamental_dtype.html">CupyBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.indices.html">CupyBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max.html">CupyBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max_filter_coordinates.html">CupyBackend.max_filter_coordinates</a></li>
@@ -914,7 +917,7 @@ document.write(`
 <h1>MatchingBackend<a class="headerlink" href="#matchingbackend" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="tme.backends.MatchingBackend">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MatchingBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array_backend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">complex_dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_dtype_int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/backends/matching_backend.html#MatchingBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.backends.MatchingBackend" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MatchingBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array_backend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">complex_dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int_dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overflow_safe_dtype</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/backends/matching_backend.html#MatchingBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.backends.MatchingBackend" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
 <p>A strategy class for template matching backends.</p>
 <p>This class provides an interface to enable users to swap between different
@@ -928,11 +931,13 @@ functions/methods of the backend as if they were directly part of this class.</p
 <dd class="field-odd"><dl class="simple">
 <dt><strong>array_backend</strong><span class="classifier">object</span></dt><dd><p>The backend object providing array functionalities.</p>
 </dd>
-<dt><strong>default_dtype</strong><span class="classifier">type</span></dt><dd><p>Data type of real array instances, e.g. np.float32.</p>
+<dt><strong>float_dtype</strong><span class="classifier">type</span></dt><dd><p>Data type of real array instances, e.g. np.float32.</p>
 </dd>
 <dt><strong>complex_dtype</strong><span class="classifier">type</span></dt><dd><p>Data type of complex array instances, e.g. np.complex64.</p>
 </dd>
-<dt><strong>default_dtype_int</strong><span class="classifier">type</span></dt><dd><p>Data type of integer array instances, e.g. np.int32.</p>
+<dt><strong>int_dtype</strong><span class="classifier">type</span></dt><dd><p>Data type of integer array instances, e.g. np.int32.</p>
+</dd>
+<dt><strong>overflow_safe_dtype</strong><span class="classifier">type</span></dt><dd><p>Data type than can be used for reduction operations to avoid overflows.</p>
 </dd>
 </dl>
 </dd>
@@ -944,9 +949,9 @@ attributes of this class and those of the provided backend.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">MatchingBackend</span><span class="p">(</span>
 <span class="go">    array_backend = np,</span>
-<span class="go">    default_dtype = np.float32,</span>
+<span class="go">    float_dtype = np.float32,</span>
 <span class="go">    complex_dtype = np.complex64,</span>
-<span class="go">    default_dtype_int = np.int32</span>
+<span class="go">    int_dtype = np.int32</span>
 <span class="go">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">arr</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
@@ -958,11 +963,16 @@ attributes of this class and those of the provided backend.</p>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>_array_backend</strong><span class="classifier">object</span></dt><dd><p>The backend object used to delegate method and attribute calls.</p>
 </dd>
-<dt><strong>_default_dtype</strong><span class="classifier">type</span></dt><dd><p>Data type of real array instances, e.g. np.float32.</p>
+<dt><strong>_float_dtype</strong><span class="classifier">type</span></dt><dd><p>Data type of real array instances, e.g. np.float32.</p>
 </dd>
 <dt><strong>_complex_dtype</strong><span class="classifier">type</span></dt><dd><p>Data type of complex array instances, e.g. np.complex64.</p>
 </dd>
-<dt><strong>_default_dtype_int</strong><span class="classifier">type</span></dt><dd><p>Data type of integer array instances, e.g. np.int32.</p>
+<dt><strong>_int_dtype</strong><span class="classifier">type</span></dt><dd><p>Data type of integer array instances, e.g. np.int32.</p>
+</dd>
+<dt><strong>_overflow_safe_dtype</strong><span class="classifier">type</span></dt><dd><p>Data type than can be used for reduction operations to avoid overflows.</p>
+</dd>
+<dt><strong>_fundamental_dtypes</strong><span class="classifier">Dict</span></dt><dd><p>Mapping between fundamental int, float and complex python types to
+array backend specific data types.</p>
 </dd>
 </dl>
 </dd>

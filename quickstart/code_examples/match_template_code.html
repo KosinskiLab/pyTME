@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>match_template.py &#8212; pytme 0.2.0 documentation</title>
+    <title>match_template.py &#8212; pytme 0.2.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../../_static/documentation_options.js?v=37f418d5"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -122,7 +122,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.2.0 documentation</p>
+    <p class="title logo__title">pytme 0.2.1 documentation</p>
   
 </a></div>
     
@@ -590,7 +590,7 @@ document.write(`
             <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_weighting</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="s2">&quot;Tilt weighting schemes other than &#39;angle&#39; or &#39;None&#39; require &quot;</span>
-                    <span class="s2">&quot;a specification of electron doses.&quot;</span>
+                    <span class="s2">&quot;a specification of electron doses via --tilt_angles.&quot;</span>
                 <span class="p">)</span>
 
             <span class="n">wedge</span> <span class="o">=</span> <span class="n">Wedge</span><span class="p">(</span>
@@ -614,29 +614,56 @@ document.write(`
         <span class="n">template_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wedge</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wedge</span><span class="p">,</span> <span class="n">WedgeReconstructed</span><span class="p">):</span>
             <span class="n">template_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">ReconstructFromTilt</span><span class="p">(</span><span class="n">reconstruction_filter</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">reconstruction_filter</span><span class="p">)</span>
+                <span class="n">ReconstructFromTilt</span><span class="p">(</span>
+                    <span class="n">reconstruction_filter</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">reconstruction_filter</span><span class="p">,</span>
+                    <span class="n">interpolation_order</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">reconstruction_interpolation_order</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">defocus</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">tme.preprocessing.tilt_series</span> <span class="kn">import</span> <span class="n">CTF</span>
 
-        <span class="n">ctf</span> <span class="o">=</span> <span class="n">CTF</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span><span class="p">)</span>
-        <span class="n">n_tilts_ctfs</span><span class="p">,</span> <span class="n">n_tils_angles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ctf</span><span class="o">.</span><span class="n">defocus_x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">wedge</span><span class="o">.</span><span class="n">angles</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_tilts_ctfs</span> <span class="o">!=</span> <span class="n">n_tils_angles</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;CTF file contains </span><span class="si">{</span><span class="n">n_tilts_ctfs</span><span class="si">}</span><span class="s2"> micrographs, but match_template &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;recieved </span><span class="si">{</span><span class="n">n_tils_angles</span><span class="si">}</span><span class="s2"> tilt angles. Expected one angle &quot;</span>
-                <span class="s2">&quot;per micrograph.&quot;</span>
+        <span class="n">needs_reconstruction</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ctf</span> <span class="o">=</span> <span class="n">CTF</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span><span class="p">)</span>
+            <span class="n">n_tilts_ctfs</span><span class="p">,</span> <span class="n">n_tils_angles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ctf</span><span class="o">.</span><span class="n">defocus_x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">wedge</span><span class="o">.</span><span class="n">angles</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">n_tilts_ctfs</span> <span class="o">!=</span> <span class="n">n_tils_angles</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;CTF file contains </span><span class="si">{</span><span class="n">n_tilts_ctfs</span><span class="si">}</span><span class="s2"> micrographs, but match_template &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;recieved </span><span class="si">{</span><span class="n">n_tils_angles</span><span class="si">}</span><span class="s2"> tilt angles. Expected one angle &quot;</span>
+                    <span class="s2">&quot;per micrograph.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">ctf</span><span class="o">.</span><span class="n">angles</span> <span class="o">=</span> <span class="n">wedge</span><span class="o">.</span><span class="n">angles</span>
+            <span class="n">ctf</span><span class="o">.</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">ctf</span><span class="o">.</span><span class="n">tilt_axis</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">needs_reconstruction</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">ctf</span> <span class="o">=</span> <span class="n">CTF</span><span class="p">(</span>
+                <span class="n">defocus_x</span><span class="o">=</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">defocus</span><span class="p">],</span>
+                <span class="n">phase_shift</span><span class="o">=</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">phase_shift</span><span class="p">],</span>
+                <span class="n">defocus_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">angles</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">return_real_fourier</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="n">ctf</span><span class="o">.</span><span class="n">angles</span> <span class="o">=</span> <span class="n">wedge</span><span class="o">.</span><span class="n">angles</span>
-        <span class="n">ctf</span><span class="o">.</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">ctf</span><span class="o">.</span><span class="n">tilt_axis</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span>
+        <span class="n">ctf</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="n">ctf</span><span class="o">.</span><span class="n">flip_phase</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_flip_phase</span>
+        <span class="n">ctf</span><span class="o">.</span><span class="n">amplitude_contrast</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">amplitude_contrast</span>
+        <span class="n">ctf</span><span class="o">.</span><span class="n">spherical_aberration</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">spherical_aberration</span>
+        <span class="n">ctf</span><span class="o">.</span><span class="n">acceleration_voltage</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">acceleration_voltage</span> <span class="o">*</span> <span class="mf">1e3</span>
+        <span class="n">ctf</span><span class="o">.</span><span class="n">correct_defocus_gradient</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">correct_defocus_gradient</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">template_filter</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">ReconstructFromTilt</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">needs_reconstruction</span><span class="p">:</span>
+            <span class="n">template_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ctf</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">template_filter</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">ReconstructFromTilt</span><span class="p">):</span>
             <span class="n">template_filter</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ctf</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">template_filter</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ctf</span><span class="p">)</span>
             <span class="n">template_filter</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
-                <span class="mi">1</span><span class="p">,</span> <span class="n">ReconstructFromTilt</span><span class="p">(</span><span class="n">reconstruction_filter</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">reconstruction_filter</span><span class="p">)</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="n">ReconstructFromTilt</span><span class="p">(</span>
+                    <span class="n">reconstruction_filter</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">reconstruction_filter</span><span class="p">,</span>
+                    <span class="n">interpolation_order</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">reconstruction_interpolation_order</span><span class="p">,</span>
+                <span class="p">),</span>
             <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">lowpass</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">highpass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -665,6 +692,14 @@ document.write(`
         <span class="n">whitening_filter</span> <span class="o">=</span> <span class="n">LinearWhiteningFilter</span><span class="p">()</span>
         <span class="n">template_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">whitening_filter</span><span class="p">)</span>
         <span class="n">target_filter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">whitening_filter</span><span class="p">)</span>
+
+    <span class="n">needs_reconstruction</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="p">[</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ReconstructFromTilt</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">template_filter</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">needs_reconstruction</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">reconstruction_filter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;Consider using a --reconstruction_filter such as &#39;ramp&#39; to avoid artifacts.&quot;</span>
+        <span class="p">)</span>
 
     <span class="n">template_filter</span> <span class="o">=</span> <span class="n">Compose</span><span class="p">(</span><span class="n">template_filter</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_filter</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="n">target_filter</span> <span class="o">=</span> <span class="n">Compose</span><span class="p">(</span><span class="n">target_filter</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_filter</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
@@ -934,22 +969,89 @@ document.write(`
         <span class="s2">&quot;grigorieff (exposure filter as defined in Grant and Grigorieff 2015).&quot;</span>
         <span class="s2">&quot;relion and grigorieff require electron doses in --tilt_angles weights column.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="c1"># filter_group.add_argument(</span>
-    <span class="c1">#     &quot;--ctf_file&quot;,</span>
-    <span class="c1">#     dest=&quot;ctf_file&quot;,</span>
-    <span class="c1">#     type=str,</span>
-    <span class="c1">#     required=False,</span>
-    <span class="c1">#     default=None,</span>
-    <span class="c1">#     help=&quot;Path to a file with CTF parameters from CTFFIND4.&quot;,</span>
-    <span class="c1"># )</span>
     <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--reconstruction_filter&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;reconstruction_filter&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ram-lak&quot;</span><span class="p">,</span> <span class="s2">&quot;ramp&quot;</span><span class="p">,</span> <span class="s2">&quot;shepp-logan&quot;</span><span class="p">,</span> <span class="s2">&quot;cosine&quot;</span><span class="p">,</span> <span class="s2">&quot;hamming&quot;</span><span class="p">],</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ram-lak&quot;</span><span class="p">,</span> <span class="s2">&quot;ramp&quot;</span><span class="p">,</span> <span class="s2">&quot;ramp-cont&quot;</span><span class="p">,</span> <span class="s2">&quot;shepp-logan&quot;</span><span class="p">,</span> <span class="s2">&quot;cosine&quot;</span><span class="p">,</span> <span class="s2">&quot;hamming&quot;</span><span class="p">],</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Filter applied when reconstructing (N+1)-D from N-D filters.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">filter_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--reconstruction_interpolation_order&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;reconstruction_interpolation_order&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Analogous to --interpolation_order but for reconstruction.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">ctf_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Contrast Transfer Function&quot;</span><span class="p">)</span>
+    <span class="n">ctf_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--ctf_file&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;ctf_file&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a file with CTF parameters from CTFFIND4. Each line will be &quot;</span>
+        <span class="s2">&quot;interpreted as tilt obtained at the angle specified in --tilt_angles. &quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctf_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--defocus&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;defocus&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Defocus in units of sampling rate (typically Ångstrom). &quot;</span>
+        <span class="s2">&quot;Superseded by --ctf_file.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctf_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--phase_shift&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;phase_shift&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Phase shift in degrees. Superseded by --ctf_file.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctf_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--acceleration_voltage&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;acceleration_voltage&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Acceleration voltage in kV, defaults to 300.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctf_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--spherical_aberration&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;spherical_aberration&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">2.7e7</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Spherical aberration in units of sampling rate (typically Ångstrom).&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctf_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--amplitude_contrast&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;amplitude_contrast&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Amplitude contrast, defaults to 0.07.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctf_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--no_flip_phase&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;no_flip_phase&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_false&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Whether the phase of the computed CTF should not be flipped.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctf_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--correct_defocus_gradient&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;correct_defocus_gradient&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;[Experimental] Whether to compute a more accurate 3D CTF incorporating &quot;</span>
+        <span class="s2">&quot;defocus gradients.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">performance_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Performance&quot;</span><span class="p">)</span>
@@ -1031,8 +1133,6 @@ document.write(`
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span> <span class="o">=</span> <span class="kc">None</span>
-
-    <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">temp_directory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">default</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
@@ -1258,9 +1358,9 @@ document.write(`
         <span class="n">matching_method</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">score</span><span class="p">,</span>
         <span class="n">analyzer_method</span><span class="o">=</span><span class="n">callback_class</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
         <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">_backend_name</span><span class="p">,</span>
-        <span class="n">float_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype</span><span class="p">),</span>
+        <span class="n">float_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">),</span>
         <span class="n">complex_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span><span class="p">),</span>
-        <span class="n">integer_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_default_dtype_int</span><span class="p">),</span>
+        <span class="n">integer_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_int_dtype</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">splits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1323,8 +1423,18 @@ document.write(`
         <span class="s2">&quot;Wedge Axes&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">wedge_axes</span><span class="p">,</span>
         <span class="s2">&quot;Tilt Angles&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_angles</span><span class="p">,</span>
         <span class="s2">&quot;Tilt Weighting&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">tilt_weighting</span><span class="p">,</span>
-        <span class="s2">&quot;CTF&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span><span class="p">,</span>
+        <span class="s2">&quot;Reconstruction Filter&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">reconstruction_filter</span><span class="p">,</span>
     <span class="p">}</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">defocus</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">filter_args</span><span class="p">[</span><span class="s2">&quot;CTF File&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">ctf_file</span>
+        <span class="n">filter_args</span><span class="p">[</span><span class="s2">&quot;Defocus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">defocus</span>
+        <span class="n">filter_args</span><span class="p">[</span><span class="s2">&quot;Phase Shift&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">phase_shift</span>
+        <span class="n">filter_args</span><span class="p">[</span><span class="s2">&quot;No Flip Phase&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">no_flip_phase</span>
+        <span class="n">filter_args</span><span class="p">[</span><span class="s2">&quot;Acceleration Voltage&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">acceleration_voltage</span>
+        <span class="n">filter_args</span><span class="p">[</span><span class="s2">&quot;Spherical Aberration&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">spherical_aberration</span>
+        <span class="n">filter_args</span><span class="p">[</span><span class="s2">&quot;Amplitude Contrast&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">amplitude_contrast</span>
+        <span class="n">filter_args</span><span class="p">[</span><span class="s2">&quot;Correct Defocus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">correct_defocus_gradient</span>
+
     <span class="n">filter_args</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">filter_args</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filter_args</span><span class="p">):</span>
         <span class="n">print_block</span><span class="p">(</span>
@@ -1373,9 +1483,11 @@ document.write(`
             <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="n">target_mask</span><span class="o">.</span><span class="n">data</span>
         <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+            <span class="n">nbytes</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span> <span class="k">if</span> <span class="n">nbytes</span> <span class="o">==</span> <span class="mi">4</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">float16</span>
             <span class="n">candidates</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="n">x</span><span class="p">:</span> <span class="n">euler_from_rotationmatrix</span><span class="p">(</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
                         <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span>
                     <span class="p">)</span>
                 <span class="p">)</span>

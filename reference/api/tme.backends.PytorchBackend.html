@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>PytorchBackend &#8212; pytme 0.2.0 documentation</title>
+    <title>PytorchBackend &#8212; pytme 0.2.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../../_static/documentation_options.js?v=37f418d5"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,7 +124,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.2.0 documentation</p>
+    <p class="title logo__title">pytme 0.2.1 documentation</p>
   
 </a></div>
     
@@ -669,6 +669,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.free_sharedarr.html">NumpyFFTWBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.full.html">NumpyFFTWBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_available_memory.html">NumpyFFTWBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_fundamental_dtype.html">NumpyFFTWBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
@@ -732,6 +733,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.free_sharedarr.html">PytorchBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.full.html">PytorchBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_available_memory.html">PytorchBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_fundamental_dtype.html">PytorchBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.indices.html">PytorchBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max.html">PytorchBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max_filter_coordinates.html">PytorchBackend.max_filter_coordinates</a></li>
@@ -795,6 +797,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.free_sharedarr.html">CupyBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.full.html">CupyBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_available_memory.html">CupyBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_fundamental_dtype.html">CupyBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.indices.html">CupyBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max.html">CupyBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max_filter_coordinates.html">CupyBackend.max_filter_coordinates</a></li>
@@ -914,7 +917,7 @@ document.write(`
 <h1>PytorchBackend<a class="headerlink" href="#pytorchbackend" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="tme.backends.PytorchBackend">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PytorchBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cuda'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">complex_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_dtype_int</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/backends/pytorch_backend.html#PytorchBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.backends.PytorchBackend" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PytorchBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cuda'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">complex_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overflow_safe_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/backends/pytorch_backend.html#PytorchBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.backends.PytorchBackend" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tme.backends.npfftw_backend.NumpyFFTWBackend.html#tme.backends.npfftw_backend.NumpyFFTWBackend" title="tme.backends.npfftw_backend.NumpyFFTWBackend"><code class="xref py py-class docutils literal notranslate"><span class="pre">NumpyFFTWBackend</span></code></a></p>
 <p>A pytorch based backend for template matching</p>
 <p class="rubric">Methods</p>
@@ -989,115 +992,118 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.get_available_memory.html#tme.backends.PytorchBackend.get_available_memory" title="tme.backends.PytorchBackend.get_available_memory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.get_available_memory</span></code></a>()</p></td>
 <td><p>Returns the available memory available for computations in bytes.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.indices.html#tme.backends.PytorchBackend.indices" title="tme.backends.PytorchBackend.indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.indices</span></code></a>(shape)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.get_fundamental_dtype.html#tme.backends.PytorchBackend.get_fundamental_dtype" title="tme.backends.PytorchBackend.get_fundamental_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.get_fundamental_dtype</span></code></a>(arr)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.indices.html#tme.backends.PytorchBackend.indices" title="tme.backends.PytorchBackend.indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.indices</span></code></a>(shape)</p></td>
 <td><p>Creates an array representing the index grid of an input.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.max.html#tme.backends.PytorchBackend.max" title="tme.backends.PytorchBackend.max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.max</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.max.html#tme.backends.PytorchBackend.max" title="tme.backends.PytorchBackend.max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.max</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Compute the maximum of array elements.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.max_filter_coordinates.html#tme.backends.PytorchBackend.max_filter_coordinates" title="tme.backends.PytorchBackend.max_filter_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.max_filter_coordinates</span></code></a>(...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.max_filter_coordinates.html#tme.backends.PytorchBackend.max_filter_coordinates" title="tme.backends.PytorchBackend.max_filter_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.max_filter_coordinates</span></code></a>(...)</p></td>
 <td><p>Identifies local maxima in score_space separated by min_distance.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.max_score_over_rotations.html#tme.backends.PytorchBackend.max_score_over_rotations" title="tme.backends.PytorchBackend.max_score_over_rotations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.max_score_over_rotations</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.max_score_over_rotations.html#tme.backends.PytorchBackend.max_score_over_rotations" title="tme.backends.PytorchBackend.max_score_over_rotations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.max_score_over_rotations</span></code></a>(...)</p></td>
 <td><p>Modify internal_scores and internal_rotations inplace with scores and rotation index respectively, wherever score_sapce is larger than internal scores.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.maximum.html#tme.backends.PytorchBackend.maximum" title="tme.backends.PytorchBackend.maximum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.maximum</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.maximum.html#tme.backends.PytorchBackend.maximum" title="tme.backends.PytorchBackend.maximum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.maximum</span></code></a>(x1, x2, *args, **kwargs)</p></td>
 <td><p>Compute the element wise maximum of arr1 and arr2.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.mean.html#tme.backends.PytorchBackend.mean" title="tme.backends.PytorchBackend.mean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.mean</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.mean.html#tme.backends.PytorchBackend.mean" title="tme.backends.PytorchBackend.mean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.mean</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Compute the mean of array elements.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.min.html#tme.backends.PytorchBackend.min" title="tme.backends.PytorchBackend.min"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.min</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.min.html#tme.backends.PytorchBackend.min" title="tme.backends.PytorchBackend.min"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.min</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Compute the minimum of array elements.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.minimum.html#tme.backends.PytorchBackend.minimum" title="tme.backends.PytorchBackend.minimum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.minimum</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.minimum.html#tme.backends.PytorchBackend.minimum" title="tme.backends.PytorchBackend.minimum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.minimum</span></code></a>(x1, x2, *args, **kwargs)</p></td>
 <td><p>Compute the element wise minimum of arr1 and arr2.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.mod.html#tme.backends.PytorchBackend.mod" title="tme.backends.PytorchBackend.mod"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.mod</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.mod.html#tme.backends.PytorchBackend.mod" title="tme.backends.PytorchBackend.mod"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.mod</span></code></a>(x1, x2, *args, **kwargs)</p></td>
 <td><p>Interface for element-wise modulus of arrays.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.multiply.html#tme.backends.PytorchBackend.multiply" title="tme.backends.PytorchBackend.multiply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.multiply</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.multiply.html#tme.backends.PytorchBackend.multiply" title="tme.backends.PytorchBackend.multiply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.multiply</span></code></a>(x1, x2, *args, **kwargs)</p></td>
 <td><p>Interface for element-wise multiplication of arrays.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.power.html#tme.backends.PytorchBackend.power" title="tme.backends.PytorchBackend.power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.power</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.power.html#tme.backends.PytorchBackend.power" title="tme.backends.PytorchBackend.power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.power</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Compute the n-th power of an array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.preallocate_array.html#tme.backends.PytorchBackend.preallocate_array" title="tme.backends.PytorchBackend.preallocate_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.preallocate_array</span></code></a>(shape, dtype)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.preallocate_array.html#tme.backends.PytorchBackend.preallocate_array" title="tme.backends.PytorchBackend.preallocate_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.preallocate_array</span></code></a>(shape, dtype)</p></td>
 <td><p>Returns a byte-aligned array of zeros with specified shape and dtype.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.repeat.html#tme.backends.PytorchBackend.repeat" title="tme.backends.PytorchBackend.repeat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.repeat</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.repeat.html#tme.backends.PytorchBackend.repeat" title="tme.backends.PytorchBackend.repeat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.repeat</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Repeat each array elements after themselves.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.reverse.html#tme.backends.PytorchBackend.reverse" title="tme.backends.PytorchBackend.reverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.reverse</span></code></a>(arr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.reverse.html#tme.backends.PytorchBackend.reverse" title="tme.backends.PytorchBackend.reverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.reverse</span></code></a>(arr)</p></td>
 <td><p>Reverse the order of elements in a tensor along all its axes.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.roll.html#tme.backends.PytorchBackend.roll" title="tme.backends.PytorchBackend.roll"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.roll</span></code></a>(a, shift, axis, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.roll.html#tme.backends.PytorchBackend.roll" title="tme.backends.PytorchBackend.roll"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.roll</span></code></a>(a, shift, axis, **kwargs)</p></td>
 <td><p>Roll array elements along a specified axis.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.rotate_array.html#tme.backends.PytorchBackend.rotate_array" title="tme.backends.PytorchBackend.rotate_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.rotate_array</span></code></a>(arr, rotation_matrix)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.rotate_array.html#tme.backends.PytorchBackend.rotate_array" title="tme.backends.PytorchBackend.rotate_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.rotate_array</span></code></a>(arr, rotation_matrix)</p></td>
 <td><p>Rotates the given tensor <cite>arr</cite> based on the provided <cite>rotation_matrix</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.rotate_array_coordinates.html#tme.backends.PytorchBackend.rotate_array_coordinates" title="tme.backends.PytorchBackend.rotate_array_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.rotate_array_coordinates</span></code></a>(arr, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.rotate_array_coordinates.html#tme.backends.PytorchBackend.rotate_array_coordinates" title="tme.backends.PytorchBackend.rotate_array_coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.rotate_array_coordinates</span></code></a>(arr, ...)</p></td>
 <td><p>Rotates coordinates of arr according to rotation_matrix.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.set_device.html#tme.backends.PytorchBackend.set_device" title="tme.backends.PytorchBackend.set_device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.set_device</span></code></a>(device_index)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.set_device.html#tme.backends.PytorchBackend.set_device" title="tme.backends.PytorchBackend.set_device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.set_device</span></code></a>(device_index)</p></td>
 <td><p>Set the active GPU device as a context.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.sharedarr_to_arr.html#tme.backends.PytorchBackend.sharedarr_to_arr" title="tme.backends.PytorchBackend.sharedarr_to_arr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.sharedarr_to_arr</span></code></a>(shm, shape, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.sharedarr_to_arr.html#tme.backends.PytorchBackend.sharedarr_to_arr" title="tme.backends.PytorchBackend.sharedarr_to_arr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.sharedarr_to_arr</span></code></a>(shm, shape, ...)</p></td>
 <td><p>Returns an array of given shape and dtype from shared memory location.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.size.html#tme.backends.PytorchBackend.size" title="tme.backends.PytorchBackend.size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.size</span></code></a>(arr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.size.html#tme.backends.PytorchBackend.size" title="tme.backends.PytorchBackend.size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.size</span></code></a>(arr)</p></td>
 <td><p>Compute the number of elements of arr.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.sqrt.html#tme.backends.PytorchBackend.sqrt" title="tme.backends.PytorchBackend.sqrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.sqrt</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.sqrt.html#tme.backends.PytorchBackend.sqrt" title="tme.backends.PytorchBackend.sqrt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.sqrt</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Compute the square root of array elements.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.square.html#tme.backends.PytorchBackend.square" title="tme.backends.PytorchBackend.square"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.square</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.square.html#tme.backends.PytorchBackend.square" title="tme.backends.PytorchBackend.square"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.square</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Compute the square of array elements.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.stack.html#tme.backends.PytorchBackend.stack" title="tme.backends.PytorchBackend.stack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.stack</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.stack.html#tme.backends.PytorchBackend.stack" title="tme.backends.PytorchBackend.stack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.stack</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Join a sequence of ArrayLike objects along a specified axis.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.std.html#tme.backends.PytorchBackend.std" title="tme.backends.PytorchBackend.std"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.std</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.std.html#tme.backends.PytorchBackend.std" title="tme.backends.PytorchBackend.std"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.std</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Compute the standad deviation of array elements.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.subtract.html#tme.backends.PytorchBackend.subtract" title="tme.backends.PytorchBackend.subtract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.subtract</span></code></a>(x1, x2, *args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.subtract.html#tme.backends.PytorchBackend.subtract" title="tme.backends.PytorchBackend.subtract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.subtract</span></code></a>(x1, x2, *args, **kwargs)</p></td>
 <td><p>Interface for element-wise subtraction of arrays.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.sum.html#tme.backends.PytorchBackend.sum" title="tme.backends.PytorchBackend.sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.sum</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.sum.html#tme.backends.PytorchBackend.sum" title="tme.backends.PytorchBackend.sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.sum</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Compute the sum of array elements.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.to_backend_array.html#tme.backends.PytorchBackend.to_backend_array" title="tme.backends.PytorchBackend.to_backend_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.to_backend_array</span></code></a>(arr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.to_backend_array.html#tme.backends.PytorchBackend.to_backend_array" title="tme.backends.PytorchBackend.to_backend_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.to_backend_array</span></code></a>(arr)</p></td>
 <td><p>Convert a numpy array instance to backend array type.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.to_cpu_array.html#tme.backends.PytorchBackend.to_cpu_array" title="tme.backends.PytorchBackend.to_cpu_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.to_cpu_array</span></code></a>(arr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.to_cpu_array.html#tme.backends.PytorchBackend.to_cpu_array" title="tme.backends.PytorchBackend.to_cpu_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.to_cpu_array</span></code></a>(arr)</p></td>
 <td><p>Convert an array of a given backend to a CPU array of that backend.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.to_numpy_array.html#tme.backends.PytorchBackend.to_numpy_array" title="tme.backends.PytorchBackend.to_numpy_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.to_numpy_array</span></code></a>(arr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.to_numpy_array.html#tme.backends.PytorchBackend.to_numpy_array" title="tme.backends.PytorchBackend.to_numpy_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.to_numpy_array</span></code></a>(arr)</p></td>
 <td><p>Convert an array of given backend to a numpy array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.tobytes.html#tme.backends.PytorchBackend.tobytes" title="tme.backends.PytorchBackend.tobytes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.tobytes</span></code></a>(arr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.tobytes.html#tme.backends.PytorchBackend.tobytes" title="tme.backends.PytorchBackend.tobytes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.tobytes</span></code></a>(arr)</p></td>
 <td><p>Compute the bytestring representation of arr.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.topk_indices.html#tme.backends.PytorchBackend.topk_indices" title="tme.backends.PytorchBackend.topk_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.topk_indices</span></code></a>(arr, k)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.topk_indices.html#tme.backends.PytorchBackend.topk_indices" title="tme.backends.PytorchBackend.topk_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.topk_indices</span></code></a>(arr, k)</p></td>
 <td><p>Compute indices of largest elements.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.topleft_pad.html#tme.backends.PytorchBackend.topleft_pad" title="tme.backends.PytorchBackend.topleft_pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.topleft_pad</span></code></a>(arr, shape[, padval])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.topleft_pad.html#tme.backends.PytorchBackend.topleft_pad" title="tme.backends.PytorchBackend.topleft_pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.topleft_pad</span></code></a>(arr, shape[, padval])</p></td>
 <td><p>Returns an array that has been padded to a specified shape with a padding value at the top-left corner.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.transpose.html#tme.backends.PytorchBackend.transpose" title="tme.backends.PytorchBackend.transpose"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.transpose</span></code></a>(arr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.transpose.html#tme.backends.PytorchBackend.transpose" title="tme.backends.PytorchBackend.transpose"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.transpose</span></code></a>(arr)</p></td>
 <td><p>Compute the transpose of arr.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.tril_indices.html#tme.backends.PytorchBackend.tril_indices" title="tme.backends.PytorchBackend.tril_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.tril_indices</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.tril_indices.html#tme.backends.PytorchBackend.tril_indices" title="tme.backends.PytorchBackend.tril_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.tril_indices</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Compute indices of upper triangular matrix</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.unique.html#tme.backends.PytorchBackend.unique" title="tme.backends.PytorchBackend.unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.unique</span></code></a>(ar[, return_index, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.unique.html#tme.backends.PytorchBackend.unique" title="tme.backends.PytorchBackend.unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.unique</span></code></a>(ar[, return_index, ...])</p></td>
 <td><p>Find the unique elements of an array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.unravel_index.html#tme.backends.PytorchBackend.unravel_index" title="tme.backends.PytorchBackend.unravel_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.unravel_index</span></code></a>(indices, shape)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.unravel_index.html#tme.backends.PytorchBackend.unravel_index" title="tme.backends.PytorchBackend.unravel_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.unravel_index</span></code></a>(indices, shape)</p></td>
 <td><p>Convert flat index to array indices.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.zeros.html#tme.backends.PytorchBackend.zeros" title="tme.backends.PytorchBackend.zeros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.zeros</span></code></a>(shape[, dtype])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="tme.backends.PytorchBackend.zeros.html#tme.backends.PytorchBackend.zeros" title="tme.backends.PytorchBackend.zeros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PytorchBackend.zeros</span></code></a>(shape[, dtype])</p></td>
 <td><p>Returns an aligned array of zeros with specified shape and dtype.</p></td>
 </tr>
 </tbody>

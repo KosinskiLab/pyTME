@@ -88,6 +88,9 @@
            PytorchBackend.get_available_memory
          
          
+           PytorchBackend.get_fundamental_dtype
+         
+         
            PytorchBackend.indices
          
          

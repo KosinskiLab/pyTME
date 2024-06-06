@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>scan_subsets &#8212; pytme 0.2.0 documentation</title>
+    <title>scan_subsets &#8212; pytme 0.2.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../../_static/documentation_options.js?v=37f418d5"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,7 +124,7 @@
   
   
   
-    <p class="title logo__title">pytme 0.2.0 documentation</p>
+    <p class="title logo__title">pytme 0.2.1 documentation</p>
   
 </a></div>
     
@@ -669,6 +669,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.free_sharedarr.html">NumpyFFTWBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.full.html">NumpyFFTWBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_available_memory.html">NumpyFFTWBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.get_fundamental_dtype.html">NumpyFFTWBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.indices.html">NumpyFFTWBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max.html">NumpyFFTWBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.NumpyFFTWBackend.max_filter_coordinates.html">NumpyFFTWBackend.max_filter_coordinates</a></li>
@@ -732,6 +733,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.free_sharedarr.html">PytorchBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.full.html">PytorchBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_available_memory.html">PytorchBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.get_fundamental_dtype.html">PytorchBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.indices.html">PytorchBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max.html">PytorchBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.PytorchBackend.max_filter_coordinates.html">PytorchBackend.max_filter_coordinates</a></li>
@@ -795,6 +797,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.free_sharedarr.html">CupyBackend.free_sharedarr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.full.html">CupyBackend.full</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_available_memory.html">CupyBackend.get_available_memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.get_fundamental_dtype.html">CupyBackend.get_fundamental_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.indices.html">CupyBackend.indices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max.html">CupyBackend.max</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tme.backends.CupyBackend.max_filter_coordinates.html">CupyBackend.max_filter_coordinates</a></li>
@@ -920,14 +923,14 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="tme.matching_exhaustive.scan_subsets">
 <span class="sig-name descname"><span class="pre">scan_subsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matching_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matching_score</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matching_setup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_class_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_schedule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_target_edges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_fourier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jobs_per_callback_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/matching_exhaustive.html#scan_subsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.matching_exhaustive.scan_subsets" title="Link to this definition">#</a></dt>
-<dd><p>Wrapper around <a class="reference internal" href="tme.matching_exhaustive.scan.html#tme.matching_exhaustive.scan" title="tme.matching_exhaustive.scan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scan()</span></code></a> that supports template matching on splits
-of template and target.</p>
-<dl class="field-list simple">
+<dd><p>Wrapper around <a class="reference internal" href="tme.matching_exhaustive.scan.html#tme.matching_exhaustive.scan" title="tme.matching_exhaustive.scan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scan()</span></code></a> that supports matching on splits
+of <code class="docutils literal notranslate"><span class="pre">matching_data</span></code>.</p>
+<dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>matching_data</strong><span class="classifier">MatchingData</span></dt><dd><p>Template matching data.</p>
+<dd class="field-odd"><dl>
+<dt><strong>matching_data</strong><span class="classifier"><a class="reference internal" href="tme.matching_data.MatchingData.html#tme.matching_data.MatchingData" title="tme.matching_data.MatchingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.matching_data.MatchingData</span></code></a></span></dt><dd><p>MatchingData instance containing relevant data.</p>
 </dd>
-<dt><strong>matching_func</strong><span class="classifier">type</span></dt><dd><p>Function pointer to setup function.</p>
+<dt><strong>matching_setup</strong><span class="classifier">type</span></dt><dd><p>Function pointer to setup function.</p>
 </dd>
 <dt><strong>matching_score</strong><span class="classifier">type</span></dt><dd><p>Function pointer to scoring function.</p>
 </dd>
@@ -935,11 +938,15 @@ of template and target.</p>
 </dd>
 <dt><strong>callback_class_args</strong><span class="classifier">dict, optional</span></dt><dd><p>Arguments passed to the callback_class. Default is an empty dictionary.</p>
 </dd>
-<dt><strong>job_schedule</strong><span class="classifier">tuple of int, optional</span></dt><dd><p>Schedule of jobs. Default is (1, 1).</p>
+<dt><strong>job_schedule</strong><span class="classifier">tuple of int, optional</span></dt><dd><p>Job scheduling scheme, default is (1, 1). First value corresponds
+to the number of splits that are processed in parallel, the second
+to the number of angles evaluated in parallel on each split.</p>
 </dd>
-<dt><strong>target_splits</strong><span class="classifier">dict, optional</span></dt><dd><p>Splits for target. Default is an empty dictionary, i.e. no splits</p>
+<dt><strong>target_splits</strong><span class="classifier">dict, optional</span></dt><dd><p>Splits for target. Default is an empty dictionary, i.e. no splits.
+See <a class="reference internal" href="tme.matching_utils.compute_parallelization_schedule.html#tme.matching_utils.compute_parallelization_schedule" title="tme.matching_utils.compute_parallelization_schedule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.compute_parallelization_schedule()</span></code></a>.</p>
 </dd>
-<dt><strong>template_splits</strong><span class="classifier">dict, optional</span></dt><dd><p>Splits for template. Default is an empty dictionary, i.e. no splits.</p>
+<dt><strong>template_splits</strong><span class="classifier">dict, optional</span></dt><dd><p>Splits for template. Default is an empty dictionary, i.e. no splits.
+See <a class="reference internal" href="tme.matching_utils.compute_parallelization_schedule.html#tme.matching_utils.compute_parallelization_schedule" title="tme.matching_utils.compute_parallelization_schedule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.compute_parallelization_schedule()</span></code></a>.</p>
 </dd>
 <dt><strong>pad_target_edges</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to pad the target boundaries by half the template shape
 along each axis.</p>
@@ -962,8 +969,66 @@ if ones is provided.</p>
 </dl>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="tme.matching_utils.compute_parallelization_schedule.html#tme.matching_utils.compute_parallelization_schedule" title="tme.matching_utils.compute_parallelization_schedule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.compute_parallelization_schedule()</span></code></a></dt><dd></dd>
+</dl>
+</div>
 <p class="rubric">Notes</p>
 <p>Objects in matching_data might be destroyed during computation.</p>
+<p class="rubric">Examples</p>
+<p>All data relevant to template matching will be contained in <code class="docutils literal notranslate"><span class="pre">matching_data</span></code>, which
+is a <a class="reference internal" href="tme.matching_data.MatchingData.html#tme.matching_data.MatchingData" title="tme.matching_data.MatchingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.matching_data.MatchingData</span></code></a> instance and can be created like so</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme.matching_data</span> <span class="kn">import</span> <span class="n">MatchingData</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="n">get_rotation_matrices</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">40</span><span class="p">,</span><span class="mi">60</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="mi">15</span><span class="p">:</span><span class="mi">25</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">:</span><span class="mi">40</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matching_data</span> <span class="o">=</span> <span class="n">MatchingData</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">get_rotation_matrices</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">angular_sampling</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">ndim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The template matching procedure is determined by <code class="docutils literal notranslate"><span class="pre">matching_setup</span></code> and
+<code class="docutils literal notranslate"><span class="pre">matching_score</span></code>, which are unique to each score. In the following,
+we will be using the <cite>FLCSphericalMask</cite> score, which is composed of
+<a class="reference internal" href="tme.matching_exhaustive.flcSphericalMask_setup.html#tme.matching_exhaustive.flcSphericalMask_setup" title="tme.matching_exhaustive.flcSphericalMask_setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flcSphericalMask_setup()</span></code></a> and <a class="reference internal" href="tme.matching_exhaustive.corr_scoring.html#tme.matching_exhaustive.corr_scoring" title="tme.matching_exhaustive.corr_scoring"><code class="xref py py-meth docutils literal notranslate"><span class="pre">corr_scoring()</span></code></a></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme.matching_exhaustive</span> <span class="kn">import</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">funcs</span> <span class="o">=</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;FLCSphericalMask&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matching_setup</span><span class="p">,</span> <span class="n">matching_score</span> <span class="o">=</span> <span class="n">funcs</span>
+</pre></div>
+</div>
+<p>Computed scores are flexibly analyzed by being passed through an analyzer. In the
+following, we will use <a class="reference internal" href="tme.analyzer.MaxScoreOverRotations.html#tme.analyzer.MaxScoreOverRotations" title="tme.analyzer.MaxScoreOverRotations"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.analyzer.MaxScoreOverRotations</span></code></a> to
+aggregate sores over rotations</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme.analyzer</span> <span class="kn">import</span> <span class="n">MaxScoreOverRotations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">callback_class</span> <span class="o">=</span> <span class="n">MaxScoreOverRotations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">callback_class_args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;score_threshold&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>In case the entire template matching problem does not fit into memory, we can
+determine the splitting procedure. In this case, we halv the first axis of the target
+once. Splitting and <code class="docutils literal notranslate"><span class="pre">job_schedule</span></code> is typically computed using
+:py:meth:tme.matching_utils.compute_parallelization_schedule`.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target_splits</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span> <span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Finally, we can perform template matching. Note that the data contained in matching_data
+will be destroyed when running the following</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme.matching_exhaustive</span> <span class="kn">import</span> <span class="n">scan_subsets</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">scan_subsets</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">matching_data</span> <span class="o">=</span> <span class="n">matching_data</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">matching_score</span> <span class="o">=</span> <span class="n">matching_score</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">matching_setup</span> <span class="o">=</span> <span class="n">matching_setup</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">callback_class</span> <span class="o">=</span> <span class="n">callback_class</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">callback_class_args</span> <span class="o">=</span> <span class="n">callback_class_args</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">target_splits</span> <span class="o">=</span> <span class="n">target_splits</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The retuned <code class="docutils literal notranslate"><span class="pre">results</span></code> tuple contains the output of the chosen analyzer.</p>
 </dd></dl>
 
 </section>

@@ -88,6 +88,9 @@
            CupyBackend.get_available_memory
          
          
+           CupyBackend.get_fundamental_dtype
+         
+         
            CupyBackend.indices
          
          

@@ -88,6 +88,9 @@
            NumpyFFTWBackend.get_available_memory
          
          
+           NumpyFFTWBackend.get_fundamental_dtype
+         
+         
            NumpyFFTWBackend.indices
          
          
