@@ -7,7 +7,7 @@ name="pytme"
 authors = [
   { name = "Valentin Maurer", email = "valentin.maurer@embl-hamburg.de" },
 ]
-version="0.2.0"
+version="0.2.1"
 description="Python Template Matching Engine"
 readme="README.md"
 requires-python = ">=3.11"
