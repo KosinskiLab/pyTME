@@ -85,6 +85,16 @@ def normalize_under_mask(template: NDArray, mask: NDArray, mask_intensity) -> No
     return None
 
 
+def _normalize_under_mask_overflow_safe(
+    template: NDArray, mask: NDArray, mask_intensity
+) -> None:
+    _template = backend.astype(template, backend._overflow_safe_dtype)
+    _mask = backend.astype(mask, backend._overflow_safe_dtype)
+    normalize_under_mask(template=_template, mask=_mask, mask_intensity=mask_intensity)
+    template[:] = backend.astype(_template, template.dtype)
+    return None
+
+
 def apply_filter(ft_template, template_filter):
     # This is an approximation to applying the mask, irfftn, normalize, rfftn
     std_before = backend.std(ft_template)
@@ -101,8 +111,6 @@ def cc_setup(
     target: NDArray,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    real_dtype: type,
-    complex_dtype: type,
     shared_memory_handler: Callable,
     callback_class: Callable,
     callback_class_args: Dict,
@@ -122,7 +130,7 @@ def cc_setup(
     :py:meth:`corr_scoring`
     :py:class:`tme.matching_optimization.CrossCorrelation`
     """
-    target_shape = target.shape
+    real_dtype, complex_dtype = backend._float_dtype, backend._complex_dtype
     target_pad = backend.topleft_pad(target, fast_shape)
     target_pad_ft = backend.preallocate_array(fast_ft_shape, complex_dtype)
 
@@ -139,7 +147,7 @@ def cc_setup(
         arr=backend.preallocate_array(1, real_dtype) + 1,
         shared_memory_handler=shared_memory_handler,
     )
-    numerator2_buffer = backend.arr_to_sharedarr(
+    numerator_buffer = backend.arr_to_sharedarr(
         arr=backend.preallocate_array(1, real_dtype),
         shared_memory_handler=shared_memory_handler,
     )
@@ -148,19 +156,17 @@ def cc_setup(
     template_tuple = (template_out, template.shape, real_dtype)
 
     inv_denominator_tuple = (inv_denominator_buffer, (1,), real_dtype)
-    numerator2_tuple = (numerator2_buffer, (1,), real_dtype)
+    numerator_tuple = (numerator_buffer, (1,), real_dtype)
 
     ret = {
         "template": template_tuple,
         "ft_target": target_ft_tuple,
         "inv_denominator": inv_denominator_tuple,
-        "numerator2": numerator2_tuple,
-        "targetshape": target_shape,
+        "numerator": numerator_tuple,
+        "targetshape": target.shape,
         "templateshape": template.shape,
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
-        "real_dtype": real_dtype,
-        "complex_dtype": complex_dtype,
         "callback_class": callback_class,
         "callback_class_args": callback_class_args,
         "use_memmap": kwargs.get("use_memmap", False),
@@ -198,8 +204,6 @@ def corr_setup(
     target: NDArray,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    real_dtype: type,
-    complex_dtype: type,
     shared_memory_handler: Callable,
     callback_class: Callable,
     callback_class_args: Dict,
@@ -231,6 +235,7 @@ def corr_setup(
     :py:meth:`corr_scoring`
     :py:class:`tme.matching_optimization.NormalizedCrossCorrelation`.
     """
+    real_dtype, complex_dtype = backend._float_dtype, backend._complex_dtype
     target_pad = backend.topleft_pad(target, fast_shape)
 
     # The exact composition of the denominator is debatable
@@ -270,8 +275,8 @@ def corr_setup(
     template_volume = np.prod(template.shape)
     backend.multiply(template, template_mask, out=template)
 
-    # Final numerator is score - numerator2
-    numerator2 = backend.multiply(target_window_sum, template_mean)
+    # Final numerator is score - numerator
+    numerator = backend.multiply(target_window_sum, template_mean)
 
     # Compute denominator
     backend.multiply(target_window_sum, target_window_sum, out=target_window_sum)
@@ -298,29 +303,27 @@ def corr_setup(
     inv_denominator_buffer = backend.arr_to_sharedarr(
         arr=inv_denominator, shared_memory_handler=shared_memory_handler
     )
-    numerator2_buffer = backend.arr_to_sharedarr(
-        arr=numerator2, shared_memory_handler=shared_memory_handler
+    numerator_buffer = backend.arr_to_sharedarr(
+        arr=numerator, shared_memory_handler=shared_memory_handler
     )
 
     template_tuple = (template_buffer, deepcopy(template.shape), real_dtype)
     target_ft_tuple = (target_ft_buffer, fast_ft_shape, complex_dtype)
 
     inv_denominator_tuple = (inv_denominator_buffer, fast_shape, real_dtype)
-    numerator2_tuple = (numerator2_buffer, fast_shape, real_dtype)
+    numerator_tuple = (numerator_buffer, fast_shape, real_dtype)
 
-    ft_target, inv_denominator, numerator2 = None, None, None
+    ft_target, inv_denominator, numerator = None, None, None
 
     ret = {
         "template": template_tuple,
         "ft_target": target_ft_tuple,
         "inv_denominator": inv_denominator_tuple,
-        "numerator2": numerator2_tuple,
+        "numerator": numerator_tuple,
         "targetshape": deepcopy(target.shape),
         "templateshape": deepcopy(template.shape),
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
-        "real_dtype": real_dtype,
-        "complex_dtype": complex_dtype,
         "callback_class": callback_class,
         "callback_class_args": callback_class_args,
         "template_mean": kwargs.get("template_mean", template_mean),
@@ -372,8 +375,6 @@ def flc_setup(
     target: NDArray,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    real_dtype: type,
-    complex_dtype: type,
     shared_memory_handler: Callable,
     callback_class: Callable,
     callback_class_args: Dict,
@@ -409,6 +410,8 @@ def flc_setup(
     --------
     :py:meth:`flc_scoring`
     """
+    real_dtype, complex_dtype = backend._float_dtype, backend._complex_dtype
+
     target_pad = backend.topleft_pad(target, fast_shape)
 
     # Target and squared target window sums
@@ -452,8 +455,6 @@ def flc_setup(
         "templateshape": template.shape,
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
-        "real_dtype": real_dtype,
-        "complex_dtype": complex_dtype,
         "callback_class": callback_class,
         "callback_class_args": callback_class_args,
     }
@@ -469,8 +470,6 @@ def flcSphericalMask_setup(
     target: NDArray,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    real_dtype: type,
-    complex_dtype: type,
     shared_memory_handler: Callable,
     callback_class: Callable,
     callback_class_args: Dict,
@@ -507,6 +506,7 @@ def flcSphericalMask_setup(
     --------
     :py:meth:`corr_scoring`
     """
+    real_dtype, complex_dtype = backend._float_dtype, backend._complex_dtype
     target_pad = backend.topleft_pad(target, fast_shape)
 
     # Target and squared target window sums
@@ -516,10 +516,14 @@ def flcSphericalMask_setup(
 
     temp = backend.preallocate_array(fast_shape, real_dtype)
     temp2 = backend.preallocate_array(fast_shape, real_dtype)
-    numerator2 = backend.preallocate_array(1, real_dtype)
+    numerator = backend.preallocate_array(1, real_dtype)
 
-    eps = backend.eps(real_dtype)
-    n_observations = backend.sum(template_mask)
+    n_observations, norm_func = backend.sum(template_mask), normalize_under_mask
+    if backend.datatype_bytes(template_mask.dtype) == 2:
+        norm_func = _normalize_under_mask_overflow_safe
+        n_observations = backend.sum(
+            backend.astype(template_mask, backend._overflow_safe_dtype)
+        )
 
     template_mask_pad = backend.topleft_pad(template_mask, fast_shape)
     rfftn(template_mask_pad, ft_template_mask)
@@ -542,15 +546,11 @@ def flcSphericalMask_setup(
     backend.sqrt(temp, out=temp)
     backend.multiply(temp, n_observations, out=temp)
 
-    tol = 1e3 * eps * backend.max(backend.abs(temp))
-    nonzero_indices = temp > tol
-
     backend.fill(temp2, 0)
+    nonzero_indices = temp > backend.eps(real_dtype)
     temp2[nonzero_indices] = 1 / temp[nonzero_indices]
 
-    normalize_under_mask(
-        template=template, mask=template_mask, mask_intensity=backend.sum(template_mask)
-    )
+    norm_func(template=template, mask=template_mask, mask_intensity=n_observations)
 
     template_buffer = backend.arr_to_sharedarr(
         arr=template, shared_memory_handler=shared_memory_handler
@@ -564,8 +564,8 @@ def flcSphericalMask_setup(
     inv_denominator_buffer = backend.arr_to_sharedarr(
         arr=temp2, shared_memory_handler=shared_memory_handler
     )
-    numerator2_buffer = backend.arr_to_sharedarr(
-        arr=numerator2, shared_memory_handler=shared_memory_handler
+    numerator_buffer = backend.arr_to_sharedarr(
+        arr=numerator, shared_memory_handler=shared_memory_handler
     )
 
     template_tuple = (template_buffer, template.shape, real_dtype)
@@ -573,20 +573,18 @@ def flcSphericalMask_setup(
     target_ft_tuple = (target_ft_buffer, fast_ft_shape, complex_dtype)
 
     inv_denominator_tuple = (inv_denominator_buffer, fast_shape, real_dtype)
-    numerator2_tuple = (numerator2_buffer, (1,), real_dtype)
+    numerator_tuple = (numerator_buffer, (1,), real_dtype)
 
     ret = {
         "template": template_tuple,
         "template_mask": template_mask_tuple,
         "ft_target": target_ft_tuple,
         "inv_denominator": inv_denominator_tuple,
-        "numerator2": numerator2_tuple,
+        "numerator": numerator_tuple,
         "targetshape": target.shape,
         "templateshape": template.shape,
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
-        "real_dtype": real_dtype,
-        "complex_dtype": complex_dtype,
         "callback_class": callback_class,
         "callback_class_args": callback_class_args,
     }
@@ -603,8 +601,6 @@ def mcc_setup(
     target_mask: NDArray,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    real_dtype: type,
-    complex_dtype: type,
     shared_memory_handler: Callable,
     callback_class: Callable,
     callback_class_args: Dict,
@@ -641,6 +637,7 @@ def mcc_setup(
     :py:meth:`mcc_scoring`
     :py:class:`tme.matching_optimization.MaskedCrossCorrelation`
     """
+    real_dtype, complex_dtype = backend._float_dtype, backend._complex_dtype
     target = backend.multiply(target, target_mask > 0, out=target)
 
     target_pad = backend.topleft_pad(target, fast_shape)
@@ -688,8 +685,6 @@ def mcc_setup(
         "templateshape": template.shape,
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
-        "real_dtype": real_dtype,
-        "complex_dtype": complex_dtype,
         "callback_class": callback_class,
         "callback_class_args": callback_class_args,
     }
@@ -701,15 +696,13 @@ def corr_scoring(
     template: Tuple[type, Tuple[int], type],
     ft_target: Tuple[type, Tuple[int], type],
     inv_denominator: Tuple[type, Tuple[int], type],
-    numerator2: Tuple[type, Tuple[int], type],
+    numerator: Tuple[type, Tuple[int], type],
     template_filter: Tuple[type, Tuple[int], type],
     targetshape: Tuple[int],
     templateshape: Tuple[int],
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
     rotations: NDArray,
-    real_dtype: type,
-    complex_dtype: type,
     callback_class: CallbackClass,
     callback_class_args: Dict,
     interpolation_order: int,
@@ -721,7 +714,7 @@ def corr_scoring(
 
     .. math::
 
-        (CC(f,g) - numerator2) \\cdot inv\\_denominator
+        (CC(f,g) - numerator) \\cdot inv\\_denominator
 
     Parameters
     ----------
@@ -733,8 +726,8 @@ def corr_scoring(
     inv_denominator : Tuple[type, Tuple[int], type]
         Tuple containing a pointer to the inverse denominator data, its shape, and its
         datatype.
-    numerator2 : Tuple[type, Tuple[int], type]
-        Tuple containing a pointer to the numerator2 data, its shape, and its datatype.
+    numerator : Tuple[type, Tuple[int], type]
+        Tuple containing a pointer to the numerator data, its shape, and its datatype.
     fast_shape : Tuple[int]
         The shape for fast Fourier transform.
     fast_ft_shape : Tuple[int]
@@ -768,6 +761,8 @@ def corr_scoring(
     :py:meth:`cam_setup`
     :py:meth:`flcSphericalMask_setup`
     """
+    real_dtype, complex_dtype = backend._float_dtype, backend._complex_dtype
+
     callback = callback_class
     if callback_class is not None and isinstance(callback_class, type):
         callback = callback_class(**callback_class_args)
@@ -776,15 +771,34 @@ def corr_scoring(
     template = backend.sharedarr_to_arr(template_buffer, template_shape, template_dtype)
     ft_target = backend.sharedarr_to_arr(*ft_target)
     inv_denominator = backend.sharedarr_to_arr(*inv_denominator)
-    numerator2 = backend.sharedarr_to_arr(*numerator2)
+    numerator = backend.sharedarr_to_arr(*numerator)
     template_filter = backend.sharedarr_to_arr(*template_filter)
 
+    norm_func = normalize_under_mask
     norm_template, template_mask, mask_sum = False, 1, 1
     if "template_mask" in kwargs:
+        norm_template = True
         template_mask = backend.sharedarr_to_arr(
             kwargs["template_mask"][0], template_shape, template_dtype
         )
-        norm_template, mask_sum = True, backend.sum(template_mask)
+        mask_sum = backend.sum(template_mask)
+        if backend.datatype_bytes(template_mask.dtype) == 2:
+            norm_func = _normalize_under_mask_overflow_safe
+            mask_sum = backend.to_numpy_array(template_mask).astype(np.float32).sum()
+
+    norm_template = conditional_execute(norm_func, norm_template)
+
+    norm_numerator = (backend.sum(numerator) != 0) & (backend.size(numerator) != 1)
+    norm_func_numerator = conditional_execute(backend.subtract, norm_numerator)
+
+    norm_denominator = (backend.sum(inv_denominator) != 1) & (
+        backend.size(inv_denominator) != 1
+    )
+    norm_func_denominator = conditional_execute(backend.multiply, norm_denominator)
+    callback_func = conditional_execute(callback, callback_class is not None)
+    template_filter_func = conditional_execute(
+        apply_filter, backend.size(template_filter) != 1
+    )
 
     arr = backend.preallocate_array(fast_shape, real_dtype)
     ft_temp = backend.preallocate_array(fast_ft_shape, complex_dtype)
@@ -799,19 +813,6 @@ def corr_scoring(
         temp_fft=ft_temp,
     )
 
-    norm_numerator = (backend.sum(numerator2) != 0) & (backend.size(numerator2) != 1)
-    norm_denominator = (backend.sum(inv_denominator) != 1) & (
-        backend.size(inv_denominator) != 1
-    )
-
-    norm_template = conditional_execute(normalize_under_mask, norm_template)
-    callback_func = conditional_execute(callback, callback_class is not None)
-    norm_func_numerator = conditional_execute(backend.subtract, norm_numerator)
-    norm_func_denominator = conditional_execute(backend.multiply, norm_denominator)
-    template_filter_func = conditional_execute(
-        apply_filter, backend.size(template_filter) != 1
-    )
-
     unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
@@ -820,7 +821,7 @@ def corr_scoring(
             arr=template,
             rotation_matrix=rotation,
             out=arr,
-            use_geometric_center=False,
+            use_geometric_center=True,
             order=interpolation_order,
         )
         norm_template(arr[unpadded_slice], template_mask, mask_sum)
@@ -830,7 +831,7 @@ def corr_scoring(
         backend.multiply(ft_target, ft_temp, out=ft_temp)
         irfftn(ft_temp, arr)
 
-        norm_func_numerator(arr, numerator2, out=arr)
+        norm_func_numerator(arr, numerator, out=arr)
         norm_func_denominator(arr, inv_denominator, out=arr)
 
         callback_func(
@@ -854,8 +855,6 @@ def flc_scoring(
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
     rotations: NDArray,
-    real_dtype: type,
-    complex_dtype: type,
     callback_class: CallbackClass,
     callback_class_args: Dict,
     interpolation_order: int,
@@ -887,6 +886,8 @@ def flc_scoring(
     .. [2]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
             and F. Förster, J. Struct. Biol. 178, 177 (2012).
     """
+    real_dtype, complex_dtype = backend._float_dtype, backend._complex_dtype
+
     callback = callback_class
     if callback_class is not None and isinstance(callback_class, type):
         callback = callback_class(**callback_class_args)
@@ -930,7 +931,7 @@ def flc_scoring(
             rotation_matrix=rotation,
             out=arr,
             out_mask=temp,
-            use_geometric_center=False,
+            use_geometric_center=True,
             order=interpolation_order,
         )
         # Given the amount of FFTs, might aswell normalize properly
@@ -963,7 +964,8 @@ def flc_scoring(
         backend.multiply(ft_target, ft_temp, out=ft_temp)
         irfftn(ft_temp, arr)
 
-        tol = tol = 1e3 * eps * backend.max(backend.abs(temp))
+        tol = eps
+        # tol = 1e3 * eps * backend.max(backend.abs(temp))
         nonzero_indices = temp > tol
         backend.fill(temp2, 0)
         temp2[nonzero_indices] = arr[nonzero_indices] / temp[nonzero_indices]
@@ -989,8 +991,6 @@ def flc_scoring2(
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
     rotations: NDArray,
-    real_dtype: type,
-    complex_dtype: type,
     callback_class: CallbackClass,
     callback_class_args: Dict,
     interpolation_order: int,
@@ -1022,6 +1022,7 @@ def flc_scoring2(
     .. [2]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
             and F. Förster, J. Struct. Biol. 178, 177 (2012).
     """
+    real_dtype, complex_dtype = backend._float_dtype, backend._complex_dtype
     callback = callback_class
     if callback_class is not None and isinstance(callback_class, type):
         callback = callback_class(**callback_class_args)
@@ -1080,7 +1081,7 @@ def flc_scoring2(
             rotation_matrix=rotation,
             out=arr[squeeze],
             out_mask=temp[squeeze],
-            use_geometric_center=False,
+            use_geometric_center=True,
             order=interpolation_order,
         )
         # Given the amount of FFTs, might aswell normalize properly
@@ -1138,8 +1139,6 @@ def mcc_scoring(
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
     rotations: NDArray,
-    real_dtype: type,
-    complex_dtype: type,
     callback_class: CallbackClass,
     callback_class_args: type,
     interpolation_order: int,
@@ -1176,6 +1175,7 @@ def mcc_scoring(
     --------
     :py:class:`tme.matching_optimization.MaskedCrossCorrelation`
     """
+    real_dtype, complex_dtype = backend._float_dtype, backend._complex_dtype
     callback = callback_class
     if callback_class is not None and isinstance(callback_class, type):
         callback = callback_class(**callback_class_args)
@@ -1229,7 +1229,7 @@ def mcc_scoring(
             rotation_matrix=rotation,
             out=template_rot,
             out_mask=temp,
-            use_geometric_center=False,
+            use_geometric_center=True,
             order=interpolation_order,
         )
 
@@ -1314,15 +1314,13 @@ def _setup_template_filter_apply_target_filter(
     filter_template = isinstance(matching_data.template_filter, Compose)
     filter_target = isinstance(matching_data.target_filter, Compose)
 
-    template_filter = backend.full(
-        shape=(1,), fill_value=1, dtype=backend._default_dtype
-    )
+    template_filter = backend.full(shape=(1,), fill_value=1, dtype=backend._float_dtype)
 
     if not filter_template and not filter_target:
         return template_filter
 
     target_temp = backend.astype(
-        backend.topleft_pad(matching_data.target, fast_shape), backend._default_dtype
+        backend.topleft_pad(matching_data.target, fast_shape), backend._float_dtype
     )
     target_temp_ft = backend.preallocate_array(fast_ft_shape, backend._complex_dtype)
     rfftn(target_temp, target_temp_ft)
@@ -1391,8 +1389,7 @@ def scan(
     **kwargs,
 ) -> Tuple:
     """
-    Perform template matching between target and template and sample
-    different rotations of template.
+    Perform template matching
 
     Parameters
     ----------
@@ -1424,17 +1421,31 @@ def scan(
     -------
     Tuple
         The merged results from callback_class if provided otherwise None.
+
+    Examples
+    --------
+    Schematically, using :py:meth:`scan` is similar to :py:meth:`scan_subsets`,
+    with the distinction that the objects contained in ``matching_data`` are not
+    split and the search is only parallelized over angles.
+    Assuming you have followed the example in :py:meth:`scan_subsets`, :py:meth:`scan`
+    can be invoked like so
+
+    >>> from tme.matching_exhaustive import scan
+    >>> results = scan(
+    >>>    matching_data = matching_data,
+    >>>    matching_score = matching_score,
+    >>>    matching_setup = matching_setup,
+    >>>    callback_class = callback_class,
+    >>>    callback_class_args = callback_class_args,
+    >>> )
+
     """
     matching_data.to_backend()
     shape_diff = backend.subtract(
         matching_data._output_target_shape, matching_data._output_template_shape
     )
-    shape_diff = backend.multiply(
-        shape_diff,
-        backend.to_backend_array(
-            [0 if x != 0 else 1 for x in matching_data._batch_mask]
-        ),
-    )
+    shape_diff = backend.multiply(shape_diff, 1 - matching_data._batch_mask)
+
     if backend.sum(shape_diff < 0) and not pad_fourier:
         warnings.warn(
             "Target is larger than template and Fourier padding is turned off."
@@ -1449,8 +1460,8 @@ def scan(
     rfftn, irfftn = backend.build_fft(
         fast_shape=fast_shape,
         fast_ft_shape=fast_ft_shape,
-        real_dtype=matching_data._default_dtype,
-        complex_dtype=matching_data._complex_dtype,
+        real_dtype=backend._float_dtype,
+        complex_dtype=backend._complex_dtype,
         fftargs=fftargs,
     )
 
@@ -1471,8 +1482,6 @@ def scan(
         target_mask=matching_data.target_mask,
         fast_shape=fast_shape,
         fast_ft_shape=fast_ft_shape,
-        real_dtype=matching_data._default_dtype,
-        complex_dtype=matching_data._complex_dtype,
         callback_class=callback_class,
         callback_class_args=callback_class_args,
         **kwargs,
@@ -1480,7 +1489,7 @@ def scan(
     rfftn, irfftn = None, None
 
     template_filter = backend.to_backend_array(template_filter)
-    template_filter = backend.astype(template_filter, backend._default_dtype)
+    template_filter = backend.astype(template_filter, backend._float_dtype)
     template_filter_buffer = backend.arr_to_sharedarr(
         arr=template_filter,
         shared_memory_handler=kwargs.get("shared_memory_handler", None),
@@ -1515,9 +1524,9 @@ def scan(
         callback_classes = [
             class_name(
                 score_space_shape=fast_shape,
-                score_space_dtype=matching_data._default_dtype,
+                score_space_dtype=backend._float_dtype,
                 shared_memory_handler=kwargs.get("shared_memory_handler", None),
-                rotation_space_dtype=backend._default_dtype_int,
+                rotation_space_dtype=backend._int_dtype,
                 **callback_class_args,
             )
             for class_name in callback_classes
@@ -1574,10 +1583,13 @@ def scan(
 
     merged_callback = None
     if callback_class is not None:
+        score_indices = None
+        if hasattr(matching_data, "indices"):
+            score_indices = matching_data.indices
         merged_callback = callback_class.merge(
             callbacks,
             **callback_class_args,
-            score_indices=matching_data.indices,
+            score_indices=score_indices,
             inner_merge=True,
         )
 
@@ -1600,14 +1612,14 @@ def scan_subsets(
     **kwargs,
 ) -> Tuple:
     """
-    Wrapper around :py:meth:`scan` that supports template matching on splits
-    of template and target.
+    Wrapper around :py:meth:`scan` that supports matching on splits
+    of ``matching_data``.
 
     Parameters
     ----------
-    matching_data : MatchingData
-        Template matching data.
-    matching_func : type
+    matching_data : :py:class:`tme.matching_data.MatchingData`
+        MatchingData instance containing relevant data.
+    matching_setup : type
         Function pointer to setup function.
     matching_score : type
         Function pointer to scoring function.
@@ -1616,11 +1628,15 @@ def scan_subsets(
     callback_class_args : dict, optional
         Arguments passed to the callback_class. Default is an empty dictionary.
     job_schedule : tuple of int, optional
-        Schedule of jobs. Default is (1, 1).
+        Job scheduling scheme, default is (1, 1). First value corresponds
+        to the number of splits that are processed in parallel, the second
+        to the number of angles evaluated in parallel on each split.
     target_splits : dict, optional
-        Splits for target. Default is an empty dictionary, i.e. no splits
+        Splits for target. Default is an empty dictionary, i.e. no splits.
+        See :py:meth:`tme.matching_utils.compute_parallelization_schedule`.
     template_splits : dict, optional
         Splits for template. Default is an empty dictionary, i.e. no splits.
+        See :py:meth:`tme.matching_utils.compute_parallelization_schedule`.
     pad_target_edges : bool, optional
         Whether to pad the target boundaries by half the template shape
         along each axis.
@@ -1642,6 +1658,64 @@ def scan_subsets(
     -------
     Tuple
         The merged results from callback_class if provided otherwise None.
+
+    Examples
+    --------
+    All data relevant to template matching will be contained in ``matching_data``, which
+    is a :py:class:`tme.matching_data.MatchingData` instance and can be created like so
+
+    >>> import numpy as np
+    >>> from tme.matching_data import MatchingData
+    >>> from tme.matching_utils import get_rotation_matrices
+    >>> target = np.random.rand(50,40,60)
+    >>> template = target[15:25, 10:20, 30:40]
+    >>> matching_data = MatchingData(target, template)
+    >>> matching_data.rotations = get_rotation_matrices(
+    >>>    angular_sampling = 60, dim = target.ndim
+    >>> )
+
+    The template matching procedure is determined by ``matching_setup`` and
+    ``matching_score``, which are unique to each score. In the following,
+    we will be using the `FLCSphericalMask` score, which is composed of
+    :py:meth:`flcSphericalMask_setup` and :py:meth:`corr_scoring`
+
+    >>> from tme.matching_exhaustive import MATCHING_EXHAUSTIVE_REGISTER
+    >>> funcs = MATCHING_EXHAUSTIVE_REGISTER.get("FLCSphericalMask")
+    >>> matching_setup, matching_score = funcs
+
+    Computed scores are flexibly analyzed by being passed through an analyzer. In the
+    following, we will use :py:class:`tme.analyzer.MaxScoreOverRotations` to
+    aggregate sores over rotations
+
+    >>> from tme.analyzer import MaxScoreOverRotations
+    >>> callback_class = MaxScoreOverRotations
+    >>> callback_class_args = {"score_threshold" : 0}
+
+    In case the entire template matching problem does not fit into memory, we can
+    determine the splitting procedure. In this case, we halv the first axis of the target
+    once. Splitting and ``job_schedule`` is typically computed using
+    :py:meth:tme.matching_utils.compute_parallelization_schedule`.
+
+    >>> target_splits = {0 : 1}
+
+    Finally, we can perform template matching. Note that the data contained in matching_data
+    will be destroyed when running the following
+
+    >>> from tme.matching_exhaustive import scan_subsets
+    >>> results = scan_subsets(
+    >>>    matching_data = matching_data,
+    >>>    matching_score = matching_score,
+    >>>    matching_setup = matching_setup,
+    >>>    callback_class = callback_class,
+    >>>    callback_class_args = callback_class_args,
+    >>>    target_splits = target_splits,
+    >>> )
+
+    The retuned ``results`` tuple contains the output of the chosen analyzer.
+
+    See Also
+    --------
+    :py:meth:`tme.matching_utils.compute_parallelization_schedule`
     """
     target_splits = split_numpy_array_slices(
         matching_data._target.shape, splits=target_splits

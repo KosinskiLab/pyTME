@@ -111,9 +111,7 @@ class _MatchDensityToDensity(ABC):
         self.target_mask = matching_data.target_mask
 
         self.template = matching_data.template
-        self.template_rot = backend.preallocate_array(
-            fast_shape, backend._default_dtype
-        )
+        self.template_rot = backend.preallocate_array(fast_shape, backend._float_dtype)
 
         self.template_mask, self.template_mask_rot = 1, 1
         rotate_mask = False if matching_data.template_mask is None else rotate_mask
@@ -616,9 +614,7 @@ class CrossCorrelation(_MatchCoordinatesToDensity):
         """Returns the score of the current configuration."""
         score = np.dot(
             self.target_density[
-                tuple(
-                    self.template_coordinates_rotated[:, self.in_volume].astype(int)
-                )
+                tuple(self.template_coordinates_rotated[:, self.in_volume].astype(int))
             ],
             self.template_weights[self.in_volume],
         )
@@ -682,12 +678,8 @@ class NormalizedCrossCorrelation(CrossCorrelation):
             self.template_mask_coordinates_rotated[:, self.in_volume_mask], int
         )
         target_weight = self.target_density[tuple(target_coordinates)]
-        ex2 = backend.divide(
-            backend.sum(backend.square(target_weight)), n_observations
-        )
-        e2x = backend.square(
-            backend.divide(backend.sum(target_weight), n_observations)
-        )
+        ex2 = backend.divide(backend.sum(backend.square(target_weight)), n_observations)
+        e2x = backend.square(backend.divide(backend.sum(target_weight), n_observations))
 
         denominator = backend.maximum(backend.subtract(ex2, e2x), 0.0)
         denominator = backend.sqrt(denominator)
@@ -695,6 +687,7 @@ class NormalizedCrossCorrelation(CrossCorrelation):
         self.denominator = denominator
 
         return super().__call__()
+
 
 class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
     """
@@ -1191,7 +1184,7 @@ def optimize_match(
             np.eye(len(bounds)), np.min(bounds, axis=1), np.max(bounds, axis=1)
         )
 
-    initial_score = score_object.score(x = np.zeros(2 * ndim))
+    initial_score = score_object.score(x=np.zeros(2 * ndim))
     if optimization_method == "basinhopping":
         result = basinhopping(
             x0=np.zeros(2 * ndim),
@@ -1212,7 +1205,7 @@ def optimize_match(
             fun=score_object.score,
             bounds=bounds,
             constraints=linear_constraint,
-            options = {"maxiter" : maxiter}
+            options={"maxiter": maxiter},
         )
     print(f"Niter: {result.nit}, success : {result.success} ({result.message}).")
     print(f"Initial score: {initial_score} - Refined score: {result.fun}")
