@@ -8,6 +8,7 @@
 import re
 from collections import deque
 from dataclasses import dataclass
+from string import ascii_lowercase
 from typing import List, Tuple, Dict
 
 import numpy as np
@@ -62,6 +63,29 @@ class Orientations:
 
     #: Return a numpy array with additional orientation details (n, ).
     details: np.ndarray
+
+    def __post_init__(self):
+        self.translations = np.array(self.translations).astype(np.float32)
+        self.rotations = np.array(self.rotations).astype(np.float32)
+        self.scores = np.array(self.scores).astype(np.float32)
+        self.details = np.array(self.details).astype(np.float32)
+        n_orientations = set(
+            [
+                self.translations.shape[0],
+                self.rotations.shape[0],
+                self.scores.shape[0],
+                self.details.shape[0],
+            ]
+        )
+        if len(n_orientations) != 1:
+            raise ValueError(
+                "The first dimension of all parameters needs to be of equal length."
+            )
+        if self.translations.ndim != 2:
+            raise ValueError("Expected two dimensional translations parameter.")
+
+        if self.rotations.ndim != 2:
+            raise ValueError("Expected two dimensional rotations parameter.")
 
     def __iter__(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -161,8 +185,14 @@ class Orientations:
         The file is saved with a header specifying each column: z, y, x, euler_z,
         euler_y, euler_x, score, detail. Each row in the file corresponds to an orientation.
         """
+        naming = ascii_lowercase[::-1]
         header = "\t".join(
-            ["z", "y", "x", "euler_z", "euler_y", "euler_x", "score", "detail"]
+            [
+                *list(naming[: self.translations.shape[1]]),
+                *[f"euler_{x}" for x in naming[: self.rotations.shape[1]]],
+                "score",
+                "detail",
+            ]
         )
         with open(filename, mode="w", encoding="utf-8") as ofile:
             _ = ofile.write(f"{header}\n")
@@ -199,9 +229,6 @@ class Orientations:
         References
         ----------
         .. [1]  https://wiki.dynamo.biozentrum.unibas.ch/w/index.php/Table
-
-        The file is saved with a standard header used in Dynamo STAR files.
-        Each row in the file corresponds to an orientation.
         """
         with open(filename, mode="w", encoding="utf-8") as ofile:
             for index, (translation, rotation, score, detail) in enumerate(self):
@@ -363,10 +390,12 @@ class Orientations:
             +---------------+----------------------------------------------------+
             | text          | pyTME's standard tab-separated orientations file   |
             +---------------+----------------------------------------------------+
-            | relion        | Relion 4+ style STAR file                          |
+            | relion        | Creates a STAR file of orientations                |
+            +---------------+----------------------------------------------------+
+            | dynamo        | Creates a dynamo table                             |
             +---------------+----------------------------------------------------+
 
-        **kwargs : dict
+        **kwargs
             Additional keyword arguments specific to the file format.
 
         Returns
@@ -379,11 +408,18 @@ class Orientations:
         ValueError
             If an unsupported file format is specified.
         """
-        mapping = {"text": cls._from_text, "relion": cls._from_relion_star}
+        mapping = {
+            "text": cls._from_text,
+            "relion": cls._from_relion_star,
+            "tbl": cls._from_tbl,
+        }
         if file_format is None:
             file_format = "text"
+
             if filename.lower().endswith(".star"):
                 file_format = "relion"
+            elif filename.lower().endswith(".tbl"):
+                file_format = "tbl"
 
         func = mapping.get(file_format, None)
         if func is None:
@@ -424,25 +460,28 @@ class Orientations:
         """
         with open(filename, mode="r", encoding="utf-8") as infile:
             data = [x.strip().split("\t") for x in infile.read().split("\n")]
-            _ = data.pop(0)
 
+        header = data.pop(0)
         translation, rotation, score, detail = [], [], [], []
         for candidate in data:
             if len(candidate) <= 1:
                 continue
-            if len(candidate) != 8:
-                candidate.append(-1)
 
-            candidate = [float(x) for x in candidate]
-            translation.append((candidate[0], candidate[1], candidate[2]))
-            rotation.append((candidate[3], candidate[4], candidate[5]))
-            score.append(candidate[6])
-            detail.append(candidate[7])
+            translation.append(
+                tuple(
+                    candidate[i] for i, x in enumerate(header) if x in ascii_lowercase
+                )
+            )
+            rotation.append(
+                tuple(candidate[i] for i, x in enumerate(header) if "euler" in x)
+            )
+            score.append(candidate[-2])
+            detail.append(candidate[-1])
 
-        translation = np.vstack(translation).astype(int)
-        rotation = np.vstack(rotation).astype(float)
-        score = np.array(score).astype(float)
-        detail = np.array(detail).astype(float)
+        translation = np.vstack(translation)
+        rotation = np.vstack(rotation)
+        score = np.array(score)
+        detail = np.array(detail)
 
         return translation, rotation, score, detail
 
@@ -497,20 +536,15 @@ class Orientations:
         ret = cls._parse_star(filename=filename, delimiter=delimiter)
         ret = ret["data_particles"]
 
-        translation = (
-            np.vstack(
-                (ret["_rlnCoordinateZ"], ret["_rlnCoordinateY"], ret["_rlnCoordinateX"])
-            )
-            .astype(np.float32)
-            .astype(int)
-            .T
+        translation = np.vstack(
+            (ret["_rlnCoordinateZ"], ret["_rlnCoordinateY"], ret["_rlnCoordinateX"])
         )
+        translation = translation.astype(np.float32).T
 
-        rotation = (
-            np.vstack((ret["_rlnAngleRot"], ret["_rlnAngleTilt"], ret["_rlnAnglePsi"]))
-            .astype(np.float32)
-            .T
+        rotation = np.vstack(
+            (ret["_rlnAngleRot"], ret["_rlnAngleTilt"], ret["_rlnAnglePsi"])
         )
+        rotation = rotation.astype(np.float32).T
 
         rotation = Rotation.from_euler("xyx", rotation, degrees=True)
         rotation = rotation.as_euler(seq="zyx", degrees=True)
@@ -518,6 +552,33 @@ class Orientations:
         detail = np.ones(translation.shape[0]) * 1
 
         return translation, rotation, score, detail
+
+    @staticmethod
+    def _from_tbl(
+        filename: str, **kwargs
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        with open(filename, mode="r", encoding="utf-8") as infile:
+            data = infile.read().split("\n")
+        data = [x.strip().split(" ") for x in data if len(x.strip())]
+
+        if len(data[0]) != 38:
+            raise ValueError(
+                "Expected tbl file to have 38 columns generated by _to_tbl."
+            )
+
+        translations, rotations, scores, details = [], [], [], []
+        for peak in data:
+            rotation = Rotation.from_euler(
+                "xyx", (peak[6], peak[7], peak[8]), degrees=True
+            )
+            rotations.append(rotation.as_euler(seq="zyx", degrees=True))
+            scores.append(peak[9])
+            details.append(-1)
+            translations.append((peak[25], peak[24], peak[23]))
+
+        translations, rotations = np.array(translations), np.array(rotations)
+        scores, details = np.array(scores), np.array(details)
+        return translations, rotations, scores, details
 
     def get_extraction_slices(
         self,
@@ -553,25 +614,25 @@ class Orientations:
         SystemExit
             If no peak remains after filtering, indicating an error.
         """
-        left_pad = np.divide(extraction_shape, 2).astype(int)
-        right_pad = np.add(left_pad, np.mod(extraction_shape, 2)).astype(int)
+        right_pad = np.divide(extraction_shape, 2).astype(int)
+        left_pad = np.add(right_pad, np.mod(extraction_shape, 2)).astype(int)
 
         peaks = self.translations.astype(int)
-        obs_start = np.subtract(peaks, left_pad)
-        obs_stop = np.add(peaks, right_pad)
+        obs_beg = np.subtract(peaks, left_pad)
+        obs_end = np.add(peaks, right_pad)
 
-        cand_start = np.subtract(np.maximum(obs_start, 0), obs_start)
-        cand_stop = np.subtract(obs_stop, np.minimum(obs_stop, target_shape))
-        cand_stop = np.subtract(extraction_shape, cand_stop)
-        obs_start = np.maximum(obs_start, 0)
-        obs_stop = np.minimum(obs_stop, target_shape)
+        obs_beg = np.maximum(obs_beg, 0)
+        obs_end = np.minimum(obs_end, target_shape)
+
+        cand_beg = left_pad - np.subtract(peaks, obs_beg)
+        cand_end = left_pad + np.subtract(obs_end, peaks)
 
         subset = self
         if drop_out_of_box:
-            stops = np.subtract(cand_stop, extraction_shape)
+            stops = np.subtract(cand_end, extraction_shape)
             keep_peaks = (
                 np.sum(
-                    np.multiply(cand_start == 0, stops == 0),
+                    np.multiply(cand_beg == 0, stops == 0),
                     axis=1,
                 )
                 == peaks.shape[1]
@@ -584,25 +645,24 @@ class Orientations:
                     " Consider reducing min_distance, increase num_peaks or use"
                     " a different peak caller."
                 )
-                exit(-1)
 
-            cand_start = cand_start[keep_peaks,]
-            cand_stop = cand_stop[keep_peaks,]
-            obs_start = obs_start[keep_peaks,]
-            obs_stop = obs_stop[keep_peaks,]
+            cand_beg = cand_beg[keep_peaks,]
+            cand_end = cand_end[keep_peaks,]
+            obs_beg = obs_beg[keep_peaks,]
+            obs_end = obs_end[keep_peaks,]
             subset = self[keep_peaks]
 
-        cand_start, cand_stop = cand_start.astype(int), cand_stop.astype(int)
-        obs_start, obs_stop = obs_start.astype(int), obs_stop.astype(int)
+        cand_beg, cand_end = cand_beg.astype(int), cand_end.astype(int)
+        obs_beg, obs_end = obs_beg.astype(int), obs_end.astype(int)
 
         candidate_slices = [
             tuple(slice(s, e) for s, e in zip(start_row, stop_row))
-            for start_row, stop_row in zip(cand_start, cand_stop)
+            for start_row, stop_row in zip(cand_beg, cand_end)
         ]
 
         observation_slices = [
             tuple(slice(s, e) for s, e in zip(start_row, stop_row))
-            for start_row, stop_row in zip(obs_start, obs_stop)
+            for start_row, stop_row in zip(obs_beg, obs_end)
         ]
 
         if return_orientations:

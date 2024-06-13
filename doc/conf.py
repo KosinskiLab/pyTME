@@ -24,6 +24,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "matplotlib.sphinxext.plot_directive",
 ]
+
 copybutton_prompt_text = ">>> "
 copybutton_prompt_is_regexp = False
 
@@ -58,13 +59,12 @@ html_context = {
     "github_version": "master",
     "doc_path": "docs",
 }
-# html_logo = "_static/index_api.svg"
-# html_favicon = "_static/index_api.svg"
+
 html_theme_options = {
     # "logo": {
-    # "text": "pytme",
-    # "image_light": "_static/index_api.svg",
-    # "image_dark": "_static/index_api.svg",
+    #     "text": "pytme",
+    #     "image_light": "_static/index_api.svg",
+    #     "image_dark": "_static/index_api.svg",
     # },
     "header_links_before_dropdown": 4,
     "icon_links": [
