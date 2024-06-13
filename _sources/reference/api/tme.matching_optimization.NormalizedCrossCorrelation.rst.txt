@@ -25,7 +25,7 @@
            NormalizedCrossCorrelation.map_coordinates_to_array
          
          
-           NormalizedCrossCorrelation.rigid_transform
+           NormalizedCrossCorrelation.rotate_array
          
          
            NormalizedCrossCorrelation.score

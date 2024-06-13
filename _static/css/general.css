@@ -1,22 +1,3 @@
-/*.bd-sidebar .nav li > a {
-    font-size: 90%;
-}
-*/
-/*.bd-sidebar .nav li > a > code {
-    white-space: nowrap;
-}
-
-.bd-sidebar .nav li > a > code:before {
-    content:'(';
-}
-
-.bd-sidebar .nav li > a > code:after {
-    content:')';
-}*/
-
-/* Index page cards */
-/*Source : https://raw.githubusercontent.com/numpy/numpy/main/doc/source/_static/numpy.css*/
-
 .sd-card {
   background: #fff;
   border-radius: 0;

@@ -25,7 +25,7 @@
            LaplaceCrossCorrelation.map_coordinates_to_array
          
          
-           LaplaceCrossCorrelation.rigid_transform
+           LaplaceCrossCorrelation.rotate_array
          
          
            LaplaceCrossCorrelation.score

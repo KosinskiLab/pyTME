@@ -1,6 +1,0 @@
-CrossCorrelation.rigid\_transform
-==========================================================
-
-.. currentmodule:: tme.matching_optimization
-
-.. automethod:: CrossCorrelation.rigid_transform

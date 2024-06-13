@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=3fd87a63" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=63b7f29f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
@@ -922,7 +922,7 @@ document.write(`
 <h1>optimize_match<a class="headerlink" href="#optimize-match" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="tme.matching_optimization.optimize_match">
-<span class="sig-name descname"><span class="pre">optimize_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds_translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'basinhopping'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/matching_optimization.html#optimize_match"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.matching_optimization.optimize_match" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">optimize_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds_translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'basinhopping'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/matching_optimization.html#optimize_match"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.matching_optimization.optimize_match" title="Link to this definition">#</a></dt>
 <dd><p>Find the translation and rotation optimizing the score returned by <cite>score_object</cite>
 with respect to provided bounds.</p>
 <dl class="field-list">
@@ -960,6 +960,8 @@ decent performance, short runtime.</p></td>
 </dd>
 <dt><strong>maxiter</strong><span class="classifier">int, optional</span></dt><dd><p>The maximum number of iterations. Default is 500. Not considered for
 <cite>optimization_method</cite> ‘minimize’.</p>
+</dd>
+<dt><strong>x0</strong><span class="classifier">tuple of floats, optional</span></dt><dd><p>Initial values for the optimizer, defaults to zero.</p>
 </dd>
 </dl>
 </dd>

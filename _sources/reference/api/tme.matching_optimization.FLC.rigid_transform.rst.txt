@@ -1,6 +1,0 @@
-FLC.rigid\_transform
-=============================================
-
-.. currentmodule:: tme.matching_optimization
-
-.. automethod:: FLC.rigid_transform

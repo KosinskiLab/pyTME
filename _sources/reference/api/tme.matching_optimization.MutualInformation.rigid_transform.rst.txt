@@ -1,6 +1,0 @@
-MutualInformation.rigid\_transform
-===========================================================
-
-.. currentmodule:: tme.matching_optimization
-
-.. automethod:: MutualInformation.rigid_transform

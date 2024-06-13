@@ -25,7 +25,7 @@
            MutualInformation.map_coordinates_to_array
          
          
-           MutualInformation.rigid_transform
+           MutualInformation.rotate_array
          
          
            MutualInformation.score
