@@ -40,12 +40,12 @@ from .backends import NumpyFFTWBackend
 
 class Density:
     """
-    Contains electron density data and implements operations on it.
+    Abstract representation of N-dimensional densities.
 
     Parameters
     ----------
     data : NDArray
-        Electron density data.
+        Array of data values.
     origin : NDArray, optional
         Origin of the coordinate system. Defaults to zero.
     sampling_rate : NDArray, optional
@@ -267,9 +267,9 @@ class Density:
             # nx := column; ny := row; nz := section
             start = np.array(
                 [
-                    mrc.header["nxstart"],
-                    mrc.header["nystart"],
                     mrc.header["nzstart"],
+                    mrc.header["nystart"],
+                    mrc.header["nxstart"],
                 ]
             )
 
@@ -293,7 +293,7 @@ class Density:
             ).view(("<f4", 3))
             sampling_rate = np.array(sampling_rate)[::-1]
 
-            if not np.allclose(origin, start):
+            if np.allclose(origin, 0) and not np.allclose(start, 0):
                 origin = np.multiply(start, sampling_rate)
 
             extended_header = mrc.header.nsymbt
