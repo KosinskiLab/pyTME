@@ -267,9 +267,9 @@ class Density:
             # nx := column; ny := row; nz := section
             start = np.array(
                 [
-                    int(mrc.header["nxstart"]),
-                    int(mrc.header["nystart"]),
-                    int(mrc.header["nzstart"]),
+                    mrc.header["nxstart"],
+                    mrc.header["nystart"],
+                    mrc.header["nzstart"],
                 ]
             )
 
@@ -291,17 +291,9 @@ class Density:
             sampling_rate = mrc.voxel_size.astype(
                 [("x", "<f4"), ("y", "<f4"), ("z", "<f4")]
             ).view(("<f4", 3))
-            sampling_rate = sampling_rate[::-1]
-            sampling_rate = np.array(sampling_rate)
+            sampling_rate = np.array(sampling_rate)[::-1]
 
-            if np.all(origin == start):
-                pass
-            elif np.all(origin == 0) and not np.all(start == 0):
-                origin = np.multiply(start, sampling_rate)
-            elif np.all(
-                np.abs(origin.astype(int))
-                != np.abs((start * sampling_rate).astype(int))
-            ) and not np.all(start == 0):
+            if not np.allclose(origin, start):
                 origin = np.multiply(start, sampling_rate)
 
             extended_header = mrc.header.nsymbt
@@ -878,7 +870,7 @@ class Density:
         compression = "gzip" if gzip else None
         with mrcfile.new(filename, overwrite=True, compression=compression) as mrc:
             mrc.set_data(self.data.astype("float32"))
-            mrc.header.nzstart, mrc.header.nystart, mrc.header.nxstart = np.ceil(
+            mrc.header.nzstart, mrc.header.nystart, mrc.header.nxstart = np.rint(
                 np.divide(self.origin, self.sampling_rate)
             )
             # mrcfile library expects origin to be in xyz format
@@ -1529,11 +1521,10 @@ class Density:
 
         Returns
         -------
-        Density
-            A copy of the class instance whose data center of mass is in the
-            center of the data array.
+        :py:class:`Density`
+            A centered copy of the current class instance.
         NDArray
-            The coordinate translation.
+            The offset between array center and center of mass.
 
         See Also
         --------
@@ -1550,44 +1541,32 @@ class Density:
 
         >>> import numpy as np
         >>> from tme import Density
-        >>> dens = Density(np.ones((5,5)))
+        >>> dens = Density(np.ones((5,5,5)))
         >>> centered_dens, translation = dens.centered(0)
         >>> translation
-        array([-0.5, -0.5])
+        array([0., 0., 0.])
 
         :py:meth:`Density.centered` extended the :py:attr:`Density.data` attribute
         of the current :py:class:`Density` instance and modified
         :py:attr:`Density.origin` accordingly.
 
         >>> centered_dens
-        Origin: (-1.0, -1.0), sampling_rate: (1, 1), Shape: (8, 8)
+        Origin: (-2.0, -2.0, -2.0), sampling_rate: (1, 1, 1), Shape: (9, 9, 9)
 
         :py:meth:`Density.centered` achieves centering via zero-padding and
-        transforming the internal :py:attr:`Density.data` attribute:
-
-        >>> centered_dens.data
-        array([[0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  ],
-               [0.  , 0.25, 0.5 , 0.5 , 0.5 , 0.5 , 0.25, 0.  ],
-               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],
-               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],
-               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],
-               [0.  , 0.5 , 1.  , 1.  , 1.  , 1.  , 0.5 , 0.  ],
-               [0.  , 0.25, 0.5 , 0.5 , 0.5 , 0.5 , 0.25, 0.  ],
-               [0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  ]])
-
-        `centered_dens` is sufficiently large to represent all rotations that
-        could be applied to the :py:attr:`Density.data` attribute. Lets look
-        at a random rotation obtained from
+        rigid-transform of the internal :py:attr:`Density.data` attribute.
+        `centered_dens` is sufficiently large to represent all rotations of the
+        :py:attr:`Density.data` attribute, such as ones obtained from
         :py:meth:`tme.matching_utils.get_rotation_matrices`.
 
         >>> from tme.matching_utils import get_rotation_matrices
-        >>> rotation_matrix = get_rotation_matrices(dim = 2 ,angular_sampling = 10)[0]
+        >>> rotation_matrix = get_rotation_matrices(dim = 3 ,angular_sampling = 10)[0]
         >>> rotated_centered_dens = centered_dens.rigid_transform(
         >>>     rotation_matrix = rotation_matrix,
         >>>     order = None
         >>> )
         >>> print(centered_dens.data.sum(), rotated_centered_dens.data.sum())
-        25.000000000000007 25.000000000000007
+        125.0 125.0
 
         """
         ret = self.copy()
@@ -1596,7 +1575,7 @@ class Density:
         ret.adjust_box(box)
 
         new_shape = np.maximum(ret.shape, self.shape)
-        new_shape = np.add(new_shape, np.mod(new_shape, 2))
+        new_shape = np.add(new_shape, 1 - np.mod(new_shape, 2))
         ret.pad(new_shape)
 
         center = self.center_of_mass(ret.data, cutoff)
@@ -1608,9 +1587,9 @@ class Density:
             use_geometric_center=False,
             order=1,
         )
-        offset = np.subtract(center, self.center_of_mass(ret.data, cutoff))
 
-        return ret, offset
+        shift = np.subtract(center, self.center_of_mass(ret.data, cutoff))
+        return ret, shift
 
     @classmethod
     def rotate_array(
@@ -1733,31 +1712,45 @@ class Density:
         Parameters
         ----------
         rotation_matrix : NDArray
-            Rotation matrix to apply to the `Density` instance.
+            Rotation matrix to apply.
         translation : NDArray
-            Translation to apply to the `Density` instance.
+            Translation to apply.
         order : int, optional
-            Order of spline interpolation.
+            Interpolation order to use. Default is 3, has to be in range 0-5.
         use_geometric_center : bool, optional
-            Whether to use geometric or coordinate center. If False,
-            class instance should be centered using :py:meth:`Density.centered`.
+            Use geometric or mass center as rotation center.
 
         Returns
         -------
         Density
-            The transformed instance of :py:class:`tme.density.Density`.
+            The transformed instance of :py:class:`Density`.
 
         Examples
         --------
+        Define the :py:class:`Density` instance
+
         >>> import numpy as np
-        >>> rotation_matrix = np.eye(3)
-        >>> rotation_matrix[0] = -1
-        >>> density.rotate(rotation_matrix = rotation_matrix)
+        >>> from tme import Density
+        >>> dens = Density(np.arange(9).reshape(3,3).astype(np.float32))
+        >>> dens, translation = dens.centered(0)
+
+        and apply the rotation, in this case a mirror around the z-axis
+
+        >>> rotation_matrix = np.eye(dens.data.ndim)
+        >>> rotation_matrix[0, 0] = -1
+        >>> dens_transform = dens.rigid_transform(rotation_matrix = rotation_matrix)
+        >>> dens_transform.data
+        array([[0.        , 0.        , 0.        , 0.        , 0.        ],
+               [0.5       , 3.0833333 , 3.5833333 , 3.3333333 , 0.        ],
+               [0.75      , 4.6666665 , 5.6666665 , 5.4166665 , 0.        ],
+               [0.25      , 1.6666666 , 2.6666667 , 2.9166667 , 0.        ],
+               [0.        , 0.08333334, 0.5833333 , 0.8333333 , 0.        ]],
+              dtype=float32)
 
         Notes
         -----
-        :py:meth:`Density.rigid_transform` that the internal data array is
-        sufficiently sized to accomodate the transform.
+        This function assumes the internal :py:attr:`Density.data` attribute is
+        sufficiently sized to hold the transformation.
 
         See Also
         --------
@@ -2155,8 +2148,7 @@ class Density:
         cutoff_target: float = 0,
         cutoff_template: float = 0,
         scoring_method: str = "NormalizedCrossCorrelation",
-        optimization_method: str = "basinhopping",
-        maxiter: int = 500,
+        **kwargs,
     ) -> Tuple["Density", NDArray, NDArray, NDArray]:
         """
         Aligns two :py:class:`Density` instances target and template and returns
@@ -2181,12 +2173,9 @@ class Density:
             The scoring method to use for alignment. See
             :py:class:`tme.matching_optimization.create_score_object` for available methods,
             by default "NormalizedCrossCorrelation".
-        optimization_method : str, optional
-            Optimizer that is used.
-            See :py:meth:`tme.matching_optimization.optimize_match`.
-        maxiter : int, optional
-            Maximum number of iterations for the optimizer.
-            See :py:meth:`tme.matching_optimization.optimize_match`.
+        kwargs : dict, optional
+            Optional keyword arguments passed to
+            :py:meth:`tme.matching_optimization.optimize_match`.
 
         Returns
         -------
@@ -2258,9 +2247,7 @@ class Density:
         )
 
         translation, rotation_matrix, score = optimize_match(
-            score_object=score_object,
-            optimization_method=optimization_method,
-            maxiter=maxiter,
+            score_object=score_object, **kwargs
         )
 
         translation += mass_center_difference

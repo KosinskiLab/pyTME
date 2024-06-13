@@ -611,6 +611,9 @@ class Structure:
 
         ret = ""
         for category, subdict in output_data.items():
+            if not len(subdict):
+                continue
+
             ret += "#\n"
             is_loop = isinstance(subdict[list(subdict.keys())[0]], list)
             if not is_loop:
@@ -775,6 +778,7 @@ class Structure:
 
         origin : Tuple[float,]
             The origin of the coordinate system.
+
         Returns
         -------
         Tuple[NDArray, List[str], Tuple[int, ], float, Tuple[float,]]

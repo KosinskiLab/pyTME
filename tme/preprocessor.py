@@ -1191,6 +1191,9 @@ class Preprocessor:
         if tilt_angles is None:
             tilt_angles = np.arange(-start_tilt, stop_tilt + tilt_step, tilt_step)
 
+        shape = tuple(int(x) for x in shape)
+        opening_axis, tilt_axis = int(opening_axis), int(tilt_axis)
+
         weights = np.asarray(weights)
         weights = np.repeat(weights, tilt_angles.size // weights.size)
         plane = np.zeros((shape[opening_axis], shape[tilt_axis]), dtype=np.float32)

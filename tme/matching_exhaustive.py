@@ -7,7 +7,6 @@
 import os
 import sys
 import warnings
-from copy import deepcopy
 from itertools import product
 from typing import Callable, Tuple, Dict
 from functools import wraps
@@ -153,7 +152,7 @@ def cc_setup(
     )
 
     target_ft_tuple = (target_ft_out, fast_ft_shape, complex_dtype)
-    template_tuple = (template_out, template.shape, real_dtype)
+    template_tuple = (template_out, template.shape, template.dtype)
 
     inv_denominator_tuple = (inv_denominator_buffer, (1,), real_dtype)
     numerator_tuple = (numerator_buffer, (1,), real_dtype)
@@ -269,10 +268,10 @@ def corr_setup(
     template_mean = backend.divide(template_mean, n_observations)
     template_ssd = backend.sum(
         backend.square(
-            backend.multiply(backend.multiply(template, template_mean), template_mask)
+            backend.multiply(backend.subtract(template, template_mean), template_mask)
         )
     )
-    template_volume = np.prod(template.shape)
+    template_volume = np.prod(tuple(int(x) for x in template.shape))
     backend.multiply(template, template_mask, out=template)
 
     # Final numerator is score - numerator
@@ -307,7 +306,7 @@ def corr_setup(
         arr=numerator, shared_memory_handler=shared_memory_handler
     )
 
-    template_tuple = (template_buffer, deepcopy(template.shape), real_dtype)
+    template_tuple = (template_buffer, template.shape, template.dtype)
     target_ft_tuple = (target_ft_buffer, fast_ft_shape, complex_dtype)
 
     inv_denominator_tuple = (inv_denominator_buffer, fast_shape, real_dtype)
@@ -320,8 +319,8 @@ def corr_setup(
         "ft_target": target_ft_tuple,
         "inv_denominator": inv_denominator_tuple,
         "numerator": numerator_tuple,
-        "targetshape": deepcopy(target.shape),
-        "templateshape": deepcopy(template.shape),
+        "targetshape": target.shape,
+        "templateshape": template.shape,
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
         "callback_class": callback_class,
@@ -410,13 +409,11 @@ def flc_setup(
     --------
     :py:meth:`flc_scoring`
     """
-    real_dtype, complex_dtype = backend._float_dtype, backend._complex_dtype
-
     target_pad = backend.topleft_pad(target, fast_shape)
 
     # Target and squared target window sums
-    ft_target = backend.preallocate_array(fast_ft_shape, complex_dtype)
-    ft_target2 = backend.preallocate_array(fast_ft_shape, complex_dtype)
+    ft_target = backend.preallocate_array(fast_ft_shape, backend._complex_dtype)
+    ft_target2 = backend.preallocate_array(fast_ft_shape, backend._complex_dtype)
     rfftn(target_pad, ft_target)
     backend.square(target_pad, out=target_pad)
     rfftn(target_pad, ft_target2)
@@ -440,11 +437,15 @@ def flc_setup(
         arr=template_mask, shared_memory_handler=shared_memory_handler
     )
 
-    template_tuple = (template_buffer, template.shape, real_dtype)
-    template_mask_tuple = (template_mask_buffer, template_mask.shape, real_dtype)
+    template_tuple = (template_buffer, template.shape, template.dtype)
+    template_mask_tuple = (
+        template_mask_buffer,
+        template_mask.shape,
+        template_mask.dtype,
+    )
 
-    target_ft_tuple = (ft_target, fast_ft_shape, complex_dtype)
-    target_ft2_tuple = (ft_target2, fast_ft_shape, complex_dtype)
+    target_ft_tuple = (ft_target, fast_ft_shape, backend._complex_dtype)
+    target_ft2_tuple = (ft_target2, fast_ft_shape, backend._complex_dtype)
 
     ret = {
         "template": template_tuple,
@@ -568,8 +569,8 @@ def flcSphericalMask_setup(
         arr=numerator, shared_memory_handler=shared_memory_handler
     )
 
-    template_tuple = (template_buffer, template.shape, real_dtype)
-    template_mask_tuple = (template_mask_buffer, template.shape, real_dtype)
+    template_tuple = (template_buffer, template.shape, template.dtype)
+    template_mask_tuple = (template_mask_buffer, template.shape, template_mask.dtype)
     target_ft_tuple = (target_ft_buffer, fast_ft_shape, complex_dtype)
 
     inv_denominator_tuple = (inv_denominator_buffer, fast_shape, real_dtype)
@@ -668,8 +669,8 @@ def mcc_setup(
         arr=template_mask, shared_memory_handler=shared_memory_handler
     )
 
-    template_tuple = (template_buffer, template.shape, real_dtype)
-    template_mask_tuple = (template_mask_buffer, template.shape, real_dtype)
+    template_tuple = (template_buffer, template.shape, template.dtype)
+    template_mask_tuple = (template_mask_buffer, template.shape, template_mask.dtype)
 
     target_ft_tuple = (target_ft_buffer, fast_ft_shape, complex_dtype)
     target_ft2_tuple = (target_ft2_buffer, fast_ft_shape, complex_dtype)
@@ -778,16 +779,15 @@ def corr_scoring(
     norm_template, template_mask, mask_sum = False, 1, 1
     if "template_mask" in kwargs:
         norm_template = True
-        template_mask = backend.sharedarr_to_arr(
-            kwargs["template_mask"][0], template_shape, template_dtype
-        )
+        template_mask = backend.sharedarr_to_arr(*kwargs["template_mask"])
         mask_sum = backend.sum(template_mask)
         if backend.datatype_bytes(template_mask.dtype) == 2:
             norm_func = _normalize_under_mask_overflow_safe
-            mask_sum = backend.to_numpy_array(template_mask).astype(np.float32).sum()
+            mask_sum = backend.sum(
+                backend.astype(template_mask, backend._overflow_safe_dtype)
+            )
 
     norm_template = conditional_execute(norm_func, norm_template)
-
     norm_numerator = (backend.sum(numerator) != 0) & (backend.size(numerator) != 1)
     norm_func_numerator = conditional_execute(backend.subtract, norm_numerator)
 
@@ -1113,8 +1113,7 @@ def flc_scoring2(
         backend.multiply(ft_target, ft_temp[squeeze_fast_ft], out=ft_denom)
         irfftn(ft_denom, arr)
 
-        tol = tol = 1e3 * eps * backend.max(backend.abs(temp))
-        nonzero_indices = temp > tol
+        nonzero_indices = temp > eps
         backend.fill(temp2, 0)
         temp2[nonzero_indices] = arr[nonzero_indices] / temp[nonzero_indices]
 
@@ -1323,6 +1322,15 @@ def _setup_template_filter_apply_target_filter(
         backend.topleft_pad(matching_data.target, fast_shape), backend._float_dtype
     )
     target_temp_ft = backend.preallocate_array(fast_ft_shape, backend._complex_dtype)
+
+    filter_shape = backend.multiply(fast_ft_shape, 1 - matching_data._batch_mask)
+    filter_shape[filter_shape == 0] = 1
+    fast_shape = backend.multiply(fast_shape, 1 - matching_data._batch_mask)
+    fast_shape = fast_shape[fast_shape != 0]
+
+    fast_shape = tuple(int(x) for x in fast_shape)
+    filter_shape = tuple(int(x) for x in filter_shape)
+
     rfftn(target_temp, target_temp_ft)
     if isinstance(matching_data.template_filter, Compose):
         template_filter = matching_data.template_filter(
@@ -1330,9 +1338,11 @@ def _setup_template_filter_apply_target_filter(
             return_real_fourier=True,
             shape_is_real_fourier=False,
             data_rfft=target_temp_ft,
+            batch_dimension=matching_data._target_dims,
         )
         template_filter = template_filter["data"]
         template_filter[tuple(0 for _ in range(template_filter.ndim))] = 0
+        template_filter = backend.reshape(template_filter, filter_shape)
 
     if isinstance(matching_data.target_filter, Compose):
         target_filter = matching_data.target_filter(
@@ -1341,8 +1351,10 @@ def _setup_template_filter_apply_target_filter(
             shape_is_real_fourier=False,
             data_rfft=target_temp_ft,
             weight_type=None,
+            batch_dimension=matching_data._target_dims,
         )
         target_filter = target_filter["data"]
+        target_filter = backend.reshape(target_filter, filter_shape)
         backend.multiply(target_temp_ft, target_filter, out=target_temp_ft)
 
         irfftn(target_temp_ft, target_temp)
@@ -1389,7 +1401,7 @@ def scan(
     **kwargs,
 ) -> Tuple:
     """
-    Perform template matching
+    Perform template matching.
 
     Parameters
     ----------
@@ -1415,7 +1427,7 @@ def scan(
         How many jobs should be processed by a single callback_class instance,
         if one is provided.
     **kwargs : various
-        Additional arguments.
+        Additional keyword arguments.
 
     Returns
     -------
@@ -1449,7 +1461,7 @@ def scan(
     if backend.sum(shape_diff < 0) and not pad_fourier:
         warnings.warn(
             "Target is larger than template and Fourier padding is turned off."
-            " This can lead to shifted results. You can swap template and target, "
+            " This can lead to shifted results. You can swap template and target,"
             " zero-pad the target or turn off template centering."
         )
     fast_shape, fast_ft_shape, fourier_shift = matching_data.fourier_padding(
@@ -1694,12 +1706,12 @@ def scan_subsets(
     In case the entire template matching problem does not fit into memory, we can
     determine the splitting procedure. In this case, we halv the first axis of the target
     once. Splitting and ``job_schedule`` is typically computed using
-    :py:meth:tme.matching_utils.compute_parallelization_schedule`.
+    :py:meth:`tme.matching_utils.compute_parallelization_schedule`.
 
     >>> target_splits = {0 : 1}
 
-    Finally, we can perform template matching. Note that the data contained in matching_data
-    will be destroyed when running the following
+    Finally, we can perform template matching. Note that the data
+    contained in ``matching_data`` will be destroyed when running the following
 
     >>> from tme.matching_exhaustive import scan_subsets
     >>> results = scan_subsets(
@@ -1720,6 +1732,12 @@ def scan_subsets(
     target_splits = split_numpy_array_slices(
         matching_data._target.shape, splits=target_splits
     )
+    if (len(target_splits) > 1) and not pad_target_edges:
+        warnings.warn(
+            "Target splitting without padding target edges leads to unreliable "
+            "similarity estimates around the split border."
+        )
+
     template_splits = split_numpy_array_slices(
         matching_data._template.shape, splits=template_splits
     )
