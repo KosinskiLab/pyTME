@@ -757,6 +757,7 @@ def parse_args():
     )
 
     args = parser.parse_args()
+    args.version = __version__
 
     if args.interpolation_order < 0:
         args.interpolation_order = None
@@ -825,12 +826,13 @@ def main():
             sampling_rate=target.sampling_rate,
         )
 
-    if not np.allclose(target.sampling_rate, template.sampling_rate):
-        print(
-            f"Resampling template to {target.sampling_rate}. "
-            "Consider providing a template with the same sampling rate as the target."
-        )
-        template = template.resample(target.sampling_rate, order=3)
+    if target.sampling_rate.size == template.sampling_rate.size:
+        if not np.allclose(target.sampling_rate, template.sampling_rate):
+            print(
+                f"Resampling template to {target.sampling_rate}. "
+                "Consider providing a template with the same sampling rate as the target."
+            )
+            template = template.resample(target.sampling_rate, order=3)
 
     template_mask = load_and_validate_mask(
         mask_target=template, mask_path=args.template_mask
@@ -963,22 +965,37 @@ def main():
     if args.memory is None:
         args.memory = int(args.memory_scaling * available_memory)
 
-    target_padding = np.zeros_like(template.shape)
-    if args.pad_target_edges:
-        target_padding = template.shape
-
-    template_box = template.shape
-    if not args.pad_fourier:
-        template_box = np.ones(len(template_box), dtype=int)
-
     callback_class = MaxScoreOverRotations
     if args.peak_calling:
         callback_class = PeakCallerMaximumFilter
 
+    matching_data = MatchingData(
+        target=target,
+        template=template.data,
+        target_mask=target_mask,
+        template_mask=template_mask,
+        invert_target=args.invert_target_contrast,
+        rotations=parse_rotation_logic(args=args, ndim=template.data.ndim),
+    )
+
+    template_filter, target_filter = setup_filter(args, template, target)
+    matching_data.template_filter = template_filter
+    matching_data.target_filter = target_filter
+
+    template_box = matching_data._output_template_shape
+    if not args.pad_fourier:
+        template_box = np.ones(len(template_box), dtype=int)
+
+    target_padding = np.zeros(
+        (backend.size(matching_data._output_template_shape)), dtype=int
+    )
+    if args.pad_target_edges:
+        target_padding = matching_data._output_template_shape
+
     splits, schedule = compute_parallelization_schedule(
         shape1=target.shape,
-        shape2=template_box,
-        shape1_padding=target_padding,
+        shape2=tuple(int(x) for x in template_box),
+        shape1_padding=tuple(int(x) for x in target_padding),
         max_cores=args.cores,
         max_ram=args.memory,
         split_only_outer=args.use_gpu,
@@ -998,20 +1015,6 @@ def main():
         exit(-1)
 
     matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[args.score]
-    matching_data = MatchingData(target=target, template=template.data)
-    matching_data.rotations = parse_rotation_logic(args=args, ndim=target.data.ndim)
-
-    template_filter, target_filter = setup_filter(args, template, target)
-    matching_data.template_filter = template_filter
-    matching_data.target_filter = target_filter
-
-    matching_data.template_filter = template_filter
-    matching_data._invert_target = args.invert_target_contrast
-    if target_mask is not None:
-        matching_data.target_mask = target_mask
-    if template_mask is not None:
-        matching_data.template_mask = template_mask.data
-
     n_splits = np.prod(list(splits.values()))
     target_split = ", ".join(
         [":".join([str(x) for x in axis]) for axis in splits.items()]
@@ -1112,15 +1115,14 @@ def main():
             warnings.simplefilter("ignore", category=UserWarning)
             nbytes = backend.datatype_bytes(backend._float_dtype)
             dtype = np.float32 if nbytes == 4 else np.float16
+            rot_dim = matching_data.rotations.shape[1]
             candidates[3] = {
                 x: euler_from_rotationmatrix(
-                    np.frombuffer(i, dtype=dtype).reshape(
-                        candidates[0].ndim, candidates[0].ndim
-                    )
+                    np.frombuffer(i, dtype=dtype).reshape(rot_dim, rot_dim)
                 )
                 for i, x in candidates[3].items()
             }
-    candidates.append((target.origin, template.origin, target.sampling_rate, args))
+    candidates.append((target.origin, template.origin, template.sampling_rate, args))
     write_pickle(data=candidates, filename=args.output)
 
     runtime = time() - start

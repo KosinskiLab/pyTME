@@ -22,10 +22,19 @@ class MatchingData:
 
     Parameters
     ----------
-    target : np.ndarray or Density
-        Target data array for template matching.
-    template : np.ndarray or Density
-        Template data array for template matching.
+    target : np.ndarray or :py:class:`tme.density.Density`
+        Target data.
+    template : np.ndarray or :py:class:`tme.density.Density`
+        Template data.
+    target_mask : np.ndarray or :py:class:`tme.density.Density`, optional
+        Target mask data.
+    template_mask : np.ndarray or :py:class:`tme.density.Density`, optional
+        Template mask data.
+    invert_target : bool, optional
+        Whether to invert and rescale the target before template matching..
+    rotations: np.ndarray, optional
+        Template rotations to sample. Can be a single (d x d) or a stack (n x d x d)
+        of rotation matrices where d is the dimension of the template.
 
     Examples
     --------
@@ -39,13 +48,18 @@ class MatchingData:
 
     """
 
-    def __init__(self, target: NDArray, template: NDArray):
-        self._float_dtype = np.float32
-        self._complex_dtype = np.complex64
-
+    def __init__(
+        self,
+        target: NDArray,
+        template: NDArray,
+        template_mask: NDArray = None,
+        target_mask: NDArray = None,
+        invert_target: bool = False,
+        rotations: NDArray = None,
+    ):
         self._target = target
-        self._target_mask = None
-        self._template_mask = None
+        self._target_mask = target_mask
+        self._template_mask = template_mask
         self._translation_offset = np.zeros(len(target.shape), dtype=int)
 
         self.template = template
@@ -56,8 +70,11 @@ class MatchingData:
         self.template_filter = {}
         self.target_filter = {}
 
-        self._invert_target = False
-        self._rotations = None
+        self._invert_target = invert_target
+
+        self._rotations = rotations
+        if rotations is not None:
+            self.rotations = rotations
 
         self._set_batch_dimension()
 
@@ -267,7 +284,7 @@ class MatchingData:
         template_offset[(template_offset.size - len(template_slice)) :] = [
             x.start for x in template_slice
         ]
-        ret._translation_offset = np.add(target_offset, template_offset)
+        ret._translation_offset = target_offset
 
         ret.template_filter = self.template_filter
         ret.target_filter = self.target_filter
@@ -276,7 +293,7 @@ class MatchingData:
         ret._invert_target = self._invert_target
 
         if self._target_mask is not None:
-            ret.target_mask = self.subset_array(
+            ret._target_mask = self.subset_array(
                 arr=self._target_mask, arr_slice=target_slice, padding=target_pad
             )
         if self._template_mask is not None:
@@ -313,13 +330,15 @@ class MatchingData:
 
             current_dtype = backend.get_fundamental_dtype(converted_array)
             target_dtype = backend._fundamental_dtypes[current_dtype]
+
+            # Optional, but scores are float so we avoid casting and potential issues
+            if attr_name in ("_template", "_template_mask", "_target", "_target_mask"):
+                target_dtype = backend._float_dtype
+
             if target_dtype != current_dtype:
                 converted_array = backend.astype(converted_array, target_dtype)
 
             setattr(self, attr_name, converted_array)
-
-        self._float_dtype = backend._float_dtype
-        self._complex_dtype = backend._complex_dtype
 
     def _set_batch_dimension(
         self, target_dims: Tuple[int] = None, template_dims: Tuple[int] = None
@@ -531,7 +550,7 @@ class MatchingData:
 
             if hasattr(self, "_batch_mask"):
                 batch_mask = backend.to_backend_array(self._batch_mask)
-                backend.multiply(batch_mask, 1 - batch_mask, out=shape_diff)
+                backend.multiply(shape_diff, 1 - batch_mask, out=shape_diff)
 
             backend.add(fourier_shift, shape_diff, out=fourier_shift)
 
@@ -563,27 +582,27 @@ class MatchingData:
             pass
         else:
             raise ValueError("Rotations have to be a rank 2 or 3 array.")
-        self._rotations = rotations.astype(self._float_dtype)
+        self._rotations = rotations.astype(np.float32)
 
     @property
     def target(self):
-        """Returns the target NDArray."""
+        """Returns the target."""
+        target = self._target
         if isinstance(self._target, Density):
             target = self._target.data
-        else:
-            target = self._target
-        out_shape = backend.to_numpy_array(self._output_target_shape)
-        return target.reshape(tuple(int(x) for x in out_shape))
+
+        out_shape = tuple(int(x) for x in self._output_target_shape)
+        return target.reshape(out_shape)
 
     @property
     def template(self):
-        """Returns the reversed template NDArray."""
+        """Returns the reversed template."""
         template = self._template
         if isinstance(self._template, Density):
             template = self._template.data
         template = backend.reverse(template)
-        out_shape = backend.to_numpy_array(self._output_template_shape)
-        return template.reshape(tuple(int(x) for x in out_shape))
+        out_shape = tuple(int(x) for x in self._output_template_shape)
+        return template.reshape(out_shape)
 
     @template.setter
     def template(self, template: NDArray):
@@ -603,9 +622,7 @@ class MatchingData:
                 shape=template.shape, dtype=float, fill_value=1
             )
 
-        if type(template) == Density:
-            template = template.data
-        self._template = template.astype(self._float_dtype, copy=False)
+        self._template = template
 
     @property
     def target_mask(self):
@@ -615,8 +632,8 @@ class MatchingData:
             target_mask = self._target_mask.data
 
         if target_mask is not None:
-            out_shape = backend.to_numpy_array(self._output_target_shape)
-            target_mask = target_mask.reshape(tuple(int(x) for x in out_shape))
+            out_shape = tuple(int(x) for x in self._output_target_shape)
+            target_mask = target_mask.reshape(out_shape)
 
         return target_mask
 
@@ -626,14 +643,7 @@ class MatchingData:
         if not np.all(self.target.shape == mask.shape):
             raise ValueError("Target and its mask have to have the same shape.")
 
-        if type(mask) == Density:
-            mask.data = mask.data.astype(self._float_dtype, copy=False)
-            self._target_mask = mask
-            self._targetmaskshape = self._target_mask.shape[::-1]
-            return None
-
-        self._target_mask = mask.astype(self._float_dtype, copy=False)
-        self._targetmaskshape = self._target_mask.shape
+        self._target_mask = mask
 
     @property
     def template_mask(self):
@@ -651,24 +661,17 @@ class MatchingData:
 
         if mask is not None:
             mask = backend.reverse(mask)
-            out_shape = backend.to_numpy_array(self._output_template_shape)
-            mask = mask.reshape(tuple(int(x) for x in out_shape))
+            out_shape = tuple(int(x) for x in self._output_template_shape)
+            mask = mask.reshape(out_shape)
         return mask
 
     @template_mask.setter
     def template_mask(self, mask: NDArray):
         """Returns the reversed template mask NDArray."""
         if not np.all(self._templateshape[::-1] == mask.shape):
-            raise ValueError("Target and its mask have to have the same shape.")
+            raise ValueError("Template and its mask have to have the same shape.")
 
-        if type(mask) == Density:
-            mask.data = mask.data.astype(self._float_dtype, copy=False)
-            self._template_mask = mask
-            self._templatemaskshape = self._template_mask.shape[::-1]
-            return None
-
-        self._template_mask = mask.astype(self._float_dtype, copy=False)
-        self._templatemaskshape = self._template_mask.shape[::-1]
+        self._template_mask = mask
 
     def _split_rotations_on_jobs(self, n_jobs: int) -> List[NDArray]:
         """
