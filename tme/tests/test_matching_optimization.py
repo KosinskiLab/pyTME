@@ -4,7 +4,6 @@ import pytest
 from tme.matching_optimization import (
     MATCHING_OPTIMIZATION_REGISTER,
     register_matching_optimization,
-    _MatchDensityToDensity,
     _MatchCoordinatesToDensity,
     _MatchCoordinatesToCoordinates,
     optimize_match,
