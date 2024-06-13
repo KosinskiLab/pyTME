@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=3fd87a63" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=63b7f29f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
@@ -379,6 +379,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">string</span> <span class="kn">import</span> <span class="n">ascii_lowercase</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -435,6 +436,29 @@ document.write(`
 
     <span class="c1">#: Return a numpy array with additional orientation details (n, ).</span>
     <span class="n">details</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">translations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">translations</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">n_orientations</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">translations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_orientations</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The first dimension of all parameters needs to be of equal length.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">translations</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected two dimensional translations parameter.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected two dimensional rotations parameter.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -537,8 +561,14 @@ document.write(`
 <span class="sd">        The file is saved with a header specifying each column: z, y, x, euler_z,</span>
 <span class="sd">        euler_y, euler_x, score, detail. Each row in the file corresponds to an orientation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">naming</span> <span class="o">=</span> <span class="n">ascii_lowercase</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;euler_z&quot;</span><span class="p">,</span> <span class="s2">&quot;euler_y&quot;</span><span class="p">,</span> <span class="s2">&quot;euler_x&quot;</span><span class="p">,</span> <span class="s2">&quot;score&quot;</span><span class="p">,</span> <span class="s2">&quot;detail&quot;</span><span class="p">]</span>
+            <span class="p">[</span>
+                <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">naming</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">translations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]),</span>
+                <span class="o">*</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;euler_</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">naming</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]],</span>
+                <span class="s2">&quot;score&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;detail&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
         <span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ofile</span><span class="p">:</span>
             <span class="n">_</span> <span class="o">=</span> <span class="n">ofile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">header</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -575,9 +605,6 @@ document.write(`
 <span class="sd">        References</span>
 <span class="sd">        ----------</span>
 <span class="sd">        .. [1]  https://wiki.dynamo.biozentrum.unibas.ch/w/index.php/Table</span>
-
-<span class="sd">        The file is saved with a standard header used in Dynamo STAR files.</span>
-<span class="sd">        Each row in the file corresponds to an orientation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ofile</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">detail</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -741,10 +768,12 @@ document.write(`
 <span class="sd">            +---------------+----------------------------------------------------+</span>
 <span class="sd">            | text          | pyTME&#39;s standard tab-separated orientations file   |</span>
 <span class="sd">            +---------------+----------------------------------------------------+</span>
-<span class="sd">            | relion        | Relion 4+ style STAR file                          |</span>
+<span class="sd">            | relion        | Creates a STAR file of orientations                |</span>
+<span class="sd">            +---------------+----------------------------------------------------+</span>
+<span class="sd">            | dynamo        | Creates a dynamo table                             |</span>
 <span class="sd">            +---------------+----------------------------------------------------+</span>
 
-<span class="sd">        **kwargs : dict</span>
+<span class="sd">        **kwargs</span>
 <span class="sd">            Additional keyword arguments specific to the file format.</span>
 
 <span class="sd">        Returns</span>
@@ -757,11 +786,18 @@ document.write(`
 <span class="sd">        ValueError</span>
 <span class="sd">            If an unsupported file format is specified.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_from_text</span><span class="p">,</span> <span class="s2">&quot;relion&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_from_relion_star</span><span class="p">}</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_from_text</span><span class="p">,</span>
+            <span class="s2">&quot;relion&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_from_relion_star</span><span class="p">,</span>
+            <span class="s2">&quot;tbl&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_from_tbl</span><span class="p">,</span>
+        <span class="p">}</span>
         <span class="k">if</span> <span class="n">file_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">file_format</span> <span class="o">=</span> <span class="s2">&quot;text&quot;</span>
+
             <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.star&quot;</span><span class="p">):</span>
                 <span class="n">file_format</span> <span class="o">=</span> <span class="s2">&quot;relion&quot;</span>
+            <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.tbl&quot;</span><span class="p">):</span>
+                <span class="n">file_format</span> <span class="o">=</span> <span class="s2">&quot;tbl&quot;</span>
 
         <span class="n">func</span> <span class="o">=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file_format</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -803,25 +839,28 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">infile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)]</span>
-            <span class="n">_</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
+        <span class="n">header</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">detail</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">continue</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">8</span><span class="p">:</span>
-                <span class="n">candidate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-            <span class="n">candidate</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">candidate</span><span class="p">]</span>
-            <span class="n">translation</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">candidate</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">candidate</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">candidate</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
-            <span class="n">rotation</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">candidate</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">candidate</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">candidate</span><span class="p">[</span><span class="mi">5</span><span class="p">]))</span>
-            <span class="n">score</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
-            <span class="n">detail</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+            <span class="n">translation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="nb">tuple</span><span class="p">(</span>
+                    <span class="n">candidate</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ascii_lowercase</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">rotation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="nb">tuple</span><span class="p">(</span><span class="n">candidate</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;euler&quot;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">score</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">detail</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-        <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">translation</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="n">rotation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">score</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">detail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detail</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">translation</span><span class="p">)</span>
+        <span class="n">rotation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+        <span class="n">detail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detail</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">detail</span>
 
@@ -876,20 +915,15 @@ document.write(`
         <span class="n">ret</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_star</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">)</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;data_particles&quot;</span><span class="p">]</span>
 
-        <span class="n">translation</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnCoordinateZ&quot;</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnCoordinateY&quot;</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnCoordinateX&quot;</span><span class="p">])</span>
-            <span class="p">)</span>
-            <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">T</span>
+        <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnCoordinateZ&quot;</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnCoordinateY&quot;</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnCoordinateX&quot;</span><span class="p">])</span>
         <span class="p">)</span>
+        <span class="n">translation</span> <span class="o">=</span> <span class="n">translation</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
-        <span class="n">rotation</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnAngleRot&quot;</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnAngleTilt&quot;</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnAnglePsi&quot;</span><span class="p">]))</span>
-            <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">T</span>
+        <span class="n">rotation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnAngleRot&quot;</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnAngleTilt&quot;</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;_rlnAnglePsi&quot;</span><span class="p">])</span>
         <span class="p">)</span>
+        <span class="n">rotation</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
         <span class="n">rotation</span> <span class="o">=</span> <span class="n">Rotation</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s2">&quot;xyx&quot;</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">rotation</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="s2">&quot;zyx&quot;</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -897,6 +931,33 @@ document.write(`
         <span class="n">detail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">translation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mi">1</span>
 
         <span class="k">return</span> <span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">detail</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_from_tbl</span><span class="p">(</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">infile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">())]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">38</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Expected tbl file to have 38 columns generated by _to_tbl.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">translations</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">peak</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">rotation</span> <span class="o">=</span> <span class="n">Rotation</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span>
+                <span class="s2">&quot;xyx&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">peak</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">peak</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span> <span class="n">peak</span><span class="p">[</span><span class="mi">8</span><span class="p">]),</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">rotations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rotation</span><span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="s2">&quot;zyx&quot;</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">peak</span><span class="p">[</span><span class="mi">9</span><span class="p">])</span>
+            <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">translations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">peak</span><span class="p">[</span><span class="mi">25</span><span class="p">],</span> <span class="n">peak</span><span class="p">[</span><span class="mi">24</span><span class="p">],</span> <span class="n">peak</span><span class="p">[</span><span class="mi">23</span><span class="p">]))</span>
+
+        <span class="n">translations</span><span class="p">,</span> <span class="n">rotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">translations</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">rotations</span><span class="p">)</span>
+        <span class="n">scores</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scores</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">details</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">translations</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">details</span>
 
 <div class="viewcode-block" id="Orientations.get_extraction_slices">
 <a class="viewcode-back" href="../../reference/api/tme.orientations.Orientations.get_extraction_slices.html#tme.orientations.Orientations.get_extraction_slices">[docs]</a>
@@ -934,25 +995,25 @@ document.write(`
 <span class="sd">        SystemExit</span>
 <span class="sd">            If no peak remains after filtering, indicating an error.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">left_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">extraction_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="n">right_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">left_pad</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">extraction_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">right_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">extraction_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">left_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">right_pad</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">extraction_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="n">peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">translations</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="n">obs_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="n">left_pad</span><span class="p">)</span>
-        <span class="n">obs_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="n">right_pad</span><span class="p">)</span>
+        <span class="n">obs_beg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="n">left_pad</span><span class="p">)</span>
+        <span class="n">obs_end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="n">right_pad</span><span class="p">)</span>
 
-        <span class="n">cand_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">obs_start</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">obs_start</span><span class="p">)</span>
-        <span class="n">cand_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">obs_stop</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">obs_stop</span><span class="p">,</span> <span class="n">target_shape</span><span class="p">))</span>
-        <span class="n">cand_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">extraction_shape</span><span class="p">,</span> <span class="n">cand_stop</span><span class="p">)</span>
-        <span class="n">obs_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">obs_start</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">obs_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">obs_stop</span><span class="p">,</span> <span class="n">target_shape</span><span class="p">)</span>
+        <span class="n">obs_beg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">obs_beg</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">obs_end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">obs_end</span><span class="p">,</span> <span class="n">target_shape</span><span class="p">)</span>
+
+        <span class="n">cand_beg</span> <span class="o">=</span> <span class="n">left_pad</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="n">obs_beg</span><span class="p">)</span>
+        <span class="n">cand_end</span> <span class="o">=</span> <span class="n">left_pad</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">obs_end</span><span class="p">,</span> <span class="n">peaks</span><span class="p">)</span>
 
         <span class="n">subset</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">if</span> <span class="n">drop_out_of_box</span><span class="p">:</span>
-            <span class="n">stops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">cand_stop</span><span class="p">,</span> <span class="n">extraction_shape</span><span class="p">)</span>
+            <span class="n">stops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">cand_end</span><span class="p">,</span> <span class="n">extraction_shape</span><span class="p">)</span>
             <span class="n">keep_peaks</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">cand_start</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stops</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">cand_beg</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stops</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span>
                     <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="o">==</span> <span class="n">peaks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -965,25 +1026,24 @@ document.write(`
                     <span class="s2">&quot; Consider reducing min_distance, increase num_peaks or use&quot;</span>
                     <span class="s2">&quot; a different peak caller.&quot;</span>
                 <span class="p">)</span>
-                <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-            <span class="n">cand_start</span> <span class="o">=</span> <span class="n">cand_start</span><span class="p">[</span><span class="n">keep_peaks</span><span class="p">,]</span>
-            <span class="n">cand_stop</span> <span class="o">=</span> <span class="n">cand_stop</span><span class="p">[</span><span class="n">keep_peaks</span><span class="p">,]</span>
-            <span class="n">obs_start</span> <span class="o">=</span> <span class="n">obs_start</span><span class="p">[</span><span class="n">keep_peaks</span><span class="p">,]</span>
-            <span class="n">obs_stop</span> <span class="o">=</span> <span class="n">obs_stop</span><span class="p">[</span><span class="n">keep_peaks</span><span class="p">,]</span>
+            <span class="n">cand_beg</span> <span class="o">=</span> <span class="n">cand_beg</span><span class="p">[</span><span class="n">keep_peaks</span><span class="p">,]</span>
+            <span class="n">cand_end</span> <span class="o">=</span> <span class="n">cand_end</span><span class="p">[</span><span class="n">keep_peaks</span><span class="p">,]</span>
+            <span class="n">obs_beg</span> <span class="o">=</span> <span class="n">obs_beg</span><span class="p">[</span><span class="n">keep_peaks</span><span class="p">,]</span>
+            <span class="n">obs_end</span> <span class="o">=</span> <span class="n">obs_end</span><span class="p">[</span><span class="n">keep_peaks</span><span class="p">,]</span>
             <span class="n">subset</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">keep_peaks</span><span class="p">]</span>
 
-        <span class="n">cand_start</span><span class="p">,</span> <span class="n">cand_stop</span> <span class="o">=</span> <span class="n">cand_start</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">cand_stop</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="n">obs_start</span><span class="p">,</span> <span class="n">obs_stop</span> <span class="o">=</span> <span class="n">obs_start</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">obs_stop</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">cand_beg</span><span class="p">,</span> <span class="n">cand_end</span> <span class="o">=</span> <span class="n">cand_beg</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">cand_end</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">obs_beg</span><span class="p">,</span> <span class="n">obs_end</span> <span class="o">=</span> <span class="n">obs_beg</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">obs_end</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="n">candidate_slices</span> <span class="o">=</span> <span class="p">[</span>
             <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">start_row</span><span class="p">,</span> <span class="n">stop_row</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">start_row</span><span class="p">,</span> <span class="n">stop_row</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cand_start</span><span class="p">,</span> <span class="n">cand_stop</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">start_row</span><span class="p">,</span> <span class="n">stop_row</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cand_beg</span><span class="p">,</span> <span class="n">cand_end</span><span class="p">)</span>
         <span class="p">]</span>
 
         <span class="n">observation_slices</span> <span class="o">=</span> <span class="p">[</span>
             <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">start_row</span><span class="p">,</span> <span class="n">stop_row</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">start_row</span><span class="p">,</span> <span class="n">stop_row</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">obs_start</span><span class="p">,</span> <span class="n">obs_stop</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">start_row</span><span class="p">,</span> <span class="n">stop_row</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">obs_beg</span><span class="p">,</span> <span class="n">obs_end</span><span class="p">)</span>
         <span class="p">]</span>
 
         <span class="k">if</span> <span class="n">return_orientations</span><span class="p">:</span>

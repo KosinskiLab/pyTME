@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=3fd87a63" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=63b7f29f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
@@ -395,10 +395,19 @@ document.write(`
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    target : np.ndarray or Density</span>
-<span class="sd">        Target data array for template matching.</span>
-<span class="sd">    template : np.ndarray or Density</span>
-<span class="sd">        Template data array for template matching.</span>
+<span class="sd">    target : np.ndarray or :py:class:`tme.density.Density`</span>
+<span class="sd">        Target data.</span>
+<span class="sd">    template : np.ndarray or :py:class:`tme.density.Density`</span>
+<span class="sd">        Template data.</span>
+<span class="sd">    target_mask : np.ndarray or :py:class:`tme.density.Density`, optional</span>
+<span class="sd">        Target mask data.</span>
+<span class="sd">    template_mask : np.ndarray or :py:class:`tme.density.Density`, optional</span>
+<span class="sd">        Template mask data.</span>
+<span class="sd">    invert_target : bool, optional</span>
+<span class="sd">        Whether to invert and rescale the target before template matching..</span>
+<span class="sd">    rotations: np.ndarray, optional</span>
+<span class="sd">        Template rotations to sample. Can be a single (d x d) or a stack (n x d x d)</span>
+<span class="sd">        of rotation matrices where d is the dimension of the template.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -412,13 +421,18 @@ document.write(`
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_float_dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">complex64</span>
-
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">template</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">template_mask</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">target_mask</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">invert_target</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">rotations</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_target</span> <span class="o">=</span> <span class="n">target</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span> <span class="o">=</span> <span class="n">target_mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span> <span class="o">=</span> <span class="n">template_mask</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_translation_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">template</span>
@@ -429,8 +443,11 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_filter</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_rotations</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="n">invert_target</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rotations</span> <span class="o">=</span> <span class="n">rotations</span>
+        <span class="k">if</span> <span class="n">rotations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">rotations</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_batch_dimension</span><span class="p">()</span>
 
@@ -645,7 +662,7 @@ document.write(`
         <span class="n">template_offset</span><span class="p">[(</span><span class="n">template_offset</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_slice</span><span class="p">))</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">x</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">template_slice</span>
         <span class="p">]</span>
-        <span class="n">ret</span><span class="o">.</span><span class="n">_translation_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">target_offset</span><span class="p">,</span> <span class="n">template_offset</span><span class="p">)</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">_translation_offset</span> <span class="o">=</span> <span class="n">target_offset</span>
 
         <span class="n">ret</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_filter</span>
         <span class="n">ret</span><span class="o">.</span><span class="n">target_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_filter</span>
@@ -654,7 +671,7 @@ document.write(`
         <span class="n">ret</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invert_target</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ret</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_array</span><span class="p">(</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">_target_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_array</span><span class="p">(</span>
                 <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span><span class="p">,</span> <span class="n">arr_slice</span><span class="o">=</span><span class="n">target_slice</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">target_pad</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -694,13 +711,15 @@ document.write(`
 
             <span class="n">current_dtype</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">get_fundamental_dtype</span><span class="p">(</span><span class="n">converted_array</span><span class="p">)</span>
             <span class="n">target_dtype</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">_fundamental_dtypes</span><span class="p">[</span><span class="n">current_dtype</span><span class="p">]</span>
+
+            <span class="c1"># Optional, but scores are float so we avoid casting and potential issues</span>
+            <span class="k">if</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;_template&quot;</span><span class="p">,</span> <span class="s2">&quot;_template_mask&quot;</span><span class="p">,</span> <span class="s2">&quot;_target&quot;</span><span class="p">,</span> <span class="s2">&quot;_target_mask&quot;</span><span class="p">):</span>
+                <span class="n">target_dtype</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span>
+
             <span class="k">if</span> <span class="n">target_dtype</span> <span class="o">!=</span> <span class="n">current_dtype</span><span class="p">:</span>
                 <span class="n">converted_array</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">converted_array</span><span class="p">,</span> <span class="n">target_dtype</span><span class="p">)</span>
 
-            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">converted_array</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_float_dtype</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span></div>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">converted_array</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">_set_batch_dimension</span><span class="p">(</span>
@@ -918,7 +937,7 @@ document.write(`
 
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_batch_mask&quot;</span><span class="p">):</span>
                 <span class="n">batch_mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_mask</span><span class="p">)</span>
-                <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">batch_mask</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">batch_mask</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">shape_diff</span><span class="p">)</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">shape_diff</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">batch_mask</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">shape_diff</span><span class="p">)</span>
 
             <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">,</span> <span class="n">shape_diff</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">)</span>
 
@@ -951,27 +970,27 @@ document.write(`
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Rotations have to be a rank 2 or 3 array.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_rotations</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rotations</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the target NDArray.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the target.&quot;&quot;&quot;</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">,</span> <span class="n">Density</span><span class="p">):</span>
             <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">data</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span>
-        <span class="n">out_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_target_shape</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">target</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">out_shape</span><span class="p">))</span>
+
+        <span class="n">out_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_target_shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">target</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">template</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the reversed template NDArray.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the reversed template.&quot;&quot;&quot;</span>
         <span class="n">template</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="p">,</span> <span class="n">Density</span><span class="p">):</span>
             <span class="n">template</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">data</span>
         <span class="n">template</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
-        <span class="n">out_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">out_shape</span><span class="p">))</span>
+        <span class="n">out_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span>
 
     <span class="nd">@template</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">):</span>
@@ -991,9 +1010,7 @@ document.write(`
                 <span class="n">shape</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">1</span>
             <span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">template</span><span class="p">)</span> <span class="o">==</span> <span class="n">Density</span><span class="p">:</span>
-            <span class="n">template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_template</span> <span class="o">=</span> <span class="n">template</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">target_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1003,8 +1020,8 @@ document.write(`
             <span class="n">target_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span><span class="o">.</span><span class="n">data</span>
 
         <span class="k">if</span> <span class="n">target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">out_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_target_shape</span><span class="p">)</span>
-            <span class="n">target_mask</span> <span class="o">=</span> <span class="n">target_mask</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">out_shape</span><span class="p">))</span>
+            <span class="n">out_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_target_shape</span><span class="p">)</span>
+            <span class="n">target_mask</span> <span class="o">=</span> <span class="n">target_mask</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">target_mask</span>
 
@@ -1014,14 +1031,7 @@ document.write(`
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Target and its mask have to have the same shape.&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">==</span> <span class="n">Density</span><span class="p">:</span>
-            <span class="n">mask</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span> <span class="o">=</span> <span class="n">mask</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_targetmaskshape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_targetmaskshape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span><span class="o">.</span><span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target_mask</span> <span class="o">=</span> <span class="n">mask</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">template_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1039,24 +1049,17 @@ document.write(`
 
         <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
-            <span class="n">out_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span><span class="p">)</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">out_shape</span><span class="p">))</span>
+            <span class="n">out_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_template_shape</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mask</span>
 
     <span class="nd">@template_mask</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">template_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the reversed template mask NDArray.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_templateshape</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Target and its mask have to have the same shape.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Template and its mask have to have the same shape.&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">==</span> <span class="n">Density</span><span class="p">:</span>
-            <span class="n">mask</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span> <span class="o">=</span> <span class="n">mask</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_templatemaskshape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_templatemaskshape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_template_mask</span> <span class="o">=</span> <span class="n">mask</span>
 
     <span class="k">def</span> <span class="nf">_split_rotations_on_jobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

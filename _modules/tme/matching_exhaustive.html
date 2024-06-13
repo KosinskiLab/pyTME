@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=3fd87a63" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=63b7f29f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
@@ -378,7 +378,6 @@ document.write(`
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
@@ -526,7 +525,7 @@ document.write(`
     <span class="p">)</span>
 
     <span class="n">target_ft_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_ft_out</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
-    <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_out</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
+    <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_out</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
     <span class="n">inv_denominator_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">inv_denominator_buffer</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">real_dtype</span><span class="p">)</span>
     <span class="n">numerator_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">numerator_buffer</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">real_dtype</span><span class="p">)</span>
@@ -648,10 +647,10 @@ document.write(`
     <span class="n">template_mean</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">template_mean</span><span class="p">,</span> <span class="n">n_observations</span><span class="p">)</span>
     <span class="n">template_ssd</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
         <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mean</span><span class="p">),</span> <span class="n">template_mask</span><span class="p">)</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mean</span><span class="p">),</span> <span class="n">template_mask</span><span class="p">)</span>
         <span class="p">)</span>
     <span class="p">)</span>
-    <span class="n">template_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">template_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
     <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
 
     <span class="c1"># Final numerator is score - numerator</span>
@@ -686,7 +685,7 @@ document.write(`
         <span class="n">arr</span><span class="o">=</span><span class="n">numerator</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span>
     <span class="p">)</span>
 
-    <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_buffer</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">real_dtype</span><span class="p">)</span>
+    <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
     <span class="n">target_ft_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_ft_buffer</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
 
     <span class="n">inv_denominator_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">inv_denominator_buffer</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
@@ -699,8 +698,8 @@ document.write(`
         <span class="s2">&quot;ft_target&quot;</span><span class="p">:</span> <span class="n">target_ft_tuple</span><span class="p">,</span>
         <span class="s2">&quot;inv_denominator&quot;</span><span class="p">:</span> <span class="n">inv_denominator_tuple</span><span class="p">,</span>
         <span class="s2">&quot;numerator&quot;</span><span class="p">:</span> <span class="n">numerator_tuple</span><span class="p">,</span>
-        <span class="s2">&quot;targetshape&quot;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
-        <span class="s2">&quot;templateshape&quot;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+        <span class="s2">&quot;targetshape&quot;</span><span class="p">:</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+        <span class="s2">&quot;templateshape&quot;</span><span class="p">:</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
         <span class="s2">&quot;fast_shape&quot;</span><span class="p">:</span> <span class="n">fast_shape</span><span class="p">,</span>
         <span class="s2">&quot;fast_ft_shape&quot;</span><span class="p">:</span> <span class="n">fast_ft_shape</span><span class="p">,</span>
         <span class="s2">&quot;callback_class&quot;</span><span class="p">:</span> <span class="n">callback_class</span><span class="p">,</span>
@@ -795,13 +794,11 @@ document.write(`
 <span class="sd">    --------</span>
 <span class="sd">    :py:meth:`flc_scoring`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">real_dtype</span><span class="p">,</span> <span class="n">complex_dtype</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span>
-
     <span class="n">target_pad</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topleft_pad</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">)</span>
 
     <span class="c1"># Target and squared target window sums</span>
-    <span class="n">ft_target</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
-    <span class="n">ft_target2</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
+    <span class="n">ft_target</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span><span class="p">)</span>
+    <span class="n">ft_target2</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span><span class="p">)</span>
     <span class="n">rfftn</span><span class="p">(</span><span class="n">target_pad</span><span class="p">,</span> <span class="n">ft_target</span><span class="p">)</span>
     <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">target_pad</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">target_pad</span><span class="p">)</span>
     <span class="n">rfftn</span><span class="p">(</span><span class="n">target_pad</span><span class="p">,</span> <span class="n">ft_target2</span><span class="p">)</span>
@@ -825,11 +822,15 @@ document.write(`
         <span class="n">arr</span><span class="o">=</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span>
     <span class="p">)</span>
 
-    <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
-    <span class="n">template_mask_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_mask_buffer</span><span class="p">,</span> <span class="n">template_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
+    <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">template_mask_tuple</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">template_mask_buffer</span><span class="p">,</span>
+        <span class="n">template_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+        <span class="n">template_mask</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="n">target_ft_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">ft_target</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
-    <span class="n">target_ft2_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">ft_target2</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
+    <span class="n">target_ft_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">ft_target</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span><span class="p">)</span>
+    <span class="n">target_ft2_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">ft_target2</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span><span class="p">)</span>
 
     <span class="n">ret</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="n">template_tuple</span><span class="p">,</span>
@@ -956,8 +957,8 @@ document.write(`
         <span class="n">arr</span><span class="o">=</span><span class="n">numerator</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span>
     <span class="p">)</span>
 
-    <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
-    <span class="n">template_mask_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_mask_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
+    <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">template_mask_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_mask_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">template_mask</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
     <span class="n">target_ft_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_ft_buffer</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
 
     <span class="n">inv_denominator_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">inv_denominator_buffer</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
@@ -1059,8 +1060,8 @@ document.write(`
         <span class="n">arr</span><span class="o">=</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">shared_memory_handler</span><span class="o">=</span><span class="n">shared_memory_handler</span>
     <span class="p">)</span>
 
-    <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
-    <span class="n">template_mask_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_mask_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">real_dtype</span><span class="p">)</span>
+    <span class="n">template_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">template_mask_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">template_mask_buffer</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">template_mask</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
     <span class="n">target_ft_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_ft_buffer</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
     <span class="n">target_ft2_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_ft2_buffer</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">)</span>
@@ -1172,16 +1173,15 @@ document.write(`
     <span class="n">norm_template</span><span class="p">,</span> <span class="n">template_mask</span><span class="p">,</span> <span class="n">mask_sum</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="s2">&quot;template_mask&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">norm_template</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">template_mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;template_mask&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">template_shape</span><span class="p">,</span> <span class="n">template_dtype</span>
-        <span class="p">)</span>
+        <span class="n">template_mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sharedarr_to_arr</span><span class="p">(</span><span class="o">*</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;template_mask&quot;</span><span class="p">])</span>
         <span class="n">mask_sum</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">template_mask</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">template_mask</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="n">norm_func</span> <span class="o">=</span> <span class="n">_normalize_under_mask_overflow_safe</span>
-            <span class="n">mask_sum</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">template_mask</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">mask_sum</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_overflow_safe_dtype</span><span class="p">)</span>
+            <span class="p">)</span>
 
     <span class="n">norm_template</span> <span class="o">=</span> <span class="n">conditional_execute</span><span class="p">(</span><span class="n">norm_func</span><span class="p">,</span> <span class="n">norm_template</span><span class="p">)</span>
-
     <span class="n">norm_numerator</span> <span class="o">=</span> <span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">numerator</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">numerator</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">norm_func_numerator</span> <span class="o">=</span> <span class="n">conditional_execute</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">,</span> <span class="n">norm_numerator</span><span class="p">)</span>
 
@@ -1511,8 +1511,7 @@ document.write(`
         <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ft_target</span><span class="p">,</span> <span class="n">ft_temp</span><span class="p">[</span><span class="n">squeeze_fast_ft</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">ft_denom</span><span class="p">)</span>
         <span class="n">irfftn</span><span class="p">(</span><span class="n">ft_denom</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
 
-        <span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">backend</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">temp</span><span class="p">))</span>
-        <span class="n">nonzero_indices</span> <span class="o">=</span> <span class="n">temp</span> <span class="o">&gt;</span> <span class="n">tol</span>
+        <span class="n">nonzero_indices</span> <span class="o">=</span> <span class="n">temp</span> <span class="o">&gt;</span> <span class="n">eps</span>
         <span class="n">backend</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">temp2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">temp2</span><span class="p">[</span><span class="n">nonzero_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">nonzero_indices</span><span class="p">]</span> <span class="o">/</span> <span class="n">temp</span><span class="p">[</span><span class="n">nonzero_indices</span><span class="p">]</span>
 
@@ -1724,6 +1723,15 @@ document.write(`
         <span class="n">backend</span><span class="o">.</span><span class="n">topleft_pad</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">),</span> <span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span>
     <span class="p">)</span>
     <span class="n">target_temp_ft</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span><span class="p">)</span>
+
+    <span class="n">filter_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_mask</span><span class="p">)</span>
+    <span class="n">filter_shape</span><span class="p">[</span><span class="n">filter_shape</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">fast_shape</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_mask</span><span class="p">)</span>
+    <span class="n">fast_shape</span> <span class="o">=</span> <span class="n">fast_shape</span><span class="p">[</span><span class="n">fast_shape</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">fast_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fast_shape</span><span class="p">)</span>
+    <span class="n">filter_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">filter_shape</span><span class="p">)</span>
+
     <span class="n">rfftn</span><span class="p">(</span><span class="n">target_temp</span><span class="p">,</span> <span class="n">target_temp_ft</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span><span class="p">,</span> <span class="n">Compose</span><span class="p">):</span>
         <span class="n">template_filter</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span><span class="p">(</span>
@@ -1731,9 +1739,11 @@ document.write(`
             <span class="n">return_real_fourier</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">shape_is_real_fourier</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">data_rfft</span><span class="o">=</span><span class="n">target_temp_ft</span><span class="p">,</span>
+            <span class="n">batch_dimension</span><span class="o">=</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_target_dims</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
         <span class="n">template_filter</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">template_filter</span><span class="o">.</span><span class="n">ndim</span><span class="p">))]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">template_filter</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">template_filter</span><span class="p">,</span> <span class="n">filter_shape</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">target_filter</span><span class="p">,</span> <span class="n">Compose</span><span class="p">):</span>
         <span class="n">target_filter</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">target_filter</span><span class="p">(</span>
@@ -1742,8 +1752,10 @@ document.write(`
             <span class="n">shape_is_real_fourier</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">data_rfft</span><span class="o">=</span><span class="n">target_temp_ft</span><span class="p">,</span>
             <span class="n">weight_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">batch_dimension</span><span class="o">=</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_target_dims</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">target_filter</span> <span class="o">=</span> <span class="n">target_filter</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+        <span class="n">target_filter</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">target_filter</span><span class="p">,</span> <span class="n">filter_shape</span><span class="p">)</span>
         <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">target_temp_ft</span><span class="p">,</span> <span class="n">target_filter</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">target_temp_ft</span><span class="p">)</span>
 
         <span class="n">irfftn</span><span class="p">(</span><span class="n">target_temp_ft</span><span class="p">,</span> <span class="n">target_temp</span><span class="p">)</span>
@@ -1792,7 +1804,7 @@ document.write(`
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Perform template matching</span>
+<span class="sd">    Perform template matching.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1818,7 +1830,7 @@ document.write(`
 <span class="sd">        How many jobs should be processed by a single callback_class instance,</span>
 <span class="sd">        if one is provided.</span>
 <span class="sd">    **kwargs : various</span>
-<span class="sd">        Additional arguments.</span>
+<span class="sd">        Additional keyword arguments.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1852,7 +1864,7 @@ document.write(`
     <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">shape_diff</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pad_fourier</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="s2">&quot;Target is larger than template and Fourier padding is turned off.&quot;</span>
-            <span class="s2">&quot; This can lead to shifted results. You can swap template and target, &quot;</span>
+            <span class="s2">&quot; This can lead to shifted results. You can swap template and target,&quot;</span>
             <span class="s2">&quot; zero-pad the target or turn off template centering.&quot;</span>
         <span class="p">)</span>
     <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">fourier_padding</span><span class="p">(</span>
@@ -2100,12 +2112,12 @@ document.write(`
 <span class="sd">    In case the entire template matching problem does not fit into memory, we can</span>
 <span class="sd">    determine the splitting procedure. In this case, we halv the first axis of the target</span>
 <span class="sd">    once. Splitting and ``job_schedule`` is typically computed using</span>
-<span class="sd">    :py:meth:tme.matching_utils.compute_parallelization_schedule`.</span>
+<span class="sd">    :py:meth:`tme.matching_utils.compute_parallelization_schedule`.</span>
 
 <span class="sd">    &gt;&gt;&gt; target_splits = {0 : 1}</span>
 
-<span class="sd">    Finally, we can perform template matching. Note that the data contained in matching_data</span>
-<span class="sd">    will be destroyed when running the following</span>
+<span class="sd">    Finally, we can perform template matching. Note that the data</span>
+<span class="sd">    contained in ``matching_data`` will be destroyed when running the following</span>
 
 <span class="sd">    &gt;&gt;&gt; from tme.matching_exhaustive import scan_subsets</span>
 <span class="sd">    &gt;&gt;&gt; results = scan_subsets(</span>
@@ -2126,6 +2138,12 @@ document.write(`
     <span class="n">target_splits</span> <span class="o">=</span> <span class="n">split_numpy_array_slices</span><span class="p">(</span>
         <span class="n">matching_data</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">splits</span><span class="o">=</span><span class="n">target_splits</span>
     <span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">target_splits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pad_target_edges</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;Target splitting without padding target edges leads to unreliable &quot;</span>
+            <span class="s2">&quot;similarity estimates around the split border.&quot;</span>
+        <span class="p">)</span>
+
     <span class="n">template_splits</span> <span class="o">=</span> <span class="n">split_numpy_array_slices</span><span class="p">(</span>
         <span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">splits</span><span class="o">=</span><span class="n">template_splits</span>
     <span class="p">)</span>

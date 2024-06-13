@@ -19,7 +19,7 @@
       
          
          
-           Chamfer.rigid_transform
+           Chamfer.rotate_array
          
          
            Chamfer.score

@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=3fd87a63" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=63b7f29f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
@@ -1130,6 +1130,7 @@ document.write(`
     <span class="p">)</span>
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">__version__</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">args</span><span class="o">.</span><span class="n">interpolation_order</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1193,17 +1194,20 @@ document.write(`
     <span class="k">try</span><span class="p">:</span>
         <span class="n">template</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">template</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">drop</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;batch_dimension&quot;</span><span class="p">,</span> <span class="p">())</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">drop</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">)]</span>
         <span class="n">template</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span>
             <span class="n">filename_or_structure</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">template</span><span class="p">,</span>
-            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span>
         <span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Resampling template to </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="si">}</span><span class="s2">. &quot;</span>
-            <span class="s2">&quot;Consider providing a template with the same sampling rate as the target.&quot;</span>
-        <span class="p">)</span>
-        <span class="n">template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Resampling template to </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="s2">&quot;Consider providing a template with the same sampling rate as the target.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
     <span class="n">template_mask</span> <span class="o">=</span> <span class="n">load_and_validate_mask</span><span class="p">(</span>
         <span class="n">mask_target</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">mask_path</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">template_mask</span>
@@ -1336,22 +1340,42 @@ document.write(`
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">memory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">args</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">memory_scaling</span> <span class="o">*</span> <span class="n">available_memory</span><span class="p">)</span>
 
-    <span class="n">target_padding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">pad_target_edges</span><span class="p">:</span>
-        <span class="n">target_padding</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span>
-
-    <span class="n">template_box</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">pad_fourier</span><span class="p">:</span>
-        <span class="n">template_box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">template_box</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-
     <span class="n">callback_class</span> <span class="o">=</span> <span class="n">MaxScoreOverRotations</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">peak_calling</span><span class="p">:</span>
         <span class="n">callback_class</span> <span class="o">=</span> <span class="n">PeakCallerMaximumFilter</span>
 
+    <span class="n">matching_data</span> <span class="o">=</span> <span class="n">MatchingData</span><span class="p">(</span>
+        <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+        <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+        <span class="n">target_mask</span><span class="o">=</span><span class="n">target_mask</span><span class="p">,</span>
+        <span class="n">template_mask</span><span class="o">=</span><span class="n">template_mask</span><span class="p">,</span>
+        <span class="n">invert_target</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">invert_target_contrast</span><span class="p">,</span>
+        <span class="n">rotations</span><span class="o">=</span><span class="n">parse_rotation_logic</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">template_filter</span><span class="p">,</span> <span class="n">target_filter</span> <span class="o">=</span> <span class="n">setup_filter</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">target_filter</span> <span class="o">=</span> <span class="n">target_filter</span>
+
+    <span class="n">target_dims</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;batch_dimension&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">_set_batch_dimension</span><span class="p">(</span><span class="n">target_dims</span><span class="o">=</span><span class="n">target_dims</span><span class="p">,</span> <span class="n">template_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="s2">&quot;FLC2&quot;</span> <span class="k">if</span> <span class="n">target_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">args</span><span class="o">.</span><span class="n">score</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">target_batch</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">template_batch</span> <span class="o">=</span> <span class="n">target_dims</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">template_box</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_output_template_shape</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">pad_fourier</span><span class="p">:</span>
+        <span class="n">template_box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">template_box</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">target_padding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_output_template_shape</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">pad_target_edges</span><span class="p">:</span>
+        <span class="n">target_padding</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_output_template_shape</span>
+
     <span class="n">splits</span><span class="p">,</span> <span class="n">schedule</span> <span class="o">=</span> <span class="n">compute_parallelization_schedule</span><span class="p">(</span>
         <span class="n">shape1</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-        <span class="n">shape2</span><span class="o">=</span><span class="n">template_box</span><span class="p">,</span>
-        <span class="n">shape1_padding</span><span class="o">=</span><span class="n">target_padding</span><span class="p">,</span>
+        <span class="n">shape2</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">template_box</span><span class="p">),</span>
+        <span class="n">shape1_padding</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">target_padding</span><span class="p">),</span>
         <span class="n">max_cores</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span>
         <span class="n">max_ram</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">memory</span><span class="p">,</span>
         <span class="n">split_only_outer</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">use_gpu</span><span class="p">,</span>
@@ -1361,6 +1385,7 @@ document.write(`
         <span class="n">float_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">),</span>
         <span class="n">complex_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_complex_dtype</span><span class="p">),</span>
         <span class="n">integer_nbytes</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_int_dtype</span><span class="p">),</span>
+        <span class="n">split_axes</span><span class="o">=</span><span class="n">target_dims</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">splits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1371,20 +1396,6 @@ document.write(`
         <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="n">matching_setup</span><span class="p">,</span> <span class="n">matching_score</span> <span class="o">=</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">score</span><span class="p">]</span>
-    <span class="n">matching_data</span> <span class="o">=</span> <span class="n">MatchingData</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">parse_rotation_logic</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
-
-    <span class="n">template_filter</span><span class="p">,</span> <span class="n">target_filter</span> <span class="o">=</span> <span class="n">setup_filter</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-    <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span>
-    <span class="n">matching_data</span><span class="o">.</span><span class="n">target_filter</span> <span class="o">=</span> <span class="n">target_filter</span>
-
-    <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span> <span class="o">=</span> <span class="n">template_filter</span>
-    <span class="n">matching_data</span><span class="o">.</span><span class="n">_invert_target</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">invert_target_contrast</span>
-    <span class="k">if</span> <span class="n">target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">matching_data</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">target_mask</span>
-    <span class="k">if</span> <span class="n">template_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">matching_data</span><span class="o">.</span><span class="n">template_mask</span> <span class="o">=</span> <span class="n">template_mask</span><span class="o">.</span><span class="n">data</span>
-
     <span class="n">n_splits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">splits</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
     <span class="n">target_split</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
         <span class="p">[</span><span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">axis</span><span class="p">])</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">splits</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
@@ -1485,15 +1496,14 @@ document.write(`
             <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
             <span class="n">nbytes</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">datatype_bytes</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
             <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span> <span class="k">if</span> <span class="n">nbytes</span> <span class="o">==</span> <span class="mi">4</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">float16</span>
+            <span class="n">rot_dim</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">candidates</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="n">x</span><span class="p">:</span> <span class="n">euler_from_rotationmatrix</span><span class="p">(</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
-                        <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span>
-                    <span class="p">)</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">rot_dim</span><span class="p">,</span> <span class="n">rot_dim</span><span class="p">)</span>
                 <span class="p">)</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="p">}</span>
-    <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">target</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+    <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">target</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
     <span class="n">write_pickle</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">candidates</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
 
     <span class="n">runtime</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>

@@ -705,18 +705,7 @@ The following elaborates how to perform preprocessing using the graphical user i
          :width: 100 %
          :align: center
 
-      Simply drag and drop your data in CCP4/MRC format into `napari` to import it. If your data is in a different format, you can convert it to CCP4/MRC from within Python using :py:meth:`tme.density.Density.from_file` and :py:meth:`tme.density.Density.to_file` like so:
-
-      .. code-block:: python
-
-         from tme import Density
-
-         input_file = "/path/to/your/file"
-         output_file = "output.mrc"
-
-         Density.from_file(input_file).to_file(output_file)
-
-      Make sure to adapt the paths ``input_file`` and ``output_file`` according to your specific use-case. Clicking the `Apply Filter` button will apply the filter to the target layer and create a new layer on the left hand side. The name of the new layer is indicative of the filter type used. The figure below shows the target used throughout this guide after application of a bandpass filter as outlined in the :ref:`Apply filters<preprocess-filtering>` section.
+      Simply drag and drop your data in into `napari` to import it (See :py:meth:`tme.density.Density.from_file` for available formats). Clicking the `Apply Filter` button will apply the filter to the target layer and create a new layer on the left hand side. The name of the new layer is indicative of the filter type used. The figure below shows the target used throughout this guide after application of a bandpass filter as outlined in the :ref:`Apply filters<preprocess-filtering>` section.
 
       .. figure:: ../_static/examples/napari_filter_widget.png
          :width: 100 %

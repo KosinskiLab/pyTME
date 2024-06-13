@@ -25,7 +25,7 @@
            MaskedCrossCorrelation.map_coordinates_to_array
          
          
-           MaskedCrossCorrelation.rigid_transform
+           MaskedCrossCorrelation.rotate_array
          
          
            MaskedCrossCorrelation.score
