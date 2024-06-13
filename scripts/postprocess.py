@@ -5,12 +5,11 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-import warnings
 import argparse
 from sys import exit
 from os import getcwd
 from os.path import join, abspath
-from typing import List
+from typing import List, Tuple
 from os.path import splitext
 
 import numpy as np
@@ -30,6 +29,7 @@ from tme.matching_utils import (
     euler_to_rotationmatrix,
     euler_from_rotationmatrix,
 )
+from tme.matching_optimization import create_score_object, optimize_match
 
 PEAK_CALLERS = {
     "PeakCallerSort": PeakCallerSort,
@@ -182,6 +182,13 @@ def parse_args():
         required=False,
         help="Number of accepted false-positives picks to determine minimum score.",
     )
+    additional_group.add_argument(
+        "--local_optimization",
+        action="store_true",
+        required=False,
+        help="[Experimental] Perform local optimization of candidates. Useful when the "
+        "number of identified candidats is small (< 10).",
+    )
 
     args = parser.parse_args()
 
@@ -202,22 +209,28 @@ def parse_args():
     return args
 
 
-def load_template(filepath: str, sampling_rate: NDArray, center: bool = True):
+def load_template(
+    filepath: str,
+    sampling_rate: NDArray,
+    centering: bool = True,
+    target_shape: Tuple[int] = None,
+):
     try:
         template = Density.from_file(filepath)
-        center_of_mass = template.center_of_mass(template.data)
+        center = np.divide(np.subtract(template.shape, 1), 2)
         template_is_density = True
     except Exception:
         template = Structure.from_file(filepath)
-        center_of_mass = template.center_of_mass()[::-1]
+        center = template.center_of_mass()[::-1]
         template = Density.from_structure(template, sampling_rate=sampling_rate)
         template_is_density = False
 
-    translation = np.zeros_like(center_of_mass)
-    if center:
+    translation = np.zeros_like(center)
+    if centering and template_is_density:
         template, translation = template.centered(0)
+        center = np.divide(np.subtract(template.shape, 1), 2)
 
-    return template, center_of_mass, translation, template_is_density
+    return template, center, translation, template_is_density
 
 
 def merge_outputs(data, filepaths: List[str], args):
@@ -227,7 +240,7 @@ def merge_outputs(data, filepaths: List[str], args):
     if data[0].ndim != data[2].ndim:
         return data, 1
 
-    from tme.matching_exhaustive import _normalize_under_mask
+    from tme.matching_exhaustive import normalize_under_mask
 
     def _norm_scores(data, args):
         target_origin, _, sampling_rate, cli_args = data[-1]
@@ -236,7 +249,7 @@ def merge_outputs(data, filepaths: List[str], args):
         ret = load_template(
             filepath=cli_args.template,
             sampling_rate=sampling_rate,
-            center=not cli_args.no_centering,
+            centering=not cli_args.no_centering,
         )
         template, center_of_mass, translation, template_is_density = ret
 
@@ -257,7 +270,7 @@ def merge_outputs(data, filepaths: List[str], args):
             mask.shape, np.multiply(args.min_boundary_distance, 2)
         ).astype(int)
         mask[cropped_shape] = 0
-        _normalize_under_mask(template=data[0], mask=mask, mask_intensity=mask.sum())
+        normalize_under_mask(template=data[0], mask=mask, mask_intensity=mask.sum())
         return data[0]
 
     entities = np.zeros_like(data[0])
@@ -281,7 +294,7 @@ def main():
     ret = load_template(
         filepath=cli_args.template,
         sampling_rate=sampling_rate,
-        center=not cli_args.no_centering,
+        centering=not cli_args.no_centering,
     )
     template, center_of_mass, translation, template_is_density = ret
 
@@ -311,7 +324,9 @@ def main():
         max_shape = np.max(template.shape)
         args.min_boundary_distance = np.ceil(np.divide(max_shape, 2))
 
-    # data, entities = merge_outputs(data=data, filepaths=args.input_file[1:], args=args)
+    entities = None
+    if len(args.input_file) > 1:
+        data, entities = merge_outputs(data=data, filepaths=args.input_file, args=args)
 
     orientations = args.orientations
     if orientations is None:
@@ -347,31 +362,33 @@ def main():
                 minimum_score = max(minimum_score, 0)
                 args.minimum_score = minimum_score
 
-            peak_caller = PEAK_CALLERS[args.peak_caller](
-                number_of_peaks=args.number_of_peaks,
-                min_distance=args.min_distance,
-                min_boundary_distance=args.min_boundary_distance,
-            )
+            args.batch_dims = None
+            if hasattr(cli_args, "target_batch"):
+                args.batch_dims = cli_args.target_batch
 
+            peak_caller_kwargs = {
+                "number_of_peaks": args.number_of_peaks,
+                "min_distance": args.min_distance,
+                "min_boundary_distance": args.min_boundary_distance,
+                "batch_dims": args.batch_dims,
+            }
+
+            peak_caller = PEAK_CALLERS[args.peak_caller](**peak_caller_kwargs)
             peak_caller(
                 scores,
-                rotation_matrix=np.eye(3),
+                rotation_matrix=np.eye(template.data.ndim),
                 mask=template.data,
                 rotation_mapping=rotation_mapping,
                 rotation_array=rotation_array,
                 minimum_score=args.minimum_score,
             )
             candidates = peak_caller.merge(
-                candidates=[tuple(peak_caller)],
-                number_of_peaks=args.number_of_peaks,
-                min_distance=args.min_distance,
-                min_boundary_distance=args.min_boundary_distance,
+                candidates=[tuple(peak_caller)], **peak_caller_kwargs
             )
             if len(candidates) == 0:
                 candidates = [[], [], [], []]
-                warnings.warn(
-                    "Found no peaks, consider changing peak calling parameters."
-                )
+                print("Found no peaks, consider changing peak calling parameters.")
+                exit(0)
 
             for translation, _, score, detail in zip(*candidates):
                 rotations.append(rotation_mapping[rotation_array[tuple(translation)]])
@@ -385,6 +402,10 @@ def main():
         if len(rotations):
             rotations = np.vstack(rotations).astype(float)
         translations, scores, details = candidates[0], candidates[2], candidates[3]
+
+        if entities is not None:
+            details = entities[tuple(translations.T)]
+
         orientations = Orientations(
             translations=translations,
             rotations=rotations,
@@ -413,6 +434,33 @@ def main():
             peak_positions=orientations.translations,
             oversampling_factor=args.peak_oversampling,
         )
+
+    if args.local_optimization:
+        target = Density.from_file(cli_args.target)
+        orientations.translations = orientations.translations.astype(np.float32)
+        orientations.rotations = orientations.rotations.astype(np.float32)
+        for index, (translation, angles, *_) in enumerate(orientations):
+            score_object = create_score_object(
+                score="FLC",
+                target=target.data.copy(),
+                template=template.data.copy(),
+                template_mask=template_mask.data.copy(),
+            )
+
+            center = np.divide(template.shape, 2)
+            init_translation = np.subtract(translation, center)
+            bounds_translation = tuple((x - 5, x + 5) for x in init_translation)
+
+            translation, rotation_matrix, score = optimize_match(
+                score_object=score_object,
+                optimization_method="basinhopping",
+                bounds_translation=bounds_translation,
+                maxiter=3,
+                x0=[*init_translation, *angles],
+            )
+            orientations.translations[index] = np.add(translation, center)
+            orientations.rotations[index] = angles
+            orientations.scores[index] = score * -1
 
     if args.output_format == "orientations":
         orientations.to_file(filename=f"{args.output_prefix}.tsv", file_format="text")
@@ -531,7 +579,6 @@ def main():
             )
             rotation_matrix = rotation.inv().as_matrix()
 
-            # rotation_matrix = euler_to_rotationmatrix(orientations.rotations[index])
             subset = Density(target.data[obs_slices[index]])
             subset = subset.rigid_transform(rotation_matrix=rotation_matrix, order=1)
 
@@ -542,21 +589,30 @@ def main():
         ret.to_file(f"{args.output_prefix}_average.mrc")
         exit(0)
 
+    template, center, *_ = load_template(
+        filepath=cli_args.template,
+        sampling_rate=sampling_rate,
+        centering=not cli_args.no_centering,
+        target_shape=target.shape,
+    )
+
     for index, (translation, angles, *_) in enumerate(orientations):
         rotation_matrix = euler_to_rotationmatrix(angles)
         if template_is_density:
-            translation = np.subtract(translation, center_of_mass)
+            translation = np.subtract(translation, center)
             transformed_template = template.rigid_transform(
                 rotation_matrix=rotation_matrix
             )
-            new_origin = np.add(target_origin / sampling_rate, translation)
-            transformed_template.origin = np.multiply(new_origin, sampling_rate)
+            transformed_template.origin = np.add(
+                target_origin, np.multiply(translation, sampling_rate)
+            )
+
         else:
             template = Structure.from_file(cli_args.template)
             new_center_of_mass = np.add(
                 np.multiply(translation, sampling_rate), target_origin
             )
-            translation = np.subtract(new_center_of_mass, center_of_mass)
+            translation = np.subtract(new_center_of_mass, center)
             transformed_template = template.rigid_transform(
                 translation=translation[::-1],
                 rotation_matrix=rotation_matrix[::-1, ::-1],

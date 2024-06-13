@@ -100,34 +100,31 @@ class _MatchDensityToDensity(ABC):
         if target_mask is not None:
             matching_data.target_mask = target_mask
 
-        target_pad = matching_data.target_padding(pad_target=pad_target_edges)
-        matching_data = matching_data.subset_by_slice(target_pad=target_pad)
+        self.target, self.target_mask = matching_data.target, matching_data.target_mask
 
-        fast_shape, fast_ft_shape, fourier_shift = matching_data.fourier_padding(
-            pad_fourier=pad_fourier
+        self.template = matching_data._template
+        self.template_rot = backend.preallocate_array(
+            template.shape, backend._float_dtype
         )
 
-        self.target = backend.topleft_pad(matching_data.target, fast_shape)
-        self.target_mask = matching_data.target_mask
-
-        self.template = matching_data.template
-        self.template_rot = backend.preallocate_array(fast_shape, backend._float_dtype)
-
         self.template_mask, self.template_mask_rot = 1, 1
-        rotate_mask = False if matching_data.template_mask is None else rotate_mask
+        rotate_mask = False if matching_data._template_mask is None else rotate_mask
         if matching_data.template_mask is not None:
-            self.template_mask = matching_data.template_mask
+            self.template_mask = matching_data._template_mask
             self.template_mask_rot = backend.topleft_pad(
-                matching_data.template_mask, fast_shape
+                matching_data._template_mask, self.template_mask.shape
             )
+
+        self.template_slices = tuple(slice(None) for _ in self.template.shape)
+        self.target_slices = tuple(slice(0, x) for x in self.template.shape)
 
         self.score_sign = -1 if negate_score else 1
 
         if hasattr(self, "_post_init"):
             self._post_init(**kwargs)
 
-    @staticmethod
-    def rigid_transform(
+    def rotate_array(
+        self,
         arr,
         rotation_matrix,
         translation,
@@ -135,28 +132,39 @@ class _MatchDensityToDensity(ABC):
         out=None,
         out_mask=None,
         order: int = 1,
-        use_geometric_center: bool = False,
+        **kwargs,
     ):
         rotate_mask = arr_mask is not None
         return_type = (out is None) + 2 * rotate_mask * (out_mask is None)
         translation = np.zeros(arr.ndim) if translation is None else translation
 
         center = np.floor(np.array(arr.shape) / 2)[:, None]
-        grid = np.indices(arr.shape, dtype=np.float32).reshape(arr.ndim, -1)
-        np.subtract(grid, center, out=grid)
-        np.matmul(rotation_matrix.T, grid, out=grid)
-        np.add(grid, center, out=grid)
+
+        if not hasattr(self, "_previous_center"):
+            self._previous_center = arr.shape
+
+        if not hasattr(self, "grid") or not np.allclose(self._previous_center, center):
+            self.grid = np.indices(arr.shape, dtype=np.float32).reshape(arr.ndim, -1)
+            np.subtract(self.grid, center, out=self.grid)
+            self.grid_out = np.zeros_like(self.grid)
+            self._previous_center = center
+
+        np.matmul(rotation_matrix.T, self.grid, out=self.grid_out)
+        translation = np.add(translation[:, None], center)
+        np.add(self.grid_out, translation, out=self.grid_out)
 
         if out is None:
             out = np.zeros_like(arr)
 
-        map_coordinates(arr, grid, order=order, output=out.ravel())
+        map_coordinates(arr, self.grid_out, order=order, output=out.ravel())
 
         if out_mask is None and arr_mask is not None:
             out_mask = np.zeros_like(arr_mask)
 
         if arr_mask is not None:
-            map_coordinates(arr_mask, grid, order=order, output=out_mask.ravel())
+            map_coordinates(
+                arr_mask, self.grid_out, order=order, output=out_mask.ravel()
+            )
 
         match return_type:
             case 0:
@@ -217,20 +225,51 @@ class _MatchDensityToDensity(ABC):
         """
         translation, rotation_matrix = _format_rigid_transform(x)
         self.template_rot.fill(0)
+
+        voxel_translation = backend.astype(translation, backend._int_dtype)
+        subvoxel_translation = backend.subtract(translation, voxel_translation)
+
+        center = backend.astype(
+            backend.divide(self.template.shape, 2), backend._int_dtype
+        )
+        right_pad = backend.subtract(self.template.shape, center)
+
+        translated_center = backend.add(voxel_translation, center)
+
+        target_starts = backend.subtract(translated_center, center)
+        target_stops = backend.add(translated_center, right_pad)
+
+        template_starts = backend.subtract(
+            backend.maximum(target_starts, 0), target_starts
+        )
+        template_stops = backend.subtract(
+            target_stops, backend.minimum(target_stops, self.target.shape)
+        )
+        template_stops = backend.subtract(self.template.shape, template_stops)
+
+        target_starts = backend.maximum(target_starts, 0)
+        target_stops = backend.minimum(target_stops, self.target.shape)
+
+        cand_start, cand_stop = template_starts.astype(int), template_stops.astype(int)
+        obs_start, obs_stop = target_starts.astype(int), target_stops.astype(int)
+
+        self.template_slices = tuple(slice(s, e) for s, e in zip(cand_start, cand_stop))
+        self.target_slices = tuple(slice(s, e) for s, e in zip(obs_start, obs_stop))
+
         kw_dict = {
             "arr": self.template,
             "rotation_matrix": rotation_matrix,
-            "translation": translation,
+            "translation": subvoxel_translation,
             "out": self.template_rot,
-            "use_geometric_center": False,
             "order": self.interpolation_order,
+            "use_geometric_center": True,
         }
         if self.rotate_mask:
             self.template_mask_rot.fill(0)
             kw_dict["arr_mask"] = self.template_mask
             kw_dict["out_mask"] = self.template_mask_rot
 
-        backend.rotate_array(**kw_dict)
+        self.rotate_array(**kw_dict)
 
         return self()
 
@@ -539,13 +578,6 @@ class FLC(_MatchDensityToDensity):
         CC(f,g) = \\mathcal{F}^{-1}(\\mathcal{F}(f) \\cdot \\mathcal{F}(g)^*)
 
     and Nm is the number of voxels within the template mask m.
-
-    References
-    ----------
-    .. [1]  W. Wan, S. Khavnekar, J. Wagner, P. Erdmann, and W. Baumeister
-            Microsc. Microanal. 26, 2516 (2020)
-    .. [2]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
-            and F. Förster, J. Struct. Biol. 178, 177 (2012).
     """
 
     __doc__ += _MatchDensityToDensity.__doc__
@@ -562,9 +594,6 @@ class FLC(_MatchDensityToDensity):
             mask_intensity=backend.sum(self.template_mask),
         )
 
-        self.template = backend.reverse(self.template)
-        self.template_mask = backend.reverse(self.template_mask)
-
     def __call__(self) -> float:
         """Returns the score of the current configuration."""
         n_observations = backend.sum(self.template_mask_rot)
@@ -574,18 +603,29 @@ class FLC(_MatchDensityToDensity):
             mask=self.template_mask_rot,
             mask_intensity=n_observations,
         )
-
-        ex2 = backend.sum(
-            backend.divide(
-                backend.sum(
-                    backend.multiply(self.target_square, self.template_mask_rot),
-                ),
-                n_observations,
+        overlap = backend.sum(
+            backend.multiply(
+                self.template_rot[self.template_slices], self.target[self.target_slices]
             )
+        )
+
+        ex2 = backend.divide(
+            backend.sum(
+                backend.multiply(
+                    self.target_square[self.target_slices],
+                    self.template_mask_rot[self.template_slices],
+                )
+            ),
+            n_observations,
         )
         e2x = backend.square(
             backend.divide(
-                backend.sum(backend.multiply(self.target, self.template_mask_rot)),
+                backend.sum(
+                    backend.multiply(
+                        self.target[self.target_slices],
+                        self.template_mask_rot[self.template_slices],
+                    )
+                ),
                 n_observations,
             )
         )
@@ -594,7 +634,6 @@ class FLC(_MatchDensityToDensity):
         denominator = backend.sqrt(denominator)
         denominator = backend.multiply(denominator, n_observations)
 
-        overlap = backend.sum(backend.multiply(self.template_rot, self.target))
         score = backend.divide(overlap, denominator) * self.score_sign
         return score
 
@@ -1099,6 +1138,7 @@ def optimize_match(
     bounds_rotation: Tuple[Tuple[float]] = None,
     optimization_method: str = "basinhopping",
     maxiter: int = 500,
+    x0: Tuple[float] = None,
 ) -> Tuple[ArrayLike, ArrayLike, float]:
     """
     Find the translation and rotation optimizing the score returned by `score_object`
@@ -1130,9 +1170,13 @@ def optimize_match(
         | 'minimize'               | If initial values are closed to optimum |
         |                          | decent performance, short runtime.      |
         +--------------------------+-----------------------------------------+
+
     maxiter : int, optional
         The maximum number of iterations. Default is 500. Not considered for
         `optimization_method` 'minimize'.
+
+    x0 : tuple of floats, optional
+        Initial values for the optimizer, defaults to zero.
 
     Returns
     -------
@@ -1184,10 +1228,12 @@ def optimize_match(
             np.eye(len(bounds)), np.min(bounds, axis=1), np.max(bounds, axis=1)
         )
 
-    initial_score = score_object.score(x=np.zeros(2 * ndim))
+    x0 = np.zeros(2 * ndim) if x0 is None else x0
+
+    initial_score = score_object.score(x=x0)
     if optimization_method == "basinhopping":
         result = basinhopping(
-            x0=np.zeros(2 * ndim),
+            x0=x0,
             func=score_object.score,
             niter=maxiter,
             minimizer_kwargs={"method": "COBYLA", "constraints": linear_constraint},
@@ -1200,8 +1246,9 @@ def optimize_match(
             maxiter=maxiter,
         )
     elif optimization_method == "minimize":
+        print(maxiter)
         result = minimize(
-            x0=np.zeros(2 * ndim),
+            x0=x0,
             fun=score_object.score,
             bounds=bounds,
             constraints=linear_constraint,

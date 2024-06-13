@@ -43,12 +43,23 @@ def filter_points_indices_bucket(
 
 
 def filter_points_indices(
-    coordinates: NDArray, min_distance: float, bucket_cutoff: int = 1e4
+    coordinates: NDArray,
+    min_distance: float,
+    bucket_cutoff: int = 1e4,
+    batch_dims: Tuple[int] = None,
 ) -> NDArray:
     if min_distance <= 0:
         return backend.arange(coordinates.shape[0])
     if coordinates.shape[0] == 0:
         return ()
+
+    if batch_dims is not None:
+        coordinates_new = backend.zeros(coordinates.shape, coordinates.dtype)
+        coordinates_new[:] = coordinates
+        coordinates_new[..., batch_dims] = backend.astype(
+            coordinates[..., batch_dims] * (2 * min_distance), coordinates_new.dtype
+        )
+        coordinates = coordinates_new
 
     if isinstance(coordinates, np.ndarray):
         return find_candidate_indices(coordinates, min_distance)
@@ -63,8 +74,10 @@ def filter_points_indices(
     return indices[keep == indices]
 
 
-def filter_points(coordinates: NDArray, min_distance: Tuple[int]) -> NDArray:
-    unique_indices = filter_points_indices(coordinates, min_distance)
+def filter_points(
+    coordinates: NDArray, min_distance: Tuple[int], batch_dims: Tuple[int] = None
+) -> NDArray:
+    unique_indices = filter_points_indices(coordinates, min_distance, batch_dims)
     coordinates = coordinates[unique_indices]
     return coordinates
 
@@ -81,6 +94,8 @@ class PeakCaller(ABC):
         Minimum distance between peaks.
     min_boundary_distance : int, optional
         Minimum distance to array boundaries.
+    batch_dims : int, optional
+        Peak calling batch dimensions.
     **kwargs
         Additional keyword arguments.
 
@@ -96,6 +111,7 @@ class PeakCaller(ABC):
         number_of_peaks: int = 1000,
         min_distance: int = 1,
         min_boundary_distance: int = 0,
+        batch_dims: Tuple[int] = None,
         **kwargs,
     ):
         number_of_peaks = int(number_of_peaks)
@@ -118,6 +134,10 @@ class PeakCaller(ABC):
         self.min_boundary_distance = min_boundary_distance
         self.number_of_peaks = number_of_peaks
 
+        self.batch_dims = batch_dims
+        if batch_dims is not None:
+            self.batch_dims = tuple(int(x) for x in self.batch_dims)
+
         # Postprocesing arguments
         self.fourier_shift = kwargs.get("fourier_shift", None)
         self.convolution_mode = kwargs.get("convolution_mode", None)
@@ -131,6 +151,35 @@ class PeakCaller(ABC):
         """
         self.peak_list = [backend.to_cpu_array(arr) for arr in self.peak_list]
         yield from self.peak_list
+
+    @staticmethod
+    def _batchify(shape: Tuple[int], batch_dims: Tuple[int] = None) -> List:
+        if batch_dims is None:
+            yield (tuple(slice(None) for _ in shape), tuple(0 for _ in shape))
+            return None
+
+        batch_ranges = [range(shape[dim]) for dim in batch_dims]
+
+        def _generate_slices_recursive(current_dim, current_indices):
+            if current_dim == len(batch_dims):
+                slice_list, offset_list, batch_index = [], [], 0
+                for i in range(len(shape)):
+                    if i in batch_dims:
+                        index = current_indices[batch_index]
+                        slice_list.append(slice(index, index + 1))
+                        offset_list.append(index)
+                        batch_index += 1
+                    else:
+                        slice_list.append(slice(None))
+                        offset_list.append(0)
+                yield (tuple(slice_list), tuple(offset_list))
+            else:
+                for index in batch_ranges[current_dim]:
+                    yield from _generate_slices_recursive(
+                        current_dim + 1, current_indices + (index,)
+                    )
+
+        yield from _generate_slices_recursive(0, ())
 
     def __call__(
         self,
@@ -157,79 +206,83 @@ class PeakCaller(ABC):
         **kwargs
             Optional keyword arguments passed to :py:meth:`PeakCaller.call_peak`.
         """
-        peak_positions, peak_details = self.call_peaks(
-            score_space=score_space,
-            rotation_matrix=rotation_matrix,
-            minimum_score=minimum_score,
-            maximum_score=maximum_score,
-            **kwargs,
-        )
-
-        if peak_positions is None:
-            return None
-
-        if peak_positions.shape[0] == 0:
-            return None
-
-        peak_positions = backend.astype(peak_positions, int)
-        if peak_details is None:
-            peak_details = backend.full((peak_positions.shape[0],), fill_value=-1)
-
-        if self.min_boundary_distance > 0:
-            upper_limit = backend.subtract(
-                score_space.shape, self.min_boundary_distance
+        for subset, offset in self._batchify(score_space.shape, self.batch_dims):
+            peak_positions, peak_details = self.call_peaks(
+                score_space=score_space[subset],
+                rotation_matrix=rotation_matrix,
+                minimum_score=minimum_score,
+                maximum_score=maximum_score,
+                **kwargs,
             )
-            valid_peaks = (
-                backend.sum(
-                    backend.multiply(
-                        peak_positions < upper_limit,
-                        peak_positions >= self.min_boundary_distance,
-                    ),
-                    axis=1,
+
+            if peak_positions is None:
+                continue
+            if peak_positions.shape[0] == 0:
+                continue
+
+            if peak_details is None:
+                peak_details = backend.full((peak_positions.shape[0],), fill_value=-1)
+
+            backend.add(peak_positions, offset, out=peak_positions)
+            peak_positions = backend.astype(peak_positions, int)
+            if self.min_boundary_distance > 0:
+                upper_limit = backend.subtract(
+                    score_space.shape, self.min_boundary_distance
                 )
-                == peak_positions.shape[1]
+                valid_peaks = backend.multiply(
+                    peak_positions < upper_limit,
+                    peak_positions >= self.min_boundary_distance,
+                )
+                if self.batch_dims is not None:
+                    valid_peaks[..., self.batch_dims] = True
+
+                valid_peaks = (
+                    backend.sum(valid_peaks, axis=1) == peak_positions.shape[1]
+                )
+
+                if backend.sum(valid_peaks) == 0:
+                    continue
+
+                peak_positions, peak_details = (
+                    peak_positions[valid_peaks],
+                    peak_details[valid_peaks],
+                )
+
+            peak_scores = score_space[tuple(peak_positions.T)]
+            if minimum_score is not None:
+                valid_peaks = peak_scores >= minimum_score
+                peak_positions, peak_details, peak_scores = (
+                    peak_positions[valid_peaks],
+                    peak_details[valid_peaks],
+                    peak_scores[valid_peaks],
+                )
+            if maximum_score is not None:
+                valid_peaks = peak_scores <= maximum_score
+                peak_positions, peak_details, peak_scores = (
+                    peak_positions[valid_peaks],
+                    peak_details[valid_peaks],
+                    peak_scores[valid_peaks],
+                )
+
+            if peak_positions.shape[0] == 0:
+                continue
+
+            rotations = backend.repeat(
+                rotation_matrix.reshape(1, *rotation_matrix.shape),
+                peak_positions.shape[0],
+                axis=0,
             )
-            if backend.sum(valid_peaks) == 0:
-                return None
 
-            peak_positions, peak_details = (
-                peak_positions[valid_peaks],
-                peak_details[valid_peaks],
+            self._update(
+                peak_positions=peak_positions,
+                peak_details=peak_details,
+                peak_scores=peak_scores,
+                rotations=rotations,
+                batch_offset=offset,
+                **kwargs,
             )
 
-        peak_scores = score_space[tuple(peak_positions.T)]
-
-        if minimum_score is not None:
-            valid_peaks = peak_scores >= minimum_score
-            peak_positions, peak_details, peak_scores = (
-                peak_positions[valid_peaks],
-                peak_details[valid_peaks],
-                peak_scores[valid_peaks],
-            )
-        if maximum_score is not None:
-            valid_peaks = peak_scores <= maximum_score
-            peak_positions, peak_details, peak_scores = (
-                peak_positions[valid_peaks],
-                peak_details[valid_peaks],
-                peak_scores[valid_peaks],
-            )
-
-        if peak_positions.shape[0] == 0:
-            return None
-
-        rotations = backend.repeat(
-            rotation_matrix.reshape(1, *rotation_matrix.shape),
-            peak_positions.shape[0],
-            axis=0,
-        )
-
-        self._update(
-            peak_positions=peak_positions,
-            peak_details=peak_details,
-            peak_scores=peak_scores,
-            rotations=rotations,
-            **kwargs,
-        )
+        return None
 
     @abstractmethod
     def call_peaks(
@@ -396,25 +449,52 @@ class PeakCaller(ABC):
         backend.add(peak_positions, translation_offset, out=peak_positions)
         if not len(self.peak_list):
             self.peak_list = [peak_positions, rotations, peak_scores, peak_details]
-            dim = peak_positions.shape[1]
-            peak_scores = backend.zeros((0,), peak_scores.dtype)
-            peak_details = backend.zeros((0,), peak_details.dtype)
-            rotations = backend.zeros((0, dim, dim), rotations.dtype)
-            peak_positions = backend.zeros((0, dim), peak_positions.dtype)
 
-        peaks = backend.concatenate((self.peak_list[0], peak_positions))
+        peak_positions = backend.concatenate((self.peak_list[0], peak_positions))
         rotations = backend.concatenate((self.peak_list[1], rotations))
         peak_scores = backend.concatenate((self.peak_list[2], peak_scores))
         peak_details = backend.concatenate((self.peak_list[3], peak_details))
 
-        top_n = min(backend.size(peak_scores), self.number_of_peaks)
-        top_scores, *_ = backend.topk_indices(peak_scores, top_n)
+        if self.batch_dims is None:
+            top_n = min(backend.size(peak_scores), self.number_of_peaks)
+            top_scores, *_ = backend.topk_indices(peak_scores, top_n)
+        else:
+            # Not very performant but fairly robust
+            batch_indices = peak_positions[..., self.batch_dims]
+            backend.subtract(
+                batch_indices, backend.min(batch_indices, axis=0), out=batch_indices
+            )
+            multiplier = backend.power(
+                backend.max(batch_indices, axis=0) + 1,
+                backend.arange(batch_indices.shape[1]),
+            )
+            backend.multiply(batch_indices, multiplier, out=batch_indices)
+            batch_indices = backend.sum(batch_indices, axis=1)
+            unique_indices, batch_counts = backend.unique(
+                batch_indices, return_counts=True
+            )
+            total_indices = backend.arange(peak_scores.shape[0])
+            batch_indices = [total_indices[batch_indices == x] for x in unique_indices]
+            top_scores = backend.concatenate(
+                [
+                    total_indices[indices][
+                        backend.topk_indices(
+                            peak_scores[indices], min(y, self.number_of_peaks)
+                        )
+                    ]
+                    for indices, y in zip(batch_indices, batch_counts)
+                ]
+            )
 
         final_order = top_scores[
-            filter_points_indices(peaks[top_scores], self.min_distance)
+            filter_points_indices(
+                coordinates=peak_positions[top_scores],
+                min_distance=self.min_distance,
+                batch_dims=self.batch_dims,
+            )
         ]
 
-        self.peak_list[0] = peaks[final_order,]
+        self.peak_list[0] = peak_positions[final_order,]
         self.peak_list[1] = rotations[final_order,]
         self.peak_list[2] = peak_scores[final_order]
         self.peak_list[3] = peak_details[final_order]
@@ -422,6 +502,9 @@ class PeakCaller(ABC):
     def _postprocess(
         self, fourier_shift, convolution_mode, targetshape, templateshape, **kwargs
     ):
+        if not len(self.peak_list):
+            return self
+
         peak_positions = self.peak_list[0]
         if not len(peak_positions):
             return self
@@ -843,18 +926,23 @@ class PeakCallerScipy(PeakCaller):
         Tuple[NDArray, NDArray]
             Array of peak coordinates and peak details.
         """
-
         score_space = backend.to_numpy_array(score_space)
         num_peaks = self.number_of_peaks
         if minimum_score is not None:
             num_peaks = np.inf
 
+        non_squeezable_dims = tuple(
+            i for i, x in enumerate(score_space.shape) if x != 1
+        )
         peaks = peak_local_max(
-            score_space,
+            np.squeeze(score_space),
             num_peaks=num_peaks,
             min_distance=self.min_distance,
             threshold_abs=minimum_score,
         )
+        peaks_full = np.zeros((peaks.shape[0], score_space.ndim), peaks.dtype)
+        peaks_full[..., non_squeezable_dims] = peaks[:]
+        peaks = backend.to_backend_array(peaks_full)
         return peaks, None
 
 
