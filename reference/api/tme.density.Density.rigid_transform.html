@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=63b7f29f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=3fd87a63" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
@@ -927,19 +927,20 @@ document.write(`
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>rotation_matrix</strong><span class="classifier">NDArray</span></dt><dd><p>Rotation matrix to apply.</p>
+<dt><strong>rotation_matrix</strong><span class="classifier">NDArray</span></dt><dd><p>Rotation matrix to apply to the <cite>Density</cite> instance.</p>
 </dd>
-<dt><strong>translation</strong><span class="classifier">NDArray</span></dt><dd><p>Translation to apply.</p>
+<dt><strong>translation</strong><span class="classifier">NDArray</span></dt><dd><p>Translation to apply to the <cite>Density</cite> instance.</p>
 </dd>
-<dt><strong>order</strong><span class="classifier">int, optional</span></dt><dd><p>Interpolation order to use. Default is 3, has to be in range 0-5.</p>
+<dt><strong>order</strong><span class="classifier">int, optional</span></dt><dd><p>Order of spline interpolation.</p>
 </dd>
-<dt><strong>use_geometric_center</strong><span class="classifier">bool, optional</span></dt><dd><p>Use geometric or mass center as rotation center.</p>
+<dt><strong>use_geometric_center</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to use geometric or coordinate center. If False,
+class instance should be centered using <a class="reference internal" href="tme.density.Density.centered.html#tme.density.Density.centered" title="tme.density.Density.centered"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.centered()</span></code></a>.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt>Density</dt><dd><p>The transformed instance of <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a>.</p>
+<dt>Density</dt><dd><p>The transformed instance of <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.density.Density</span></code></a>.</p>
 </dd>
 </dl>
 </dd>
@@ -951,27 +952,13 @@ document.write(`
 </dl>
 </div>
 <p class="rubric">Notes</p>
-<p>This function assumes the internal <a class="reference internal" href="tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Density.data</span></code></a> attribute is
-sufficiently sized to hold the transformation.</p>
+<p><a class="reference internal" href="#tme.density.Density.rigid_transform" title="tme.density.Density.rigid_transform"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.rigid_transform()</span></code></a> that the internal data array is
+sufficiently sized to accomodate the transform.</p>
 <p class="rubric">Examples</p>
-<p>Define the <a class="reference internal" href="tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> instance</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dens</span><span class="p">,</span> <span class="n">translation</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">centered</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>and apply the rotation, in this case a mirror around the z-axis</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">dens</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rotation_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dens_transform</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span><span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dens_transform</span><span class="o">.</span><span class="n">data</span>
-<span class="go">array([[0.        , 0.        , 0.        , 0.        , 0.        ],</span>
-<span class="go">       [0.5       , 3.0833333 , 3.5833333 , 3.3333333 , 0.        ],</span>
-<span class="go">       [0.75      , 4.6666665 , 5.6666665 , 5.4166665 , 0.        ],</span>
-<span class="go">       [0.25      , 1.6666666 , 2.6666667 , 2.9166667 , 0.        ],</span>
-<span class="go">       [0.        , 0.08333334, 0.5833333 , 0.8333333 , 0.        ]],</span>
-<span class="go">      dtype=float32)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rotation_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">density</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

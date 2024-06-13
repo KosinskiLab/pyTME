@@ -25,7 +25,7 @@
            PartialLeastSquareDifference.map_coordinates_to_array
          
          
-           PartialLeastSquareDifference.rotate_array
+           PartialLeastSquareDifference.rigid_transform
          
          
            PartialLeastSquareDifference.score

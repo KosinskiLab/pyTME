@@ -19,7 +19,7 @@
       
          
          
-           NormalVectorScore.rotate_array
+           NormalVectorScore.rigid_transform
          
          
            NormalVectorScore.score

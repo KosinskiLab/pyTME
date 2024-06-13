@@ -1,0 +1,6 @@
+PartialLeastSquareDifference.rigid\_transform
+======================================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: PartialLeastSquareDifference.rigid_transform

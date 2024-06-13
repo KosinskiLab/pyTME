@@ -1,0 +1,6 @@
+Envelope.rigid\_transform
+==================================================
+
+.. currentmodule:: tme.matching_optimization
+
+.. automethod:: Envelope.rigid_transform

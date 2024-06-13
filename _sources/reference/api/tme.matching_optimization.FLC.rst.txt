@@ -19,7 +19,7 @@
       
          
          
-           FLC.rotate_array
+           FLC.rigid_transform
          
          
            FLC.score

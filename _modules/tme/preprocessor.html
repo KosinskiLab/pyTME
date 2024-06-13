@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=63b7f29f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=3fd87a63" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
@@ -1631,9 +1631,6 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">tilt_angles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">tilt_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">start_tilt</span><span class="p">,</span> <span class="n">stop_tilt</span> <span class="o">+</span> <span class="n">tilt_step</span><span class="p">,</span> <span class="n">tilt_step</span><span class="p">)</span>
-
-        <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">)</span>
-        <span class="n">opening_axis</span><span class="p">,</span> <span class="n">tilt_axis</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">opening_axis</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">tilt_axis</span><span class="p">)</span>
 
         <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
         <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">tilt_angles</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">weights</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>

@@ -25,7 +25,7 @@
            Envelope.map_coordinates_to_array
          
          
-           Envelope.rotate_array
+           Envelope.rigid_transform
          
          
            Envelope.score

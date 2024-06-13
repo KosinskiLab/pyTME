@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=63b7f29f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=3fd87a63" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
@@ -923,7 +923,7 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="tme.matching_exhaustive.scan">
 <span class="sig-name descname"><span class="pre">scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matching_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matching_setup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matching_score</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_class_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fftargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'auto_align_input':</span> <span class="pre">False,</span> <span class="pre">'auto_contiguous':</span> <span class="pre">False,</span> <span class="pre">'avoid_copy':</span> <span class="pre">True,</span> <span class="pre">'overwrite_input':</span> <span class="pre">True,</span> <span class="pre">'planner_effort':</span> <span class="pre">'FFTW_MEASURE',</span> <span class="pre">'threads':</span> <span class="pre">1}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_fourier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jobs_per_callback_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/matching_exhaustive.html#scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.matching_exhaustive.scan" title="Link to this definition">#</a></dt>
-<dd><p>Perform template matching.</p>
+<dd><p>Perform template matching</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -948,7 +948,7 @@ document.write(`
 <dt><strong>jobs_per_callback_class</strong><span class="classifier">int, optional</span></dt><dd><p>How many jobs should be processed by a single callback_class instance,
 if one is provided.</p>
 </dd>
-<dt><strong>**kwargs</strong><span class="classifier">various</span></dt><dd><p>Additional keyword arguments.</p>
+<dt><strong>**kwargs</strong><span class="classifier">various</span></dt><dd><p>Additional arguments.</p>
 </dd>
 </dl>
 </dd>

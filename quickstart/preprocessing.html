@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=63b7f29f" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=3fd87a63" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
@@ -562,7 +562,16 @@ GUI</label><div class="sd-tab-content docutils">
 <a class="reference internal image-reference" href="../_images/napari_boot.png"><img alt="../_images/napari_boot.png" src="../_images/napari_boot.png" style="width: 100%;" />
 </a>
 </figure>
-<p>Simply drag and drop your data in into <cite>napari</cite> to import it (See <a class="reference internal" href="../reference/api/tme.density.Density.from_file.html#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.from_file()</span></code></a> for available formats). Clicking the <cite>Apply Filter</cite> button will apply the filter to the target layer and create a new layer on the left hand side. The name of the new layer is indicative of the filter type used. The figure below shows the target used throughout this guide after application of a bandpass filter as outlined in the <a class="reference internal" href="#preprocess-filtering"><span class="std std-ref">Apply filters</span></a> section.</p>
+<p>Simply drag and drop your data in CCP4/MRC format into <cite>napari</cite> to import it. If your data is in a different format, you can convert it to CCP4/MRC from within Python using <a class="reference internal" href="../reference/api/tme.density.Density.from_file.html#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.from_file()</span></code></a> and <a class="reference internal" href="../reference/api/tme.density.Density.to_file.html#tme.density.Density.to_file" title="tme.density.Density.to_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.to_file()</span></code></a> like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+
+<span class="n">input_file</span> <span class="o">=</span> <span class="s2">&quot;/path/to/your/file&quot;</span>
+<span class="n">output_file</span> <span class="o">=</span> <span class="s2">&quot;output.mrc&quot;</span>
+
+<span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Make sure to adapt the paths <code class="docutils literal notranslate"><span class="pre">input_file</span></code> and <code class="docutils literal notranslate"><span class="pre">output_file</span></code> according to your specific use-case. Clicking the <cite>Apply Filter</cite> button will apply the filter to the target layer and create a new layer on the left hand side. The name of the new layer is indicative of the filter type used. The figure below shows the target used throughout this guide after application of a bandpass filter as outlined in the <a class="reference internal" href="#preprocess-filtering"><span class="std std-ref">Apply filters</span></a> section.</p>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../_images/napari_filter_widget.png"><img alt="../_images/napari_filter_widget.png" src="../_images/napari_filter_widget.png" style="width: 100%;" />
 </a>

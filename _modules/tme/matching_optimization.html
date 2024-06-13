@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=63b7f29f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=3fd87a63" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
@@ -471,31 +471,34 @@ document.write(`
         <span class="k">if</span> <span class="n">target_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">matching_data</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">target_mask</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">target_mask</span>
+        <span class="n">target_pad</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">target_padding</span><span class="p">(</span><span class="n">pad_target</span><span class="o">=</span><span class="n">pad_target_edges</span><span class="p">)</span>
+        <span class="n">matching_data</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">subset_by_slice</span><span class="p">(</span><span class="n">target_pad</span><span class="o">=</span><span class="n">target_pad</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">template_rot</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span>
-            <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span>
+        <span class="n">fast_shape</span><span class="p">,</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">fourier_shift</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">fourier_padding</span><span class="p">(</span>
+            <span class="n">pad_fourier</span><span class="o">=</span><span class="n">pad_fourier</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">template_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
-        <span class="n">rotate_mask</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_template_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rotate_mask</span>
-        <span class="k">if</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">template_mask</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_template_mask</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topleft_pad</span><span class="p">(</span>
-                <span class="n">matching_data</span><span class="o">.</span><span class="n">_template_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_mask</span><span class="o">.</span><span class="n">shape</span>
-            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topleft_pad</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">target_mask</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">template_slices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">target_slices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_rot</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">preallocate_array</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">rotate_mask</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rotate_mask</span>
+        <span class="k">if</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_mask</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template_mask</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">topleft_pad</span><span class="p">(</span>
+                <span class="n">matching_data</span><span class="o">.</span><span class="n">template_mask</span><span class="p">,</span> <span class="n">fast_shape</span>
+            <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">score_sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">negate_score</span> <span class="k">else</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_post_init&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_post_init</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">rotate_array</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">rigid_transform</span><span class="p">(</span>
         <span class="n">arr</span><span class="p">,</span>
         <span class="n">rotation_matrix</span><span class="p">,</span>
         <span class="n">translation</span><span class="p">,</span>
@@ -503,39 +506,28 @@ document.write(`
         <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">out_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="n">use_geometric_center</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">rotate_mask</span> <span class="o">=</span> <span class="n">arr_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">return_type</span> <span class="o">=</span> <span class="p">(</span><span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">rotate_mask</span> <span class="o">*</span> <span class="p">(</span><span class="n">out_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span> <span class="k">if</span> <span class="n">translation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">translation</span>
 
         <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_previous_center&quot;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_previous_center</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;grid&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_previous_center</span><span class="p">,</span> <span class="n">center</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">grid_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_previous_center</span> <span class="o">=</span> <span class="n">center</span>
-
-        <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid_out</span><span class="p">)</span>
-        <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">translation</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">center</span><span class="p">)</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid_out</span><span class="p">,</span> <span class="n">translation</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid_out</span><span class="p">)</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
 
-        <span class="n">map_coordinates</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_out</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">out</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">map_coordinates</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">out</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">out_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">arr_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">out_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">arr_mask</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">arr_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">map_coordinates</span><span class="p">(</span>
-                <span class="n">arr_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_out</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">out_mask</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-            <span class="p">)</span>
+            <span class="n">map_coordinates</span><span class="p">(</span><span class="n">arr_mask</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">out_mask</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
 
         <span class="k">match</span> <span class="n">return_type</span><span class="p">:</span>
             <span class="k">case</span> <span class="mi">0</span><span class="p">:</span>
@@ -596,51 +588,20 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">translation</span><span class="p">,</span> <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">_format_rigid_transform</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">template_rot</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
-        <span class="n">voxel_translation</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">_int_dtype</span><span class="p">)</span>
-        <span class="n">subvoxel_translation</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">voxel_translation</span><span class="p">)</span>
-
-        <span class="n">center</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">backend</span><span class="o">.</span><span class="n">_int_dtype</span>
-        <span class="p">)</span>
-        <span class="n">right_pad</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">center</span><span class="p">)</span>
-
-        <span class="n">translated_center</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">voxel_translation</span><span class="p">,</span> <span class="n">center</span><span class="p">)</span>
-
-        <span class="n">target_starts</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">translated_center</span><span class="p">,</span> <span class="n">center</span><span class="p">)</span>
-        <span class="n">target_stops</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">translated_center</span><span class="p">,</span> <span class="n">right_pad</span><span class="p">)</span>
-
-        <span class="n">template_starts</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">target_starts</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">target_starts</span>
-        <span class="p">)</span>
-        <span class="n">template_stops</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
-            <span class="n">target_stops</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">target_stops</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="n">template_stops</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">template_stops</span><span class="p">)</span>
-
-        <span class="n">target_starts</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">target_starts</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">target_stops</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">target_stops</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
-        <span class="n">cand_start</span><span class="p">,</span> <span class="n">cand_stop</span> <span class="o">=</span> <span class="n">template_starts</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">template_stops</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="n">obs_start</span><span class="p">,</span> <span class="n">obs_stop</span> <span class="o">=</span> <span class="n">target_starts</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">target_stops</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">template_slices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cand_start</span><span class="p">,</span> <span class="n">cand_stop</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">target_slices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">obs_start</span><span class="p">,</span> <span class="n">obs_stop</span><span class="p">))</span>
-
         <span class="n">kw_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;arr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">,</span>
             <span class="s2">&quot;rotation_matrix&quot;</span><span class="p">:</span> <span class="n">rotation_matrix</span><span class="p">,</span>
-            <span class="s2">&quot;translation&quot;</span><span class="p">:</span> <span class="n">subvoxel_translation</span><span class="p">,</span>
+            <span class="s2">&quot;translation&quot;</span><span class="p">:</span> <span class="n">translation</span><span class="p">,</span>
             <span class="s2">&quot;out&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_rot</span><span class="p">,</span>
+            <span class="s2">&quot;use_geometric_center&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s2">&quot;order&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolation_order</span><span class="p">,</span>
-            <span class="s2">&quot;use_geometric_center&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotate_mask</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">kw_dict</span><span class="p">[</span><span class="s2">&quot;arr_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_mask</span>
             <span class="n">kw_dict</span><span class="p">[</span><span class="s2">&quot;out_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">rotate_array</span><span class="p">(</span><span class="o">**</span><span class="n">kw_dict</span><span class="p">)</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">rotate_array</span><span class="p">(</span><span class="o">**</span><span class="n">kw_dict</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="p">()</span>
 
@@ -951,6 +912,13 @@ document.write(`
 <span class="sd">        CC(f,g) = \\mathcal{F}^{-1}(\\mathcal{F}(f) \\cdot \\mathcal{F}(g)^*)</span>
 
 <span class="sd">    and Nm is the number of voxels within the template mask m.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  W. Wan, S. Khavnekar, J. Wagner, P. Erdmann, and W. Baumeister</span>
+<span class="sd">            Microsc. Microanal. 26, 2516 (2020)</span>
+<span class="sd">    .. [2]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,</span>
+<span class="sd">            and F. Förster, J. Struct. Biol. 178, 177 (2012).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__doc__</span> <span class="o">+=</span> <span class="n">_MatchDensityToDensity</span><span class="o">.</span><span class="vm">__doc__</span>
@@ -967,6 +935,9 @@ document.write(`
             <span class="n">mask_intensity</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_mask</span><span class="p">),</span>
         <span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_mask</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_mask</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the score of the current configuration.&quot;&quot;&quot;</span>
         <span class="n">n_observations</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span><span class="p">)</span>
@@ -976,29 +947,18 @@ document.write(`
             <span class="n">mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span><span class="p">,</span>
             <span class="n">mask_intensity</span><span class="o">=</span><span class="n">n_observations</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">overlap</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">template_rot</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">template_slices</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_slices</span><span class="p">]</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
 
-        <span class="n">ex2</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-                <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">target_square</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_slices</span><span class="p">],</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">template_slices</span><span class="p">],</span>
-                <span class="p">)</span>
-            <span class="p">),</span>
-            <span class="n">n_observations</span><span class="p">,</span>
+        <span class="n">ex2</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                    <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_square</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">n_observations</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="p">)</span>
         <span class="n">e2x</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>
             <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
-                <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-                    <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_slices</span><span class="p">],</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">template_slices</span><span class="p">],</span>
-                    <span class="p">)</span>
-                <span class="p">),</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_mask_rot</span><span class="p">)),</span>
                 <span class="n">n_observations</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
@@ -1007,6 +967,7 @@ document.write(`
         <span class="n">denominator</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">denominator</span><span class="p">)</span>
         <span class="n">denominator</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">denominator</span><span class="p">,</span> <span class="n">n_observations</span><span class="p">)</span>
 
+        <span class="n">overlap</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_rot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">))</span>
         <span class="n">score</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="n">denominator</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_sign</span>
         <span class="k">return</span> <span class="n">score</span></div>
 
@@ -1547,7 +1508,6 @@ document.write(`
     <span class="n">bounds_rotation</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">optimization_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;basinhopping&quot;</span><span class="p">,</span>
     <span class="n">maxiter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
-    <span class="n">x0</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the translation and rotation optimizing the score returned by `score_object`</span>
@@ -1579,13 +1539,9 @@ document.write(`
 <span class="sd">        | &#39;minimize&#39;               | If initial values are closed to optimum |</span>
 <span class="sd">        |                          | decent performance, short runtime.      |</span>
 <span class="sd">        +--------------------------+-----------------------------------------+</span>
-
 <span class="sd">    maxiter : int, optional</span>
 <span class="sd">        The maximum number of iterations. Default is 500. Not considered for</span>
 <span class="sd">        `optimization_method` &#39;minimize&#39;.</span>
-
-<span class="sd">    x0 : tuple of floats, optional</span>
-<span class="sd">        Initial values for the optimizer, defaults to zero.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1637,12 +1593,10 @@ document.write(`
             <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">)</span> <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">x0</span>
-
-    <span class="n">initial_score</span> <span class="o">=</span> <span class="n">score_object</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
+    <span class="n">initial_score</span> <span class="o">=</span> <span class="n">score_object</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">optimization_method</span> <span class="o">==</span> <span class="s2">&quot;basinhopping&quot;</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">basinhopping</span><span class="p">(</span>
-            <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span>
+            <span class="n">x0</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">),</span>
             <span class="n">func</span><span class="o">=</span><span class="n">score_object</span><span class="o">.</span><span class="n">score</span><span class="p">,</span>
             <span class="n">niter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span>
             <span class="n">minimizer_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;COBYLA&quot;</span><span class="p">,</span> <span class="s2">&quot;constraints&quot;</span><span class="p">:</span> <span class="n">linear_constraint</span><span class="p">},</span>
@@ -1655,9 +1609,8 @@ document.write(`
             <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">elif</span> <span class="n">optimization_method</span> <span class="o">==</span> <span class="s2">&quot;minimize&quot;</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">maxiter</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span>
-            <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span>
+            <span class="n">x0</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">),</span>
             <span class="n">fun</span><span class="o">=</span><span class="n">score_object</span><span class="o">.</span><span class="n">score</span><span class="p">,</span>
             <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
             <span class="n">constraints</span><span class="o">=</span><span class="n">linear_constraint</span><span class="p">,</span>
