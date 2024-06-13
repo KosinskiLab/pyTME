@@ -413,12 +413,12 @@ document.write(`
 <a class="viewcode-back" href="../../reference/api/tme.density.Density.html#tme.density.Density">[docs]</a>
 <span class="k">class</span> <span class="nc">Density</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Contains electron density data and implements operations on it.</span>
+<span class="sd">    Abstract representation of N-dimensional densities.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : NDArray</span>
-<span class="sd">        Electron density data.</span>
+<span class="sd">        Array of data values.</span>
 <span class="sd">    origin : NDArray, optional</span>
 <span class="sd">        Origin of the coordinate system. Defaults to zero.</span>
 <span class="sd">    sampling_rate : NDArray, optional</span>
@@ -643,9 +643,9 @@ document.write(`
             <span class="c1"># nx := column; ny := row; nz := section</span>
             <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
                 <span class="p">[</span>
-                    <span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;nxstart&quot;</span><span class="p">],</span>
-                    <span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;nystart&quot;</span><span class="p">],</span>
                     <span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;nzstart&quot;</span><span class="p">],</span>
+                    <span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;nystart&quot;</span><span class="p">],</span>
+                    <span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;nxstart&quot;</span><span class="p">],</span>
                 <span class="p">]</span>
             <span class="p">)</span>
 
@@ -669,7 +669,7 @@ document.write(`
             <span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="s2">&quot;&lt;f4&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
             <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampling_rate</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">start</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
                 <span class="n">origin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
 
             <span class="n">extended_header</span> <span class="o">=</span> <span class="n">mrc</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">nsymbt</span>
