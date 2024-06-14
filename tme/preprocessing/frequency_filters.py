@@ -270,6 +270,7 @@ class LinearWhiteningFilter:
             shape_is_real_fourier=True,
             compute_euclidean_norm=True,
         )
+        bins = backend.to_numpy_array(bins)
 
         # Implicit lowpass to nyquist
         bins = np.floor(bins * (n_bins - 1) + 0.5).astype(int)
@@ -309,6 +310,7 @@ class LinearWhiteningFilter:
             shape_is_real_fourier=shape_is_real_fourier,
             compute_euclidean_norm=True,
         )
+        grid = backend.to_numpy_array(grid)
         np.multiply(grid, (spectrum.shape[0] - 1), out = grid) + 0.5
         spectrum = map_coordinates(spectrum, grid.reshape(1, -1), order=order)
         return spectrum.reshape(grid.shape)
