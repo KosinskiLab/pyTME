@@ -99,8 +99,8 @@ class TestDensity:
     def test_from_file_baseline(self):
         self.test_to_file(gzip=False)
         density = Density.from_file("tme/tests/data/Maps/emd_8621.mrc.gz")
-        assert np.allclose(density.origin, (-1.45, 2.90, 4.35), rtol = .1)
-        assert np.allclose(density.sampling_rate, (1.45), rtol = .3)
+        assert np.allclose(density.origin, (-1.45, 2.90, 4.35), rtol=0.1)
+        assert np.allclose(density.sampling_rate, (1.45), rtol=0.3)
 
     @pytest.mark.parametrize("extension", ("mrc", "em", "tiff", "h5"))
     @pytest.mark.parametrize("gzip", (True, False))

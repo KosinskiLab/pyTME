@@ -10,6 +10,7 @@ from typing import Tuple, Dict
 import numpy as np
 from numpy.typing import NDArray
 from scipy.ndimage import mean as ndimean
+from scipy.ndimage import map_coordinates
 
 from ._utils import fftfreqn, crop_real_fourier, shift_fourier
 from ..backends import backend
@@ -219,6 +220,16 @@ class LinearWhiteningFilter:
     -----------
     **kwargs : Dict, optional
         Additional keyword arguments.
+
+
+    References
+    ----------
+    .. [1] de Teresa-Trueba, I.; Goetz, S. K.; Mattausch, A.; Stojanovska, F.; Zimmerli, C. E.;
+        Toro-Nahuelpan, M.; Cheng, D. W. C.; Tollervey, F.; Pape, C.; Beck, M.; Diz-Munoz,
+        A.; Kreshuk, A.; Mahamid, J.; Zaugg, J. B. Nat. Methods 2023, 20, 284–294.
+    .. [2]  M. L. Chaillet, G. van der Schot, I. Gubins, S. Roet,
+        R. C. Veltkamp, and F. Förster, Int. J. Mol. Sci. 24,
+        13375 (2023)
     """
 
     def __init__(self, **kwargs):
@@ -253,29 +264,54 @@ class LinearWhiteningFilter:
         n_bins = max_bins if n_bins is None else n_bins
         n_bins = int(min(n_bins, max_bins))
 
-        grid = fftfreqn(
+        bins = fftfreqn(
             shape=shape,
-            sampling_rate=None,
+            sampling_rate=0.5,
             shape_is_real_fourier=True,
             compute_euclidean_norm=True,
         )
-        grid = backend.to_numpy_array(grid)
-        _, bin_edges = np.histogram(grid, bins=n_bins - 1)
-        bins = np.digitize(grid, bins=bin_edges, right=True)
 
+        # Implicit lowpass to nyquist
+        bins = np.floor(bins * (n_bins - 1) + 0.5).astype(int)
         fft_shift_axes = tuple(
             i for i in range(data_rfft.ndim - 1) if i != batch_dimension
         )
         fourier_spectrum = np.fft.fftshift(data_rfft, axes=fft_shift_axes)
         fourier_spectrum = np.abs(fourier_spectrum)
         np.square(fourier_spectrum, out=fourier_spectrum)
-        radial_averages = ndimean(fourier_spectrum, labels=bins, index=np.unique(bins))
 
+        radial_averages = ndimean(
+            fourier_spectrum, labels=bins, index=np.arange(n_bins)
+        )
         np.sqrt(radial_averages, out=radial_averages)
         np.reciprocal(radial_averages, out=radial_averages)
         np.divide(radial_averages, radial_averages.max(), out=radial_averages)
 
         return bins, radial_averages
+
+    @staticmethod
+    def _interpolate_spectrum(
+        spectrum: NDArray,
+        shape: Tuple[int],
+        shape_is_real_fourier: bool = True,
+        order: int = 1,
+    ) -> NDArray:
+        """
+        References
+        ----------
+        .. [1]  M. L. Chaillet, G. van der Schot, I. Gubins, S. Roet,
+            R. C. Veltkamp, and F. Förster, Int. J. Mol. Sci. 24,
+            13375 (2023)
+        """
+        grid = fftfreqn(
+            shape=shape,
+            sampling_rate=.5,
+            shape_is_real_fourier=shape_is_real_fourier,
+            compute_euclidean_norm=True,
+        )
+        np.multiply(grid, (spectrum.shape[0] - 1), out = grid) + 0.5
+        spectrum = map_coordinates(spectrum, grid.reshape(1, -1), order=order)
+        return spectrum.reshape(grid.shape)
 
     def __call__(
         self,
@@ -283,6 +319,7 @@ class LinearWhiteningFilter:
         data_rfft: NDArray = None,
         n_bins: int = None,
         batch_dimension: int = None,
+        order: int = 1,
         **kwargs: Dict,
     ) -> Dict:
         """
@@ -298,14 +335,15 @@ class LinearWhiteningFilter:
             The number of bins for computing the spectrum, defaults to None.
         batch_dimension : int, optional
             Batch dimension to average over.
+        order : int, optional
+            Interpolation order to use.
         **kwargs : Dict
             Additional keyword arguments.
 
         Returns:
         --------
         Dict
-            A dictionary containing the whitened data and information
-            about the filter being a multiplicative filter.
+           Filter data and associated parameters.
         """
         if data_rfft is None:
             data_rfft = np.fft.rfftn(backend.to_numpy_array(data))
@@ -316,11 +354,23 @@ class LinearWhiteningFilter:
             data_rfft, n_bins, batch_dimension
         )
 
-        radial_averages = np.fft.ifftshift(
-            radial_averages[bins], axes=tuple(range(data_rfft.ndim - 1))
+        if order is None:
+            cutoff = bins < radial_averages.size
+            filter_mask = np.zeros(data_rfft.shape, radial_averages.dtype)
+            filter_mask[cutoff] = radial_averages[bins[cutoff]]
+        else:
+            filter_mask = self._interpolate_spectrum(
+                spectrum=radial_averages,
+                shape=data_rfft.shape,
+                shape_is_real_fourier=True,
+            )
+
+        filter_mask = np.fft.ifftshift(
+            filter_mask,
+            axes=tuple(i for i in range(data_rfft.ndim - 1) if i != batch_dimension)
         )
 
         return {
-            "data": backend.to_backend_array(radial_averages),
+            "data": backend.to_backend_array(filter_mask),
             "is_multiplicative_filter": True,
         }

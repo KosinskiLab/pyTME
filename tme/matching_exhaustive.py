@@ -61,9 +61,6 @@ def normalize_under_mask(template: NDArray, mask: NDArray, mask_intensity) -> No
     ----------
     .. [1]  T. Hrabe, Y. Chen, S. Pfeffer, L. Kuhn Cuellar, A.-V. Mangold,
             and F. Förster, J. Struct. Biol. 178, 177 (2012).
-    .. [2]  M. L. Chaillet, G. van der Schot, I. Gubins, S. Roet,
-            R. C. Veltkamp, and F. Förster, Int. J. Mol. Sci. 24,
-            13375 (2023)
 
     Returns
     -------

@@ -50,6 +50,16 @@ class Orientations:
     >>> np.all(orientations.translations == orientations_star.translations)
     True
 
+    Parameters
+    ----------
+    translations: np.ndarray
+        Array with translations of each orientations (n, d).
+    rotations: np.ndarray
+        Array with euler angles of each orientation in zxy convention (n, d).
+    scores: np.ndarray
+        Array with the score of each orientation (n, ).
+    details: np.ndarray
+        Array with additional orientation details (n, ).
     """
 
     #: Return a numpy array with translations of each orientation (n x d).

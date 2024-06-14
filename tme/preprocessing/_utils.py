@@ -135,7 +135,7 @@ def fftfreqn(
     """
     center = backend.astype(backend.divide(shape, 2), backend._int_dtype)
 
-    norm = np.ones(3)
+    norm = np.ones(len(shape))
     if sampling_rate is not None:
         norm = backend.astype(backend.multiply(shape, sampling_rate), int)
 
