@@ -920,6 +920,20 @@ document.write(`
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Orientations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">translations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">details</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/tme/orientations.html#Orientations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tme.orientations.Orientations" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Handle template matching orientations and conversion between formats.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>translations: np.ndarray</strong></dt><dd><p>Array with translations of each orientations (n, d).</p>
+</dd>
+<dt><strong>rotations: np.ndarray</strong></dt><dd><p>Array with euler angles of each orientation in zxy convention (n, d).</p>
+</dd>
+<dt><strong>scores: np.ndarray</strong></dt><dd><p>Array with the score of each orientation (n, ).</p>
+</dd>
+<dt><strong>details: np.ndarray</strong></dt><dd><p>Array with additional orientation details (n, ).</p>
+</dd>
+</dl>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <p>The following achieves the minimal definition of an <a class="reference internal" href="#tme.orientations.Orientations" title="tme.orientations.Orientations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Orientations</span></code></a> instance</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>

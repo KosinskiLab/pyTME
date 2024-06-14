@@ -423,6 +423,16 @@ document.write(`
 <span class="sd">    &gt;&gt;&gt; np.all(orientations.translations == orientations_star.translations)</span>
 <span class="sd">    True</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    translations: np.ndarray</span>
+<span class="sd">        Array with translations of each orientations (n, d).</span>
+<span class="sd">    rotations: np.ndarray</span>
+<span class="sd">        Array with euler angles of each orientation in zxy convention (n, d).</span>
+<span class="sd">    scores: np.ndarray</span>
+<span class="sd">        Array with the score of each orientation (n, ).</span>
+<span class="sd">    details: np.ndarray</span>
+<span class="sd">        Array with additional orientation details (n, ).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">#: Return a numpy array with translations of each orientation (n x d).</span>
