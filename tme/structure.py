@@ -6,102 +6,158 @@
 """
 import warnings
 from copy import deepcopy
-from collections import namedtuple
-from typing import List, Dict, Tuple
 from itertools import groupby
 from dataclasses import dataclass
+from collections import namedtuple
+from typing import List, Dict, Tuple
 from os.path import splitext, basename
 
 import numpy as np
 
-from .parser import PDBParser, MMCIFParser
-from .matching_utils import (
-    rigid_transform,
-    _format_mmcif_colunns,
-    minimum_enclosing_box,
-)
-from .helpers import atom_profile
 from .types import NDArray
+from .preprocessor import atom_profile
+from .parser import PDBParser, MMCIFParser
+from .matching_utils import rigid_transform, minimum_enclosing_box
 
 
 @dataclass(repr=False)
 class Structure:
     """
-    Represents atomic structures in accordance with the Protein Data Bank (PDB)
-    format specification.
+    Represents atomic structures per the Protein Data Bank (PDB) specification.
+
+    Examples
+    --------
+    The following achieves the definition of a :py:class:`Structure` instance
+
+    >>> from tme import Structure
+    >>> structure = Structure(
+    >>>     record_type=["ATOM", "ATOM", "ATOM"],
+    >>>     atom_serial_number=[0, 1, 2] ,
+    >>>     atom_name=["C", "N", "H"],
+    >>>     atom_coordinate=[[30,15,10], [35, 20, 15], [35,25,20]],
+    >>>     alternate_location_indicator=[".", ".", "."],
+    >>>     residue_name=["GLY", "GLY", "HIS"],
+    >>>     chain_identifier=["A", "A", "B"],
+    >>>     residue_sequence_number=[0, 0, 1],
+    >>>     code_for_residue_insertion=["?", "?", "?"],
+    >>>     occupancy=[0, 0, 0],
+    >>>     temperature_factor=[0, 0, 0],
+    >>>     segment_identifier=["1", "1", "1"],
+    >>>     element_symbol=["C", "N", "C"],
+    >>>     charge=["?", "?", "?"],
+    >>>     metadata={},
+    >>> )
+    >>> structure
+    Unique Chains: A-B, Atom Range: 0-2 [N = 3], Residue Range: 0-1 [N = 3]
+
+    :py:class:`Structure` instances support a range of subsetting operations based on
+    atom indices
+
+    >>> structure[1]
+    Unique Chains: A, Atom Range: 1-1 [N = 1], Residue Range: 0-0 [N = 1]
+    >>> structure[(False, False, True)]
+    Unique Chains: B, Atom Range: 2-2 [N = 1], Residue Range: 1-1 [N = 1]
+    >>> structure[(1,2)]
+    Unique Chains: A-B, Atom Range: 1-2 [N = 2], Residue Range: 0-1 [N = 2]
+
+    They can be written to disk in a range of formats using :py:meth:`Structure.to_file`
+
+    >>> structure.to_file("test.pdb") # Writes a PDB file to disk
+    >>> structure.to_file("test.cif") # Writes a mmCIF file to disk
+
+    New instances can be created from a range of formats using
+    :py:meth:`Structure.from_file`
+
+    >>> Structure.from_file("test.pdb") # Reads PDB file from disk
+    Unique Chains: A-B, Atom Range: 0-2 [N = 3], Residue Range: 0-1 [N = 3]
+    >>> Structure.from_file("test.cif") # Reads mmCIF file from disk
+    Unique Chains: A-B, Atom Range: 0-2 [N = 3], Residue Range: 0-1 [N = 3]
+
+    Class instances can be discretized on grids and converted to
+    :py:class:`tme.density.Density` instances using :py:meth:`Structure.to_volume`
+    or :py:meth:`tme.density.Density.from_structure`.
+
+    >>> volume, origin, sampling_rate = structure.to_volume(shape=(50,40,30))
 
     References
     ----------
-    .. [1]  https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/tutorials/pdbintro.html
+    .. [1] https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/tutorials/pdbintro.html
+    .. [2] https://www.ccp4.ac.uk/html/mmcifformat.html
+
     """
 
-    #: Return a numpy array with record types, e.g. ATOM, HETATM.
+    #: Array of record types, e.g.ATOM.
     record_type: NDArray
 
-    #: Return a numpy array with serial number of each atom.
+    #: Array of serial numbers.
     atom_serial_number: NDArray
 
-    #: Return a numpy array with name of each atom.
+    #: Array of atom names.
     atom_name: NDArray
 
-    #: Return a numpy array with coordinates of each atom in x, y, z.
+    #: Array of x,y,z atom coordinates.
     atom_coordinate: NDArray
 
-    #: Return a numpy array with alternate location indicates of each atom.
+    #: Array of alternate location indices.
     alternate_location_indicator: NDArray
 
-    #: Return a numpy array with originating residue names of each atom.
+    #: Array of residue names.
     residue_name: NDArray
 
-    #: Return a numpy array with originating structure chain of each atom.
+    #: Array of chain identifiers.
     chain_identifier: NDArray
 
-    #: Return a numpy array with originating residue id of each atom.
+    #: Array of residue ids.
     residue_sequence_number: NDArray
 
-    #: Return a numpy array with insertion information d of each atom.
+    #: Array of insertion information.
     code_for_residue_insertion: NDArray
 
-    #: Return a numpy array with occupancy factors of each atom.
+    #: Array of occupancy factors.
     occupancy: NDArray
 
-    #: Return a numpy array with B-factors for each atom.
+    #: Array of B-factors.
     temperature_factor: NDArray
 
-    #: Return a numpy array with segment identifier for each atom.
+    #: Array of segment identifiers.
     segment_identifier: NDArray
 
-    #: Return a numpy array with element symbols of each atom.
+    #: Array of element symbols.
     element_symbol: NDArray
 
-    #: Return a numpy array with charges of each atom.
+    #: Array of charges.
     charge: NDArray
 
-    #: Returns a dictionary with class instance metadata.
-    details: dict
+    #: Metadata dictionary.
+    metadata: dict
 
     def __post_init__(self, *args, **kwargs):
         """
-        Initialize the structure and populate header details.
+        Initialize the structure and populate header metadata.
 
         Raises
         ------
         ValueError
-            If other NDArray attributes to not match the number of atoms.
-            If the shape of atom_coordinates and chain_identifier doesn't match.
+            If NDArray attributes does not match the number of atoms.
         """
-        self._elements = Elements()
-        self.details = self._populate_details(self.details)
+        for attribute in self.__dict__:
+            value = getattr(self, attribute)
+            target_type = self.__annotations__.get(attribute, None)
+            if target_type == NDArray:
+                setattr(self, attribute, np.atleast_1d(np.array(value)))
 
         n_atoms = self.atom_coordinate.shape[0]
         for attribute in self.__dict__:
             value = getattr(self, attribute)
-            if type(value) != np.ndarray:
+            if not isinstance(value, np.ndarray):
                 continue
             if value.shape[0] != n_atoms:
                 raise ValueError(
                     f"Expected shape of {attribute}: {n_atoms}, got {value.shape[0]}."
                 )
+
+        self._elements = Elements()
+        self.metadata = self._populate_metadata(self.metadata)
 
     def __getitem__(self, indices: List[int]) -> "Structure":
         """
@@ -138,22 +194,17 @@ class Structure:
             "charge",
         )
         kwargs = {attr: getattr(self, attr)[indices] for attr in attributes}
-        ret = self.__class__(**kwargs, details={})
+        ret = self.__class__(**kwargs, metadata={})
         return ret
 
     def __repr__(self):
         """
         Return a string representation of the Structure.
-
-        Returns
-        -------
-        str
-            The string representation.
         """
         unique_chains = "-".join(
             [
                 ",".join([str(x) for x in entity])
-                for entity in self.details["unique_chains"]
+                for entity in self.metadata["unique_chains"]
             ]
         )
         min_atom = np.min(self.atom_serial_number)
@@ -172,43 +223,39 @@ class Structure:
         )
         return repr_str
 
-    def get_chains(self) -> List[str]:
-        """
-        Returns a list of available chains.
-
-        Returns
-        -------
-        list
-            The list of available chains.
-        """
-        return list(self.details["chain_weight"].keys())
-
     def copy(self) -> "Structure":
         """
         Returns a copy of the Structure instance.
 
         Returns
         -------
-        Structure
+        :py:class:`Structure`
             The copied Structure instance.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> structure_copy = structure.copy()
+        >>> np.allclose(structure_copy.atom_coordinate, structure.atom_coordinate)
+        True
         """
         return deepcopy(self)
 
-    def _populate_details(self, details: Dict = {}) -> Dict:
+    def _populate_metadata(self, metadata: Dict = {}) -> Dict:
         """
-        Populate the details dictionary with the data from the Structure instance.
+        Populate the metadata dictionary with the data from the Structure instance.
 
         Parameters
         ----------
-        details : dict, optional
-            The initial details dictionary, by default {}.
+        metadata : dict, optional
+            The initial metadata dictionary, by default {}.
 
         Returns
         -------
         dict
-            The populated details dictionary.
+            The populated metadata dictionary.
         """
-        details["weight"] = np.sum(
+        metadata["weight"] = np.sum(
             [self._elements[atype].atomic_weight for atype in self.element_symbol]
         )
 
@@ -220,12 +267,12 @@ class Structure:
             [self._elements[atype].atomic_weight for atype in self.element_symbol],
         )
         labels = self.chain_identifier[idx]
-        details["chain_weight"] = {key: val for key, val in zip(labels, chain_weight)}
+        metadata["chain_weight"] = {key: val for key, val in zip(labels, chain_weight)}
 
-        # Group non-unique chains in separate lists in details["unique_chains"]
-        details["unique_chains"], temp = [], {}
+        # Group non-unique chains in separate lists in metadata["unique_chains"]
+        metadata["unique_chains"], temp = [], {}
         for chain_label in label:
-            index = len(details["unique_chains"])
+            index = len(metadata["unique_chains"])
             chain_sequence = "".join(
                 [
                     str(y)
@@ -236,10 +283,10 @@ class Structure:
             )
             if chain_sequence not in temp:
                 temp[chain_sequence] = index
-                details["unique_chains"].append([chain_label])
+                metadata["unique_chains"].append([chain_label])
                 continue
             idx = temp.get(chain_sequence)
-            details["unique_chains"][idx].append(chain_label)
+            metadata["unique_chains"][idx].append(chain_label)
 
         filtered_data = [
             (label, integer)
@@ -248,12 +295,12 @@ class Structure:
             )
         ]
         filtered_data = sorted(filtered_data, key=lambda x: x[0])
-        details["chain_range"] = {}
+        metadata["chain_range"] = {}
         for label, values in groupby(filtered_data, key=lambda x: x[0]):
             values = [int(x[1]) for x in values]
-            details["chain_range"][label] = (min(values), max(values))
+            metadata["chain_range"][label] = (min(values), max(values))
 
-        return details
+        return metadata
 
     @classmethod
     def from_file(
@@ -264,12 +311,18 @@ class Structure:
         filter_by_residues: set = None,
     ) -> "Structure":
         """
-        Reads in an mmcif or pdb file and converts it into class instance.
+        Reads an atomic structure file and into a :py:class:`Structure` instance.
 
         Parameters
         ----------
         filename : str
-            Path to the mmcif or pdb file.
+            Input file. Supported extensions are:
+
+            +------+-------------------------------------------------------------+
+            | .pdb | Reads a PDB file                                            |
+            +------+-------------------------------------------------------------+
+            | .cif | Reads an mmCIF file                                         |
+            +------+-------------------------------------------------------------+
         keep_non_atom_records : bool, optional
             Wheter to keep residues that are not labelled ATOM.
         filter_by_elements: set, optional
@@ -280,12 +333,34 @@ class Structure:
         Raises
         ------
         ValueError
-            If the extension is not '.pdb' or '.cif'.
+            If the extension is not supported.
 
         Returns
         -------
-        Structure
-            Read in structure file.
+        :py:class:`Structure`
+            Structure instance representing the read in file.
+
+        Examples
+        --------
+        >>> from importlib_resources import files
+        >>> from tme import Structure
+        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> structure = Structure.from_file(filename=fname)
+        >>> structure
+        Unique Chains: A-B, Atom Range: 1-1564 [N = 1564], Residue Range: 142-239 [N = 1564]
+
+        We can include non ATOM entries and restrict the considered elements
+        and residues
+
+        >>> structure = Structure.from_file(
+        >>>     filename=fname,
+        >>>     keep_non_atom_records=True,
+        >>>     filter_by_elements = {"C"},
+        >>>     filter_by_residues = {"GLY"},
+        >>> )
+        >>> structure
+        Unique Chains: A,B, Atom Range: 96-1461 [N = 44], Residue Range: 154-228 [N = 44]
+
         """
         _, file_extension = splitext(basename(filename.upper()))
         if file_extension == ".PDB":
@@ -313,14 +388,14 @@ class Structure:
             keep = np.logical_and(keep, data["record_type"] == "ATOM")
 
         for key in data:
-            if key == "details":
+            if key == "metadata":
                 continue
-            if type(data[key]) == np.ndarray:
+            if isinstance(data[key], np.ndarray):
                 data[key] = data[key][keep]
             else:
                 data[key] = [x for x, flag in zip(data[key], keep) if flag]
 
-        data["details"]["filepath"] = filename
+        data["metadata"]["filepath"] = filename
 
         return cls(**data)
 
@@ -367,12 +442,12 @@ class Structure:
             out_data = [
                 x.strip() for x in result["atom_site"].get(atom_site_key, ["."])
             ]
-            if dtype == int:
+            if dtype is int:
                 out_data = [0 if x == "." else int(x) for x in out_data]
             try:
                 out[out_key] = np.asarray(out_data).astype(dtype)
             except ValueError:
-                default = ["."] if dtype == str else 0
+                default = ["."] if dtype is str else 0
                 print(f"Converting {out_key} to {dtype} failed, set to {default}.")
                 out[out_key] = np.repeat(default, len(out_data)).astype(dtype)
 
@@ -382,7 +457,7 @@ class Structure:
                 continue
             out[key] = np.repeat(value, number_entries // value.size)
 
-        out["details"] = {}
+        out["metadata"] = {}
         out["atom_coordinate"] = np.transpose(
             np.array(
                 [
@@ -405,7 +480,7 @@ class Structure:
         for out_key, (base_key, inner_key, default) in detail_mapping.items():
             if base_key not in result:
                 continue
-            out["details"][out_key] = result[base_key].get(inner_key, default)
+            out["metadata"][out_key] = result[base_key].get(inner_key, default)
 
         return out
 
@@ -446,15 +521,15 @@ class Structure:
             "charge": ("charge", str),
         }
 
-        out = {"details": result["details"]}
+        out = {"metadata": result["details"]}
         for out_key, (inner_key, dtype) in atom_site_mapping.items():
             out_data = [x.strip() for x in result[inner_key]]
-            if dtype == int:
+            if dtype is int:
                 out_data = [0 if x == "." else int(x) for x in out_data]
             try:
                 out[out_key] = np.asarray(out_data).astype(dtype)
             except ValueError:
-                default = "." if dtype == str else 0
+                default = "." if dtype is str else 0
                 print(
                     f"Converting {out_key} to {dtype} failed. Setting {out_key} to {default}."
                 )
@@ -466,19 +541,35 @@ class Structure:
 
     def to_file(self, filename: str) -> None:
         """
-        Writes the Structure instance data to a Protein Data Bank (PDB) or
-        macromolecular Crystallographic Information File (mmCIF) file depending
-        one whether filename ends with '.pdb' or '.cif'.
-
-        Raises
-        ------
-        ValueError
-            If the extension is not '.pdb' or '.cif'.
+        Writes the :py:class:`Structure` instance to disk.
 
         Parameters
         ----------
         filename : str
-            The filename of the file to write.
+            The name of the file to be created. Supported extensions are
+
+            +------+-------------------------------------------------------------+
+            | .pdb | Creates a PDB file                                          |
+            +------+-------------------------------------------------------------+
+            | .cif | Creates an mmCIF file                                       |
+            +------+-------------------------------------------------------------+
+
+        Raises
+        ------
+        ValueError
+            If the extension is not supported.
+
+        Examples
+        --------
+        >>> from importlib_resources import files
+        >>> from tempfile import NamedTemporaryFile
+        >>> from tme import Structure
+        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> oname = NamedTemporaryFile().name
+        >>> structure = Structure.from_file(filename=fname)
+        >>> structure.to_file(f"{oname}.cif") # Writes an mmCIF file to disk
+        >>> structure.to_file(f"{oname}.pdb") # Writes a PDB file to disk
+
         """
         if np.any(np.vectorize(len)(self.chain_identifier) > 2):
             warnings.warn("Chain identifiers longer than one will be shortened.")
@@ -595,7 +686,7 @@ class Structure:
             data["pdbx_PDB_model_num"].append(str(model_num))
 
         output_data = {"atom_site": data}
-        original_file = self.details.get("filepath", "")
+        original_file = self.metadata.get("filepath", "")
         try:
             new_data = {k: v for k, v in MMCIFParser(original_file).items()}
             index = self.atom_serial_number - 1
@@ -622,7 +713,18 @@ class Structure:
             else:
                 ret += "loop_\n"
                 ret += "".join([f"_{category}.{k}\n" for k in subdict])
-                padded_subdict = _format_mmcif_colunns(subdict)
+
+                subdict = {
+                    k: [_format_string(s) for s in v] for k, v in subdict.items()
+                }
+                key_length = {
+                    key: len(max(value, key=lambda x: len(x), default=""))
+                    for key, value in subdict.items()
+                }
+                padded_subdict = {
+                    key: [s.ljust(key_length[key] + 1) for s in values]
+                    for key, values in subdict.items()
+                }
 
                 data = [
                     "".join([str(x) for x in content])
@@ -646,8 +748,23 @@ class Structure:
 
         Returns
         -------
-        Structure
-            A subset of the original structure containing only the specified chain.
+        :py:class:`Structure`
+            A subset of the class instance containing only the specified chains.
+
+        Raises
+        ------
+        ValueError
+            If none of the specified chains exist.
+
+        Examples
+        --------
+        >>> from importlib_resources import files
+        >>> from tme import Structure
+        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> structure = Structure.from_file(filename=fname)
+        >>> structure.subset_by_chain(chain="A")   # Keep A
+        >>> structure.subset_by_chain(chain="A,B") # Keep A and B
+        >>> structure.subset_by_chain(chain="B,C") # Keep B, C does not exist
         """
         chain = np.unique(self.chain_identifier) if chain is None else chain.split(",")
         keep = np.in1d(self.chain_identifier, chain)
@@ -666,10 +783,8 @@ class Structure:
         ----------
         start : int
             The starting residue sequence number.
-
         stop : int
             The ending residue sequence number.
-
         chain : str, optional
             The chain identifier. If multiple chains should be selected they need
             to be a comma separated string, e.g. 'A,B,CE'. If chain None,
@@ -677,8 +792,21 @@ class Structure:
 
         Returns
         -------
-        Structure
+        :py:class:`Structure`
             A subset of the original structure within the specified residue range.
+
+        Raises
+        ------
+        ValueError
+            If none of the specified residue chain combinations exist.
+
+        Examples
+        --------
+        >>> from importlib_resources import files
+        >>> from tme import Structure
+        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> structure = Structure.from_file(filename=fname)
+        >>> structure.subset_by_range(chain="A",start=150,stop=180)
         """
         ret = self.subset_by_chain(chain=chain)
         keep = np.logical_and(
@@ -694,6 +822,15 @@ class Structure:
         -------
         NDArray
             The center of mass of the structure.
+
+        Examples
+        --------
+        >>> from importlib_resources import files
+        >>> from tme import Structure
+        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> structure = Structure.from_file(filename=fname)
+        >>> structure.center_of_mass()
+        array([-0.89391639, 29.94908928, -2.64736741])
         """
         weights = [self._elements[atype].atomic_weight for atype in self.element_symbol]
         return np.dot(self.atom_coordinate.T, weights) / np.sum(weights)
@@ -719,7 +856,19 @@ class Structure:
         Returns
         -------
         Structure
-            The transformed instance of :py:class:`tme.structure.Structure`.
+            The transformed instance of :py:class:`Structure`.
+
+        Examples
+        --------
+        >>> from importlib_resources import files
+        >>> from tme import Structure
+        >>> from tme.matching_utils import get_rotation_matrices
+        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> structure = Structure.from_file(filename=fname)
+        >>> structure.rigid_transform(
+        >>>     rotation_matrix = get_rotation_matrices(60)[2],
+        >>>     translation = (0, 1, -5)
+        >>> )
         """
         out = np.empty_like(self.atom_coordinate.T)
         rigid_transform(
@@ -747,7 +896,17 @@ class Structure:
 
         See Also
         --------
-        :py:meth:`tme.Density.centered`
+        :py:meth:`tme.density.Density.centered`
+
+        Examples
+        --------
+        >>> from importlib_resources import files
+        >>> from tme import Structure
+        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> structure = Structure.from_file(filename=fname)
+        >>> centered_structure, translation = structure.centered()
+        >>> translation
+        array([34.89391639,  4.05091072, 36.64736741])
         """
         center_of_mass = self.center_of_mass()
         enclosing_box = minimum_enclosing_box(coordinates=self.atom_coordinate.T)
@@ -772,10 +931,8 @@ class Structure:
         ----------
         shape : Tuple[int,]
             The desired shape of the output array.
-
         sampling_rate : float
             The sampling rate of the output array in unit of self.atom_coordinate.
-
         origin : Tuple[float,]
             The origin of the coordinate system.
 
@@ -812,11 +969,11 @@ class Structure:
         positions = positions[valid_positions == positions.shape[1], :]
         atom_types = atom_types[valid_positions == positions.shape[1]]
 
-        self.details["nAtoms_outOfBound"] = 0
+        self.metadata["nAtoms_outOfBound"] = 0
         if positions.shape[0] != coordinates.shape[0]:
             out_of_bounds = coordinates.shape[0] - positions.shape[0]
             print(f"{out_of_bounds}/{coordinates.shape[0]} atoms were out of bounds.")
-            self.details["nAtoms_outOfBound"] = out_of_bounds
+            self.metadata["nAtoms_outOfBound"] = out_of_bounds
 
         return positions, atom_types, shape, sampling_rate, origin
 
@@ -834,14 +991,11 @@ class Structure:
         ----------
         positions : Tuple[float, float, float]
             The positions of the atoms.
-
         atoms : Tuple[str]
             The types of the atoms.
-
         sampling_rate : float
             The desired sampling rate in unit of self.atom_coordinate of the
             output array.
-
         volume : NDArray
             The volume to update.
         """
@@ -903,7 +1057,7 @@ class Structure:
         volume : NDArray
             The volume to update.
         lowpass_filter : NDArray
-            Whether the scattering factors hsould be lowpass filtered.
+            Whether the scattering factors should be lowpass filtered.
         downsampling_factor : NDArray
             Downsampling factor for scattering factor computation.
         source : str
@@ -983,39 +1137,71 @@ class Structure:
     def to_volume(
         self,
         shape: Tuple[int] = None,
-        sampling_rate: NDArray = None,
+        sampling_rate: Tuple[float] = None,
         origin: Tuple[float] = None,
         chain: str = None,
         weight_type: str = "atomic_weight",
         scattering_args: Dict = dict(),
-    ) -> Tuple[NDArray, Tuple[int], NDArray]:
+    ) -> Tuple[NDArray, NDArray, NDArray]:
         """
-        Converts atom coordinates of shape [n x 3] x, y, z to a volume with
-        index z, y, x.
+        Maps class instance to a volume.
 
         Parameters
         ----------
-        shape : Tuple[int, ...], optional
-            Desired shape of the output array. If shape is given its expected to be
-            in z, y, x form.
-        sampling_rate : float, optional
-            Sampling rate of the output array in the unit of self.atom_coordinate
-        origin : Tuple[float, ...], optional
-            Origin of the coordinate system. If origin is given its expected to be
-            in z, y, x form.
+        shape : tuple of ints, optional
+            Output array shape in (z,y,x) form.
+        sampling_rate : tuple of float, optional
+            Sampling rate of the output array in units of
+            :py:attr:`Structure.atom_coordinate`
+        origin : tuple of floats, optional
+            Origin of the coordinate system in (z,y,x) form.
         chain : str, optional
-            The chain identifier. If multiple chains should be selected they need
-            to be a comma separated string, e.g. 'A,B,CE'. If chain None,
-            all chains are returned. Default is None.
+            Chain identified. Either single or comma separated string of chains.
+            Defaults to None which returns all chains.
         weight_type : str, optional
-            Which weight should be given to individual atoms.
+            Weight given to individual atoms. Supported weight are:
+
+            +----------------------------+---------------------------------------+
+            | atomic_weight              | Using element unit point mass         |
+            +----------------------------+---------------------------------------+
+            | atomic_number              | Using atomic number point mass        |
+            +----------------------------+---------------------------------------+
+            | van_der_waals_radius       | Using binary van der waal spheres     |
+            +----------------------------+---------------------------------------+
+            | scattering_factors         | Using experimental scattering factors |
+            +----------------------------+---------------------------------------+
+            | lowpass_scattering_factors | Lowpass filtered scattering_factors   |
+            +----------------------------+---------------------------------------+
         scattering_args : dict, optional
             Additional arguments for scattering factor computation.
 
         Returns
         -------
-        Tuple[NDArray, Tuple[int], NDArray]
-            The volume, its origin and the voxel size in Ångstrom.
+        Tuple[NDArray, NDArray, NDArray]
+            Volume, origin and sampling_rate.
+
+        Examples
+        --------
+        >>> from importlib_resources import files
+        >>> from tme import Structure
+        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> structure = Structure.from_file(filename=fname)
+        >>> vol, origin, sampling = structure.to_volume()
+        >>> vol.shape, origin, sampling
+        ((59, 35, 53), array([-30.71,  12.42, -27.15]), array([1., 1., 1.]))
+        >>> vol, origin, sampling = structure.to_volume(sampling_rate=(2.2,1,3))
+        ((27, 35, 18), array([-30.71,  12.42, -27.15]), array([2.2, 1. , 3. ]))
+
+        ``sampling_rate`` and ``origin`` can be set to ensure correct alignment
+        with corresponding density maps such as the ones at EMDB. Analogous to
+        :py:meth:`Structure.subset_by_chain` only parts of the structure can be
+        mapped onto grids using a variety of weighting schemes
+
+        >>> structure.to_volume(weight_type="van_der_waals_radius")
+        >>> structure.to_volume(
+        >>>     weight_type="lowpass_scattering_factors",
+        >>>     scattering_args={"source" : "dt1969", "downsampling_factor" : 1.35},
+        >>> )
         """
         _weight_types = {
             "atomic_weight",
@@ -1071,7 +1257,7 @@ class Structure:
                 **scattering_args,
             )
 
-        self.details.update(temp.details)
+        self.metadata.update(temp.metadata)
         return volume, origin, sampling_rate
 
     @classmethod
@@ -1084,32 +1270,41 @@ class Structure:
         weighted: bool = False,
     ) -> float:
         """
-        Compute root mean square deviation (RMSD) between two structures.
-
-        Both structures need to have the same number of atoms. In practice, this means
-        that *structure2* is a transformed version of *structure1*
+        Compute root mean square deviation (RMSD) between two structures with the
+        same number of atoms.
 
         Parameters
         ----------
-        structure1 : Structure
-            Structure 1.
-
-        structure2 : Structure
-            Structure 2.
-
-        origin : NDArray, optional
-            Origin of the structure coordinate system.
-
-        sampling_rate : float, optional
-            Sampling rate if discretized on a grid in the unit of self.atom_coordinate.
-
+        structure1, structure2 : :py:class:`Structure`
+            Structure instances to compare.
+        origin : tuple of floats, optional
+            Coordinate system origin. For computing RMSD on discretized grids.
+        sampling_rate : tuple of floats, optional
+            Sampling rate in units of :py:attr:`atom_coordinate`.
+            For computing RMSD on discretized grids.
         weighted : bool, optional
-            Whether atoms should be weighted by their atomic weight.
+            Whether atoms should be weighted acoording to their atomic weight.
 
         Returns
         -------
         float
-            Root Mean Square Deviation (RMSD)
+            Root Mean Square Deviation between input structures.
+
+        Examples
+        --------
+        >>> from importlib_resources import files
+        >>> from tme.matching_utils import get_rotation_matrices
+        >>> from tme import Structure
+        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> structure = Structure.from_file(filename=fname)
+        >>> transformed = structure.rigid_transform(
+        >>>     rotation_matrix = get_rotation_matrices(60)[2],
+        >>>     translation = (0, 1, -5)
+        >>> )
+        >>> Structure.compare_structures(structure, transformed)
+        31.35238
+        >>> Structure.compare_structures(structure, structure)
+        0.0
         """
         if origin is None:
             origin = np.zeros(structure1.atom_coordinate.shape[1])
@@ -1118,14 +1313,18 @@ class Structure:
         coordinates2 = structure2.atom_coordinate
         atoms1, atoms2 = structure1.element_symbol, structure2.element_symbol
         if sampling_rate is not None:
-            coordinates1 = np.rint((coordinates1 - origin) / sampling_rate).astype(int)
-            coordinates2 = np.rint((coordinates2 - origin) / sampling_rate).astype(int)
+            coordinates1 = np.rint(
+                np.divide(np.subtract(coordinates1, origin), sampling_rate)
+            ).astype(int)
+            coordinates2 = np.rint(
+                np.divide(np.subtract(coordinates2, origin), sampling_rate)
+            ).astype(int)
 
-        weights1 = np.array(structure1._get_atom_weights(atoms=atoms1))
-        weights2 = np.array(structure2._get_atom_weights(atoms=atoms2))
-        if not weighted:
-            weights1 = np.ones_like(weights1)
-            weights2 = np.ones_like(weights2)
+        weights1 = np.ones_like(structure1.atom_coordinate.shape[0])
+        weights2 = np.ones_like(structure2.atom_coordinate.shape[0])
+        if weighted:
+            weights1 = np.array(structure1._get_atom_weights(atoms=atoms1))
+            weights2 = np.array(structure2._get_atom_weights(atoms=atoms2))
 
         if not np.allclose(coordinates1.shape, coordinates2.shape):
             raise ValueError(
@@ -1150,35 +1349,41 @@ class Structure:
         weighted: bool = False,
     ) -> Tuple["Structure", float]:
         """
-        Align the atom coordinates of structure2 to structure1 using
-        the Kabsch algorithm.
-
-        Both structures need to have the same number of atoms. In practice, this means
-        that *structure2* is a subset of *structure1*
+        Align ``structure2`` to ``structure1`` using the Kabsch Algorithm. Both
+        structures need to have the same number of atoms.
 
         Parameters
         ----------
-        structure1 : Structure
-            Structure 1.
-
-        structure2 : Structure
-            Structure 2.
-
-        origin : NDArray, optional
-            Origin of the structure coordinate system.
-
-        sampling_rate : float, optional
-            Voxel size if discretized on a grid.
-
+        structure1, structure2 : :py:class:`Structure`
+            Structure instances to align.
+        origin : tuple of floats, optional
+            Coordinate system origin. For computing RMSD on discretized grids.
+        sampling_rate : tuple of floats, optional
+            Sampling rate in units of :py:attr:`atom_coordinate`.
+            For computing RMSD on discretized grids.
         weighted : bool, optional
             Whether atoms should be weighted by their atomic weight.
 
         Returns
         -------
-        Structure
-            *structure2* aligned to *structure1*.
+        :py:class:`Structure`
+            ``structure2`` aligned to ``structure1``.
         float
-            Root Mean Square Error (RMSE)
+            Alignment RMSD
+
+        Examples
+        --------
+        >>> from importlib_resources import files
+        >>> from tme import Structure
+        >>> from tme.matching_utils import get_rotation_matrices
+        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> structure = Structure.from_file(filename=fname)
+        >>> transformed = structure.rigid_transform(
+        >>>     rotation_matrix = get_rotation_matrices(60)[2],
+        >>>     translation = (0, 1, -5)
+        >>> )
+        >>> aligned, rmsd = Structure.align_structures(structure, transformed)
+        Initial RMSD: 31.07189 - Final RMSD: 0.00000
         """
         if origin is None:
             origin = np.minimum(
@@ -1240,9 +1445,7 @@ class Structure:
 
 @dataclass(frozen=True, repr=True)
 class Elements:
-    """
-    Lookup table containing information on chemical elements.
-    """
+    """Lookup table for chemical elements."""
 
     Atom = namedtuple(
         "Atom",
@@ -1385,12 +1588,33 @@ class Elements:
         Parameters
         ----------
         key : str
-            The key to use for retrieving the corresponding value from
-            the internal data.
+            Key to retrieve the corresponding value for.
 
         Returns
         -------
-        value
-            The value associated with the provided key in the internal data.
+        namedtuple
+            The Atom tuple associated with the provided key.
         """
         return self._elements.get(key, self._default)
+
+
+def _format_string(string: str) -> str:
+    """
+    Formats a string by adding quotation marks if it contains white spaces.
+
+    Parameters
+    ----------
+    string : str
+        Input string to be formatted.
+
+    Returns
+    -------
+    str
+        Formatted string with added quotation marks if needed.
+    """
+    if " " in string:
+        return f"'{string}'"
+    # Occurs e.g. for C1' atoms. The trailing whitespace is necessary.
+    if string.count("'") == 1:
+        return f'"{string}"'
+    return string

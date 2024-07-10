@@ -4,39 +4,19 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-
+import os
+import pickle
 import inspect
 from typing import Dict, Tuple
 
 import numpy as np
-from numpy.typing import NDArray
+from scipy import ndimage
+from scipy.special import iv as bessel
+from scipy.interpolate import interp1d, splrep, BSpline
+from scipy.optimize import differential_evolution, minimize
 
-from scipy.ndimage import (
-    fourier_gaussian,
-    gaussian_filter,
-    rank_filter,
-    median_filter,
-    zoom,
-    generic_gradient_magnitude,
-    sobel,
-    prewitt,
-    laplace,
-    gaussian_laplace,
-    gaussian_gradient_magnitude,
-)
-from scipy.ndimage import mean as ndimean
-from scipy.signal import convolve, decimate
-from scipy.optimize import differential_evolution
-from pywt import wavelist, wavedecn, waverecn
-from scipy.interpolate import interp1d
-
-from .density import Density
-from .helpers import (
-    window_kaiserb,
-    window_blob,
-    apply_window_filter,
-    Ntree,
-)
+from .types import NDArray
+from .backends import NumpyFFTWBackend
 from .matching_utils import euler_to_rotationmatrix
 
 
@@ -69,8 +49,7 @@ class Preprocessor:
             raise NotImplementedError(
                 f"'{method}' is not supported as a filter method on this class."
             )
-        method_to_call = getattr(self, method)
-        return method_to_call(**parameters)
+        return getattr(self, method)(**parameters)
 
     def method_to_id(self, method: str, parameters: Dict) -> str:
         """
@@ -127,7 +106,7 @@ class Preprocessor:
         NDArray
             The template after applying the Fourier Gaussian filter.
         """
-        fourrier_map = fourier_gaussian(np.fft.fftn(template), sigma)
+        fourrier_map = ndimage.fourier_gaussian(np.fft.fftn(template), sigma)
         template = np.real(np.fft.ifftn(fourrier_map))
 
         return template
@@ -154,7 +133,7 @@ class Preprocessor:
         NDArray
             The template after applying the Gaussian filter in real space.
         """
-        template = gaussian_filter(template, sigma, cval=cutoff_value)
+        template = ndimage.gaussian_filter(template, sigma, cval=cutoff_value)
         return template
 
     def gaussian_filter(
@@ -382,15 +361,15 @@ class Preprocessor:
             Simulated electron densities.
         """
         if edge_algorithm == "sobel":
-            edges = generic_gradient_magnitude(template, sobel)
+            edges = ndimage.generic_gradient_magnitude(template, ndimage.sobel)
         elif edge_algorithm == "prewitt":
-            edges = generic_gradient_magnitude(template, prewitt)
+            edges = ndimage.generic_gradient_magnitude(template, ndimage.prewitt)
         elif edge_algorithm == "laplace":
-            edges = laplace(template)
+            edges = ndimage.laplace(template)
         elif edge_algorithm == "gaussian":
-            edges = gaussian_gradient_magnitude(template, sigma / 2)
+            edges = ndimage.gaussian_gradient_magnitude(template, sigma / 2)
         elif edge_algorithm == "gaussian_laplace":
-            edges = gaussian_laplace(template, sigma / 2)
+            edges = ndimage.gaussian_laplace(template, sigma / 2)
         else:
             raise ValueError(
                 "Supported edge_algorithm values are"
@@ -399,48 +378,15 @@ class Preprocessor:
         edges[edges != 0] = 1
         edges /= edges.max()
 
-        edges = gaussian_filter(edges, sigma)
-        filter = gaussian_filter(template, sigma)
+        edges = ndimage.gaussian_filter(edges, sigma)
+        filt = ndimage.gaussian_filter(template, sigma)
 
         if not reverse:
-            res = template * edges + filter * (1 - edges)
+            res = template * edges + filt * (1 - edges)
         else:
-            res = template * (1 - edges) + filter * (edges)
+            res = template * (1 - edges) + filt * (edges)
 
         return res
-
-    def ntree_filter(
-        self,
-        template: NDArray,
-        sigma_range: Tuple[float, float],
-        target: NDArray = None,
-    ) -> NDArray:
-        """
-        Use dyadic tree to identify volume partitions in *template*
-        and filter them with respect to their occupancy.
-
-        Parameters
-        ----------
-        template : NDArray
-            The input atomic structure map.
-        sigma_range : tuple of float
-            Range of sigma values used to filter volume partitions.
-        target : NDArray, optional
-            If provided, dyadic tree is computed on target rather than template.
-
-        Returns
-        -------
-        NDArray
-            Simulated electron densities.
-        """
-        if target is None:
-            target = template
-
-        tree = Ntree(target)
-
-        filter = tree.filter_chunks(arr=template, sigma_range=sigma_range)
-
-        return filter
 
     def mean_filter(self, template: NDArray, width: NDArray) -> NDArray:
         """
@@ -466,7 +412,7 @@ class Preprocessor:
         filter_width = np.repeat(width, template.ndim // width.size)
         filter_mask = np.ones(filter_width)
         filter_mask = filter_mask / np.sum(filter_mask)
-        template = convolve(template, filter_mask, mode="same")
+        template = ndimage.convolve(template, filter_mask, mode="reflect")
 
         # Sometimes scipy messes up the box sizes ...
         template = self.interpolate_box(box=interpolation_box, arr=template)
@@ -607,7 +553,7 @@ class Preprocessor:
         if size <= 1:
             size = 3
 
-        template = rank_filter(template, rank=rank, size=size)
+        template = ndimage.rank_filter(template, rank=rank, size=size)
         template = self.interpolate_box(box=interpolation_box, arr=template)
 
         return template
@@ -630,7 +576,7 @@ class Preprocessor:
         """
         interpolation_box = template.shape
 
-        template = median_filter(template, size=size)
+        template = ndimage.median_filter(template, size=size)
         template = self.interpolate_box(box=interpolation_box, arr=template)
 
         return template
@@ -655,49 +601,9 @@ class Preprocessor:
         interpolation_box = array.shape
 
         for k in range(template.ndim):
-            array = decimate(array, q=level, axis=k)
+            array = ndimage.decimate(array, q=level, axis=k)
 
-        template = zoom(array, np.divide(template.shape, array.shape))
-        template = self.interpolate_box(box=interpolation_box, arr=template)
-
-        return template
-
-    def wavelet_filter(
-        self,
-        template: NDArray,
-        level: int,
-        wavelet: str = "bior2.2",
-    ) -> NDArray:
-        """
-        Perform dyadic wavelet decomposition.
-
-        Parameters
-        ----------
-        template : NDArray
-            The input atomic structure map.
-        level : int
-            Scale of the wavelet transform.
-        wavelet : str, optional
-            Mother wavelet used for decomposition. Default is 'bior2.2'.
-
-        Returns
-        -------
-        NDArray
-            Simulated electron densities.
-        """
-        if wavelet not in wavelist(kind="discrete"):
-            raise NotImplementedError(
-                "Print argument wavelet has to be one of the following: %s",
-                ", ".join(wavelist(kind="discrete")),
-            )
-
-        template, interpolation_box = template.copy(), template.shape
-        decomp = wavedecn(template, level=level, wavelet=wavelet)
-
-        for i in range(1, level + 1):
-            decomp[i] = {k: np.zeros_like(v) for k, v in decomp[i].items()}
-
-        template = waverecn(coeffs=decomp, wavelet=wavelet)
+        template = ndimage.zoom(array, np.divide(template.shape, array.shape))
         template = self.interpolate_box(box=interpolation_box, arr=template)
 
         return template
@@ -1104,7 +1010,7 @@ class Preprocessor:
                 for i in range(plane.ndim)
             )
             plane[subset] = 1
-            Density.rotate_array(
+            NumpyFFTWBackend().rigid_transform(
                 arr=plane,
                 rotation_matrix=rotation_matrix,
                 out=plane_rotated,
@@ -1208,7 +1114,7 @@ class Preprocessor:
             rotation_matrix = euler_to_rotationmatrix((tilt_angles[index], 0))
             rotation_matrix = rotation_matrix[np.ix_((0, 1), (0, 1))]
 
-            Density.rotate_array(
+            NumpyFFTWBackend().rigid_transform(
                 arr=plane,
                 rotation_matrix=rotation_matrix,
                 out=plane_rotated,
@@ -1447,70 +1353,530 @@ class Preprocessor:
         return ret
 
 
-class LinearWhiteningFilter:
-    @staticmethod
-    def _fftfreqn(
-        shape: Tuple[int],
-        sampling_rate: NDArray,
-        omit_negative_frequencies: bool = False,
-    ):
-        center = np.divide(shape, 2).astype(int)
-        norm = np.multiply(shape, sampling_rate)
+def window_kaiserb(width: int, beta: float = 3.2, order: int = 0) -> NDArray:
+    """
+    Create a Kaiser-Bessel window.
 
-        if omit_negative_frequencies:
-            shape = (*shape[:-1], center[-1] + 1)
-            center = (*center[:-1], 0)
+    Parameters
+    ----------
+    width : int
+        Width of the window.
+    beta : float, optional
+        Beta parameter of the Kaiser-Bessel window. Default is 3.2.
+    order : int, optional
+        Order of the Bessel function. Default is 0.
 
-        indices = np.indices(shape).T
-        indices -= center
-        indices = np.divide(indices, norm)
-        return indices.T
+    Returns
+    -------
+    NDArray
+        Kaiser-Bessel window.
 
-    def filter(
-        self, template: NDArray, n_bins: int = None
-    ) -> Tuple[NDArray, NDArray, NDArray]:
-        max_bins = np.max(template.shape) // 2 + 1
-        n_bins = max_bins if n_bins is None else n_bins
-        n_bins = int(min(n_bins, max_bins))
+    References
+    ----------
+    .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8–20.
+    """
+    window = np.arange(0, width)
+    alpha = (width - 1) / 2.0
+    arr = beta * np.sqrt(1 - ((window - alpha) / alpha) ** 2.0)
 
-        grid = self._fftfreqn(
-            shape=template.shape, sampling_rate=1, omit_negative_frequencies=True
+    return bessel(order, arr) / bessel(order, beta)
+
+
+def window_blob(width: int, beta: float = 3.2, order: int = 2) -> NDArray:
+    """
+    Generate a blob window based on Bessel functions.
+
+    Parameters
+    ----------
+    width : int
+        Width of the window.
+    beta : float, optional
+        Beta parameter. Default is 3.2.
+    order : int, optional
+        Order of the Bessel function. Default is 2.
+
+    Returns
+    -------
+    NDArray
+        Blob window.
+
+    References
+    ----------
+    .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8–20.
+    """
+    window = np.arange(0, width)
+    alpha = (width - 1) / 2.0
+    arr = beta * np.sqrt(1 - ((window - alpha) / alpha) ** 2.0)
+
+    arr = np.divide(np.power(arr, order) * bessel(order, arr), bessel(order, beta))
+    arr[arr != arr] = 0
+    return arr
+
+
+def window_sinckb(omega: float, d: float, dw: float):
+    """
+    Compute the sinc window combined with a Kaiser window.
+
+    Parameters
+    ----------
+    omega : float
+        Reduction factor.
+    d : float
+        Ripple.
+    dw : float
+        Delta w.
+
+    Returns
+    -------
+    ndarray
+        Impulse response of the low-pass filter.
+
+    References
+    ----------
+    .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8–20.
+    """
+    kaiser = kaiser_mask(d, dw)
+    sinc_m = sinc_mask(np.zeros(kaiser.shape), omega)
+
+    mask = sinc_m * kaiser
+
+    return mask / np.sum(mask)
+
+
+def apply_window_filter(
+    arr: NDArray,
+    filter_window: NDArray,
+    mode: str = "reflect",
+    cval: float = 0.0,
+    origin: int = 0,
+):
+    """
+    Apply a window filter on an input array.
+
+    Parameters
+    ----------
+    arr : NDArray,
+        Input array.
+    filter_window : NDArray,
+        Window filter to apply.
+    mode : str, optional
+        Mode for the filtering, default is "reflect".
+    cval : float, optional
+        Value to fill when mode is "constant", default is 0.0.
+    origin : int, optional
+        Origin of the filter window, default is 0.
+
+    Returns
+    -------
+    NDArray,
+        Array after filtering.
+
+    """
+    filter_window = filter_window[::-1]
+    for axs in range(arr.ndim):
+        ndimage.correlate1d(
+            input=arr,
+            weights=filter_window,
+            axis=axs,
+            output=arr,
+            mode=mode,
+            cval=cval,
+            origin=origin,
         )
-        frequency_grid = np.linalg.norm(grid, axis=0)
+    return arr
 
-        _, bin_edges = np.histogram(frequency_grid, bins=n_bins - 1)
-        bins = np.digitize(frequency_grid, bins=bin_edges, right=True)
 
-        fft_shift_axes = tuple(range(template.ndim - 1))
-        fourier_transform = np.fft.fftshift(np.fft.rfftn(template), axes=fft_shift_axes)
-        fourier_spectrum = np.abs(fourier_transform)
+def sinc_mask(mask: NDArray, omega: float) -> NDArray:
+    """
+    Create a sinc mask.
 
-        radial_averages = ndimean(fourier_spectrum, labels=bins, index=np.unique(bins))
-        np.reciprocal(radial_averages, out=radial_averages)
-        np.divide(radial_averages, radial_averages.max(), out=radial_averages)
+    Parameters
+    ----------
+    mask : NDArray
+        Input mask.
+    omega : float
+        Reduction factor.
 
-        np.multiply(fourier_transform, radial_averages[bins], out=fourier_transform)
+    Returns
+    -------
+    NDArray
+        Sinc mask.
+    """
+    # Move filter origin to the center of the mask
+    mask_origin = int((mask.size - 1) / 2)
+    dist = np.arange(-mask_origin, mask_origin + 1)
 
-        ret = np.fft.irfftn(
-            np.fft.ifftshift(fourier_transform, axes=fft_shift_axes), s=template.shape
-        ).real
-        return ret, bin_edges, radial_averages
+    return np.multiply(omega / np.pi, np.sinc((omega / np.pi) * dist))
 
-    def apply(
-        self, template: NDArray, bin_edges: NDArray, radial_averages: NDArray
-    ) -> NDArray:
-        grid = self._fftfreqn(
-            shape=template.shape, sampling_rate=1, omit_negative_frequencies=True
+
+def kaiser_mask(d: float, dw: float) -> NDArray:
+    """
+    Create a Kaiser mask.
+
+    Parameters
+    ----------
+    d : float
+        Ripple.
+    dw : float
+        Delta-w.
+
+    Returns
+    -------
+    NDArray
+        Kaiser mask.
+    """
+    # convert dw from a frequency normalized to 1 to a frequency normalized to pi
+    dw *= np.pi
+    A = -20 * np.log10(d)
+    M = max(1, np.ceil((A - 8) / (2.285 * dw)))
+
+    beta = 0
+    if A > 50:
+        beta = 0.1102 * (A - 8.7)
+    elif A >= 21:
+        beta = 0.5842 * np.power(A - 21, 0.4) + 0.07886 * (A - 21)
+
+    mask_values = np.abs(np.arange(-M, M + 1))
+    mask = np.sqrt(1 - np.power(mask_values / M, 2))
+
+    return np.divide(bessel(0, beta * mask), bessel(0, beta))
+
+
+def electron_factor(
+    dist: NDArray, method: str, atom: str, fourier: bool = False
+) -> NDArray:
+    """
+    Compute the electron factor.
+
+    Parameters
+    ----------
+    dist : NDArray
+        Distance.
+    method : str
+        Method name.
+    atom : str
+        Atom type.
+    fourier : bool, optional
+        Whether to compute the electron factor in Fourier space.
+
+    Returns
+    -------
+    NDArray
+        Computed electron factor.
+    """
+    data = get_scattering_factors(method)
+    n_range = len(data.get(atom, [])) // 2
+    default = np.zeros(n_range * 3)
+
+    res = 0.0
+    a_values = data.get(atom, default)[:n_range]
+    b_values = data.get(atom, default)[n_range : 2 * n_range]
+
+    if method == "dt1969":
+        b_values = data.get(atom, default)[1 : (n_range + 1)]
+
+    for i in range(n_range):
+        a = a_values[i]
+        b = b_values[i]
+
+        if fourier:
+            temp = a * np.exp(-b * np.power(dist, 2))
+        else:
+            b = b / (4 * np.power(np.pi, 2))
+            temp = a * np.sqrt(np.pi / b) * np.exp(-np.power(dist, 2) / (4 * b))
+
+        if not np.isnan(temp).any():
+            res += temp
+
+    return res / (2 * np.pi)
+
+
+def optimize_hlfp(profile, M, T, atom, method, filter_method):
+    """
+    Optimize high-low pass filter (HLFP).
+
+    Parameters
+    ----------
+    profile : NDArray
+        Input profile.
+    M : int
+        Scaling factor.
+    T : float
+        Time step.
+    atom : str
+        Atom type.
+    method : str
+        Method name.
+    filter_method : str
+        Filter method name.
+
+    Returns
+    -------
+    float
+        Fitness value.
+
+    References
+    ----------
+    .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8–20.
+    """
+    # omega, d, dw
+    initial_params = [1.0, 0.01, 1.0 / 8.0]
+    if filter_method == "brute":
+        best_fitness = float("inf")
+        OMEGA, D, DW = np.meshgrid(
+            np.arange(0.7, 1.3, 0.015),
+            np.arange(0.01, 0.2, 0.015),
+            np.arange(0.05, 0.2, 0.015),
         )
-        frequency_grid = np.linalg.norm(grid, axis=0)
+        for omega, d, dw in zip(OMEGA.ravel(), D.ravel(), DW.ravel()):
+            current_fitness = _hlpf_fitness([omega, d, dw], T, M, profile, atom, method)
+            if current_fitness < best_fitness:
+                best_fitness = current_fitness
+                initial_params = [omega, d, dw]
+        final_params = np.array(initial_params)
+    else:
+        res = minimize(
+            _hlpf_fitness,
+            initial_params,
+            args=tuple([T, M, profile, atom, method]),
+            method="SLSQP",
+            bounds=([0.2, 2], [1e-3, 2], [1e-3, 1]),
+        )
+        final_params = res.x
+        if np.any(final_params != final_params):
+            print(f"Solver returned NAs for atom {atom} at {M}" % (atom, M))
+            final_params = final_params
 
-        fft_shift_axes = tuple(range(template.ndim - 1))
-        fourier_transform = np.fft.fftshift(np.fft.rfftn(template), axes=fft_shift_axes)
+    final_params[0] *= np.pi / M
+    mask = window_sinckb(*final_params)
 
-        bins = np.digitize(frequency_grid, bins=bin_edges, right=True)
-        np.multiply(fourier_transform, radial_averages[bins], out=fourier_transform)
-        ret = np.fft.irfftn(
-            np.fft.ifftshift(fourier_transform, axes=fft_shift_axes), s=template.shape
-        ).real
+    if profile.shape[0] > mask.shape[0]:
+        profile_origin = int((profile.size - 1) / 2)
+        mask = window(mask, profile_origin, profile_origin)
 
-        return ret
+    return mask
+
+
+def _hlpf_fitness(
+    params: Tuple[float], T: float, M: float, profile: NDArray, atom: str, method: str
+) -> float:
+    """
+    Fitness function for high-low pass filter optimization.
+
+    Parameters
+    ----------
+    params : tuple of float
+        Parameters [omega, d, dw] for optimization.
+    T : float
+        Time step.
+    M : int
+        Scaling factor.
+    profile : NDArray
+        Input profile.
+    atom : str
+        Atom type.
+    method : str
+        Method name.
+
+    Returns
+    -------
+    float
+        Fitness value.
+
+    References
+    ----------
+    .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8–20.
+    .. [2]  https://github.com/I2PC/xmipp/blob/707f921dfd29cacf5a161535034d28153b58215a/src/xmipp/libraries/data/pdb.cpp#L1344
+    """
+    omega, d, dw = params
+
+    if not (0.7 <= omega <= 1.3) and (0 <= d <= 0.2) and (1e-3 <= dw <= 0.2):
+        return 1e38 * np.random.randint(1, 100)
+
+    mask = window_sinckb(omega=omega * np.pi / M, d=d, dw=dw)
+
+    if profile.shape[0] > mask.shape[0]:
+        profile_origin = int((profile.size - 1) / 2)
+        mask = window(mask, profile_origin, profile_origin)
+    else:
+        filter_origin = int((mask.size - 1) / 2)
+        profile = window(profile, filter_origin, filter_origin)
+
+    f_mask = ndimage.convolve(profile, mask)
+
+    orig = int((f_mask.size - 1) / 2)
+    dist = np.arange(-orig, orig + 1) * T
+    t, c, k = splrep(x=dist, y=f_mask, k=3)
+    i_max = np.ceil(np.divide(f_mask.shape, M))
+    coarse_mask = np.arange(-i_max, i_max + 1) * M
+    spline = BSpline(t, c, k)
+    coarse_values = spline(coarse_mask)
+
+    # padding to retain longer fourier response
+    aux = window(
+        coarse_values, x0=10 * coarse_values.shape[0], xf=10 * coarse_values.shape[0]
+    )
+    f_filter = np.fft.fftn(aux)
+    f_filter_mag = np.abs(f_filter)
+    freq = np.fft.fftfreq(f_filter.size)
+    freq /= M * T
+    amplitude_f = mask.sum() / coarse_values.sum()
+
+    size_f = f_filter_mag.shape[0] * amplitude_f
+    fourier_form_f = electron_factor(dist=freq, atom=atom, method=method, fourier=True)
+
+    valid_freq_mask = freq >= 0
+    f1_values = np.log10(f_filter_mag[valid_freq_mask] * size_f)
+    f2_values = np.log10(np.divide(T, fourier_form_f[valid_freq_mask]))
+    squared_differences = np.square(f1_values - f2_values)
+    error = np.sum(squared_differences)
+    error /= np.sum(valid_freq_mask)
+
+    return error
+
+
+def window(arr, x0, xf, constant_values=0):
+    """
+    Window an array by slicing between x0 and xf and padding if required.
+
+    Parameters
+    ----------
+    arr : ndarray
+        Input array to be windowed.
+    x0 : int
+        Start of the window.
+    xf : int
+        End of the window.
+    constant_values : int or float, optional
+        The constant values to use for padding, by default 0.
+
+    Returns
+    -------
+    ndarray
+        Windowed array.
+    """
+    origin = int((arr.size - 1) / 2)
+
+    xs = origin - x0
+    xe = origin - xf
+
+    if xs >= 0 and xe <= arr.shape[0]:
+        if xs <= arr.shape[0] and xe > 0:
+            arr = arr[xs:xe]
+            xs = 0
+            xe = 0
+        elif xs <= arr.shape[0]:
+            arr = arr[xs:]
+            xs = 0
+    elif xe >= 0 and xe <= arr.shape[0]:
+        arr = arr[:xe]
+        xe = 0
+
+    xs *= -1
+    xe *= -1
+
+    return np.pad(
+        arr, (int(xs), int(xe)), mode="constant", constant_values=constant_values
+    )
+
+
+def atom_profile(
+    M, atom, T=0.08333333, method="peng1995", lfilter=True, filter_method="minimize"
+):
+    """
+    Generate an atom profile using a variety of methods.
+
+    Parameters
+    ----------
+    M : float
+        Down sampling factor.
+    atom : Any
+        Type or representation of the atom.
+    T : float, optional
+        Sampling rate in angstroms/pixel, by default 0.08333333.
+    method : str, optional
+        Method to be used for generating the profile, by default "peng1995".
+    lfilter : bool, optional
+        Whether to apply filter on the profile, by default True.
+    filter_method : str, optional
+        The method for the filter, by default "minimize".
+
+    Returns
+    -------
+    BSpline
+        A spline representation of the atom profile.
+
+    References
+    ----------
+    .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8–20.
+    .. [2]  https://github.com/I2PC/xmipp/blob/707f921dfd29cacf5a161535034d28153b58215a/src/xmipp/libraries/data/pdb.cpp#L1344
+    """
+    M = M / T
+    imax = np.ceil(4 / T * np.sqrt(76.7309 / (2 * np.power(np.pi, 2))))
+    dist = np.arange(-imax, imax + 1) * T
+
+    profile = electron_factor(dist, method, atom)
+
+    if lfilter:
+        window = optimize_hlfp(
+            profile=profile,
+            M=M,
+            T=T,
+            atom=atom,
+            method=method,
+            filter_method=filter_method,
+        )
+        profile = ndimage.convolve(profile, window)
+
+        indices = np.where(profile > 1e-3)
+        min_indices = np.maximum(np.amin(indices, axis=1), 0)
+        max_indices = np.minimum(np.amax(indices, axis=1) + 1, profile.shape)
+        slices = tuple(slice(*coord) for coord in zip(min_indices, max_indices))
+        profile = profile[slices]
+
+    profile_origin = int((profile.size - 1) / 2)
+    dist = np.arange(-profile_origin, profile_origin + 1) * T
+    t, c, k = splrep(x=dist, y=profile, k=3)
+
+    return BSpline(t, c, k)
+
+
+def get_scattering_factors(method: str) -> Dict:
+    """
+    Retrieve scattering factors from a stored file based on the given method.
+
+    Parameters
+    ----------
+    method : str
+        Method name used to get the scattering factors.
+
+    Returns
+    -------
+    Dict
+        Dictionary containing scattering factors for the given method.
+
+    Raises
+    ------
+    ValueError
+        If the method is not found in the stored data.
+
+    """
+    path = os.path.join(os.path.dirname(__file__), "data", "scattering_factors.pickle")
+    with open(path, "rb") as infile:
+        data = pickle.load(infile)
+
+    if method not in data:
+        raise ValueError(f"{method} is not valid. Use {', '.join(data.keys())}.")
+    return data[method]
