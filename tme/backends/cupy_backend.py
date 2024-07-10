@@ -1,35 +1,32 @@
-""" Backend using cupy and GPU acceleration for
-    template matching.
+""" Backend using cupy for template matching.
 
     Copyright (c) 2023 European Molecular Biology Laboratory
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-
 import warnings
-from typing import Tuple, Dict, Callable
+from importlib.util import find_spec
 from contextlib import contextmanager
-
-import numpy as np
-from numpy.typing import NDArray
+from typing import Tuple, Callable, List
 
 from .npfftw_backend import NumpyFFTWBackend
-from ..types import CupyArray
+from ..types import CupyArray, NDArray, shm_type
 
 PLAN_CACHE = {}
+TEXTURE_CACHE = {}
 
 
 class CupyBackend(NumpyFFTWBackend):
     """
-    A cupy based backend for template matching
+    A cupy based matching backend.
     """
 
     def __init__(
         self,
-        float_dtype=None,
-        complex_dtype=None,
-        int_dtype=None,
-        overflow_safe_dtype=None,
+        float_dtype: type = None,
+        complex_dtype: type = None,
+        int_dtype: type = None,
+        overflow_safe_dtype: type = None,
         **kwargs,
     ):
         import cupy as cp
@@ -54,14 +51,29 @@ class CupyBackend(NumpyFFTWBackend):
         self.affine_transform = affine_transform
         self.maximum_filter = maximum_filter
 
-        floating = f"float{self.datatype_bytes(float_dtype) * 8}"
-        integer = f"int{self.datatype_bytes(int_dtype) * 8}"
+        itype = f"int{self.datatype_bytes(int_dtype) * 8}"
+        ftype = f"float{self.datatype_bytes(float_dtype) * 8}"
         self._max_score_over_rotations = self._array_backend.ElementwiseKernel(
-            f"{floating} internal_scores, {floating} scores, {integer} rot_index",
-            f"{floating} out1, {integer} rotations",
+            f"{ftype} internal_scores, {ftype} scores, {itype} rot_index",
+            f"{ftype} out1, {ftype} rotations",
             "if (internal_scores < scores) {out1 = scores; rotations = rot_index;}",
             "max_score_over_rotations",
         )
+        self.norm_scores = cp.ElementwiseKernel(
+            f"{ftype} arr, {ftype} exp_sq, {ftype} sq_exp, {ftype} n_obs, {ftype} eps",
+            f"{ftype} out",
+            """
+            // tmp1 = E(X)^2; tmp2 = E(X^2)
+            float tmp1 = sq_exp / n_obs;
+            float tmp2 = exp_sq / n_obs;
+            tmp1 *= tmp1;
+
+            tmp2 = sqrt(max(tmp2 - tmp1, 0.0));
+            out = (tmp2 < eps) ? 0.0 : arr / (tmp2 * n_obs);
+            """,
+            "norm_scores",
+        )
+        self.texture_available = find_spec("voltools") is not None
 
     def to_backend_array(self, arr: NDArray) -> CupyArray:
         current_device = self._array_backend.cuda.device.get_device_id()
@@ -78,34 +90,11 @@ class CupyBackend(NumpyFFTWBackend):
     def to_cpu_array(self, arr: NDArray) -> NDArray:
         return self.to_numpy_array(arr)
 
-    def sharedarr_to_arr(
-        self, shm: CupyArray, shape: Tuple[int], dtype: str
-    ) -> CupyArray:
-        return shm
-
-    @staticmethod
-    def arr_to_sharedarr(
-        arr: CupyArray, shared_memory_handler: type = None
-    ) -> CupyArray:
+    def from_sharedarr(self, arr: CupyArray) -> CupyArray:
         return arr
 
-    def preallocate_array(self, shape: Tuple[int], dtype: type) -> NDArray:
-        """
-        Returns a byte-aligned array of zeros with specified shape and dtype.
-
-        Parameters
-        ----------
-        shape : Tuple[int]
-            Desired shape for the array.
-        dtype : type
-            Desired data type for the array.
-
-        Returns
-        -------
-        NDArray
-            Byte-aligned array of zeros with specified shape and dtype.
-        """
-        arr = self._array_backend.zeros(shape, dtype=dtype)
+    @staticmethod
+    def to_sharedarr(arr: CupyArray, shared_memory_handler: type = None) -> shm_type:
         return arr
 
     def unravel_index(self, indices, shape):
@@ -116,8 +105,8 @@ class CupyBackend(NumpyFFTWBackend):
             return self._array_backend.unique(ar=ar, axis=axis, *args, **kwargs)
         warnings.warn("Axis argument not yet supported in CupY, falling back to NumPy.")
 
-        ret = np.unique(ar=self.to_numpy_array(ar), axis=axis, *args, **kwargs)
-        if type(ret) != tuple:
+        ret = super().unique(ar=self.to_numpy_array(ar), axis=axis, *args, **kwargs)
+        if isinstance(ret, tuple):
             return self.to_backend_array(ret)
         return tuple(self.to_backend_array(k) for k in ret)
 
@@ -130,34 +119,9 @@ class CupyBackend(NumpyFFTWBackend):
         inverse_fast_shape: Tuple[int] = None,
         **kwargs,
     ) -> Tuple[Callable, Callable]:
-        """
-        Build rfftn and irfftn functions.
+        import cupyx.scipy.fft as cufft
 
-        Parameters
-        ----------
-        fast_shape : tuple
-            Tuple of integers corresponding to fast convolution shape
-            (see :py:meth:`CupyBackend.compute_convolution_shapes`).
-        fast_ft_shape : tuple
-            Tuple of integers corresponding to the shape of the fourier
-            transform array (see :py:meth:`CupyBackend.compute_convolution_shapes`).
-        real_dtype : dtype
-            Numpy dtype of the inverse fourier transform.
-        complex_dtype : dtype
-            Numpy dtype of the fourier transform.
-        inverse_fast_shape : tuple, optional
-            Output shape of the inverse Fourier transform. By default fast_shape.
-        **kwargs: dict, optional
-            Unused keyword arguments.
-
-        Returns
-        -------
-        tuple
-            Tupple containing callable rfft and irfft object.
-        """
         cache = self._array_backend.fft.config.get_plan_cache()
-        cache.set_size(2)
-
         current_device = self._array_backend.cuda.device.get_device_id()
 
         previous_transform = [fast_shape, fast_ft_shape]
@@ -175,11 +139,11 @@ class CupyBackend(NumpyFFTWBackend):
         if real_diff or cmplx_diff:
             cache.clear()
 
-        def rfftn(arr: CupyArray, out: CupyArray) -> None:
-            out[:] = self.fft.rfftn(arr)[:]
+        def rfftn(arr: CupyArray, out: CupyArray) -> CupyArray:
+            return cufft.rfftn(arr)
 
-        def irfftn(arr: CupyArray, out: CupyArray) -> None:
-            out[:] = self.fft.irfftn(arr)[:]
+        def irfftn(arr: CupyArray, out: CupyArray) -> CupyArray:
+            return cufft.irfftn(arr)
 
         PLAN_CACHE[current_device] = [fast_shape, fast_ft_shape]
 
@@ -187,16 +151,16 @@ class CupyBackend(NumpyFFTWBackend):
 
     def compute_convolution_shapes(
         self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
-    ) -> Tuple[Tuple[int], Tuple[int], Tuple[int]]:
-        ret = super().compute_convolution_shapes(arr1_shape, arr2_shape)
-        convolution_shape, fast_shape, fast_ft_shape = ret
-
-        # cuFFT plans do not support automatic padding yet.
+    ) -> Tuple[List[int], List[int], List[int]]:
+        conv_shape, fast_shape, fast_ft_shape = super().compute_convolution_shapes(
+            arr1_shape, arr2_shape
+        )
+        # # cuFFT plans do not support automatic padding yet.
         is_odd = fast_shape[-1] % 2
         fast_shape[-1] += is_odd
         fast_ft_shape[-1] += is_odd
 
-        return convolution_shape, fast_shape, fast_ft_shape
+        return conv_shape, fast_shape, fast_ft_shape
 
     def max_filter_coordinates(self, score_space, min_distance: Tuple[int]):
         score_box = tuple(min_distance for _ in range(score_space.ndim))
@@ -217,169 +181,81 @@ class CupyBackend(NumpyFFTWBackend):
         out = self.var(a, *args, **kwargs)
         return self._array_backend.sqrt(out)
 
-    def rotate_array(
-        self,
-        arr: CupyArray,
-        rotation_matrix: CupyArray,
-        arr_mask: CupyArray = None,
-        translation: CupyArray = None,
-        use_geometric_center: bool = False,
-        out: CupyArray = None,
-        out_mask: CupyArray = None,
-        order: int = 3,
-    ) -> None:
-        """
-        Rotates coordinates of arr according to rotation_matrix.
+    def _get_texture(self, arr: CupyArray, order: int = 3, prefilter: bool = False):
+        key = id(arr)
+        if key in TEXTURE_CACHE:
+            return TEXTURE_CACHE[key]
 
-        If no output array is provided, this method will compute an array with
-        sufficient space to hold all elements. If both `arr` and `arr_mask`
-        are provided, `arr_mask` will be centered according to arr.
+        from voltools import StaticVolume
 
-        Parameters
-        ----------
-        arr : CupyArray
-            The input array to be rotated.
-        arr_mask : CupyArray, optional
-            The mask of `arr` that will be equivalently rotated.
-        rotation_matrix : CupyArray
-            The rotation matrix to apply [d x d].
-        translation : CupyArray
-            The translation to apply [d].
-        use_geometric_center : bool, optional
-            Whether the rotation should be centered around the geometric
-            or mass center. Default is mass center.
-        out : CupyArray, optional
-            The output array to write the rotation of `arr` to.
-        out_mask : CupyArray, optional
-            The output array to write the rotation of `arr_mask` to.
-        order : int, optional
-            Spline interpolation order. Has to be in the range 0-5.
+        # TODO: Manage the size of the cache
+        if len(TEXTURE_CACHE) >= 2:
+            TEXTURE_CACHE.clear()
 
-        Notes
-        -----
-        Only a box of size arr, arr_mask will be consisdered for interpolation
-        in out, out_mask.
-        """
+        interpolation = "filt_bspline"
+        if order == 1:
+            interpolation = "linear"
+        elif order == 3 and not prefilter:
+            interpolation = "bspline"
 
-        rotate_mask = arr_mask is not None
-        return_type = (out is None) + 2 * rotate_mask * (out_mask is None)
-        translation = self.zeros(arr.ndim) if translation is None else translation
-
-        center = self.divide(arr.shape, 2)
-        if not use_geometric_center:
-            center = self.center_of_mass(arr, cutoff=0)
-
-        rotation_matrix_inverted = self.linalg.inv(
-            rotation_matrix.astype(self._overflow_safe_dtype)
-        ).astype(self._float_dtype)
-        transformed_center = rotation_matrix_inverted @ center.reshape(-1, 1)
-        transformed_center = transformed_center.reshape(-1)
-        base_offset = self.subtract(center, transformed_center)
-        offset = self.subtract(base_offset, translation)
-
-        out = self.zeros_like(arr) if out is None else out
-        out_slice = tuple(slice(0, stop) for stop in arr.shape)
-
-        # Applying the prefilter leads to the creation of artifacts in the mask.
-        self.affine_transform(
-            input=arr,
-            matrix=rotation_matrix_inverted,
-            offset=offset,
-            mode="constant",
-            output=out[out_slice],
-            order=order,
-            prefilter=True,
+        current_device = self._array_backend.cuda.device.get_device_id()
+        TEXTURE_CACHE[key] = StaticVolume(
+            arr, interpolation=interpolation, device=f"gpu:{current_device}"
         )
 
-        if rotate_mask:
-            out_mask = self.zeros_like(arr_mask) if out_mask is None else out_mask
-            out_mask_slice = tuple(slice(0, stop) for stop in arr_mask.shape)
-            self.affine_transform(
-                input=arr_mask,
-                matrix=rotation_matrix_inverted,
-                offset=offset,
-                mode="constant",
-                output=out_mask[out_mask_slice],
-                order=order,
-                prefilter=False,
-            )
+        return TEXTURE_CACHE[key]
 
-        match return_type:
-            case 0:
-                return None
-            case 1:
-                return out
-            case 2:
-                return out_mask
-            case 3:
-                return out, out_mask
+    def _rigid_transform(
+        self,
+        data: CupyArray,
+        matrix: CupyArray,
+        output: CupyArray,
+        prefilter: bool,
+        order: int,
+        cache: bool = False,
+    ) -> None:
+        out_slice = tuple(slice(0, stop) for stop in data.shape)
+        if data.ndim == 3 and cache and self.texture_available:
+            # Device memory pool (should) come to rescue performance
+            temp = self.empty(data.shape, data.dtype)
+            texture = self._get_texture(data, order=order, prefilter=prefilter)
+            texture.affine(transform_m=matrix, profile=False, output=temp)
+            output[out_slice] = temp
+            return None
+
+        self.affine_transform(
+            input=data,
+            matrix=matrix,
+            mode="constant",
+            output=output[out_slice],
+            order=order,
+            prefilter=prefilter,
+        )
 
     def get_available_memory(self) -> int:
         with self._array_backend.cuda.Device():
-            (
-                free_memory,
-                available_memory,
-            ) = self._array_backend.cuda.runtime.memGetInfo()
+            free_memory, _ = self._array_backend.cuda.runtime.memGetInfo()
         return free_memory
 
     @contextmanager
     def set_device(self, device_index: int):
-        """
-        Set the active GPU device as a context.
-
-        This method sets the active GPU device for operations within the context.
-
-        Parameters
-        ----------
-        device_index : int
-            Index of the GPU device to be set as active.
-
-        Yields
-        ------
-        None
-            Operates as a context manager, yielding None and providing
-            the set GPU context for enclosed operations.
-        """
         with self._array_backend.cuda.Device(device_index):
             yield
 
     def device_count(self) -> int:
-        """
-        Return the number of available GPU devices.
-
-        Returns
-        -------
-        int
-            Number of available GPU devices.
-        """
         return self._array_backend.cuda.runtime.getDeviceCount()
 
     def max_score_over_rotations(
         self,
-        score_space: CupyArray,
-        internal_scores: CupyArray,
-        internal_rotations: CupyArray,
+        scores: CupyArray,
+        max_scores: CupyArray,
+        rotations: CupyArray,
         rotation_index: int,
-    ):
-        """
-        Modify internal_scores and internal_rotations inplace with scores and rotation
-        index respectively, wherever score_sapce is larger than internal scores.
-
-        Parameters
-        ----------
-        score_space : CupyArray
-            The score space to compare against internal_scores.
-        internal_scores : CupyArray
-            The internal scores to update with maximum scores.
-        internal_rotations : CupyArray
-            The internal rotations corresponding to the maximum scores.
-        rotation_index : int
-            The index representing the current rotation.
-        """
-        self._max_score_over_rotations(
-            internal_scores,
-            score_space,
+    ) -> Tuple[CupyArray, CupyArray]:
+        return self._max_score_over_rotations(
+            max_scores,
+            scores,
             rotation_index,
-            internal_scores,
-            internal_rotations,
+            max_scores,
+            rotations,
         )

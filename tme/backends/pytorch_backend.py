@@ -13,12 +13,12 @@ from multiprocessing.managers import SharedMemoryManager
 
 import numpy as np
 from .npfftw_backend import NumpyFFTWBackend
-from ..types import NDArray, TorchTensor
+from ..types import NDArray, TorchTensor, shm_type
 
 
 class PytorchBackend(NumpyFFTWBackend):
     """
-    A pytorch based backend for template matching
+    A pytorch based matching backend.
     """
 
     def __init__(
@@ -77,18 +77,7 @@ class PytorchBackend(NumpyFFTWBackend):
         self._array_backend.cuda.empty_cache()
 
     def mod(self, x1, x2, *args, **kwargs):
-        x1 = self.to_backend_array(x1)
-        x2 = self.to_backend_array(x2)
         return self._array_backend.remainder(x1, x2, *args, **kwargs)
-
-    def sum(self, *args, **kwargs) -> NDArray:
-        return self._array_backend.sum(*args, **kwargs)
-
-    def mean(self, *args, **kwargs) -> NDArray:
-        return self._array_backend.mean(*args, **kwargs)
-
-    def std(self, *args, **kwargs) -> NDArray:
-        return self._array_backend.std(*args, **kwargs)
 
     def max(self, *args, **kwargs) -> NDArray:
         ret = self._array_backend.amax(*args, **kwargs)
@@ -121,48 +110,27 @@ class PytorchBackend(NumpyFFTWBackend):
     def zeros(self, shape, dtype=None):
         return self._array_backend.zeros(shape, dtype=dtype, device=self.device)
 
-    def preallocate_array(self, shape: Tuple[int], dtype: type) -> NDArray:
-        """
-        Returns a byte-aligned array of zeros with specified shape and dtype.
-
-        Parameters
-        ----------
-        shape : Tuple[int]
-            Desired shape for the array.
-        dtype : type
-            Desired data type for the array.
-
-        Returns
-        -------
-        NDArray
-            Byte-aligned array of zeros with specified shape and dtype.
-        """
-        arr = self._array_backend.zeros(shape, dtype=dtype, device=self.device)
-        return arr
-
     def full(self, shape, fill_value, dtype=None):
         return self._array_backend.full(
             size=shape, dtype=dtype, fill_value=fill_value, device=self.device
         )
 
+    def arange(self, *args, **kwargs):
+        return self._array_backend.arange(*args, **kwargs, device=self.device)
+
     def datatype_bytes(self, dtype: type) -> int:
         temp = self.zeros(1, dtype=dtype)
         return temp.element_size()
 
-    def fill(self, arr: TorchTensor, value: float):
+    def fill(self, arr: TorchTensor, value: float) -> TorchTensor:
         arr.fill_(value)
+        return arr
 
-    def astype(self, arr, dtype):
+    def astype(self, arr: TorchTensor, dtype: type) -> TorchTensor:
         return arr.to(dtype)
 
     def flip(self, a, axis, **kwargs):
         return self._array_backend.flip(input=a, dims=axis, **kwargs)
-
-    def arange(self, *args, **kwargs):
-        return self._array_backend.arange(*args, **kwargs, device=self.device)
-
-    def stack(self, *args, **kwargs):
-        return self._array_backend.stack(*args, **kwargs)
 
     def topk_indices(self, arr, k):
         temp = arr.reshape(-1)
@@ -247,12 +215,11 @@ class PytorchBackend(NumpyFFTWBackend):
     def repeat(self, *args, **kwargs):
         return self._array_backend.repeat_interleave(*args, **kwargs)
 
-    def sharedarr_to_arr(
-        self, shm: TorchTensor, shape: Tuple[int], dtype: str
-    ) -> TorchTensor:
+    def from_sharedarr(self, args) -> TorchTensor:
         if self.device == "cuda":
-            return shm
+            return args[0]
 
+        shm, shape, dtype = args
         required_size = int(self._array_backend.prod(self.to_backend_array(shape)))
 
         ret = self._array_backend.frombuffer(shm.buf, dtype=dtype)[
@@ -260,9 +227,9 @@ class PytorchBackend(NumpyFFTWBackend):
         ].reshape(shape)
         return ret
 
-    def arr_to_sharedarr(
+    def to_sharedarr(
         self, arr: TorchTensor, shared_memory_handler: type = None
-    ) -> TorchTensor:
+    ) -> shm_type:
         if self.device == "cuda":
             return arr
 
@@ -275,7 +242,7 @@ class PytorchBackend(NumpyFFTWBackend):
 
         shm.buf[:nbytes] = arr.numpy().tobytes()
 
-        return shm
+        return shm, arr.shape, arr.dtype
 
     def transpose(self, arr):
         return arr.permute(*self._array_backend.arange(arr.ndim - 1, -1, -1))
@@ -283,16 +250,17 @@ class PytorchBackend(NumpyFFTWBackend):
     def power(self, *args, **kwargs):
         return self._array_backend.pow(*args, **kwargs)
 
-    def rotate_array(
+    def rigid_transform(
         self,
         arr: TorchTensor,
         rotation_matrix: TorchTensor,
         arr_mask: TorchTensor = None,
         translation: TorchTensor = None,
+        use_geometric_center: bool = False,
         out: TorchTensor = None,
         out_mask: TorchTensor = None,
         order: int = 1,
-        **kwargs,
+        cache: bool = False,
     ):
         """
         Rotates the given tensor `arr` based on the provided `rotation_matrix`.
@@ -353,8 +321,6 @@ class PytorchBackend(NumpyFFTWBackend):
             raise ValueError(
                 f"Got {order} but supported interpolation orders are: {modes}."
             )
-        rotate_mask = arr_mask is not None
-        return_type = (out is None) + 2 * rotate_mask * (out_mask is None)
 
         out = self.zeros_like(arr) if out is None else out
         if translation is None:
@@ -374,7 +340,7 @@ class PytorchBackend(NumpyFFTWBackend):
             mode=mode,
         )
 
-        if rotate_mask:
+        if arr_mask is not None:
             out_mask_slice = tuple(slice(0, x) for x in arr_mask.shape)
             if out_mask is None:
                 out_mask = self._array_backend.zeros_like(arr_mask)
@@ -385,15 +351,7 @@ class PytorchBackend(NumpyFFTWBackend):
                 mode=mode,
             )
 
-        match return_type:
-            case 0:
-                return None
-            case 1:
-                return out
-            case 2:
-                return out_mask
-            case 3:
-                return out, out_mask
+        return out, out_mask
 
     def build_fft(
         self,
@@ -402,38 +360,17 @@ class PytorchBackend(NumpyFFTWBackend):
         inverse_fast_shape: Tuple[int] = None,
         **kwargs,
     ) -> Tuple[Callable, Callable]:
-        """
-        Build fft builder functions.
-
-        Parameters
-        ----------
-        fast_shape : tuple
-            Tuple of integers corresponding to fast convolution shape
-            (see :py:meth:`PytorchBackend.compute_convolution_shapes`).
-        fast_ft_shape : tuple
-            Tuple of integers corresponding to the shape of the Fourier
-            transform array (see :py:meth:`PytorchBackend.compute_convolution_shapes`).
-        inverse_fast_shape : tuple, optional
-            Output shape of the inverse Fourier transform. By default fast_shape.
-        **kwargs : dict, optional
-            Unused keyword arguments.
-
-        Returns
-        -------
-        tuple
-            Tupple containing callable rfft and irfft object.
-        """
         if inverse_fast_shape is None:
             inverse_fast_shape = fast_shape
 
         def rfftn(
             arr: TorchTensor, out: TorchTensor, shape: Tuple[int] = fast_shape
-        ) -> None:
+        ) -> TorchTensor:
             return self._array_backend.fft.rfftn(arr, s=shape, out=out)
 
         def irfftn(
             arr: TorchTensor, out: TorchTensor, shape: Tuple[int] = inverse_fast_shape
-        ) -> None:
+        ) -> TorchTensor:
             return self._array_backend.fft.irfftn(arr, s=shape, out=out)
 
         return rfftn, irfftn
@@ -445,30 +382,6 @@ class PytorchBackend(NumpyFFTWBackend):
         translation: TorchTensor,
         mode,
     ) -> TorchTensor:
-        """
-        Performs an affine transformation on the given tensor.
-
-        The affine transformation is defined by the provided `rotation_matrix`
-        and the `translation` vector. The transformation is applied to the
-        input tensor `arr`.
-
-        Parameters
-        ----------
-        arr : TorchTensor
-            The input tensor on which the transformation will be applied.
-        rotation_matrix : TorchTensor
-            The matrix defining the rotation component of the transformation.
-        translation : TorchTensor
-            The vector defining the translation to be applied post rotation.
-        mode : str
-            Interpolation mode to use. Options are: 'nearest', 'bilinear', 'bicubic'.
-
-        Returns
-        -------
-        TorchTensor
-            The tensor after applying the affine transformation.
-        """
-
         transformation_matrix = self._array_backend.zeros(
             arr.ndim, arr.ndim + 1, device=arr.device, dtype=arr.dtype
         )
@@ -495,22 +408,6 @@ class PytorchBackend(NumpyFFTWBackend):
 
     @contextmanager
     def set_device(self, device_index: int):
-        """
-        Set the active GPU device as a context.
-
-        This method sets the active GPU device for operations within the context.
-
-        Parameters
-        ----------
-        device_index : int
-            Index of the GPU device to be set as active.
-
-        Yields
-        ------
-        None
-            Operates as a context manager, yielding None and providing
-            the set GPU context for enclosed operations.
-        """
         if self.device == "cuda":
             with self._array_backend.cuda.device(device_index):
                 yield
@@ -518,28 +415,7 @@ class PytorchBackend(NumpyFFTWBackend):
             yield None
 
     def device_count(self) -> int:
-        """
-        Return the number of available GPU devices.
-
-        Returns
-        -------
-        int
-            Number of available GPU devices.
-        """
         return self._array_backend.cuda.device_count()
 
     def reverse(self, arr: TorchTensor) -> TorchTensor:
-        """
-        Reverse the order of elements in a tensor along all its axes.
-
-        Parameters
-        ----------
-        tensor : TorchTensor
-            Input tensor.
-
-        Returns
-        -------
-        TorchTensor
-            Reversed tensor.
-        """
         return self._array_backend.flip(arr, [i for i in range(arr.ndim)])

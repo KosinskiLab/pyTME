@@ -9,12 +9,12 @@ from typing import Tuple, List, Callable
 import numpy as np
 
 from .npfftw_backend import NumpyFFTWBackend
-from ..types import NDArray, MlxArray, Scalar
+from ..types import NDArray, MlxArray, Scalar, shm_type
 
 
 class MLXBackend(NumpyFFTWBackend):
     """
-    A MLX based backend for template matching.
+    A MLX based matching backend.
     """
 
     def __init__(
@@ -72,6 +72,15 @@ class MLXBackend(NumpyFFTWBackend):
             return None
         return self._array_backend.add(x1, x2, **kwargs)
 
+    def multiply(self, x1, x2, out: MlxArray = None, **kwargs) -> MlxArray:
+        x1 = self.to_backend_array(x1)
+        x2 = self.to_backend_array(x2)
+
+        if out is not None:
+            out[:] = self._array_backend.multiply(x1, x2, **kwargs)
+            return None
+        return self._array_backend.multiply(x1, x2, **kwargs)
+
     def std(self, arr: MlxArray, axis) -> Scalar:
         return self._array_backend.sqrt(arr.var(axis=axis))
 
@@ -84,30 +93,12 @@ class MLXBackend(NumpyFFTWBackend):
     def tobytes(self, arr):
         return self.to_numpy_array(arr).tobytes()
 
-    def preallocate_array(self, shape: Tuple[int], dtype: type = None) -> NDArray:
-        """
-        Returns a byte-aligned array of zeros with specified shape and dtype.
-
-        Parameters
-        ----------
-        shape : Tuple[int]
-            Desired shape for the array.
-        dtype : type, optional
-            Desired data type for the array.
-
-        Returns
-        -------
-        NDArray
-            Byte-aligned array of zeros with specified shape and dtype.
-        """
-        arr = self._array_backend.zeros(shape, dtype=dtype)
-        return arr
-
     def full(self, shape, fill_value, dtype=None):
         return self._array_backend.full(shape=shape, dtype=dtype, vals=fill_value)
 
-    def fill(self, arr: MlxArray, value: Scalar) -> None:
+    def fill(self, arr: MlxArray, value: Scalar) -> MlxArray:
         arr[:] = value
+        return arr
 
     def zeros(self, shape: Tuple[int], dtype: type = None) -> MlxArray:
         return self._array_backend.zeros(shape=shape, dtype=dtype)
@@ -189,13 +180,11 @@ class MLXBackend(NumpyFFTWBackend):
 
         return rfftn, irfftn
 
-    def sharedarr_to_arr(
-        self, shape: Tuple[int], dtype: str, shm: MlxArray
-    ) -> MlxArray:
-        return shm
+    def from_sharedarr(self, arr: MlxArray) -> MlxArray:
+        return arr
 
     @staticmethod
-    def arr_to_sharedarr(arr: MlxArray, shared_memory_handler: type = None) -> MlxArray:
+    def to_sharedarr(arr: MlxArray, shared_memory_handler: type = None) -> shm_type:
         return arr
 
     def topk_indices(self, arr: NDArray, k: int):
@@ -204,7 +193,7 @@ class MLXBackend(NumpyFFTWBackend):
         ret = [self.to_backend_array(x) for x in ret]
         return ret
 
-    def rotate_array(
+    def rigid_transform(
         self,
         arr: NDArray,
         rotation_matrix: NDArray,
@@ -214,10 +203,8 @@ class MLXBackend(NumpyFFTWBackend):
         out: NDArray = None,
         out_mask: NDArray = None,
         order: int = 3,
+        **kwargs,
     ) -> None:
-        rotate_mask = arr_mask is not None
-        return_type = (out is None) + 2 * rotate_mask * (out_mask is None)
-
         arr = self.to_numpy_array(arr)
         rotation_matrix = self.to_numpy_array(rotation_matrix)
 
@@ -233,7 +220,7 @@ class MLXBackend(NumpyFFTWBackend):
         if out_mask is not None:
             out_mask_pass = self.to_numpy_array(out_mask)
 
-        ret = NumpyFFTWBackend().rotate_array(
+        ret = NumpyFFTWBackend().rigid_transform(
             arr=arr,
             rotation_matrix=rotation_matrix,
             arr_mask=arr_mask,
@@ -258,15 +245,7 @@ class MLXBackend(NumpyFFTWBackend):
         if out_mask is not None:
             out_mask[:] = self.to_backend_array(out_mask_pass)
 
-        match return_type:
-            case 0:
-                return None
-            case 1:
-                return out
-            case 2:
-                return out_mask
-            case 3:
-                return out, out_mask
+        return out, out_mask
 
     def indices(self, arr: List) -> MlxArray:
         ret = NumpyFFTWBackend().indices(arr)

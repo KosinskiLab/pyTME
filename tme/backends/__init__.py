@@ -12,6 +12,7 @@ from .npfftw_backend import NumpyFFTWBackend
 from .pytorch_backend import PytorchBackend
 from .cupy_backend import CupyBackend
 from .mlx_backend import MLXBackend
+from .jax_backend import JaxBackend
 
 
 class BackendManager:
@@ -47,20 +48,19 @@ class BackendManager:
 
     Notes
     -----
-    To add custom backends, use the `add_backend` method. To switch
-    between backends, use the `change_backend` method. Note that the backend
-    has to be reinitialzed when using fork-based parallelism.
+    The backend has to be reinitialzed when using fork-based parallelism.
     """
 
     def __init__(self):
         self._BACKEND_REGISTRY = {
-            "cpu_backend": NumpyFFTWBackend,
+            "numpyfftw": NumpyFFTWBackend,
             "pytorch": PytorchBackend,
             "cupy": CupyBackend,
             "mlx": MLXBackend,
+            "jax": JaxBackend,
         }
         self._backend = NumpyFFTWBackend()
-        self._backend_name = "cpu_backend"
+        self._backend_name = "numpyfftw"
         self._backend_args = {}
 
     def __repr__(self):
@@ -99,7 +99,8 @@ class BackendManager:
         Raises
         ------
         ValueError
-            If the provided backend_instance does not inherit from MatchingBackend.
+            If the provided backend_instance does not inherit from
+            :py:class:`MatchingBackend`.
         """
         if not issubclass(backend_class, MatchingBackend):
             raise ValueError("backend_class needs to inherit from MatchingBackend.")

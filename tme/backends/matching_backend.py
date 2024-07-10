@@ -6,11 +6,23 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Tuple, Callable, List
+from typing import Tuple, Callable, List, Any
 from multiprocessing import shared_memory
 
 from numpy.typing import NDArray
-from ..types import ArrayLike, Scalar
+from ..types import ArrayLike, Scalar, shm_type
+
+
+def _create_metafunction(func_name: str) -> Callable:
+    """
+    Returns a wrapper of ``self._array_backend.func_name``.
+    """
+
+    def metafunction(self, *args, **kwargs) -> Any:
+        backend_func = getattr(self._array_backend, func_name)
+        return backend_func(*args, **kwargs)
+
+    return metafunction
 
 
 class MatchingBackend(ABC):
@@ -30,47 +42,47 @@ class MatchingBackend(ABC):
     array_backend : object
         The backend object providing array functionalities.
     float_dtype : type
-        Data type of real array instances, e.g. np.float32.
+        Data type of float array instances, e.g. np.float32.
     complex_dtype : type
         Data type of complex array instances, e.g. np.complex64.
     int_dtype : type
         Data type of integer array instances, e.g. np.int32.
     overflow_safe_dtype : type
-        Data type than can be used for reduction operations to avoid overflows.
+        Data type than can be used in reduction operations to avoid overflows.
 
     Attributes
     ----------
     _array_backend : object
-        The backend object used to delegate method and attribute calls.
+        The backend object providing array functionalities.
     _float_dtype : type
-        Data type of real array instances, e.g. np.float32.
+        Data type of float array instances, e.g. np.float32.
     _complex_dtype : type
         Data type of complex array instances, e.g. np.complex64.
     _int_dtype : type
         Data type of integer array instances, e.g. np.int32.
     _overflow_safe_dtype : type
-        Data type than can be used for reduction operations to avoid overflows.
+        Data type than can be used in reduction operations to avoid overflows.
     _fundamental_dtypes : Dict
-        Mapping between fundamental int, float and complex python types to
-        array backend specific data types.
+        Maps int, float and cmoplex python types to backend specific data types.
 
     Examples
     --------
     >>> import numpy as np
-    >>> backend = MatchingBackend(
-        array_backend = np,
-        float_dtype = np.float32,
-        complex_dtype = np.complex64,
-        int_dtype = np.int32
-    )
+    >>> from tme.backends import NumpyFFTWBackend
+    >>> backend = NumpyFFTWBackend(
+    >>>     array_backend = np,
+    >>>     float_dtype = np.float32,
+    >>>     complex_dtype = np.complex64,
+    >>>     int_dtype = np.int32
+    >>> )
     >>> arr = backend.array([1, 2, 3])
     >>> print(arr)
     [1 2 3]
 
     Notes
     -----
-        Developers should be aware of potential naming conflicts between methods and
-        attributes of this class and those of the provided backend.
+    Developers should be aware of potential naming conflicts between methods and
+    attributes of this class and those of the provided backend.
     """
 
     def __init__(
@@ -130,25 +142,6 @@ class MatchingBackend(ABC):
         base_attributes.extend(dir(self._array_backend))
         return sorted(base_attributes)
 
-    @staticmethod
-    def free_sharedarr(link: shared_memory.SharedMemory):
-        """
-        Free shared array at link.
-
-        Parameters
-        ----------
-        link : shared_memory.SharedMemory
-            The shared memory link to be freed.
-        """
-        if type(link) is not shared_memory.SharedMemory:
-            return None
-        try:
-            link.close()
-            link.unlink()
-        # Shared memory has been freed already
-        except FileNotFoundError:
-            pass
-
     @abstractmethod
     def to_backend_array(self, arr: NDArray) -> ArrayLike:
         """
@@ -192,7 +185,7 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def to_cpu_array(self, arr: ArrayLike) -> NDArray:
+    def to_cpu_array(self, arr: ArrayLike) -> ArrayLike:
         """
         Convert an array of a given backend to a CPU array of that backend.
 
@@ -203,8 +196,8 @@ class MatchingBackend(ABC):
 
         Returns
         -------
-        NDArray
-            The numpy array equivalent of arr.
+        ArrayLike
+            The CPU array equivalent of arr.
 
         See Also
         --------
@@ -230,8 +223,7 @@ class MatchingBackend(ABC):
         arr2 : ArrayLike
             Input array.
         out : ArrayLike, optional
-            Optional output array to store the result. If provided, it must have a shape
-            that the inputs broadcast to.
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
@@ -253,8 +245,7 @@ class MatchingBackend(ABC):
         arr2 : ArrayLike
             The subtrahend array.
         out : ArrayLike, optional
-            Optional output array to store the result. If provided, it must have a shape
-            that the inputs broadcast to.
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
@@ -276,8 +267,7 @@ class MatchingBackend(ABC):
         arr2 : ArrayLike
             Input array.
         out : ArrayLike, optional
-            Optional output array to store the result. If provided, it must have a shape
-            that the inputs broadcast to.
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
@@ -295,12 +285,11 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         arr1 : ArrayLike
-            The numerator array.
+            The dividend array.
         arr2 : ArrayLike
-            The denominator array.
+            The divisor array.
         out : ArrayLike, optional
-            Optional output array to store the result. If provided, it must have a shape
-            that the inputs broadcast to.
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
@@ -316,33 +305,16 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         arr1 : ArrayLike
-            The numerator array.
+            The dividend array.
         arr2 : ArrayLike
-            The denominator array.
+            The divisor array.
         out : ArrayLike, optional
-            Optional output array to store the result. If provided, it must have a shape
-            that the inputs broadcast to.
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
         ArrayLike
             Element-wise modulus of the input arrays.
-        """
-
-    @abstractmethod
-    def sum(self, arr: ArrayLike) -> Scalar:
-        """
-        Compute the sum of array elements.
-
-        Parameters
-        ----------
-        arr : ArrayLike
-            The array whose sum should be computed.
-
-        Returns
-        -------
-        Scalar
-            Sum of the arr.
         """
 
     @abstractmethod
@@ -355,86 +327,106 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         subscripts : str
-            Specifies the subscripts for summation as comma separated
-            list of subscript label
-        arr1 : ArrayLike
-            Input array.
-        arr2 : ArrayLike
-            Input array.
+            Specifies the subscripts for summation (see  :obj:`numpy.einsum`).
+        arr1, arr2 : ArrayLike
+            Input data.
         out : ArrayLike, optional
-            Optional output array to store the result. If provided, it must have a shape
-            that the inputs broadcast to.
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
         ArrayLike
-            Element-wise sum of the input arrays.
+            Einsum of input arrays.
         """
 
     @abstractmethod
-    def mean(self, arr: ArrayLike) -> Scalar:
+    def sum(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
+        """
+        Compute the sum of array elements.
+
+        Parameters
+        ----------
+        arr : ArrayLike
+            Input data.
+        axis : int or tuple of ints, optional
+            Axis or axes to perform the operation on. Default is all.
+
+        Returns
+        -------
+        ArrayLike
+            Sum of ``arr``.
+        """
+
+    @abstractmethod
+    def mean(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
         """
         Compute the mean of array elements.
 
         Parameters
         ----------
         arr : ArrayLike
-            The array whose mean should be computed.
+            Input data.
+        axis : int or tuple of ints, optional
+            Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
-        Scalar
-            Mean value of the arr.
+        ArrayLike
+            Mean of ``arr``.
         """
 
     @abstractmethod
-    def std(self, arr: ArrayLike, axis: Scalar) -> Scalar:
+    def std(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
         """
         Compute the standad deviation of array elements.
 
         Parameters
         ----------
-        arr : Scalar
-            The array whose standard deviation should be computed.
-        axis : Scalar
-            Axis to perform the operation on.
+        arr : ArrayLike
+            Input data.
+        axis : int or tuple of ints, optional
+            Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
-        Scalar
-            The standard deviation of arr.
+        ArrayLike
+            Standard deviation of ``arr``.
         """
 
     @abstractmethod
-    def max(self, arr: ArrayLike) -> Scalar:
+    def max(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
         """
         Compute the maximum of array elements.
 
         Parameters
         ----------
-        arr : Scalar
-            The array whose maximum should be computed.
+        arr : ArrayLike
+            Input data.
+        axis : int or tuple of ints, optional
+            Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
-        Scalar
-            The maximum of arr.
+        ArrayLike
+            Maximum of ``arr``.
         """
 
     @abstractmethod
-    def min(self, arr: ArrayLike) -> Scalar:
+    def min(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
         """
         Compute the minimum of array elements.
 
         Parameters
         ----------
-        arr : Scalar
-            The array whose maximum should be computed.
+        arr : ArrayLike
+            Input data.
+        axis : int or tuple of ints, optional
+            Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
-        Scalar
-            The maximum of arr.
+        ArrayLike
+            Minimum of ``arr``.
         """
 
     @abstractmethod
@@ -447,14 +439,14 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         arr1, arr2 : ArrayLike
-            Arrays for which element wise maximum will be computed.
+            Input data.
         out : ArrayLike, optional
-            Output array.
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
         ArrayLike
-            Element wise maximum of arr1 and arr2.
+            Element wise maximum of ``arr1`` and ``arr2``.
         """
 
     @abstractmethod
@@ -467,9 +459,9 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         arr1, arr2 : ArrayLike
-            Arrays for which element wise minimum will be computed.
+            Input data.
         out : ArrayLike, optional
-            Output array.
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
@@ -478,51 +470,57 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def sqrt(self, arr: ArrayLike) -> ArrayLike:
+    def sqrt(self, arr: ArrayLike, out: ArrayLike = None) -> ArrayLike:
         """
         Compute the square root of array elements.
 
         Parameters
         ----------
         arr : ArrayLike
-            The array whose square root should be computed.
+            Input data.
+        out : ArrayLike, optional
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
         ArrayLike
-            The squared root of the array.
+            Square root of ``arr``.
         """
 
     @abstractmethod
-    def square(self, arr: ArrayLike) -> ArrayLike:
+    def square(self, arr: ArrayLike, out: ArrayLike = None) -> ArrayLike:
         """
         Compute the square of array elements.
 
         Parameters
         ----------
         arr : ArrayLike
-            The array that should be squared.
+            Input data.
+        out : ArrayLike, optional
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
         ArrayLike
-            The squared arr.
+            Square of ``arr``.
         """
 
     @abstractmethod
-    def abs(self, arr: ArrayLike) -> ArrayLike:
+    def abs(self, arr: ArrayLike, out: ArrayLike = None) -> ArrayLike:
         """
         Compute the absolute of array elements.
 
         Parameters
         ----------
         arr : ArrayLike
-            The array whose absolte should be computed.
+            Input data.
+        out : ArrayLike, optional
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
         ArrayLike
-            The absolute of the array.
+            Absolute value of ``arr``.
         """
 
     @abstractmethod
@@ -533,22 +531,38 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         arr : ArrayLike
-            Input array.
+            Input data.
 
         Returns
         -------
         ArrayLike
-            The transpose of arr.
+            Transpose of ``arr``.
         """
 
-    def power(self, *args, **kwargs) -> ArrayLike:
+    def power(
+        self,
+        arr: ArrayLike = None,
+        power: ArrayLike = None,
+        out: ArrayLike = None,
+        *args,
+        **kwargs,
+    ) -> ArrayLike:
         """
         Compute the n-th power of an array.
 
+        Parameters
+        ----------
+        arr : ArrayLike
+            Input data.
+        power : ArrayLike
+            Power to raise ``arr`` to.
+        arr : ArrayLike
+            Output array to write the result to. Returns a new array by default.
+
         Returns
         -------
         ArrayLike
-            The n-th power of the array
+            N-th power of ``arr``.
         """
 
     def tobytes(self, arr: ArrayLike) -> str:
@@ -558,12 +572,12 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         arr : ArrayLike
-            Input array.
+            Input data.
 
         Returns
         -------
         str
-            Bytestring representation of arr.
+            Bytestring representation of ``arr``.
         """
 
     @abstractmethod
@@ -574,30 +588,25 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         arr : ArrayLike
-            Input array.
+            Input data.
 
         Returns
         -------
         int
-            The number of elements in arr.
+            Number of elements in ``arr``.
         """
 
     @abstractmethod
-    def fill(self, arr: ArrayLike, value: float) -> ArrayLike:
+    def fill(self, arr: ArrayLike, value: Scalar) -> None:
         """
-        Fill arr with value.
+        Fills ``arr`` in-place with a given value.
 
         Parameters
         ----------
         arr : ArrayLike
-            The array that should be filled.
-        value : float
-            The value with which to fill the array.
-
-        Returns
-        -------
-        ArrayLike
-            The array filled with the given value.
+            Input data.
+        value : Scalar
+            The value to fill the array with.
         """
 
     @abstractmethod
@@ -607,7 +616,7 @@ class MatchingBackend(ABC):
 
         Parameters
         ----------
-        shape : Tuple[int]
+        shape : tuple of ints.
             Desired shape for the array.
         dtype : type
             Desired data type for the array.
@@ -625,7 +634,7 @@ class MatchingBackend(ABC):
 
         Parameters
         ----------
-        shape : Tuple[int]
+        shape : tuple of ints.
             Desired shape for the array.
         dtype : type
             Desired data type for the array.
@@ -661,8 +670,7 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         dtype : type
-            Datatype for which the number of bytes is to be determined.
-            This is typically a data type like `np.float32` or `np.int64`.
+            Data type to determine the bytesize of.
 
         Returns
         -------
@@ -685,36 +693,36 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         arr : ArrayLike
-            Input array.
+            Input data.
         a_min : Scalar
             Lower bound.
         a_max : Scalar
             Upper bound.
         out : ArrayLike, optional
-            Output array.
+            Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
         ArrayLike
-            Clipped arr.
+            Clipped ``arr``.
         """
 
     @abstractmethod
-    def flip(
-        self, arr: ArrayLike, a_min: Scalar, a_max: Scalar, out: ArrayLike = None
-    ) -> ArrayLike:
+    def flip(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
         """
         Flip the elements of arr.
 
         Parameters
         ----------
         arr : ArrayLike
-            Input array.
+            Input data.
+        axis : int or tuple of ints, optional
+            Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
         ArrayLike
-            Flipped version of arr.
+            Flipped version of ``arr``.
         """
 
     @abstractmethod
@@ -725,92 +733,107 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         arr : ArrayLike
-            Input array.
+            Input data.
         dtype : type
             Target data type.
 
         Returns
         -------
         ArrayLike
-            Flipped version of arr.
+            Freshly allocated array containing the data of ``arr`` in ``dtype``.
         """
 
     @abstractmethod
-    def arange(self, *args, **kwargs) -> ArrayLike:
+    def arange(
+        self, stop: Scalar, start: Scalar = 0, step: Scalar = 1, *args, **kwargs
+    ) -> ArrayLike:
         """
-        Arange values in increasing order.
+        Arange values in evenly spaced interval.
 
         Parameters
         ----------
-        arr : ArrayLike
-            Input array.
-        dtype : type
-            Target data type.
+        stop : Scalar
+            End of the interval.
+        start : Scalar
+            Start of the interval, zero by default.
+        step : Scalar
+            Interval step size, one by default.
 
         Returns
         -------
         ArrayLike
-            Flipped version of arr.
+            Array of evenly spaced values in specified interval.
         """
 
     def stack(self, *args, **kwargs) -> ArrayLike:
         """
-        Join a sequence of ArrayLike objects along a specified axis.
+        Join a sequence of objects along a new axis.
+
+        Parameters
+        ----------
+        arr : ArrayLike
+            Sequence of arrays.
+        axis : int, optional
+            Axis along which to stack the input arrays.
 
         Returns
         -------
         ArrayLike
-            The joined input objects.
+            Stacked input data.
         """
 
     @abstractmethod
     def concatenate(self, *args, **kwargs) -> ArrayLike:
         """
-        Concatenates arrays along axis.
+        Join a sequence of objects along an existing axis.
 
         Parameters
         ----------
-        arr * : ArrayLike
-            Input arrays
+        arr : ArrayLike
+            Sequence of arrays.
+        axis : int
+            Axis along which to stack the input arrays.
 
         Returns
         -------
         ArrayLike
-            Concatenated input arrays
+            Concatenated input data.
         """
 
     @abstractmethod
     def repeat(self, *args, **kwargs) -> ArrayLike:
         """
-        Repeat each array elements after themselves.
+        Repeat each array element a specified number of times.
 
         Parameters
         ----------
         arr : ArrayLike
-            Input array
+            Input data.
+        repeats : int or tuple of ints
+            Number of each repetitions along axis.
 
         Returns
         -------
         ArrayLike
-            Repeated input array
+            Repeated ``arr``.
         """
 
     @abstractmethod
     def topk_indices(self, arr: NDArray, k: int) -> ArrayLike:
         """
-        Compute indices of largest elements.
+        Determinces the indices of largest elements.
 
         Parameters
         ----------
         arr : ArrayLike
-            Input array.
-        dtype : type
-            Target data type.
+            Input data.
+        k : int
+            Number of maxima to determine.
 
         Returns
         -------
         ArrayLike
-            Flipped version of arr.
+            Indices of ``k`` largest elements in ``arr``.
         """
 
     def indices(self, *args, **kwargs) -> ArrayLike:
@@ -830,39 +853,61 @@ class MatchingBackend(ABC):
 
         Parameters
         ----------
-        *args : tuple
-            Generic arguments.
-        **kwargs : dict
-            Generic keyword arguments.
+        a : ArrayLike
+            Input data.
+        shift : int or tuple of ints, optional
+            Shift along each axis.
 
         Returns
         -------
         ArrayLike
             Array with elements rolled.
-
-        See Also
-        --------
-        numpy.roll : For more detailed documentation on arguments and behavior.
-
-        Examples
-        --------
-        >>> import numpy as np
-        >>> x = np.array([1, 2, 3, 4, 5])
-        >>> np.roll(x, 2)
-        array([4, 5, 1, 2, 3])
         """
 
     @abstractmethod
-    def unique(self, *args, **kwargs) -> Tuple[ArrayLike]:
+    def where(condition, *args) -> ArrayLike:
+        """
+        Return elements from input depending on ``condition``.
+
+        Parameters
+        ----------
+        condition : ArrayLike
+            Binary condition array.
+        *args : ArrayLike
+            Values to choose from.
+
+        Returns
+        -------
+        ArrayLike
+            Array of elements according to ``condition``.
+        """
+
+    @abstractmethod
+    def unique(
+        self,
+        arr: ArrayLike,
+        return_index: bool = False,
+        return_inverse: bool = False,
+        return_counts: bool = False,
+        axis: Tuple[int] = None,
+        *args,
+        **kwargs,
+    ) -> Tuple[ArrayLike]:
         """
         Find the unique elements of an array.
 
         Parameters
         ----------
-        *args : tuple
-            Generic arguments.
-        **kwargs : dict
-            Generic keyword arguments.
+        arr : ArrayLike
+            Input data.
+        return_index : bool, optional
+            Return indices that resulted in unique array, False by default.
+        return_inverse : bool, optional
+            Return indices to reconstruct the input, False by default.
+        return_counts : bool, optional
+            Return number of occurences of each unique element, False by default.
+        axis : int or tuple of ints, optional
+            Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
@@ -871,23 +916,12 @@ class MatchingBackend(ABC):
             arguments are all False (the default), this will be an ArrayLike object
             of the sorted unique values. Otherwise, it's a tuple with one
             or more arrays as specified by those keyword arguments.
-
-        See Also
-        --------
-        numpy.unique : For more detailed documentation on arguments and behavior.
-
-        Examples
-        --------
-        >>> import numpy as np
-        >>> x = np.array([1, 2, 3, 2, 3, 4])
-        >>> np.unique(x)
-        array([1, 2, 3, 4])
         """
 
     @abstractmethod
     def argsort(self, *args, **kwargs) -> ArrayLike:
         """
-        Perform argsort of arr.
+        Compute the indices to sort a given input array.
 
         Parameters
         ----------
@@ -899,7 +933,7 @@ class MatchingBackend(ABC):
         Returns
         -------
         ArrayLike
-            Flipped version of arr.
+            Indices that would sort the input data.
         """
 
     @abstractmethod
@@ -909,15 +943,15 @@ class MatchingBackend(ABC):
 
         Parameters
         ----------
-        arr : ArrayLike
-            Input array.
-        dtype : type
-            Target data type.
+        indices : ArrayLike
+            Input data.
+        shape : tuple of ints
+            Shape of the array used for unraveling.
 
         Returns
         -------
         ArrayLike
-            Flipped version of arr.
+            Array indices.
         """
 
     @abstractmethod
@@ -959,25 +993,7 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def preallocate_array(self, shape: Tuple[int], dtype: type) -> ArrayLike:
-        """
-        Returns an aligned array of zeros with specified shape and dtype.
-
-        Parameters
-        ----------
-        shape : Tuple[int]
-            Desired shape for the array.
-        dtype : type
-            Desired data type for the array.
-
-        Returns
-        -------
-        ArrayLike
-            Byte-aligned array of zeros with specified shape and dtype.
-        """
-
-    @abstractmethod
-    def sharedarr_to_arr(
+    def from_sharedarr(
         self, shape: Tuple[int], dtype: str, shm: shared_memory.SharedMemory
     ) -> ArrayLike:
         """
@@ -999,11 +1015,11 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def arr_to_sharedarr(
-        self, arr: type, shared_memory_handler: type = None
-    ) -> shared_memory.SharedMemory:
+    def to_sharedarr(self, arr: type, shared_memory_handler: type = None) -> shm_type:
         """
-        Converts an array to an object shared in memory.
+        Converts an array to an object shared in memory. The output of this function
+        will only be passed to :py:meth:`from_sharedarr`, hence the return values can
+        be modified in particular backends to match the expected input data.
 
         Parameters
         ----------
@@ -1014,8 +1030,8 @@ class MatchingBackend(ABC):
 
         Returns
         -------
-        shared_memory.SharedMemory
-            The shared memory object containing the numpy array.
+        Tupleshared_memory.SharedMemory, tuple of ints, dtype]
+            The shared memory object containing the numpy array, its shape and dtype.
         """
 
     @abstractmethod
@@ -1051,7 +1067,11 @@ class MatchingBackend(ABC):
         **kwargs,
     ) -> Tuple[Callable, Callable]:
         """
-        Build forward and inverse real fourier transform functions.
+        Build forward and inverse real fourier transform functions. The returned
+        callables have two parameters ``arr`` and ``out`` which correspond to the
+        input and output of the Fourier transform. The methods return the output
+        of the respective function call, regardless of ``out`` being provided or not,
+        analogous to most numpy functions.
 
         Parameters
         ----------
@@ -1065,18 +1085,19 @@ class MatchingBackend(ABC):
             Numpy dtype of the inverse fourier transform.
         complex_dtype : dtype
             Numpy dtype of the fourier transform.
+        inverse_fast_shape : tuple, optional
+            Output shape of the inverse Fourier transform. By default fast_shape.
         fftargs : dict, optional
             Dictionary passed to pyFFTW builders.
-        temp_real : ArrayLike, optional
+        temp_real : NDArray, optional
             Temporary real numpy array, by default None.
-        temp_fft : ArrayLike, optional
+        temp_fft : NDArray, optional
             Temporary fft numpy array, by default None.
 
         Returns
         -------
         tuple
-            Tuple containing function pointers for forward and inverse real
-            fourier transform
+            Tuple of callables for forward and inverse real Fourier transform.
         """
 
     def extract_center(self, arr: ArrayLike, newshape: Tuple[int]) -> ArrayLike:
@@ -1086,14 +1107,18 @@ class MatchingBackend(ABC):
         Parameters
         ----------
         arr : ArrayLike
-            Input array.
+            Input data.
         newshape : tuple
             Desired shape for the central portion.
 
         Returns
         -------
         ArrayLike
-            Central portion of the array with shape `newshape`.
+            Central portion of the array with shape ``newshape``.
+
+        References
+        ----------
+        .. [1] https://github.com/scipy/scipy/blob/v1.11.2/scipy/signal/_signaltools.py
         """
 
     @abstractmethod
@@ -1119,19 +1144,42 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def rotate_array(self, *args, **kwargs):
+    def rigid_transform(
+        self,
+        arr: NDArray,
+        rotation_matrix: NDArray,
+        arr_mask: NDArray = None,
+        translation: NDArray = None,
+        use_geometric_center: bool = True,
+        out: NDArray = None,
+        out_mask: NDArray = None,
+        order: int = 3,
+        **kwargs,
+    ) -> None:
         """
-        Perform a rigid transform of arr.
+        Performs a rigid transformation.
 
         Parameters
         ----------
         arr : ArrayLike
-            Input array.
-
-        Returns
-        -------
-        ArrayLike
-            Transformed version of arr.
+            The input array to be rotated.
+        arr_mask : ArrayLike, optional
+            The mask of `arr` that will be equivalently rotated.
+        rotation_matrix : ArrayLike
+            The rotation matrix to apply (d, d).
+        translation : ArrayLike
+            The translation to apply (d,).
+        use_geometric_center : bool, optional
+            Whether rotation should be performed over the center of mass.
+        out : ArrayLike, optional
+            Location into which the rotation of ``arr`` is written.
+        out_mask : ArrayLike, optional
+            Location into which the rotation of ``arr_mask`` is written.
+        order : int, optional
+            Interpolation order, one is linear and three is cubic. Specific
+            meaning depends on backend.
+        kwargs : dict, optional
+            Keyword arguments relevant to particular backend implementations.
         """
 
     @abstractmethod
@@ -1161,11 +1209,29 @@ class MatchingBackend(ABC):
     @abstractmethod
     def set_device(device_index: int):
         """
-        Set the active device context and operate as context manager for it
+        Set the active GPU device as a context.
+
+        This method sets the active GPU device for operations within the context.
+
+        Parameters
+        ----------
+        device_index : int
+            Index of the GPU device to be set as active.
+
+        Yields
+        ------
+        None
+            Operates as a context manager, yielding None and providing
+            the set GPU context for enclosed operations.
         """
 
     @abstractmethod
     def device_count() -> int:
         """
-        Return the number of available compute devices.
+        Return the number of available compute devices considered by the backend.
+
+        Returns
+        -------
+        int
+            Number of available devices.
         """
