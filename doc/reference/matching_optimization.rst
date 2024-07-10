@@ -49,13 +49,13 @@ Within |project|, non-exhaustive template matching problems are distinguished ba
          Chamfer
          NormalVectorScore
 
-In order to perform non-exhaustive template matching, we have to initialize one of the objects outlined above. The following will showcase :py:class:`NormalizedCrossCorrelation`, but the procedure can be extended analogously to all scores shown above. We can use __call__ method of the created ``score_object`` to compute the score of the current configuration.
+In order to perform non-exhaustive template matching, we have to initialize one of the objects outlined above. The following will showcase :py:class:`CrossCorrelation`, but the procedure can be extended analogously to all scores shown above. We can use __call__ method of the created ``score_object`` to compute the score of the current configuration.
 
 .. code-block:: python
 
    import numpy as np
    from tme.matching_utils import create_mask
-   from tme.matching_optimization import NormalizedCrossCorrelation
+   from tme.matching_optimization import CrossCorrelation
 
    target = create_mask(
       mask_type="ellipse",
@@ -75,14 +75,14 @@ In order to perform non-exhaustive template matching, we have to initialize one 
    template_coordinates = np.array(np.where(template > 0))
    template_weights = template[tuple(template_coordinates)]
 
-   score_object = NormalizedCrossCorrelation(
+   score_object = CrossCorrelation(
       target=target,
       template_coordinates=template_coordinates,
       template_weights=template_weights,
       negate_score=True # Multiply returned score with -1 for minimization
    )
 
-   score_object() # -0.176930596285435
+   score_object() # -543.0
 
 Alternatively, ``score_object`` could have been instantiated using the wrapper function :py:meth:`create_score_object`.
 
@@ -117,8 +117,7 @@ Given our previously defined ``score_object``, we can find the optimal configura
    #        [ 3.9309423e-02,  9.9922705e-01, -2.9481627e-04],
    #        [-9.9922234e-01,  3.9310146e-02,  3.0711093e-03]],
    #  dtype=float32)
-   refined_score
-   # -1.0
+   refined_score #-3069.0
 
 .. note::
 

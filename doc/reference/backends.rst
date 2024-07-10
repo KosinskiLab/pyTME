@@ -34,7 +34,7 @@ Abstract Base Backend
 
    MatchingBackend
 
-Schematically, each backend requires an array implementation, such as the ones provided by ``numpy``, ``pytorch`` or ``mars``. This backend should provide array data structures and define operations on it. Since the syntax of many backends is already similar to numpy, wrapping them is fairly straightfoward. In Addition to array operations, each backend is requried to define a range of template matching specific operations.
+Schematically, each backend requires an array implementation, such as the ones provided by ``numpy``, ``pytorch`` or ``mars``. This backend should provide array data structures and define operations on it. Since the syntax of many backends is already similar to numpy, wrapping them is fairly straightfoward. In addition to array operations, each backend is requried to define a range of template matching specific operations.
 
 With array and template matching specific operations defined, practically any backend can be used to perform template matching with |project|. Below is an overview of methods that are required from each backend.
 
@@ -88,7 +88,6 @@ Array initialization
    MatchingBackend.full
    MatchingBackend.zeros
    MatchingBackend.arange
-   MatchingBackend.preallocate_array
 
 
 Template matching
@@ -98,10 +97,10 @@ Template matching
 
    MatchingBackend.build_fft
    MatchingBackend.topleft_pad
-   MatchingBackend.rotate_array
+   MatchingBackend.to_sharedarr
+   MatchingBackend.from_sharedarr
    MatchingBackend.extract_center
-   MatchingBackend.sharedarr_to_arr
-   MatchingBackend.arr_to_sharedarr
+   MatchingBackend.rigid_transform
    MatchingBackend.max_filter_coordinates
    MatchingBackend.compute_convolution_shapes
 
@@ -140,3 +139,5 @@ Supported Backends
    NumpyFFTWBackend
    PytorchBackend
    CupyBackend
+   MLXBackend
+   JaxBackend

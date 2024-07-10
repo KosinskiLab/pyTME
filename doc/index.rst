@@ -54,5 +54,5 @@
    :titlesonly:
 
    Quickstart <quickstart/index>
-   API reference <reference/index>
+   API <reference/index>
    Index <genindex>

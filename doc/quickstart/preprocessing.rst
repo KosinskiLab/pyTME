@@ -429,7 +429,7 @@ To showcase another possibility of placing emphasis on particular image componen
    from skimage.feature import match_template
 
    from tme import Density
-   from tme.preprocessor import LinearWhiteningFilter
+   from tme.preprocessing import LinearWhiteningFilter
 
    target = Density.from_file("../_static/examples/preprocessing_target.png").data
    template = Density.from_file(
@@ -437,8 +437,11 @@ To showcase another possibility of placing emphasis on particular image componen
    ).data
 
    whitening_filter = LinearWhiteningFilter()
-   target_filtered, bins, averages = whitening_filter.filter(target)
-   template_filtered, bins, averages = whitening_filter.filter(template)
+   target_filter = whitening_filter(data = target)["data"]
+   template_filter = whitening_filter(data = template)["data"]
+
+   target_filtered = np.fft.irfftn(np.fft.rfftn(target) * target_filter)
+   template_filtered = np.fft.irfftn(np.fft.rfftn(template) * template_filter)
 
    fig, axs = plt.subplots(nrows = 1, ncols = 1)
 

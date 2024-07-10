@@ -16,7 +16,6 @@ dependencies=[
     "numpy>=1.22.2",
     "pyfftw>=0.13.1",
     "pytest>=6.2.5",
-    "PyWavelets>=1.2.0",
     "PyYAML>=6.0",
     "scikit-image>=0.19.0",
     "scikit_learn>=1.2.1",
@@ -24,12 +23,24 @@ dependencies=[
     "pybind11",
     "psutil",
     "tifffile",
-    "h5py"
+    "h5py",
 ]
 license = {text = "Proprietary"}
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+cupy = ["cupy", "voltools==0.6.0"]
+pytorch = ["torch"]
+jax = ["jax", "jaxlib"]
+all = [
+    "cupy",
+    "voltools==0.6.0",
+    "torch",
+    "jax",
+    "jaxlib"
 ]
 
 [project.scripts]

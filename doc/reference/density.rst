@@ -59,11 +59,8 @@ Computations
    :toctree: api/
 
    Density.rigid_transform
-   Density.rotate_array
    Density.to_pointcloud
    Density.resample
-   Density.align_origins
-   Density.align_coordinate_systems
    Density.density_boundary
    Density.surface_coordinates
    Density.normal_vectors

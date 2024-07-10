@@ -31,8 +31,7 @@ Attributes and underlying data
    Structure.segment_identifier
    Structure.element_symbol
    Structure.charge
-   Structure.details
-   Structure.get_chains
+   Structure.metadata
 
 Serialization
 ~~~~~~~~~~~~~

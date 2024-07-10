@@ -1,9 +1,12 @@
 .. _analyzer-label:
 
-Template matching score analysis
-================================
-
 .. currentmodule:: tme.analyzer
+
+Analyzers
+=========
+
+Analyzers are internal callbacks that are passed to :py:meth:`tme.matching_exhaustive.scan_subsets` and provide custom processing of exhaustive template matching results. This flexibility enables on the fly analysis, logging, or additional processing at the level of individual rotations. The exact workflow can be adapted to individual requirements.
+
 
 Score aggregation
 ~~~~~~~~~~~~~~~~~
@@ -25,10 +28,3 @@ Peak calling
    PeakCallerFast
    PeakCallerRecursiveMasking
    PeakCallerScipy
-
-Statistics
-~~~~~~~~~~
-.. autosummary::
-   :toctree: api/
-
-   ScoreStatistics

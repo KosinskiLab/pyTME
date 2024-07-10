@@ -3,39 +3,65 @@ Utilities
 
 .. currentmodule:: tme.matching_utils
 
-
-Transformation
-~~~~~~~~~~~~~~
-.. autosummary::
-   :toctree: api/
-
-   rigid_transform
-   euler_from_rotationmatrix
-   euler_to_rotationmatrix
-
 Masks
 ~~~~~
 .. autosummary::
    :toctree: api/
 
-   create_mask
-   elliptical_mask
    box_mask
+   create_mask
    tube_mask
+   elliptical_mask
+
+
+Rotations
+~~~~~~~~~
+.. autosummary::
+   :toctree: api/
+
+   get_rotation_matrices
+   euler_to_rotationmatrix
+   rotation_aligning_vectors
+   euler_from_rotationmatrix
+   load_quaternions_by_angle
+   get_rotations_around_vector
+   quaternion_to_rotation_matrix
+
+
+Subsetting
+~~~~~~~~~~
+.. autosummary::
+   :toctree: api/
+
+   centered
+   split_shape
+   centered_mask
+   apply_convolution_mode
+   compute_full_convolution_index
+   compute_parallelization_schedule
+
+
+Serialization
+~~~~~~~~~~~~~
+.. autosummary::
+   :toctree: api/
+
+   load_pickle
+   write_pickle
+
 
 Utilities
 ~~~~~~~~~
 .. autosummary::
    :toctree: api/
 
-   compute_parallelization_schedule
-   handle_traceback
-   split_numpy_array_slices
-   compute_full_convolution_index
-   get_rotation_matrices
-   minimum_enclosing_box
-   crop_input
-   apply_convolution_mode
+   close_memmap
    scramble_phases
-   write_pickle
-   load_pickle
+   rigid_transform
+   array_to_memmap
+   memmap_to_array
+   normalize_template
+   conditional_execute
+   minimum_enclosing_box
+   generate_tempfile_name
+

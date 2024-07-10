@@ -34,6 +34,8 @@ Methods
 
 .. _setup-functions:
 
+.. currentmodule:: tme.matching_scores
+
 Setup functions
 ~~~~~~~~~~~~~~~
 .. autosummary::
@@ -62,6 +64,8 @@ Scoring functions
 
 .. _custom-methods:
 
+.. currentmodule:: tme.matching_exhaustive
+
 Adding Custom Methods
 ~~~~~~~~~~~~~~~~~~~~~
 For a method to be considered by |project|'s template matching engine, it needs to be registered. The :py:meth:`register_matching_exhaustive` function is designed for this purpose. It enables developers to specify a unique name, setup function, scoring function, and a custom memory estimation class for their method. This ensures the modular and extensible design of |project|, allowing developers to continuously expand tme’s capabilities.
@@ -71,7 +75,7 @@ Adding a new template matching methods requires defining the following parameter
 - ``matching``: Name of the matching method.
 - ``matching_setup``: The setup function associated with the name.
 - ``matching_scoring``: The scoring function associated with the name.
-- ``memory_class``: A custom memory estimation class, which should extend :py:class:`tme.matching_memory.MatchingMemoryUsage`.
+- ``memory_class``: A custom memory estimation class, which should extend :py:class:`tme.memory.MatchingMemoryUsage`.
 
 .. autosummary::
    :toctree: api/

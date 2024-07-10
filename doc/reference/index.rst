@@ -1,6 +1,6 @@
-=============
-API reference
-=============
+===
+API
+===
 
 .. toctree::
 
@@ -8,6 +8,6 @@ API reference
    preprocessing
    template_matching
    analyzer
-   utilities
    backends
    orientations
+   utilities

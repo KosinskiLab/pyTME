@@ -72,11 +72,10 @@ doc/reference/api
 tme/package.py
 tme/tests/test_packaging.py
 tme/scoring.py
-tme/transforms.py
+tme/backends/_jax_utils.py
 scripts/match_template_devel.py
 scripts/match_template_filters.py
 scripts/refine_matches.py
 scripts/extract_candidates.py
 update_github.sh
 doc/quickstart/plot.py
-tme/backends/jax_backend.py
