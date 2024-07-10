@@ -12,14 +12,13 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .. import Preprocessor
-from ..backends import backend
+from ..backends import backend as be
 from ..matching_utils import euler_to_rotationmatrix
 
 from ._utils import (
     frequency_grid_at_angle,
     compute_tilt_shape,
     crop_real_fourier,
-    centered_grid,
     fftfreqn,
     shift_fourier,
 )
@@ -195,22 +194,20 @@ class ReconstructFromTilt:
         if data.shape == shape:
             return data
 
-        data = backend.to_backend_array(data)
-        volume_temp = backend.zeros(shape, dtype=backend._float_dtype)
-        volume_temp_rotated = backend.zeros(shape, dtype=backend._float_dtype)
-        volume = backend.zeros(shape, dtype=backend._float_dtype)
+        data = be.to_backend_array(data)
+        volume_temp = be.zeros(shape, dtype=be._float_dtype)
+        volume_temp_rotated = be.zeros(shape, dtype=be._float_dtype)
+        volume = be.zeros(shape, dtype=be._float_dtype)
 
-        slices = tuple(
-            slice(a, a + 1) for a in backend.astype(backend.divide(shape, 2), int)
-        )
+        slices = tuple(slice(a, a + 1) for a in be.astype(be.divide(shape, 2), int))
         subset = tuple(
             slice(None) if i != opening_axis else slices[opening_axis]
             for i in range(len(shape))
         )
-        angles_loop = backend.zeros(len(shape))
+        angles_loop = be.zeros(len(shape))
         wedge_dim = [x for x in data.shape]
         wedge_dim.insert(1 + opening_axis, 1)
-        wedges = backend.reshape(data, wedge_dim)
+        wedges = be.reshape(data, wedge_dim)
 
         rec_filter = 1
         if reconstruction_filter is not None:
@@ -226,31 +223,29 @@ class ReconstructFromTilt:
             if tilt_axis == 1 and opening_axis == 0:
                 rec_filter = rec_filter.T
 
-            rec_filter = backend.to_backend_array(rec_filter)
-            rec_filter = backend.reshape(rec_filter, wedges[0].shape)
+            rec_filter = be.to_backend_array(rec_filter)
+            rec_filter = be.reshape(rec_filter, wedges[0].shape)
 
         for index in range(len(angles)):
-            backend.fill(angles_loop, 0)
-            backend.fill(volume_temp, 0)
-            backend.fill(volume_temp_rotated, 0)
+            be.fill(angles_loop, 0)
+            be.fill(volume_temp, 0)
+            be.fill(volume_temp_rotated, 0)
 
             volume_temp[subset] = wedges[index] * rec_filter
 
             angles_loop[tilt_axis] = angles[index]
-            angles_loop = backend.roll(angles_loop, (opening_axis - 1,), axis=0)
-            rotation_matrix = euler_to_rotationmatrix(
-                backend.to_numpy_array(angles_loop)
-            )
-            rotation_matrix = backend.to_backend_array(rotation_matrix)
+            angles_loop = be.roll(angles_loop, (opening_axis - 1,), axis=0)
+            rotation_matrix = euler_to_rotationmatrix(be.to_numpy_array(angles_loop))
+            rotation_matrix = be.to_backend_array(rotation_matrix)
 
-            backend.rotate_array(
+            be.rigid_transform(
                 arr=volume_temp,
                 rotation_matrix=rotation_matrix,
                 out=volume_temp_rotated,
                 use_geometric_center=True,
                 order=interpolation_order,
             )
-            backend.add(volume, volume_temp_rotated, out=volume)
+            be.add(volume, volume_temp_rotated, out=volume)
 
         volume = shift_fourier(data=volume, shape_is_real_fourier=False)
 
@@ -387,7 +382,7 @@ class Wedge:
             func_args["weights"] = np.cos(np.radians(self.angles))
 
         ret = weight_types[weight_type](**func_args)
-        ret = backend.astype(backend.to_backend_array(ret), backend._float_dtype)
+        ret = be.astype(be.to_backend_array(ret), be._float_dtype)
 
         return {
             "data": ret,
@@ -483,7 +478,7 @@ class Wedge:
             reduce_dim=True,
         )
 
-        wedges = np.zeros((len(self.angles), *tilt_shape), dtype=backend._float_dtype)
+        wedges = np.zeros((len(self.angles), *tilt_shape), dtype=be._float_dtype)
         for index, angle in enumerate(self.angles):
             frequency_grid = frequency_grid_at_angle(
                 shape=self.shape,
@@ -573,7 +568,7 @@ class WedgeReconstructed:
             func = self.continuous_wedge
 
         ret = func(shape=shape, **func_args)
-        ret = backend.astype(backend.to_backend_array(ret), backend._float_dtype)
+        ret = be.astype(be.to_backend_array(ret), be._float_dtype)
 
         return {
             "data": ret,
@@ -664,7 +659,7 @@ class WedgeReconstructed:
         """
         preprocessor = Preprocessor()
 
-        angles = np.asarray(backend.to_numpy_array(angles))
+        angles = np.asarray(be.to_numpy_array(angles))
         weights = np.ones(angles.size)
         if weight_wedge:
             weights = np.cos(np.radians(angles))
@@ -858,7 +853,7 @@ class CTF:
             func_args["opening_axis"] = None
 
         ret = self.weight(**func_args)
-        ret = backend.astype(backend.to_backend_array(ret), backend._float_dtype)
+        ret = be.astype(be.to_backend_array(ret), be._float_dtype)
         return {
             "data": ret,
             "angles": func_args["angles"],
@@ -941,24 +936,26 @@ class CTF:
             shape=shape, opening_axis=opening_axis, reduce_dim=True
         )
         stack = np.zeros((len(angles), *tilt_shape))
-        electron_wavelength = self._compute_electron_wavelength() / sampling_rate
 
         correct_defocus_gradient &= len(shape) == 3
         correct_defocus_gradient &= tilt_axis is not None
         correct_defocus_gradient &= opening_axis is not None
 
         for index, angle in enumerate(angles):
-            grid = backend.to_numpy_array(centered_grid(shape=tilt_shape))
-            grid = np.divide(grid.T, sampling_rate).T
-
             defocus_x, defocus_y = defoci_x[index], defoci_y[index]
+
+            if correct_defocus_gradient or defocus_y is not None:
+                grid = fftfreqn(
+                    shape=shape,
+                    sampling_rate=be.divide(sampling_rate, shape),
+                    return_sparse_grid=True,
+                )
 
             # This should be done after defocus_x computation
             if correct_defocus_gradient:
                 angle_rad = np.radians(angle)
 
                 defocus_gradient = np.multiply(grid[1], np.sin(angle_rad))
-
                 remaining_axis = tuple(
                     i for i in range(len(shape)) if i not in (opening_axis, tilt_axis)
                 )[0]
@@ -983,7 +980,6 @@ class CTF:
                 angle=angle,
                 sampling_rate=1,
             )
-            frequency_grid *= frequency_grid <= 0.5
             np.square(frequency_grid, out=frequency_grid)
 
             electron_aberration = spherical_aberration * electron_wavelength**2
@@ -1001,13 +997,13 @@ class CTF:
             np.sin(-chi, out=chi)
             stack[index] = chi
 
+        # Avoid contrast inversion
+        np.negative(stack, out=stack)
         if flip_phase:
             np.abs(stack, out=stack)
 
-        np.negative(stack, out=stack)
         stack = np.squeeze(stack)
-
-        stack = backend.to_backend_array(stack)
+        stack = be.to_backend_array(stack)
 
         if len(angles) == 1:
             stack = shift_fourier(data=stack, shape_is_real_fourier=False)

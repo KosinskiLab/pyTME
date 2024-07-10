@@ -23,7 +23,7 @@ STRUCTURE_ATTRIBUTES = [
     "segment_identifier",
     "element_symbol",
     "charge",
-    "details",
+    "metadata",
 ]
 
 
@@ -63,7 +63,7 @@ class TestStructure:
             segment_identifier=self.structure.segment_identifier,
             element_symbol=self.structure.element_symbol,
             charge=self.structure.charge,
-            details=self.structure.details,
+            metadata=self.structure.metadata,
         )
 
         for attribute in STRUCTURE_ATTRIBUTES:
@@ -118,7 +118,7 @@ class TestStructure:
         unique_chains = "-".join(
             [
                 ",".join([str(x) for x in entity])
-                for entity in self.structure.details["unique_chains"]
+                for entity in self.structure.metadata["unique_chains"]
             ]
         )
 
@@ -160,7 +160,7 @@ class TestStructure:
         read = self.structure.from_file(path)
         comparison = self.structure.copy()
 
-        self.compare_structures(comparison, read, exclude_attributes=["details"])
+        self.compare_structures(comparison, read, exclude_attributes=["metadata"])
 
     def test_to_file_error(self):
         _, path = mkstemp()

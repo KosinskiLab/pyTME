@@ -10,21 +10,23 @@ from typing import Tuple, Dict
 from abc import ABC, abstractmethod
 
 import numpy as np
-from numpy.typing import NDArray
-from scipy.optimize import (
-    differential_evolution,
-    LinearConstraint,
-    basinhopping,
-    minimize,
-)
-from scipy.ndimage import laplace, map_coordinates
 from scipy.spatial import KDTree
+from scipy.ndimage import laplace, map_coordinates
+from scipy.optimize import (
+    minimize,
+    basinhopping,
+    LinearConstraint,
+    differential_evolution,
+)
 
-from .types import ArrayLike
-from .backends import backend
+from .backends import backend as be
+from .types import ArrayLike, NDArray
 from .matching_data import MatchingData
-from .matching_utils import rigid_transform, euler_to_rotationmatrix
-from .matching_exhaustive import normalize_under_mask
+from .matching_utils import (
+    rigid_transform,
+    euler_to_rotationmatrix,
+    normalize_template,
+)
 
 
 def _format_rigid_transform(x: Tuple[float]) -> Tuple[ArrayLike, ArrayLike]:
@@ -45,9 +47,9 @@ def _format_rigid_transform(x: Tuple[float]) -> Tuple[ArrayLike, ArrayLike]:
     split = len(x) // 2
     translation, angles = x[:split], x[split:]
 
-    translation = backend.to_backend_array(translation)
-    rotation_matrix = euler_to_rotationmatrix(backend.to_numpy_array(angles))
-    rotation_matrix = backend.to_backend_array(rotation_matrix)
+    translation = be.to_backend_array(translation)
+    rotation_matrix = euler_to_rotationmatrix(be.to_numpy_array(angles))
+    rotation_matrix = be.to_backend_array(rotation_matrix)
 
     return translation, rotation_matrix
 
@@ -91,6 +93,7 @@ class _MatchDensityToDensity(ABC):
         negate_score: bool = True,
         **kwargs: Dict,
     ):
+        self.eps = be.eps(target.dtype)
         self.rotate_mask = rotate_mask
         self.interpolation_order = interpolation_order
 
@@ -103,15 +106,13 @@ class _MatchDensityToDensity(ABC):
         self.target, self.target_mask = matching_data.target, matching_data.target_mask
 
         self.template = matching_data._template
-        self.template_rot = backend.preallocate_array(
-            template.shape, backend._float_dtype
-        )
+        self.template_rot = be.zeros(template.shape, be._float_dtype)
 
         self.template_mask, self.template_mask_rot = 1, 1
         rotate_mask = False if matching_data._template_mask is None else rotate_mask
         if matching_data.template_mask is not None:
             self.template_mask = matching_data._template_mask
-            self.template_mask_rot = backend.topleft_pad(
+            self.template_mask_rot = be.topleft_pad(
                 matching_data._template_mask, self.template_mask.shape
             )
 
@@ -226,29 +227,25 @@ class _MatchDensityToDensity(ABC):
         translation, rotation_matrix = _format_rigid_transform(x)
         self.template_rot.fill(0)
 
-        voxel_translation = backend.astype(translation, backend._int_dtype)
-        subvoxel_translation = backend.subtract(translation, voxel_translation)
+        voxel_translation = be.astype(translation, be._int_dtype)
+        subvoxel_translation = be.subtract(translation, voxel_translation)
 
-        center = backend.astype(
-            backend.divide(self.template.shape, 2), backend._int_dtype
+        center = be.astype(be.divide(self.template.shape, 2), be._int_dtype)
+        right_pad = be.subtract(self.template.shape, center)
+
+        translated_center = be.add(voxel_translation, center)
+
+        target_starts = be.subtract(translated_center, center)
+        target_stops = be.add(translated_center, right_pad)
+
+        template_starts = be.subtract(be.maximum(target_starts, 0), target_starts)
+        template_stops = be.subtract(
+            target_stops, be.minimum(target_stops, self.target.shape)
         )
-        right_pad = backend.subtract(self.template.shape, center)
+        template_stops = be.subtract(self.template.shape, template_stops)
 
-        translated_center = backend.add(voxel_translation, center)
-
-        target_starts = backend.subtract(translated_center, center)
-        target_stops = backend.add(translated_center, right_pad)
-
-        template_starts = backend.subtract(
-            backend.maximum(target_starts, 0), target_starts
-        )
-        template_stops = backend.subtract(
-            target_stops, backend.minimum(target_stops, self.target.shape)
-        )
-        template_stops = backend.subtract(self.template.shape, template_stops)
-
-        target_starts = backend.maximum(target_starts, 0)
-        target_stops = backend.minimum(target_stops, self.target.shape)
+        target_starts = be.maximum(target_starts, 0)
+        target_stops = be.minimum(target_stops, self.target.shape)
 
         cand_start, cand_stop = template_starts.astype(int), template_stops.astype(int)
         obs_start, obs_stop = target_starts.astype(int), target_stops.astype(int)
@@ -285,11 +282,11 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
     target : NDArray
         A d-dimensional target to match the template coordinate set to.
     template_coordinates : NDArray
-        Template coordinate array with shape [d x N].
+        Template coordinate array with shape (d,n).
     template_weights : NDArray
-        Template weight array with shape [N].
+        Template weight array with shape (n,).
     template_mask_coordinates : NDArray, optional
-        Template mask coordinates with shape [d x N].
+        Template mask coordinates with shape (d,n).
     target_mask : NDArray, optional
         A d-dimensional mask to be applied to the target.
     negate_score : bool, optional
@@ -308,6 +305,7 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
         negate_score: bool = True,
         **kwargs: Dict,
     ):
+        self.eps = be.eps(target.dtype)
         self.target_density = target
         self.target_mask_density = target_mask
 
@@ -316,6 +314,8 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
         self.template_coordinates_rotated = np.copy(self.template_coordinates).astype(
             np.float32
         )
+        if template_mask_coordinates is None:
+            template_mask_coordinates = template_coordinates.copy()
 
         self.template_mask_coordinates = template_mask_coordinates
         self.template_mask_coordinates_rotated = template_mask_coordinates
@@ -330,9 +330,9 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
         self.in_volume, self.in_volume_mask = self.map_coordinates_to_array(
             coordinates=self.template_coordinates_rotated,
             coordinates_mask=self.template_mask_coordinates_rotated,
-            array_origin=backend.zeros(target.ndim),
+            array_origin=be.zeros(target.ndim),
             array_shape=self.target_density.shape,
-            sampling_rate=backend.full(target.ndim, fill_value=1),
+            sampling_rate=be.full(target.ndim, fill_value=1),
         )
 
         if hasattr(self, "_post_init"):
@@ -368,9 +368,9 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
         self.in_volume, self.in_volume_mask = self.map_coordinates_to_array(
             coordinates=self.template_coordinates_rotated,
             coordinates_mask=self.template_mask_coordinates_rotated,
-            array_origin=backend.zeros(rotation_matrix.shape[0]),
+            array_origin=be.zeros(rotation_matrix.shape[0]),
             array_shape=self.target_density.shape,
-            sampling_rate=backend.full(rotation_matrix.shape[0], fill_value=1),
+            sampling_rate=be.full(rotation_matrix.shape[0], fill_value=1),
         )
 
         return self()
@@ -584,57 +584,41 @@ class FLC(_MatchDensityToDensity):
 
     def _post_init(self, **kwargs: Dict):
         if self.target_mask is not None:
-            backend.multiply(self.target, self.target_mask, out=self.target)
+            be.multiply(self.target, self.target_mask, out=self.target)
 
-        self.target_square = backend.square(self.target)
+        self.target_square = be.square(self.target)
 
-        normalize_under_mask(
+        normalize_template(
             template=self.template,
             mask=self.template_mask,
-            mask_intensity=backend.sum(self.template_mask),
+            n_observations=be.sum(self.template_mask),
         )
 
     def __call__(self) -> float:
         """Returns the score of the current configuration."""
-        n_observations = backend.sum(self.template_mask_rot)
+        n_obs = be.sum(self.template_mask_rot)
 
-        normalize_under_mask(
+        normalize_template(
             template=self.template_rot,
             mask=self.template_mask_rot,
-            mask_intensity=n_observations,
+            n_observations=n_obs,
         )
-        overlap = backend.sum(
-            backend.multiply(
+        overlap = be.sum(
+            be.multiply(
                 self.template_rot[self.template_slices], self.target[self.target_slices]
             )
         )
 
-        ex2 = backend.divide(
-            backend.sum(
-                backend.multiply(
-                    self.target_square[self.target_slices],
-                    self.template_mask_rot[self.template_slices],
-                )
-            ),
-            n_observations,
-        )
-        e2x = backend.square(
-            backend.divide(
-                backend.sum(
-                    backend.multiply(
-                        self.target[self.target_slices],
-                        self.template_mask_rot[self.template_slices],
-                    )
-                ),
-                n_observations,
-            )
-        )
+        mask_rot = self.template_mask_rot[self.template_slices]
+        exp_sq = be.sum(self.target_square[self.target_slices] * mask_rot) / n_obs
+        sq_exp = be.square(be.sum(self.target[self.target_slices] * mask_rot) / n_obs)
 
-        denominator = backend.maximum(backend.subtract(ex2, e2x), 0.0)
-        denominator = backend.sqrt(denominator)
-        denominator = backend.multiply(denominator, n_observations)
+        denominator = be.maximum(be.subtract(exp_sq, sq_exp), 0.0)
+        denominator = be.sqrt(denominator)
+        if denominator < self.eps:
+            return 0
 
-        score = backend.divide(overlap, denominator) * self.score_sign
+        score = be.divide(overlap, denominator * n_obs) * self.score_sign
         return score
 
 
@@ -712,19 +696,22 @@ class NormalizedCrossCorrelation(CrossCorrelation):
     __doc__ += _MatchCoordinatesToDensity.__doc__
 
     def __call__(self) -> float:
-        n_observations = backend.sum(self.in_volume_mask)
-        target_coordinates = backend.astype(
+        n_observations = be.sum(self.in_volume_mask)
+        target_coordinates = be.astype(
             self.template_mask_coordinates_rotated[:, self.in_volume_mask], int
         )
         target_weight = self.target_density[tuple(target_coordinates)]
-        ex2 = backend.divide(backend.sum(backend.square(target_weight)), n_observations)
-        e2x = backend.square(backend.divide(backend.sum(target_weight), n_observations))
+        ex2 = be.divide(be.sum(be.square(target_weight)), n_observations)
+        e2x = be.square(be.divide(be.sum(target_weight), n_observations))
 
-        denominator = backend.maximum(backend.subtract(ex2, e2x), 0.0)
-        denominator = backend.sqrt(denominator)
-        denominator = backend.multiply(denominator, n_observations)
+        denominator = be.maximum(be.subtract(ex2, e2x), 0.0)
+        denominator = be.sqrt(denominator)
+        denominator = be.multiply(denominator, n_observations)
+
+        if denominator <= self.eps:
+            return 0.0
+
         self.denominator = denominator
-
         return super().__call__()
 
 
@@ -1096,7 +1083,7 @@ def register_matching_optimization(match_name: str, match_class: type):
 
 def create_score_object(score: str, **kwargs) -> object:
     """
-    Initialize score object with name ``score`` using `**kwargs``.
+    Initialize score object with name ``score`` using ``**kwargs``.
 
     Parameters
     ----------
@@ -1118,6 +1105,32 @@ def create_score_object(score: str, **kwargs) -> object:
     See Also
     --------
     :py:meth:`register_matching_optimization`
+
+    Examples
+    --------
+    >>> from tme import Density
+    >>> from tme.matching_utils import create_mask, euler_to_rotationmatrix
+    >>> from tme.matching_optimization import CrossCorrelation, optimize_match
+    >>> translation, rotation = (5, -2, 7), (5, -10, 2)
+    >>> target = create_mask(
+    >>>     mask_type="ellipse",
+    >>>     radius=(5,5,5),
+    >>>     shape=(51,51,51),
+    >>>     center=(25,25,25),
+    >>> ).astype(float)
+    >>> template = Density(data=target)
+    >>> template = template.rigid_transform(
+    >>>     translation=translation,
+    >>>     rotation_matrix=euler_to_rotationmatrix(rotation),
+    >>> )
+    >>> template_coordinates = template.to_pointcloud(0)
+    >>> template_weights = template.data[tuple(template_coordinates)]
+    >>> score_object = CrossCorrelation(
+    >>>     target=target,
+    >>>     template_coordinates=template_coordinates,
+    >>>     template_weights=template_weights,
+    >>>     negate_score=True # Multiply returned score with -1 for minimization
+    >>> )
     """
 
     score_object = MATCHING_OPTIMIZATION_REGISTER.get(score, None)
@@ -1137,11 +1150,11 @@ def optimize_match(
     bounds_translation: Tuple[Tuple[float]] = None,
     bounds_rotation: Tuple[Tuple[float]] = None,
     optimization_method: str = "basinhopping",
-    maxiter: int = 500,
+    maxiter: int = 50,
     x0: Tuple[float] = None,
 ) -> Tuple[ArrayLike, ArrayLike, float]:
     """
-    Find the translation and rotation optimizing the score returned by `score_object`
+    Find the translation and rotation optimizing the score returned by ``score_object``
     with respect to provided bounds.
 
     Parameters
@@ -1158,40 +1171,68 @@ def optimize_match(
         Bounds on the evaluated zyx Euler angles. Has to be specified per dimension
         as tuple of (min, max). Default is None.
     optimization_method : str, optional
-        Optimizer that will be used, by default basinhopping. For further
+        Optimizer that will be used, basinhopping by default. For further
         information refer to :doc:`scipy:reference/optimize`.
 
-        +--------------------------+-----------------------------------------+
-        | 'differential_evolution' | Highest accuracy but long runtime.      |
-        |                          | Requires bounds on translation.         |
-        +--------------------------+-----------------------------------------+
-        | 'basinhopping'           | Decent accuracy, medium runtime.        |
-        +--------------------------+-----------------------------------------+
-        | 'minimize'               | If initial values are closed to optimum |
-        |                          | decent performance, short runtime.      |
-        +--------------------------+-----------------------------------------+
+        +------------------------+-------------------------------------------+
+        | differential_evolution | Highest accuracy but long runtime.        |
+        |                        | Requires bounds on translation.           |
+        +------------------------+-------------------------------------------+
+        | basinhopping           | Decent accuracy, medium runtime.          |
+        +------------------------+-------------------------------------------+
+        | minimize               | If initial values are closed to optimum   |
+        |                        | acceptable accuracy and short runtime     |
+        +------------------------+-------------------------------------------+
 
     maxiter : int, optional
-        The maximum number of iterations. Default is 500. Not considered for
-        `optimization_method` 'minimize'.
-
+        The maximum number of iterations, 50 by default.
     x0 : tuple of floats, optional
-        Initial values for the optimizer, defaults to zero.
+        Initial values for the optimizer, zero by default.
 
     Returns
     -------
     Tuple[ArrayLike, ArrayLike, float]
-        Translation and rotation matrix yielding final score.
+        Optimal translation, rotation matrix and corresponding score.
 
     Raises
     ------
     ValueError
-        If `optimization_method` is not supported.
+        If ``optimization_method`` is not supported.
 
     Notes
     -----
     This function currently only supports three-dimensional optimization and
-    `score_object` will be modified during this operation.
+    ``score_object`` will be modified during this operation.
+
+    Examples
+    --------
+    Having defined ``score_object``, for instance via :py:meth:`create_score_object`,
+    non-exhaustive template matching can be performed as follows
+
+    >>> translation_fit, rotation_fit, score = optimize_match(score_object)
+
+    `translation_fit` and `rotation_fit` correspond to the inverse of the applied
+    translation and rotation, so the following statements should hold within tolerance
+
+    >>> np.allclose(translation, -translation_fit, atol = 1) # True
+    >>> np.allclose(rotation, np.linalg.inv(rotation_fit), rtol = .1) # True
+
+    Bounds on translation and rotation can be defined as follows
+
+    >>> translation_fit, rotation_fit, score = optimize_match(
+    >>>     score_object=score_object,
+    >>>     bounds_translation=((-5,5),(-2,2),(0,0)),
+    >>>     bounds_rotation=((-10,10), (-5,5), (0,0)),
+    >>> )
+
+    The optimization scheme and the initial parameter estimates can also be adapted
+
+    >>> translation_fit, rotation_fit, score = optimize_match(
+    >>>     score_object=score_object,
+    >>>     optimization_method="minimize",
+    >>>     x0=(0,0,0,5,3,-5),
+    >>> )
+
     """
     ndim = 3
     _optimization_method = {
@@ -1262,7 +1303,3 @@ def optimize_match(
     translation, rotation = result.x[:ndim], result.x[ndim:]
     rotation_matrix = euler_to_rotationmatrix(rotation)
     return translation, rotation_matrix, result.fun
-
-
-class FitRefinement:
-    pass

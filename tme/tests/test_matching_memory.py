@@ -1,6 +1,7 @@
 import pytest
+
 from tme import Density
-from tme.matching_memory import MATCHING_MEMORY_REGISTRY, estimate_ram_usage
+from tme.memory import MATCHING_MEMORY_REGISTRY, estimate_ram_usage
 
 
 class TestMatchingMemory:

@@ -12,8 +12,8 @@ from numpy.typing import NDArray
 from scipy.ndimage import mean as ndimean
 from scipy.ndimage import map_coordinates
 
-from ._utils import fftfreqn, crop_real_fourier, shift_fourier
-from ..backends import backend
+from ._utils import fftfreqn, crop_real_fourier, shift_fourier, compute_fourier_shape
+from ..backends import backend as be
 
 
 class BandPassFilter:
@@ -162,29 +162,29 @@ class BandPassFilter:
             shape_is_real_fourier=shape_is_real_fourier,
             compute_euclidean_norm=True,
         )
-        grid = -backend.square(grid)
+        grid = -be.square(grid)
 
         lowpass_filter, highpass_filter = 1, 1
         norm = float(sqrt(2 * log(2)))
-        upper_sampling = float(backend.max(backend.multiply(2, sampling_rate)))
+        upper_sampling = float(be.max(be.multiply(2, sampling_rate)))
 
         if lowpass is not None:
             lowpass = float(lowpass)
-            lowpass = backend.maximum(lowpass, backend.eps(backend._float_dtype))
+            lowpass = be.maximum(lowpass, be.eps(be._float_dtype))
         if highpass is not None:
             highpass = float(highpass)
-            highpass = backend.maximum(highpass, backend.eps(backend._float_dtype))
+            highpass = be.maximum(highpass, be.eps(be._float_dtype))
 
         if lowpass is not None:
             lowpass = upper_sampling / (lowpass * norm)
-            lowpass = backend.multiply(2, backend.square(lowpass))
-            lowpass_filter = backend.exp(backend.divide(grid, lowpass))
+            lowpass = be.multiply(2, be.square(lowpass))
+            lowpass_filter = be.exp(be.divide(grid, lowpass))
         if highpass is not None:
             highpass = upper_sampling / (highpass * norm)
-            highpass = backend.multiply(2, backend.square(highpass))
-            highpass_filter = 1 - backend.exp(backend.divide(grid, highpass))
+            highpass = be.multiply(2, be.square(highpass))
+            highpass_filter = 1 - be.exp(be.divide(grid, highpass))
 
-        bandpass_filter = backend.multiply(lowpass_filter, highpass_filter)
+        bandpass_filter = be.multiply(lowpass_filter, highpass_filter)
         bandpass_filter = shift_fourier(
             data=bandpass_filter, shape_is_real_fourier=shape_is_real_fourier
         )
@@ -205,7 +205,7 @@ class BandPassFilter:
         mask = func(**func_args)
 
         return {
-            "data": backend.to_backend_array(mask),
+            "data": be.to_backend_array(mask),
             "sampling_rate": func_args.get("sampling_rate", 1),
             "is_multiplicative_filter": True,
         }
@@ -270,7 +270,7 @@ class LinearWhiteningFilter:
             shape_is_real_fourier=True,
             compute_euclidean_norm=True,
         )
-        bins = backend.to_numpy_array(bins)
+        bins = be.to_numpy_array(bins)
 
         # Implicit lowpass to nyquist
         bins = np.floor(bins * (n_bins - 1) + 0.5).astype(int)
@@ -306,12 +306,12 @@ class LinearWhiteningFilter:
         """
         grid = fftfreqn(
             shape=shape,
-            sampling_rate=.5,
+            sampling_rate=0.5,
             shape_is_real_fourier=shape_is_real_fourier,
             compute_euclidean_norm=True,
         )
-        grid = backend.to_numpy_array(grid)
-        np.multiply(grid, (spectrum.shape[0] - 1), out = grid) + 0.5
+        grid = be.to_numpy_array(grid)
+        np.multiply(grid, (spectrum.shape[0] - 1), out=grid) + 0.5
         spectrum = map_coordinates(spectrum, grid.reshape(1, -1), order=order)
         return spectrum.reshape(grid.shape)
 
@@ -348,9 +348,9 @@ class LinearWhiteningFilter:
            Filter data and associated parameters.
         """
         if data_rfft is None:
-            data_rfft = np.fft.rfftn(backend.to_numpy_array(data))
+            data_rfft = np.fft.rfftn(be.to_numpy_array(data))
 
-        data_rfft = backend.to_numpy_array(data_rfft)
+        data_rfft = be.to_numpy_array(data_rfft)
 
         bins, radial_averages = self._compute_spectrum(
             data_rfft, n_bins, batch_dimension
@@ -358,21 +358,28 @@ class LinearWhiteningFilter:
 
         if order is None:
             cutoff = bins < radial_averages.size
-            filter_mask = np.zeros(data_rfft.shape, radial_averages.dtype)
+            filter_mask = np.zeros(bins.shape, radial_averages.dtype)
             filter_mask[cutoff] = radial_averages[bins[cutoff]]
         else:
+            shape = bins.shape
+            if kwargs.get("shape", False):
+                shape = compute_fourier_shape(
+                    shape=kwargs.get("shape"),
+                    shape_is_real_fourier=kwargs.get("shape_is_real_fourier", False),
+                )
+
             filter_mask = self._interpolate_spectrum(
                 spectrum=radial_averages,
-                shape=data_rfft.shape,
+                shape=shape,
                 shape_is_real_fourier=True,
             )
 
         filter_mask = np.fft.ifftshift(
             filter_mask,
-            axes=tuple(i for i in range(data_rfft.ndim - 1) if i != batch_dimension)
+            axes=tuple(i for i in range(data_rfft.ndim - 1) if i != batch_dimension),
         )
 
         return {
-            "data": backend.to_backend_array(filter_mask),
+            "data": be.to_backend_array(filter_mask),
             "is_multiplicative_filter": True,
         }

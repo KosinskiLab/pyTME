@@ -312,9 +312,7 @@ class TestDensity:
     )
     def test_centered(self, cutoff):
         centered_density, translation = self.density.centered(cutoff=cutoff)
-        data = centered_density.data
-        data[data < cutoff] = 0
-        com = centered_density.center_of_mass(data)
+        com = centered_density.center_of_mass(centered_density.data, 0)
 
         difference = np.abs(
             np.subtract(
@@ -325,208 +323,11 @@ class TestDensity:
         assert np.all(difference <= self.density.sampling_rate)
 
     @pytest.mark.parametrize("use_geometric_center", (True, False))
-    @pytest.mark.parametrize("create_mask", (True, False))
-    @pytest.mark.parametrize("order", (None, 1, 3))
-    def test_rotate_array(
-        self, use_geometric_center: bool, create_mask: bool, order: int
-    ):
-        rotation_matrix = np.eye(self.density.data.ndim)
-        rotation_matrix[0, 0] = -1
-
-        temp = self.density.copy()
-        temp.adjust_box(temp.trim_box(cutoff=0))
-
-        if use_geometric_center:
-            box = temp.minimum_enclosing_box(cutoff=0, use_geometric_center=True)
-            temp.adjust_box(box)
-        else:
-            temp, translation = temp.centered(cutoff=0)
-
-        out = np.zeros_like(temp.data)
-        arr_mask, out_mask = None, None
-        if create_mask:
-            mask = temp.copy()
-            mask.data[mask.data < 0.5] = 0
-            mask.data[mask.data >= 0.5] = 1
-            arr_mask = mask.data
-            out_mask = np.zeros_like(mask.data)
-
-        Density.rotate_array(
-            arr=temp.data,
-            rotation_matrix=rotation_matrix,
-            translation=np.zeros(temp.data.ndim),
-            use_geometric_center=use_geometric_center,
-            arr_mask=arr_mask,
-            out_mask=out_mask,
-            out=out,
-            order=order,
-        )
-
-        ret = Density.rotate_array(
-            arr=temp.data,
-            rotation_matrix=rotation_matrix,
-            translation=np.zeros(temp.data.ndim),
-            use_geometric_center=use_geometric_center,
-            arr_mask=arr_mask,
-            out_mask=None,
-            out=None,
-            order=order,
-        )
-
-        out2 = np.zeros_like(out)
-        extra = Density.rotate_array(
-            arr=temp.data,
-            rotation_matrix=rotation_matrix,
-            translation=np.zeros(temp.data.ndim),
-            use_geometric_center=use_geometric_center,
-            arr_mask=arr_mask,
-            out_mask=None,
-            out=out2,
-            order=order,
-        )
-
-        if create_mask:
-            ret, ret_mask = ret
-            ret_mask = Density(
-                ret_mask,
-                origin=self.density.origin,
-                sampling_rate=self.density.sampling_rate,
-            )
-            out_mask = Density(
-                out_mask,
-                origin=self.density.origin,
-                sampling_rate=self.density.sampling_rate,
-            )
-            ret_mask.adjust_box(ret_mask.trim_box(0))
-            out_mask.adjust_box(out_mask.trim_box(0))
-            assert np.allclose(ret_mask.data, out_mask.data, rtol=0.5)
-            assert np.allclose(out, out2)
-
-            extra = Density(
-                extra,
-                origin=self.density.origin,
-                sampling_rate=self.density.sampling_rate,
-            )
-            extra.adjust_box(extra.trim_box(0))
-            ret_mask.adjust_box(ret_mask.trim_box(0))
-            assert np.allclose(ret_mask.data, extra.data)
-
-        ret = Density(
-            ret, origin=self.density.origin, sampling_rate=self.density.sampling_rate
-        )
-        out = Density(
-            out, origin=self.density.origin, sampling_rate=self.density.sampling_rate
-        )
-        ret.adjust_box(ret.trim_box(0))
-        out.adjust_box(out.trim_box(0))
-        assert np.allclose(ret.data, out.data)
-
-    @pytest.mark.parametrize("use_geometric_center", (False, True))
-    @pytest.mark.parametrize("create_mask", (False, True))
-    def test_rotate_array_coordinates(
-        self, use_geometric_center: bool, create_mask: bool
-    ):
-        rotation_matrix = np.eye(self.density.data.ndim)
-        rotation_matrix[0, 0] = -1
-
-        temp = self.density.copy()
-        temp.adjust_box(temp.trim_box(cutoff=0))
-        if use_geometric_center:
-            box = temp.minimum_enclosing_box(cutoff=0, use_geometric_center=True)
-            temp.adjust_box(box)
-        else:
-            temp, translation = temp.centered(cutoff=0)
-
-        out = np.zeros_like(temp.data)
-        arr_mask, mask_coordinates, out_mask = None, None, None
-        if create_mask:
-            mask = temp.copy()
-            mask.data[mask.data < 0.5] = 0
-            mask.data[mask.data >= 0.5] = 1
-            arr_mask = mask.data
-            mask_coordinates = mask.to_pointcloud(threshold=0)
-            out_mask = np.zeros_like(mask.data)
-
-        Density.rotate_array_coordinates(
-            arr=temp.data,
-            coordinates=temp.to_pointcloud(threshold=0),
-            mask_coordinates=mask_coordinates,
-            rotation_matrix=rotation_matrix,
-            translation=np.zeros(temp.data.ndim),
-            use_geometric_center=use_geometric_center,
-            arr_mask=arr_mask,
-            out_mask=out_mask,
-            out=out,
-        )
-
-        ret = Density.rotate_array_coordinates(
-            arr=temp.data,
-            coordinates=temp.to_pointcloud(threshold=0),
-            mask_coordinates=mask_coordinates,
-            rotation_matrix=rotation_matrix,
-            translation=np.zeros(temp.data.ndim),
-            use_geometric_center=use_geometric_center,
-            arr_mask=arr_mask,
-            out_mask=None,
-            out=None,
-        )
-
-        out2 = np.zeros_like(out)
-        extra = Density.rotate_array_coordinates(
-            arr=temp.data,
-            coordinates=temp.to_pointcloud(threshold=0),
-            mask_coordinates=mask_coordinates,
-            rotation_matrix=rotation_matrix,
-            translation=np.zeros(temp.data.ndim),
-            use_geometric_center=use_geometric_center,
-            arr_mask=arr_mask,
-            out_mask=None,
-            out=out2,
-        )
-
-        if create_mask:
-            ret, ret_mask = ret
-            ret_mask = Density(
-                ret_mask,
-                origin=self.density.origin,
-                sampling_rate=self.density.sampling_rate,
-            )
-            out_mask = Density(
-                out_mask,
-                origin=self.density.origin,
-                sampling_rate=self.density.sampling_rate,
-            )
-            ret_mask.adjust_box(ret_mask.trim_box(0))
-            out_mask.adjust_box(out_mask.trim_box(0))
-
-            assert np.allclose(ret_mask.data, out_mask.data)
-            assert np.allclose(out, out2)
-
-            extra = Density(
-                extra,
-                origin=self.density.origin,
-                sampling_rate=self.density.sampling_rate,
-            )
-            extra.adjust_box(extra.trim_box(0))
-            ret_mask.adjust_box(ret_mask.trim_box(0))
-            assert np.allclose(ret_mask.data, extra.data)
-
-        ret = Density(
-            ret, origin=self.density.origin, sampling_rate=self.density.sampling_rate
-        )
-        out = Density(
-            out, origin=self.density.origin, sampling_rate=self.density.sampling_rate
-        )
-        ret.adjust_box(ret.trim_box(0))
-        out.adjust_box(out.trim_box(0))
-        assert np.allclose(ret.data, out.data)
-
-    @pytest.mark.parametrize("use_geometric_center", (True, False))
-    def test_rigid_transform(self, use_geometric_center: bool):
+    @pytest.mark.parametrize("order", (1, 3))
+    def test_rigid_transform(self, use_geometric_center: bool, order: int):
         temp = self.density.copy()
         if use_geometric_center:
             box = temp.minimum_enclosing_box(cutoff=0, use_geometric_center=True)
-            print(box)
             temp.adjust_box(box)
         else:
             temp, translation = temp.centered()
@@ -545,36 +346,19 @@ class TestDensity:
                 rotation_matrix=rotation_matrix,
                 translation=np.zeros(temp.data.ndim),
                 use_geometric_center=use_geometric_center,
+                order=order,
             )
             transformed_weight = np.sum(np.abs(transformed.data))
-            print(initial_weight, transformed_weight)
             assert np.abs(1 - initial_weight / transformed_weight) < 0.01
-
-    def test_align_origins_same_apix(self):
-        map1 = self.density.copy()
-        map2 = self.density.copy()
-        map2.origin = np.add(map1.origin, (5, 1, 3))
-
-        map3 = map1.align_origins(map2)
-
-        assert np.array_equal(map1.origin, map3.origin)
-
-    def test_align_origins_different_apix(self):
-        map1 = self.density.copy()
-        map2 = self.density.copy()
-        map2.sampling_rate = np.multiply(map2.sampling_rate, 2)
-        map2.origin = np.add(map1.origin, (5, 1, 3))
-
-        with pytest.raises(ValueError):
-            map1.align_origins(map2)
 
     @pytest.mark.parametrize(
         "new_sampling_rate,order",
         [(2, 1), (4, 3)],
     )
-    def test_resample(self, new_sampling_rate, order):
+    @pytest.mark.parametrize("method", ("spline", "fourier"))
+    def test_resample(self, new_sampling_rate, order, method):
         resampled = self.density.resample(
-            new_sampling_rate=new_sampling_rate, order=order
+            new_sampling_rate=new_sampling_rate, order=order, method=method
         )
         assert np.allclose(
             resampled.shape,
@@ -684,23 +468,10 @@ class TestDensity:
         template.sampling_rate = np.array(template.sampling_rate[0])
 
         aligned, translation, rotation = Density.match_densities(
-            target=target,
-            template=template,
-            scoring_method=method,
+            target=target, template=template, scoring_method=method, maxiter=5
         )
-        aligned = Density.align_coordinate_systems(target=target, template=aligned)
-        assert np.allclose(-translation, initial_translation, atol=3)
-        assert np.allclose(np.linalg.inv(rotation), initial_rotation, atol=5)
-
-        template.sampling_rate = template.sampling_rate * 2
-
-        aligned, translation, rotation = Density.match_densities(
-            target=target,
-            template=template,
-            cutoff_target=0.2,
-            cutoff_template=0.2,
-            scoring_method=method,
-        )
+        assert np.allclose(-translation, initial_translation, atol=2)
+        assert np.allclose(np.linalg.inv(rotation), initial_rotation, atol=0.2)
 
     def test_match_structure_to_density(self):
         density = Density.from_file("tme/tests/data/Maps/emd_8621.mrc.gz")
@@ -710,51 +481,25 @@ class TestDensity:
         )
 
         initial_translation = np.array([-1, 0, 5])
-        initial_rotation = np.eye(density.data.ndim)
+        initial_rotation = euler_to_rotationmatrix((-10, 2, 5))
         structure.rigid_transform(
             translation=initial_translation, rotation_matrix=initial_rotation
         )
-
+        np.random.seed(12)
         ret = Density.match_structure_to_density(
             target=density,
             template=structure,
-            cutoff_target=0.0309,
+            cutoff_target=0,
             scoring_method="CrossCorrelation",
+            maxiter=10,
         )
         structure_aligned, translation, rotation_matrix = ret
 
         assert np.allclose(
             structure_aligned.atom_coordinate.shape, structure.atom_coordinate.shape
         )
-
-    def test_align_coordinate_systems(self):
-        target = self.density.copy()
-        target, translation = target.centered()
-        template = target.copy()
-
-        translation = np.array([5, 1, -3])
-        template = template.rigid_transform(
-            rotation_matrix=np.eye(template.data.ndim),
-            translation=translation,
-            use_geometric_center=False,
-        )
-        template.origin -= np.multiply(translation, template.sampling_rate)
-        template_aligned = Density.align_coordinate_systems(
-            target=target, template=template
-        )
-
-        assert np.allclose(target.origin, template_aligned.origin)
-        assert np.allclose(target.data, template_aligned.data, rtol=0.5)
-
-    def test_align_coordinate_systems_error(self):
-        target = self.density.copy()
-        target, translation = target.centered()
-        template = target.copy()
-
-        template.sampling_rate = np.multiply(target.sampling_rate, 2)
-
-        with pytest.raises(ValueError):
-            _ = Density.align_coordinate_systems(target=target, template=template)
+        assert np.allclose(-translation, initial_translation, atol=1)
+        assert np.allclose(np.linalg.inv(rotation_matrix), initial_rotation, atol=0.2)
 
     def test_fourier_shell_correlation(self):
         fsc = Density.fourier_shell_correlation(

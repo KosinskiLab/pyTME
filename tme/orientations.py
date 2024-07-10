@@ -62,16 +62,16 @@ class Orientations:
         Array with additional orientation details (n, ).
     """
 
-    #: Return a numpy array with translations of each orientation (n x d).
+    #: Array with translations of each orientation (n x d).
     translations: np.ndarray
 
-    #: Return a numpy array with euler angles of each orientation in zxy format (n x d).
+    #: Array with zyx euler angles of each orientation (n x d).
     rotations: np.ndarray
 
-    #: Return a numpy array with the score of each orientation (n, ).
+    #: Array with scores of each orientation (n, ).
     scores: np.ndarray
 
-    #: Return a numpy array with additional orientation details (n, ).
+    #: Array with additional details of each orientation(n, ).
     details: np.ndarray
 
     def __post_init__(self):
@@ -130,8 +130,20 @@ class Orientations:
             "scores",
             "details",
         )
-        kwargs = {attr: getattr(self, attr)[indices] for attr in attributes}
+        kwargs = {attr: getattr(self, attr)[indices].copy() for attr in attributes}
         return self.__class__(**kwargs)
+
+    def copy(self) -> "Orientations":
+        """
+        Create a copy of the current class instance.
+
+        Returns
+        -------
+        :py:class:`Orientations`
+            Copy of the class instance.
+        """
+        indices = np.arange(self.scores.size)
+        return self[indices]
 
     def to_file(self, filename: str, file_format: type = None, **kwargs) -> None:
         """
@@ -207,11 +219,11 @@ class Orientations:
         with open(filename, mode="w", encoding="utf-8") as ofile:
             _ = ofile.write(f"{header}\n")
             for translation, angles, score, detail in self:
-                translation_string = "\t".join([str(x) for x in translation])
-                angle_string = "\t".join([str(x) for x in angles])
-                _ = ofile.write(
-                    f"{translation_string}\t{angle_string}\t{score}\t{detail}\n"
+                out_string = (
+                    "\t".join([str(x) for x in (*translation, *angles, score, detail)])
+                    + "\n"
                 )
+                _ = ofile.write(out_string)
         return None
 
     def _to_dynamo_tbl(
@@ -465,8 +477,10 @@ class Orientations:
 
         Notes
         -----
-        The text file is expected to have a header and data in columns corresponding to
-        z, y, x, euler_z, euler_y, euler_x, score, detail.
+        The text file is expected to have a header and data in columns. Colums containing
+        the name euler are considered to specify rotations. The second last and last
+        column correspond to score and detail. Its possible to only specify translations,
+        in this case the remaining columns will be filled with trivial values.
         """
         with open(filename, mode="r", encoding="utf-8") as infile:
             data = [x.strip().split("\t") for x in infile.read().split("\n")]
@@ -492,6 +506,32 @@ class Orientations:
         rotation = np.vstack(rotation)
         score = np.array(score)
         detail = np.array(detail)
+
+        if translation.shape[1] == len(header):
+            rotation = np.zeros(translation.shape, dtype=np.float32)
+            score = np.zeros(translation.shape[0], dtype=np.float32)
+            detail = np.zeros(translation.shape[0], dtype=np.float32) - 1
+
+        if rotation.size == 0 and translation.shape[0] != 0:
+            rotation = np.zeros(translation.shape, dtype=np.float32)
+
+        header_order = tuple(x for x in header if x in ascii_lowercase)
+        header_order = zip(header_order, range(len(header_order)))
+        sort_order = tuple(
+            x[1] for x in sorted(header_order, key=lambda x: x[0], reverse=True)
+        )
+        translation = translation[..., sort_order]
+
+        header_order = tuple(
+            x
+            for x in header
+            if "euler" in x and x.replace("euler_", "") in ascii_lowercase
+        )
+        header_order = zip(header_order, range(len(header_order)))
+        sort_order = tuple(
+            x[1] for x in sorted(header_order, key=lambda x: x[0], reverse=True)
+        )
+        rotation = rotation[..., sort_order]
 
         return translation, rotation, score, detail
 

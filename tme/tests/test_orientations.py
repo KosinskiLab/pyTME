@@ -149,3 +149,25 @@ class TestDensity:
                 out[tuple(center)],
                 data[tuple(orientations.translations[index].astype(int))],
             )
+
+    @pytest.mark.parametrize(
+        "order", (("x", "y", "z"), ("z", "y", "x"), ("y", "x", "z"))
+    )
+    def test_txt_sort(self, order: str):
+        _, output_file = mkstemp(suffix=".tsv")
+        translations = ((50, 30, 20), (10, 5, 30))
+
+        with open(output_file, mode="w", encoding="utf-8") as ofile:
+            ofile.write("\t".join([str(x) for x in order]) + "\n")
+            for translation in translations:
+                ofile.write("\t".join([str(x) for x in translation]) + "\n")
+
+        translations = np.array(translations).astype(np.float32)
+        orientations = Orientations.from_file(output_file)
+
+        out_order = zip(order, range(len(order)))
+        out_order = tuple(
+            x[1] for x in sorted(out_order, key=lambda x: x[0], reverse=True)
+        )
+
+        assert np.array_equal(translations[..., out_order], orientations.translations)

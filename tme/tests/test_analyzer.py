@@ -3,8 +3,8 @@ from tempfile import mkstemp
 import pytest
 import numpy as np
 
+from tme.backends import backend
 from tme.analyzer import (
-    ScoreStatistics,
     MaxScoreOverRotations,
     PeakCaller,
     PeakCallerSort,
@@ -56,12 +56,13 @@ class TestPeakCallers:
     @pytest.mark.parametrize("minimum_score", (None, 0.5))
     def test__call__(self, peak_caller, number_of_peaks, minimum_score):
         peak_caller = peak_caller(
-            number_of_peaks=number_of_peaks, min_distance=self.min_distance
+            number_of_peaks=number_of_peaks,
+            min_distance=self.min_distance,
+            minimum_score=minimum_score,
         )
         peak_caller(
-            score_space=self.data.copy(),
+            self.data.copy(),
             rotation_matrix=self.rotation_matrix,
-            minimum_score=minimum_score,
         )
         candidates = tuple(peak_caller)
         if minimum_score is None:
@@ -77,12 +78,12 @@ class TestPeakCallers:
         peak_caller1 = peak_caller(
             number_of_peaks=number_of_peaks, min_distance=self.min_distance
         )
-        peak_caller1(score_space=self.data, rotation_matrix=self.rotation_matrix)
+        peak_caller1(self.data, rotation_matrix=self.rotation_matrix)
 
         peak_caller2 = peak_caller(
             number_of_peaks=number_of_peaks, min_distance=self.min_distance
         )
-        peak_caller2(score_space=self.data, rotation_matrix=self.rotation_matrix)
+        peak_caller2(self.data, rotation_matrix=self.rotation_matrix)
 
         parameters = [tuple(peak_caller1), tuple(peak_caller2)]
 
@@ -119,7 +120,7 @@ class TestRecursiveMasking:
             rotation_mapping = self.rotation_mapping
 
         peak_caller(
-            score_space=self.data.copy(),
+            self.data.copy(),
             rotation_matrix=self.rotation_matrix,
             mask=self.mask,
             rotation_space=rotation_space,
@@ -131,7 +132,6 @@ class TestRecursiveMasking:
             assert len(candidates[0] <= number_of_peaks)
         else:
             peaks = candidates[0].astype(int)
-            print(self.data[tuple(peaks.T)])
             assert np.all(self.data[tuple(peaks.T)] >= minimum_score)
 
 
@@ -144,24 +144,25 @@ class TestMaxScoreOverRotations:
 
     def test_initialization(self):
         _ = MaxScoreOverRotations(
-            score_space_shape=self.data.shape,
-            score_space_dtype=self.data.dtype,
+            shape=self.data.shape,
             translation_offset=np.zeros(self.data.ndim, dtype=int),
-            rotation_space_dtype=np.int32,
+        )
+        _ = MaxScoreOverRotations(
+            scores=self.data,
+            rotations=self.data,
+            translation_offset=np.zeros(self.data.ndim, dtype=int),
         )
 
     @pytest.mark.parametrize("use_memmap", [False, True])
     def test__iter__(self, use_memmap: bool):
         score_analyzer = MaxScoreOverRotations(
-            score_space_shape=self.data.shape,
-            score_space_dtype=self.data.dtype,
-            rotation_space_dtype=np.int32,
+            shape=self.data.shape,
             use_memmap=use_memmap,
         )
-        score_analyzer(score_space=self.data, rotation_matrix=self.rotation_matrix)
+        score_analyzer(self.data, rotation_matrix=self.rotation_matrix)
         res = tuple(score_analyzer)
         assert np.allclose(res[0].shape, self.data.shape)
-        assert res[0].dtype == self.data.dtype
+        assert res[0].dtype == backend._float_dtype
         assert res[1].size == self.data.ndim
         assert np.allclose(res[2].shape, self.data.shape)
         assert len(res) == 4
@@ -170,17 +171,15 @@ class TestMaxScoreOverRotations:
     @pytest.mark.parametrize("score_threshold", [0, 1e10, -1e10])
     def test__call__(self, use_memmap: bool, score_threshold: float):
         score_analyzer = MaxScoreOverRotations(
-            score_space_shape=self.data.shape,
-            score_space_dtype=self.data.dtype,
+            shape=self.data.shape,
             score_threshold=score_threshold,
             translation_offset=np.zeros(self.data.ndim, dtype=int),
-            rotation_space_dtype=np.int32,
             use_memmap=use_memmap,
         )
-        score_analyzer(score_space=self.data, rotation_matrix=self.rotation_matrix)
+        score_analyzer(self.data, rotation_matrix=self.rotation_matrix)
 
         data2 = self.data * 2
-        score_analyzer(score_space=data2, rotation_matrix=self.rotation_matrix)
+        score_analyzer(data2, rotation_matrix=self.rotation_matrix)
         scores, translation_offset, rotations, mapping = tuple(score_analyzer)
         assert np.all(scores >= score_threshold)
         max_scores = np.maximum(self.data, data2)
@@ -191,25 +190,21 @@ class TestMaxScoreOverRotations:
     @pytest.mark.parametrize("score_threshold", [0, 1e10, -1e10])
     def test_merge(self, use_memmap: bool, score_threshold: float):
         score_analyzer = MaxScoreOverRotations(
-            score_space_shape=self.data.shape,
-            score_space_dtype=self.data.dtype,
+            shape=self.data.shape,
             score_threshold=score_threshold,
             translation_offset=np.zeros(self.data.ndim, dtype=int),
-            rotation_space_dtype=np.int32,
             use_memmap=use_memmap,
         )
-        score_analyzer(score_space=self.data, rotation_matrix=self.rotation_matrix)
+        score_analyzer(self.data, rotation_matrix=self.rotation_matrix)
 
         data2 = self.data * 2
         score_analyzer2 = MaxScoreOverRotations(
-            score_space_shape=self.data.shape,
-            score_space_dtype=self.data.dtype,
+            shape=self.data.shape,
             score_threshold=score_threshold,
             translation_offset=np.zeros(self.data.ndim, dtype=int),
-            rotation_space_dtype=np.int32,
             use_memmap=use_memmap,
         )
-        score_analyzer2(score_space=data2, rotation_matrix=self.rotation_matrix)
+        score_analyzer2(data2, rotation_matrix=self.rotation_matrix)
 
         parameters = [tuple(score_analyzer), tuple(score_analyzer2)]
 
@@ -257,7 +252,7 @@ class TestMemmapHandler:
             dtype=self.data.dtype,
             indices=self.indices,
         )
-        score_analyzer(score_space=self.data, rotation_matrix=self.rotation_matrix)
+        score_analyzer(self.data, rotation_matrix=self.rotation_matrix)
         rotation_filepath = score_analyzer._rotation_matrix_to_filepath(
             rotation_matrix=self.rotation_matrix
         )
@@ -313,60 +308,3 @@ class TestMemmapHandler:
             rotation_matrix=self.rotation_matrix
         )
         assert rotation_filepath == self.path_translation.get(rotation_matrix)
-
-
-class TestScoreStatistics:
-    def setup_method(self):
-        self.data = np.random.rand(100, 100, 100).astype(np.float32)
-        self.rotation_matrix = np.eye(self.data.ndim)
-        self.reference_position = np.array([5, 5, 5], dtype=int)
-        self.min_score = 0
-        self.min_distance = 5
-
-    def test_initialization(self):
-        _ = ScoreStatistics()
-
-    def test__call__(self):
-        score_statistics = ScoreStatistics(
-            min_distance=self.min_distance, reference_position=self.reference_position
-        )
-
-        score_statistics(score_space=self.data, rotation_matrix=self.rotation_matrix)
-
-    def test__iter__(self):
-        score_statistics = ScoreStatistics(
-            min_distance=self.min_distance, reference_position=self.reference_position
-        )
-
-        score_statistics(score_space=self.data, rotation_matrix=self.rotation_matrix)
-        res = tuple(score_statistics)
-        assert len(res) == 13
-
-    def test_merge(self):
-        score_statistics = ScoreStatistics(
-            min_distance=self.min_distance, reference_position=self.reference_position
-        )
-
-        score_statistics(score_space=self.data, rotation_matrix=self.rotation_matrix)
-
-        score_statistics2 = ScoreStatistics(
-            min_distance=self.min_distance, reference_position=self.reference_position
-        )
-
-        score_statistics2(score_space=self.data, rotation_matrix=self.rotation_matrix)
-
-        parameters = [tuple(score_statistics), tuple(score_statistics2)]
-
-        res = ScoreStatistics.merge(parameters)
-        assert len(res) == 13
-
-    def test_set_reference(self):
-        score_statistics = ScoreStatistics(
-            min_distance=self.min_distance, reference_position=self.reference_position
-        )
-
-        score_statistics(score_space=self.data, rotation_matrix=self.rotation_matrix)
-
-        score_statistics.set_reference(self.data, rotation_matrix=self.rotation_matrix)
-
-        assert score_statistics.has_reference.value == 1

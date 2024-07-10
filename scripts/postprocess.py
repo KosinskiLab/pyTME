@@ -26,6 +26,7 @@ from tme.analyzer import (
 )
 from tme.matching_utils import (
     load_pickle,
+    centered_mask,
     euler_to_rotationmatrix,
     euler_from_rotationmatrix,
 )
@@ -41,9 +42,7 @@ PEAK_CALLERS = {
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Peak Calling for Template Matching Outputs"
-    )
+    parser = argparse.ArgumentParser(description="Analyze Template Matching Outputs")
 
     input_group = parser.add_argument_group("Input")
     output_group = parser.add_argument_group("Output")
@@ -55,6 +54,13 @@ def parse_args():
         required=True,
         nargs="+",
         help="Path to the output of match_template.py.",
+    )
+    input_group.add_argument(
+        "--background_file",
+        required=False,
+        nargs="+",
+        help="Path to an output of match_template.py used for normalization. "
+        "For instance from --scramble_phases or a different template.",
     )
     input_group.add_argument(
         "--target_mask",
@@ -87,7 +93,7 @@ def parse_args():
             "average",
         ],
         default="orientations",
-        help="Available output formats:"
+        help="Available output formats: "
         "orientations (translation, rotation, and score), "
         "alignment (aligned template to target based on orientations), "
         "extraction (extract regions around peaks from targets, i.e. subtomograms), "
@@ -206,6 +212,15 @@ def parse_args():
     elif args.number_of_peaks is None:
         args.number_of_peaks = 1000
 
+    if args.background_file is None:
+        args.background_file = [None]
+    if len(args.background_file) == 1:
+        args.background_file = args.background_file * len(args.input_file)
+    elif len(args.background_file) not in (0, len(args.input_file)):
+        raise ValueError(
+            "--background_file needs to be specified once or for each --input_file."
+        )
+
     return args
 
 
@@ -233,8 +248,8 @@ def load_template(
     return template, center, translation, template_is_density
 
 
-def merge_outputs(data, filepaths: List[str], args):
-    if len(filepaths) == 0:
+def merge_outputs(data, foreground_paths: List[str], background_paths: List[str], args):
+    if len(foreground_paths) == 0:
         return data, 1
 
     if data[0].ndim != data[2].ndim:
@@ -275,8 +290,11 @@ def merge_outputs(data, filepaths: List[str], args):
 
     entities = np.zeros_like(data[0])
     data[0] = _norm_scores(data=data, args=args)
-    for index, filepath in enumerate(filepaths):
-        new_scores = _norm_scores(data=load_pickle(filepath), args=args)
+    for index, filepath in enumerate(foreground_paths):
+        new_scores = _norm_scores(
+            data=load_match_template_output(filepath, background_paths[index]),
+            args=args,
+        )
         indices = new_scores > data[0]
         entities[indices] = index + 1
         data[0][indices] = new_scores[indices]
@@ -284,9 +302,18 @@ def merge_outputs(data, filepaths: List[str], args):
     return data, entities
 
 
+def load_match_template_output(foreground_path, background_path):
+    data = load_pickle(foreground_path)
+    if background_path is not None:
+        data_background = load_pickle(background_path)
+        data[0] = (data[0] - data_background[0]) / (1 - data_background[0])
+        np.fmax(data[0], 0, out=data[0])
+    return data
+
+
 def main():
     args = parse_args()
-    data = load_pickle(args.input_file[0])
+    data = load_match_template_output(args.input_file[0], args.background_file[0])
 
     target_origin, _, sampling_rate, cli_args = data[-1]
 
@@ -326,7 +353,12 @@ def main():
 
     entities = None
     if len(args.input_file) > 1:
-        data, entities = merge_outputs(data=data, filepaths=args.input_file, args=args)
+        data, entities = merge_outputs(
+            data=data,
+            foreground_paths=args.input_file,
+            background_paths=args.background_file,
+            args=args,
+        )
 
     orientations = args.orientations
     if orientations is None:
@@ -339,24 +371,27 @@ def main():
                 target_mask = Density.from_file(args.target_mask)
                 scores = scores * target_mask.data
 
-            if args.n_false_positives is not None:
-                args.n_false_positives = max(args.n_false_positives, 1)
-                cropped_shape = np.subtract(
-                    scores.shape, np.multiply(args.min_boundary_distance, 2)
-                ).astype(int)
+            cropped_shape = np.subtract(
+                scores.shape, np.multiply(args.min_boundary_distance, 2)
+            ).astype(int)
 
-                cropped_shape = tuple(
+            if args.min_boundary_distance > 0:
+                scores = centered_mask(scores, new_shape=cropped_shape)
+
+            if args.n_false_positives is not None:
+                # Rickgauer et al. 2017
+                cropped_slice = tuple(
                     slice(
                         int(args.min_boundary_distance),
                         int(x - args.min_boundary_distance),
                     )
                     for x in scores.shape
                 )
-                # Rickgauer et al. 2017
-                n_correlations = np.size(scores[cropped_shape]) * len(rotation_mapping)
+                args.n_false_positives = max(args.n_false_positives, 1)
+                n_correlations = np.size(scores[cropped_slice]) * len(rotation_mapping)
                 minimum_score = np.multiply(
                     erfcinv(2 * args.n_false_positives / n_correlations),
-                    np.sqrt(2) * np.std(scores[cropped_shape]),
+                    np.sqrt(2) * np.std(scores[cropped_slice]),
                 )
                 print(f"Determined minimum score cutoff: {minimum_score}.")
                 minimum_score = max(minimum_score, 0)
@@ -371,6 +406,8 @@ def main():
                 "min_distance": args.min_distance,
                 "min_boundary_distance": args.min_boundary_distance,
                 "batch_dims": args.batch_dims,
+                "minimum_score": args.minimum_score,
+                "maximum_score": args.maximum_score,
             }
 
             peak_caller = PEAK_CALLERS[args.peak_caller](**peak_caller_kwargs)
@@ -380,7 +417,6 @@ def main():
                 mask=template.data,
                 rotation_mapping=rotation_mapping,
                 rotation_array=rotation_array,
-                minimum_score=args.minimum_score,
             )
             candidates = peak_caller.merge(
                 candidates=[tuple(peak_caller)], **peak_caller_kwargs
@@ -388,10 +424,16 @@ def main():
             if len(candidates) == 0:
                 candidates = [[], [], [], []]
                 print("Found no peaks, consider changing peak calling parameters.")
-                exit(0)
+                exit(-1)
 
             for translation, _, score, detail in zip(*candidates):
-                rotations.append(rotation_mapping[rotation_array[tuple(translation)]])
+                rotation_index = rotation_array[tuple(translation)]
+                rotation = rotation_mapping.get(
+                    rotation_index, np.zeros(template.data.ndim, int)
+                )
+                if rotation.ndim == 2:
+                    rotation = euler_from_rotationmatrix(rotation)
+                rotations.append(rotation)
 
         else:
             candidates = data
@@ -430,7 +472,7 @@ def main():
             )
             exit(-1)
         orientations.translations = peak_caller.oversample_peaks(
-            score_space=data[0],
+            scores=data[0],
             peak_positions=orientations.translations,
             oversampling_factor=args.peak_oversampling,
         )
@@ -570,7 +612,7 @@ def main():
             return_orientations=True,
         )
         out = np.zeros_like(template.data)
-        out = np.zeros(np.multiply(template.shape, 2).astype(int))
+        # out = np.zeros(np.multiply(template.shape, 2).astype(int))
         for index in range(len(cand_slices)):
             from scipy.spatial.transform import Rotation
 

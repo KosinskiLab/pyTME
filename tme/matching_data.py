@@ -1,18 +1,19 @@
-""" Data class for holding template matching data.
+""" Class representation of template matching data.
 
     Copyright (c) 2023 European Molecular Biology Laboratory
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 import warnings
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
 import numpy as np
 from numpy.typing import NDArray
 
 from . import Density
 from .types import ArrayLike
-from .backends import backend
+from .preprocessing import Compose
+from .backends import backend as be
 from .matching_utils import compute_full_convolution_index
 
 
@@ -31,9 +32,9 @@ class MatchingData:
     template_mask : np.ndarray or :py:class:`tme.density.Density`, optional
         Template mask data.
     invert_target : bool, optional
-        Whether to invert and rescale the target before template matching..
+        Whether to invert the target before template matching..
     rotations: np.ndarray, optional
-        Template rotations to sample. Can be a single (d x d) or a stack (n x d x d)
+        Template rotations to sample. Can be a single (d, d) or a stack (n, d, d)
         of rotation matrices where d is the dimension of the template.
 
     Examples
@@ -57,26 +58,18 @@ class MatchingData:
         invert_target: bool = False,
         rotations: NDArray = None,
     ):
-        self._target = target
-        self._target_mask = target_mask
-        self._template_mask = template_mask
-        self._translation_offset = np.zeros(len(target.shape), dtype=int)
+        self.target = target
+        self.target_mask = target_mask
 
         self.template = template
+        if template_mask is not None:
+            self.template_mask = template_mask
 
-        self._target_pad = np.zeros(len(target.shape), dtype=int)
-        self._template_pad = np.zeros(len(template.shape), dtype=int)
-
-        self.template_filter = {}
-        self.target_filter = {}
-
+        self.rotations = rotations
+        self._translation_offset = np.zeros(len(target.shape), dtype=int)
         self._invert_target = invert_target
 
-        self._rotations = rotations
-        if rotations is not None:
-            self.rotations = rotations
-
-        self._set_batch_dimension()
+        self._set_matching_dimension()
 
     @staticmethod
     def _shape_to_slice(shape: Tuple[int]):
@@ -141,7 +134,7 @@ class MatchingData:
         NDArray
             Subset of the input array with padding applied.
         """
-        padding = backend.to_numpy_array(padding)
+        padding = be.to_numpy_array(padding)
         padding = np.maximum(padding, 0).astype(int)
 
         slice_start = np.array([x.start for x in arr_slice], dtype=int)
@@ -160,13 +153,9 @@ class MatchingData:
         arr_slice = tuple(slice(*pos) for pos in zip(arr_start, arr_stop))
         arr_mesh = self._slice_to_mesh(arr_slice, arr.shape)
 
-        arr_min, arr_max = None, None
         if type(arr) == Density:
-            if type(arr.data) == np.memmap:
-                dens = Density.from_file(arr.data.filename, subset=arr_slice)
-                arr = dens.data
-                arr_min = dens.metadata.get("min", None)
-                arr_max = dens.metadata.get("max", None)
+            if isinstance(arr.data, np.memmap):
+                arr = Density.from_file(arr.data.filename, subset=arr_slice).data
             else:
                 arr = np.asarray(arr.data[*arr_mesh])
         else:
@@ -176,22 +165,6 @@ class MatchingData:
                 )
             arr = np.asarray(arr[*arr_mesh])
 
-        def _warn_on_mismatch(
-            expectation: float, computation: float, name: str
-        ) -> float:
-            if expectation is None:
-                expectation = computation
-            expectation, computation = float(expectation), float(computation)
-
-            if abs(computation) > abs(expectation):
-                warnings.warn(
-                    f"Computed {name} value is more extreme than value in file header"
-                    f" (|{computation}| > |{expectation}|). This may lead to issues"
-                    " with padding and contrast inversion."
-                )
-
-            return expectation
-
         padding = tuple(
             (left, right)
             for left, right in zip(
@@ -199,17 +172,11 @@ class MatchingData:
                 np.subtract(right_pad, data_voxels_right),
             )
         )
-        ret = np.pad(arr, padding, mode="reflect")
+        arr = np.pad(arr, padding, mode="reflect")
 
         if invert:
-            arr_min = _warn_on_mismatch(arr_min, arr.min(), "min")
-            arr_max = _warn_on_mismatch(arr_max, arr.max(), "max")
-
-            # Avoid in-place operation in case ret is not floating point
-            ret = (
-                -np.divide(np.subtract(ret, arr_min), np.subtract(arr_max, arr_min)) + 1
-            )
-        return ret
+            arr = -arr
+        return arr
 
     def subset_by_slice(
         self,
@@ -220,97 +187,94 @@ class MatchingData:
         invert_target: bool = False,
     ) -> "MatchingData":
         """
-        Slice the instance arrays based on the provided slices.
+        Subset class instance based on slices.
 
         Parameters
         ----------
         target_slice : tuple of slice, optional
-            Slices for the target. If not provided, the full shape is used.
+            Target subset to use, all by default.
         template_slice : tuple of slice, optional
-            Slices for the template. If not provided, the full shape is used.
+            Template subset to use, all by default.
         target_pad : NDArray, optional
-            Padding for target. Defaults to zeros. If padding exceeds target,
-            pad with mean.
+            Target padding, zero by default.
         template_pad : NDArray, optional
-            Padding for template. Defaults to zeros. If padding exceeds template,
-            pad with mean.
+            Template padding, zero by default.
 
         Returns
         -------
-        MatchingData
-            Newly allocated sliced class instance.
-        """
-        target_shape = self._target.shape
-        template_shape = self._template.shape
+        :py:class:`MatchingData`
+            Newly allocated subset of class instance.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from tme.matching_data import MatchingData
+        >>> target = np.random.rand(50,40,60)
+        >>> template = target[15:25, 10:20, 30:40]
+        >>> matching_data = MatchingData(target=target, template=template)
+        >>> subset = matching_data.subset_by_slice(
+        >>>     target_slice=(slice(0, 10), slice(10,20), slice(15,35))
+        >>> )
+        """
         if target_slice is None:
-            target_slice = self._shape_to_slice(target_shape)
+            target_slice = self._shape_to_slice(self._target.shape)
         if template_slice is None:
-            template_slice = self._shape_to_slice(template_shape)
+            template_slice = self._shape_to_slice(self._template.shape)
 
         if target_pad is None:
             target_pad = np.zeros(len(self._target.shape), dtype=int)
         if template_pad is None:
             template_pad = np.zeros(len(self._template.shape), dtype=int)
 
-        indices = None
+        target_mask, template_mask = None, None
+        target_subset = self.subset_array(
+            self._target, target_slice, target_pad, invert=self._invert_target
+        )
+        template_subset = self.subset_array(
+            arr=self._template, arr_slice=template_slice, padding=template_pad
+        )
+        if self._target_mask is not None:
+            target_mask = self.subset_array(
+                arr=self._target_mask, arr_slice=target_slice, padding=target_pad
+            )
+        if self._template_mask is not None:
+            template_mask = self.subset_array(
+                arr=self._template_mask, arr_slice=template_slice, padding=template_pad
+            )
+
+        ret = self.__class__(
+            target=target_subset,
+            template=template_subset,
+            template_mask=template_mask,
+            target_mask=target_mask,
+            rotations=self.rotations,
+            invert_target=self._invert_target,
+        )
+
+        # Deal with splitting offsets
+        target_offset = np.zeros(len(self._output_target_shape), dtype=int)
+        offset = target_offset.size - len(target_slice)
+        target_offset[offset:] = [x.start for x in target_slice]
+        template_offset = np.zeros(len(self._output_target_shape), dtype=int)
+        offset = template_offset.size - len(template_slice)
+        template_offset[offset:] = [x.start for x in template_slice]
+        ret._translation_offset = target_offset
         if len(self._target.shape) == len(self._template.shape):
-            indices = compute_full_convolution_index(
+            ret.indices = compute_full_convolution_index(
                 outer_shape=self._target.shape,
                 inner_shape=self._template.shape,
                 outer_split=target_slice,
                 inner_split=template_slice,
             )
 
-        target_subset = self.subset_array(
-            arr=self._target,
-            arr_slice=target_slice,
-            padding=target_pad,
-            invert=self._invert_target,
-        )
-
-        template_subset = self.subset_array(
-            arr=self._template,
-            arr_slice=template_slice,
-            padding=template_pad,
-        )
-        ret = self.__class__(target=target_subset, template=template_subset)
-
-        target_offset = np.zeros(len(self._output_target_shape), dtype=int)
-        target_offset[(target_offset.size - len(target_slice)) :] = [
-            x.start for x in target_slice
-        ]
-        template_offset = np.zeros(len(self._output_target_shape), dtype=int)
-        template_offset[(template_offset.size - len(template_slice)) :] = [
-            x.start for x in template_slice
-        ]
-        ret._translation_offset = target_offset
-
-        ret.template_filter = self.template_filter
+        ret._is_padded = be.sum(be.to_backend_array(target_pad)) > 0
         ret.target_filter = self.target_filter
-        ret._rotations, ret.indices = self.rotations, indices
-        ret._target_pad, ret._template_pad = target_pad, template_pad
-        ret._invert_target = self._invert_target
+        ret.template_filter = self.template_filter
 
-        if self._target_mask is not None:
-            ret._target_mask = self.subset_array(
-                arr=self._target_mask, arr_slice=target_slice, padding=target_pad
-            )
-        if self._template_mask is not None:
-            ret.template_mask = self.subset_array(
-                arr=self._template_mask,
-                arr_slice=template_slice,
-                padding=template_pad,
-            )
-
-        target_dims, template_dims = None, None
-        if hasattr(self, "_target_dims"):
-            target_dims = self._target_dims
-
-        if hasattr(self, "_template_dims"):
-            template_dims = self._template_dims
-
-        ret._set_batch_dimension(target_dims=target_dims, template_dims=template_dims)
+        ret._set_matching_dimension(
+            target_dims=getattr(self, "_target_dims", None),
+            template_dims=getattr(self, "_template_dims", None),
+        )
 
         return ret
 
@@ -318,47 +282,42 @@ class MatchingData:
         """
         Transfer and convert types of class instance's data arrays to the current backend
         """
-        backend_arr = type(backend.zeros((1), dtype=backend._float_dtype))
+        backend_arr = type(be.zeros((1), dtype=be._float_dtype))
         for attr_name, attr_value in vars(self).items():
             converted_array = None
             if isinstance(attr_value, np.ndarray):
-                converted_array = backend.to_backend_array(attr_value.copy())
+                converted_array = be.to_backend_array(attr_value.copy())
             elif isinstance(attr_value, backend_arr):
-                converted_array = backend.to_backend_array(attr_value)
+                converted_array = be.to_backend_array(attr_value)
             else:
                 continue
 
-            current_dtype = backend.get_fundamental_dtype(converted_array)
-            target_dtype = backend._fundamental_dtypes[current_dtype]
+            current_dtype = be.get_fundamental_dtype(converted_array)
+            target_dtype = be._fundamental_dtypes[current_dtype]
 
             # Optional, but scores are float so we avoid casting and potential issues
             if attr_name in ("_template", "_template_mask", "_target", "_target_mask"):
-                target_dtype = backend._float_dtype
+                target_dtype = be._float_dtype
 
             if target_dtype != current_dtype:
-                converted_array = backend.astype(converted_array, target_dtype)
+                converted_array = be.astype(converted_array, target_dtype)
 
             setattr(self, attr_name, converted_array)
 
-    def _set_batch_dimension(
+    def _set_matching_dimension(
         self, target_dims: Tuple[int] = None, template_dims: Tuple[int] = None
     ) -> None:
         """
-        Sets the shapes of target and template for template matching considering
-        their corresponding batch dimensions.
-
+        Sets matching dimensions for target and template.
         Parameters
         ----------
-        target_dims : Tuple[int], optional
-            A tuple of integers specifying the batch dimensions of the target. If None,
-            the target is assumed not to have batch dimensions.
-        template_dims : Tuple[int], optional
-            A tuple of integers specifying the batch dimensions of the template. If None,
-            the template is assumed not to have batch dimensions.
+        target_dims : tuple of ints, optional
+            Target batch dimensions, None by default.
+        template_dims : tuple of ints, optional
+            Template batch dimensions, None by default.
 
         Notes
         -----
-
         If the target and template share a batch dimension, the target will
         take precendence and the template dimension will be shifted to the right.
         If target and template have the same dimension, but target specifies batch
@@ -386,15 +345,9 @@ class MatchingData:
 
         matching_dims = target_measurement_dims + batch_dims
 
-        target_shape = backend.full(
-            shape=(matching_dims,), fill_value=1, dtype=backend._int_dtype
-        )
-        template_shape = backend.full(
-            shape=(matching_dims,), fill_value=1, dtype=backend._int_dtype
-        )
-        batch_mask = backend.full(
-            shape=(matching_dims,), fill_value=1, dtype=backend._int_dtype
-        )
+        target_shape = np.full(shape=matching_dims, fill_value=1, dtype=int)
+        template_shape = np.full(shape=matching_dims, fill_value=1, dtype=int)
+        batch_mask = np.full(shape=matching_dims, fill_value=1, dtype=int)
 
         target_index, template_index = 0, 0
         for k in range(matching_dims):
@@ -420,9 +373,9 @@ class MatchingData:
             if template_dim < template_ndim:
                 template_shape[k] = self._template.shape[template_dim]
 
-        self._output_target_shape = target_shape
-        self._output_template_shape = template_shape
-        self._batch_mask = batch_mask
+        self._output_target_shape = tuple(int(x) for x in target_shape)
+        self._output_template_shape = tuple(int(x) for x in template_shape)
+        self._batch_mask = tuple(int(x) for x in batch_mask)
 
     @staticmethod
     def _compute_batch_dimension(
@@ -433,22 +386,22 @@ class MatchingData:
 
         Parameters
         ----------
-        batch_dims : Tuple[int]
+        batch_dims : tuple of ints
             A tuple of integers representing the batch dimensions.
         ndim : int
             The number of dimensions of the array.
 
         Returns
         -------
-        Tuple[ArrayLike, Tuple]
-            A tuple containing the mask (as an ArrayLike) and the validated batch dimensions.
+        Tuple[ArrayLike, tuple of ints]
+            Mask and the corresponding batch dimensions.
 
         Raises
         ------
         ValueError
             If any dimension in batch_dims is not less than ndim.
         """
-        mask = backend.zeros(ndim, dtype=bool)
+        mask = np.zeros(ndim, dtype=int)
         if batch_dims is None:
             return mask, ()
 
@@ -463,215 +416,292 @@ class MatchingData:
 
         return mask, batch_dims
 
-    def target_padding(self, pad_target: bool = False) -> ArrayLike:
+    def target_padding(self, pad_target: bool = False) -> Tuple[int]:
         """
         Computes padding for the target based on the template's shape.
 
         Parameters
         ----------
         pad_target : bool, default False
-            If True, computes the padding required for the target. If False,
-            an array of zeros is returned.
+            Whether to pad the target, default returns an array of zeros.
 
         Returns
         -------
-        ArrayLike
-            An array indicating the padding for each dimension of the target.
+        tuple of ints
+            Padding along each dimension of the target.
         """
-        target_padding = backend.zeros(
-            len(self._output_target_shape), dtype=backend._int_dtype
-        )
-
+        target_padding = np.zeros(len(self._output_target_shape), dtype=int)
         if pad_target:
-            backend.subtract(
+            target_padding = np.subtract(
                 self._output_template_shape,
-                backend.mod(self._output_template_shape, 2),
-                out=target_padding,
+                np.mod(self._output_template_shape, 2),
             )
             if hasattr(self, "_is_target_batch"):
-                target_padding[self._is_target_batch] = 0
+                target_padding = np.multiply(
+                    target_padding,
+                    np.subtract(1, self._is_target_batch),
+                )
 
-        return target_padding
+        return tuple(int(x) for x in target_padding)
 
-    def fourier_padding(
-        self, pad_fourier: bool = False
-    ) -> Tuple[ArrayLike, ArrayLike, ArrayLike]:
+    @staticmethod
+    def _fourier_padding(
+        target_shape: NDArray,
+        template_shape: NDArray,
+        batch_mask: NDArray = None,
+        pad_fourier: bool = False,
+    ) -> Tuple[Tuple, Tuple, Tuple]:
         """
-        Computes an efficient shape for the forward Fourier transform, the
-        corresponding shape of the real-valued FFT, and the associated
-        translation shift.
+        Determines an efficient shape for Fourier transforms considering zero-padding.
+        """
+        fourier_pad = template_shape
+        fourier_shift = np.zeros_like(template_shape)
+
+        if batch_mask is None:
+            batch_mask = np.zeros_like(template_shape)
+        batch_mask = np.asarray(batch_mask)
+
+        if not pad_fourier:
+            fourier_pad = np.ones(len(fourier_pad), dtype=int)
+        fourier_pad = np.multiply(fourier_pad, 1 - batch_mask)
+        fourier_pad = np.add(fourier_pad, batch_mask)
+
+        pad_shape = np.maximum(target_shape, template_shape)
+        ret = be.compute_convolution_shapes(pad_shape, fourier_pad)
+        convolution_shape, fast_shape, fast_ft_shape = ret
+        if not pad_fourier:
+            fourier_shift = 1 - np.divide(template_shape, 2).astype(int)
+            fourier_shift -= np.mod(template_shape, 2)
+            shape_diff = np.subtract(fast_shape, convolution_shape)
+            shape_diff = np.divide(shape_diff, 2).astype(int)
+            shape_diff = np.multiply(shape_diff, 1 - batch_mask)
+            np.add(fourier_shift, shape_diff, out=fourier_shift)
+
+        fourier_shift = fourier_shift.astype(int)
+
+        shape_diff = np.subtract(target_shape, template_shape)
+        shape_diff = np.multiply(shape_diff, 1 - batch_mask)
+        if np.sum(shape_diff < 0) and not pad_fourier:
+            warnings.warn(
+                "Target is larger than template and Fourier padding is turned off. "
+                "This may lead to inaccurate results. Prefer swapping template and target, "
+                "enable padding or turn off template centering."
+            )
+            fourier_shift = np.subtract(fourier_shift, np.divide(shape_diff, 2))
+            fourier_shift = fourier_shift.astype(int)
+
+        return tuple(fast_shape), tuple(fast_ft_shape), tuple(fourier_shift)
+
+    def fourier_padding(self, pad_fourier: bool = False) -> Tuple[Tuple, Tuple, Tuple]:
+        """
+        Computes efficient shape four Fourier transforms and potential associated shifts.
 
         Parameters
         ----------
         pad_fourier : bool, default False
             If true, returns the shape of the full-convolution defined as sum of target
-            shape and template shape minus one. By default, returns unpadded transform.
+            shape and template shape minus one, False by default.
 
         Returns
         -------
-        Tuple[ArrayLike, ArrayLike, ArrayLike]
-            A tuple containing the calculated fast shape, fast Fourier transform shape,
-            and the Fourier shift values, respectively.
+        Tuple[tuple of int, tuple of int, tuple of int]
+            Tuple with real and complex Fourier transform shape, and corresponding shift.
         """
-        template_shape = self._template.shape
-        if hasattr(self, "_output_template_shape"):
-            template_shape = self._output_template_shape
-        template_shape = backend.to_backend_array(template_shape)
-
-        target_shape = self._target.shape
-        if hasattr(self, "_output_target_shape"):
-            target_shape = self._output_target_shape
-        target_shape = backend.to_backend_array(target_shape)
-
-        fourier_pad = backend.to_backend_array(template_shape)
-        fourier_shift = backend.zeros(len(fourier_pad))
-
-        if not pad_fourier:
-            fourier_pad = backend.full(
-                shape=(len(fourier_pad),),
-                fill_value=1,
-                dtype=backend._int_dtype,
-            )
-
-        fourier_pad = backend.to_backend_array(fourier_pad)
-        if hasattr(self, "_batch_mask"):
-            batch_mask = backend.to_backend_array(self._batch_mask)
-            backend.multiply(fourier_pad, 1 - batch_mask, out=fourier_pad)
-            backend.add(fourier_pad, batch_mask, out=fourier_pad)
-
-        pad_shape = backend.maximum(target_shape, template_shape)
-        ret = backend.compute_convolution_shapes(pad_shape, fourier_pad)
-        convolution_shape, fast_shape, fast_ft_shape = ret
-        if not pad_fourier:
-            fourier_shift = 1 - backend.astype(backend.divide(template_shape, 2), int)
-            fourier_shift -= backend.mod(template_shape, 2)
-            shape_diff = backend.subtract(fast_shape, convolution_shape)
-            shape_diff = backend.astype(backend.divide(shape_diff, 2), int)
-
-            if hasattr(self, "_batch_mask"):
-                batch_mask = backend.to_backend_array(self._batch_mask)
-                backend.multiply(shape_diff, 1 - batch_mask, out=shape_diff)
-
-            backend.add(fourier_shift, shape_diff, out=fourier_shift)
-
-        fourier_shift = backend.astype(fourier_shift, backend._int_dtype)
-
-        return fast_shape, fast_ft_shape, fourier_shift
+        return self._fourier_padding(
+            target_shape=be.to_numpy_array(self._output_target_shape),
+            template_shape=be.to_numpy_array(self._output_template_shape),
+            batch_mask=be.to_numpy_array(self._batch_mask),
+            pad_fourier=pad_fourier,
+        )
 
     @property
     def rotations(self):
-        """Return stored rotation matrices.."""
+        """Return stored rotation matrices."""
         return self._rotations
 
     @rotations.setter
     def rotations(self, rotations: NDArray):
         """
-        Set and reshape the rotation matrices for template matching.
+        Set :py:attr:`MatchingData.rotations`.
 
         Parameters
         ----------
         rotations : NDArray
-            Rotations in shape (k x k), or (n x k x k).
+            Rotations matrices with shape (d, d) or (n, d, d).
         """
-        if rotations.__class__ != np.ndarray:
-            raise ValueError("Rotation set has to be of type numpy ndarray.")
-        if rotations.ndim == 2:
+        if rotations is None:
+            print("No rotations provided, assuming identity for now.")
+            rotations = np.eye(len(self._target.shape))
+
+        if rotations.ndim not in (2, 3):
+            raise ValueError("Rotations have to be a rank 2 or 3 array.")
+        elif rotations.ndim == 2:
             print("Reshaping rotations array to rank 3.")
             rotations = rotations.reshape(1, *rotations.shape)
-        elif rotations.ndim == 3:
-            pass
-        else:
-            raise ValueError("Rotations have to be a rank 2 or 3 array.")
         self._rotations = rotations.astype(np.float32)
+
+    @staticmethod
+    def _get_data(attribute, output_shape: Tuple[int], reverse: bool = False):
+        if isinstance(attribute, Density):
+            attribute = attribute.data
+
+        if attribute is not None:
+            if reverse:
+                attribute = be.reverse(attribute)
+            attribute = attribute.reshape(tuple(int(x) for x in output_shape))
+
+        return attribute
 
     @property
     def target(self):
-        """Returns the target."""
-        target = self._target
-        if isinstance(self._target, Density):
-            target = self._target.data
-
-        out_shape = tuple(int(x) for x in self._output_target_shape)
-        return target.reshape(out_shape)
-
-    @property
-    def template(self):
-        """Returns the reversed template."""
-        template = self._template
-        if isinstance(self._template, Density):
-            template = self._template.data
-        template = backend.reverse(template)
-        out_shape = tuple(int(x) for x in self._output_template_shape)
-        return template.reshape(out_shape)
-
-    @template.setter
-    def template(self, template: NDArray):
         """
-        Set the template array. If not already defined, also initializes
-        :py:attr:`MatchingData.template_mask` to an uninformative mask filled with
-        ones.
+        Return the target.
 
-        Parameters
-        ----------
-        template : NDArray
-            Array to set as the template.
+        Returns
+        -------
+        NDArray
+            Output data.
         """
-        self._templateshape = template.shape[::-1]
-        if self._template_mask is None:
-            self._template_mask = backend.full(
-                shape=template.shape, dtype=float, fill_value=1
-            )
-
-        self._template = template
+        return self._get_data(self._target, self._output_target_shape, False)
 
     @property
     def target_mask(self):
-        """Returns the target mask NDArray."""
-        target_mask = self._target_mask
-        if isinstance(self._target_mask, Density):
-            target_mask = self._target_mask.data
+        """
+        Return the target mask.
 
-        if target_mask is not None:
-            out_shape = tuple(int(x) for x in self._output_target_shape)
-            target_mask = target_mask.reshape(out_shape)
+        Returns
+        -------
+        NDArray
+            Output data.
+        """
+        target_mask = getattr(self, "_target_mask", None)
+        return self._get_data(target_mask, self._output_target_shape, False)
 
-        return target_mask
+    @property
+    def template(self):
+        """
+        Return the reversed template.
 
-    @target_mask.setter
-    def target_mask(self, mask: NDArray):
-        """Sets the target mask."""
-        if not np.all(self.target.shape == mask.shape):
-            raise ValueError("Target and its mask have to have the same shape.")
-
-        self._target_mask = mask
+        Returns
+        -------
+        NDArray
+            Output data.
+        """
+        return self._get_data(self._template, self._output_template_shape, True)
 
     @property
     def template_mask(self):
         """
-        Set the template mask array after reversing it.
+        Return the reversed template mask.
+
+        Returns
+        -------
+        NDArray
+            Output data.
+        """
+        template_mask = getattr(self, "_template_mask", None)
+        return self._get_data(template_mask, self._output_template_shape, True)
+
+    @target.setter
+    def target(self, arr: NDArray):
+        """
+        Set :py:attr:`MatchingData.target`.
 
         Parameters
         ----------
-        template : NDArray
+        arr : NDArray
+            Array to set as the target.
+        """
+        self._target = arr
+
+    @template.setter
+    def template(self, arr: NDArray):
+        """
+        Set :py:attr:`MatchingData.template` and initializes
+        :py:attr:`MatchingData.template_mask` to an to an uninformative
+        mask filled with ones if not already defined.
+
+        Parameters
+        ----------
+        arr : NDArray
             Array to set as the template.
         """
-        mask = self._template_mask
-        if isinstance(self._template_mask, Density):
-            mask = self._template_mask.data
+        self._template = arr
+        if getattr(self, "_template_mask", None) is None:
+            self._template_mask = be.full(
+                shape=arr.shape, dtype=be._float_dtype, fill_value=1
+            )
 
+    @staticmethod
+    def _set_mask(mask, shape: Tuple[int]):
         if mask is not None:
-            mask = backend.reverse(mask)
-            out_shape = tuple(int(x) for x in self._output_template_shape)
-            mask = mask.reshape(out_shape)
+            if mask.shape != shape:
+                raise ValueError(
+                    "Mask and respective data have to have the same shape."
+                )
         return mask
 
-    @template_mask.setter
-    def template_mask(self, mask: NDArray):
-        """Returns the reversed template mask NDArray."""
-        if not np.all(self._templateshape[::-1] == mask.shape):
-            raise ValueError("Template and its mask have to have the same shape.")
+    @target_mask.setter
+    def target_mask(self, arr: NDArray):
+        """
+        Set :py:attr:`MatchingData.target_mask`.
 
-        self._template_mask = mask
+        Parameters
+        ----------
+        arr : NDArray
+            Array to set as the target_mask.
+        """
+        self._target_mask = self._set_mask(mask=arr, shape=self._target.shape)
+
+    @template_mask.setter
+    def template_mask(self, arr: NDArray):
+        """
+        Set :py:attr:`MatchingData.template_mask`.
+
+        Parameters
+        ----------
+        arr : NDArray
+            Array to set as the template_mask.
+        """
+        self._template_mask = self._set_mask(mask=arr, shape=self._template.shape)
+
+    @staticmethod
+    def _set_filter(composable_filter) -> Optional[Compose]:
+        if isinstance(composable_filter, Compose):
+            return composable_filter
+        return None
+
+    @property
+    def template_filter(self) -> Optional[Compose]:
+        """
+        Returns the composable template filter.
+
+        Returns
+        -------
+        :py:class:`tme.preprocessing.Compose` | None
+            Composable template filter or None.
+        """
+        return getattr(self, "_template_filter", None)
+
+    @property
+    def target_filter(self) -> Optional[Compose]:
+        """
+        Returns the composable target filter.
+
+        Returns
+        -------
+        :py:class:`tme.preprocessing.Compose` | None
+            Composable filter or None.
+        """
+        return getattr(self, "_target_filter", None)
+
+    @template_filter.setter
+    def template_filter(self, composable_filter: Compose):
+        self._template_filter = self._set_filter(composable_filter)
+
+    @target_filter.setter
+    def target_filter(self, composable_filter: Compose):
+        self._target_filter = self._set_filter(composable_filter)
 
     def _split_rotations_on_jobs(self, n_jobs: int) -> List[NDArray]:
         """
@@ -696,3 +726,11 @@ class MatchingData:
                 end_rot = None
             rot_list.append(self.rotations[init_rot:end_rot])
         return rot_list
+
+    def _free_data(self):
+        """
+        Free (dereference) data arrays owned by the class instance.
+        """
+        attrs = ("_target", "_template", "_template_mask", "_target_mask")
+        for attr in attrs:
+            setattr(self, attr, None)

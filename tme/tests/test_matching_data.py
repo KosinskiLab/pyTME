@@ -3,8 +3,8 @@ from tempfile import mkstemp
 import pytest
 import numpy as np
 
+from tme.backends import backend
 from tme.matching_data import MatchingData
-from tme.helpers import reverse
 
 
 class TestDensity:
@@ -139,7 +139,7 @@ class TestDensity:
     def test_template(self):
         matching_data = MatchingData(target=self.target, template=self.template)
 
-        assert np.allclose(matching_data.template, reverse(self.template))
+        assert np.allclose(matching_data.template, backend.reverse(self.template))
 
     def test_target_mask(self):
         matching_data = MatchingData(target=self.target, template=self.template)
@@ -151,7 +151,7 @@ class TestDensity:
         matching_data = MatchingData(target=self.target, template=self.template)
         matching_data.template_mask = self.template
 
-        assert np.allclose(matching_data.template_mask, reverse(self.template))
+        assert np.allclose(matching_data.template_mask, backend.reverse(self.template))
 
     @pytest.mark.parametrize("jobs", range(1, 50, 5))
     def test__split_rotations_on_jobs(self, jobs):

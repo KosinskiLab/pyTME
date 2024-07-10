@@ -5,7 +5,7 @@
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 import os
-import traceback
+import yaml
 import pickle
 from shutil import move
 from tempfile import mkstemp
@@ -14,47 +14,100 @@ from typing import Tuple, Dict, Callable
 from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
-from numpy.typing import NDArray
 from scipy.spatial import ConvexHull
 from scipy.ndimage import gaussian_filter
 from scipy.spatial.transform import Rotation
 
+from .backends import backend as be
+from .memory import estimate_ram_usage
+from .types import NDArray, BackendArray
 from .extensions import max_euclidean_distance
-from .matching_memory import estimate_ram_usage
-from .helpers import quaternion_to_rotation_matrix, load_quaternions_by_angle
 
 
-def handle_traceback(last_type, last_value, last_traceback):
+def noop(*args, **kwargs):
+    pass
+
+
+def identity(arr, *args):
+    return arr
+
+
+def conditional_execute(
+    func: Callable,
+    execute_operation: bool,
+    alt_func: Callable = noop,
+) -> Callable:
     """
-    Handle sys.exc_info().
+    Return the given function or a no-op function based on execute_operation.
 
     Parameters
     ----------
-    last_type : type
-        The type of the last exception.
-    last_value :
-        The value of the last exception.
-    last_traceback : traceback
-        The traceback object encapsulating the call stack at the point
-        where the exception originally occurred.
+    func : Callable
+        Callable.
+    alt_func : Callable
+        Callable to return if ``execute_operation`` is False, no-op by default.
+    execute_operation : bool
+        Whether to return ``func`` or a ``alt_func`` function.
 
-    Raises
-    ------
-    Exception
-        Re-raises the last exception.
+    Returns
+    -------
+    Callable
+        ``func`` if ``execute_operation`` else ``alt_func``.
     """
-    if last_type is None:
-        return None
-    traceback.print_tb(last_traceback)
-    raise Exception(last_value)
-    # raise last_type(last_value)
+
+    return func if execute_operation else alt_func
 
 
-def generate_tempfile_name(suffix=None):
+def normalize_template(
+    template: BackendArray, mask: BackendArray, n_observations: float
+) -> BackendArray:
     """
-    Returns the path to a potential temporary file location. If the environment
-    variable TME_TMPDIR is defined, the temporary file will be created there.
-    Otherwise the default tmp directory will be used.
+    Standardizes ``template`` to zero mean and unit standard deviation in ``mask``.
+
+    .. warning:: ``template`` is modified during the operation.
+
+    Parameters
+    ----------
+    template : BackendArray
+        Input data.
+    mask : BackendArray
+        Mask of the same shape as ``template``.
+    n_observations : float
+        Sum of mask elements.
+
+    Returns
+    -------
+    BackendArray
+        Standardized input data.
+
+    References
+    ----------
+    .. [1]  Hrabe T. et al, J. Struct. Biol. 178, 177 (2012).
+    """
+    masked_mean = be.sum(be.multiply(template, mask)) / n_observations
+    masked_std = be.sum(be.multiply(be.square(template), mask))
+    masked_std = be.subtract(masked_std / n_observations, be.square(masked_mean))
+    masked_std = be.sqrt(be.maximum(masked_std, 0))
+
+    template = be.subtract(template, masked_mean, out=template)
+    template = be.divide(template, masked_std, out=template)
+    return be.multiply(template, mask, out=template)
+
+
+def _normalize_template_overflow_safe(
+    template: BackendArray, mask: BackendArray, n_observations: float
+) -> BackendArray:
+    _template = be.astype(template, be._overflow_safe_dtype)
+    _mask = be.astype(mask, be._overflow_safe_dtype)
+    normalize_template(template=_template, mask=_mask, n_observations=n_observations)
+    template[:] = be.astype(_template, template.dtype)
+    return template
+
+
+def generate_tempfile_name(suffix: str = None) -> str:
+    """
+    Returns the path to a temporary file with given suffix. If defined. the
+    environment variable TMPDIR is used as base.
 
     Parameters
     ----------
@@ -73,26 +126,19 @@ def generate_tempfile_name(suffix=None):
 
 def array_to_memmap(arr: NDArray, filename: str = None) -> str:
     """
-    Converts a numpy array to a np.memmap.
+    Converts a obj:`numpy.ndarray` to a obj:`numpy.memmap`.
 
     Parameters
     ----------
-    arr : np.ndarray
-        The numpy array to be converted.
+    arr : obj:`numpy.ndarray`
+        Input data.
     filename : str, optional
-        Desired filename for the memmap. If not provided, a temporary
-        file will be created.
-
-    Notes
-    -----
-        If the environment variable TME_TMPDIR is defined, the temporary
-        file will be created there. Otherwise the default tmp directory
-        will be used.
+        Path to new memmap, :py:meth:`generate_tempfile_name` is used by default.
 
     Returns
     -------
     str
-        The filename where the memmap was written to.
+        Path to the memmap.
     """
     if filename is None:
         filename = generate_tempfile_name()
@@ -108,17 +154,17 @@ def array_to_memmap(arr: NDArray, filename: str = None) -> str:
 
 def memmap_to_array(arr: NDArray) -> NDArray:
     """
-    Converts a np.memmap into an numpy array.
+    Convert a obj:`numpy.memmap` to a obj:`numpy.ndarray` and delete the memmap.
 
     Parameters
     ----------
-    arr : np.memmap
-        The numpy array to be converted.
+    arr : obj:`numpy.memmap`
+        Input data.
 
     Returns
     -------
-    np.ndarray
-        The converted array.
+    obj:`numpy.ndarray`
+        In-memory version of ``arr``.
     """
     if type(arr) == np.memmap:
         memmap_filepath = arr.filename
@@ -129,12 +175,12 @@ def memmap_to_array(arr: NDArray) -> NDArray:
 
 def close_memmap(arr: np.ndarray) -> None:
     """
-    Remove the file associated with a numpy memmap array.
+    Remove the file associated with a obj:`numpy.memmap` object.
 
     Parameters
     ----------
-    arr : np.ndarray
-        The numpy array which might be a memmap.
+    arr : obj:`numpy.memmap`
+        The potential obj:`numpy.memmap` instance.
     """
     try:
         os.remove(arr.filename)
@@ -145,10 +191,7 @@ def close_memmap(arr: np.ndarray) -> None:
 
 def write_pickle(data: object, filename: str) -> None:
     """
-    Serialize and write data to a file invalidating the input data in
-    the process. This function  uses type-specific serialization for
-    certain objects, such as np.memmap, for optimized storage. Other
-    objects are serialized using standard pickle.
+    Serialize and write data to a file invalidating the input data.
 
     Parameters
     ----------
@@ -316,7 +359,7 @@ def compute_parallelization_schedule(
     split_factor, n_splits = [1 for _ in range(len(shape1))], 0
     while n_splits <= max_splits:
         splits = {k: split_factor[k] for k in range(len(split_factor))}
-        array_slices = split_numpy_array_slices(shape=shape1, splits=splits)
+        array_slices = split_shape(shape=shape1, splits=splits)
         array_widths = [
             tuple(x.stop - x.start for x in split) for split in array_slices
         ]
@@ -378,55 +421,57 @@ def compute_parallelization_schedule(
     return splits, core_assignment
 
 
-def centered(arr: NDArray, newshape: Tuple[int]) -> NDArray:
+def _center_slice(current_shape: Tuple[int], new_shape: Tuple[int]) -> Tuple[slice]:
+    """Extract the center slice of ``current_shape`` to retrieve ``new_shape``."""
+    new_shape = tuple(int(x) for x in new_shape)
+    current_shape = tuple(int(x) for x in current_shape)
+    starts = tuple((x - y) // 2 for x, y in zip(current_shape, new_shape))
+    stops = tuple(sum(stop) for stop in zip(starts, new_shape))
+    box = tuple(slice(start, stop) for start, stop in zip(starts, stops))
+    return box
+
+
+def centered(arr: BackendArray, new_shape: Tuple[int]) -> BackendArray:
     """
     Extract the centered portion of an array based on a new shape.
 
     Parameters
     ----------
-    arr : NDArray
-        Input array.
-    newshape : tuple
+    arr : BackendArray
+        Input data.
+    new_shape : tuple of ints
         Desired shape for the central portion.
 
     Returns
     -------
-    NDArray
-        Central portion of the array with shape `newshape`.
+    BackendArray
+        Central portion of the array with shape ``new_shape``.
 
     References
     ----------
     .. [1] https://github.com/scipy/scipy/blob/v1.11.2/scipy/signal/_signaltools.py#L388
     """
-    new_shape = np.asarray(newshape)
-    current_shape = np.array(arr.shape)
-    starts = (current_shape - new_shape) // 2
-    stops = starts + newshape
-    box = tuple(slice(start, stop) for start, stop in zip(starts, stops))
+    box = _center_slice(arr.shape, new_shape=new_shape)
     return arr[box]
 
 
-def centered_mask(arr: NDArray, newshape: Tuple[int]) -> NDArray:
+def centered_mask(arr: BackendArray, new_shape: Tuple[int]) -> BackendArray:
     """
     Mask the centered portion of an array based on a new shape.
 
     Parameters
     ----------
-    arr : NDArray
-        Input array.
-    newshape : tuple
+    arr : BackendArray
+        Input data.
+    new_shape : tuple of ints
         Desired shape for the mask.
 
     Returns
     -------
-    NDArray
+    BackendArray
         Array with central portion unmasked and the rest set to 0.
     """
-    new_shape = np.asarray(newshape)
-    current_shape = np.array(arr.shape)
-    starts = (current_shape - new_shape) // 2
-    stops = starts + newshape
-    box = tuple(slice(start, stop) for start, stop in zip(starts, stops))
+    box = _center_slice(arr.shape, new_shape=new_shape)
     mask = np.zeros_like(arr)
     mask[box] = 1
     arr *= mask
@@ -434,21 +479,21 @@ def centered_mask(arr: NDArray, newshape: Tuple[int]) -> NDArray:
 
 
 def apply_convolution_mode(
-    arr: NDArray,
+    arr: BackendArray,
     convolution_mode: str,
     s1: Tuple[int],
     s2: Tuple[int],
     mask_output: bool = False,
-) -> NDArray:
+) -> BackendArray:
     """
-    Applies convolution_mode to arr.
+    Applies convolution_mode to ``arr``.
 
     Parameters
     ----------
-    arr : NDArray
-        Numpy array containing convolution result of arrays with shape s1 and s2.
+    arr : BackendArray
+        Array containing convolution result of arrays with shape s1 and s2.
     convolution_mode : str
-        Analogous to mode in ``scipy.signal.convolve``:
+        Analogous to mode in obj:`scipy.signal.convolve`:
 
         +---------+----------------------------------------------------------+
         | 'full'  | returns full template matching result of the inputs.     |
@@ -457,9 +502,9 @@ def apply_convolution_mode(
         +---------+----------------------------------------------------------+
         | 'same'  | output is the same size as s1.                           |
         +---------+----------------------------------------------------------+
-    s1 : tuple
+    s1 : tuple of ints
         Tuple of integers corresponding to shape of convolution array 1.
-    s2 : tuple
+    s2 : tuple of ints
         Tuple of integers corresponding to shape of convolution array 2.
     mask_output : bool, optional
         Whether to mask values outside of convolution_mode rather than
@@ -467,14 +512,10 @@ def apply_convolution_mode(
 
     Returns
     -------
-    NDArray
-        The numpy array after applying the convolution mode.
-
-    References
-    ----------
-    .. [1] https://github.com/scipy/scipy/blob/v1.11.2/scipy/signal/_signaltools.py#L519
+    BackendArray
+        The array after applying the convolution mode.
     """
-    # This removes padding to next fast fourier length
+    # Remove padding to next fast Fourier length
     arr = arr[tuple(slice(s1[i] + s2[i] - 1) for i in range(len(s1)))]
 
     if convolution_mode not in ("full", "same", "valid"):
@@ -506,11 +547,9 @@ def compute_full_convolution_index(
     inner_shape : tuple
         Tuple of integers corresponding to the shape of the inner array.
     outer_split : tuple
-        Tuple of slices used to split outer array
-        (see :py:meth:`split_numpy_array_slices`).
+        Tuple of slices used to split outer array (see :py:meth:`split_shape`).
     inner_split : tuple
-        Tuple of slices used to split inner array
-        (see :py:meth:`split_numpy_array_slices`).
+        Tuple of slices used to split inner array (see :py:meth:`split_shape`).
 
     Returns
     -------
@@ -538,41 +577,43 @@ def compute_full_convolution_index(
     return score_slice
 
 
-def split_numpy_array_slices(
-    shape: NDArray, splits: Dict, margin: NDArray = None
+def split_shape(
+    shape: Tuple[int], splits: Dict, equal_shape: bool = True
 ) -> Tuple[slice]:
     """
-    Returns a tuple of slices to subset a numpy array into pieces along multiple axes.
+    Splits ``shape`` into equally sized and potentially overlapping subsets.
 
     Parameters
     ----------
-    shape : NDArray
-        Shape of the array to split.
+    shape : tuple of ints
+        Shape to split.
     splits : dict
-        A dictionary where the keys are the axis numbers and the values
-        are the number of splits along that axis.
-    margin : NDArray, optional
-        Padding on the left hand side of the array.
+        Dictionary mapping axis number to number of splits.
+    equal_shape : dict
+        Whether the subsets should be of equal shape, True by default.
 
     Returns
     -------
     tuple
-        A tuple of slices, where each slice corresponds to a split along an axis.
+        Tuple of slice with requested split combinations.
     """
     ndim = len(shape)
-    if margin is None:
-        margin = np.zeros(ndim, dtype=int)
-    splits = {k: max(splits.get(k, 0), 1) for k in range(ndim)}
-    new_shape = np.divide(shape, [splits.get(i, 1) for i in range(ndim)]).astype(int)
+    splits = {k: max(splits.get(k, 1), 1) for k in range(ndim)}
+    ret_shape = np.divide(shape, tuple(splits[i] for i in range(ndim)))
+    if equal_shape:
+        ret_shape = np.ceil(ret_shape).astype(int)
+    ret_shape = ret_shape.astype(int)
 
     slice_list = [
         tuple(
-            (slice(max((n_splits * length) - margin[axis], 0), (n_splits + 1) * length))
+            (slice((n_splits * length), (n_splits + 1) * length))
             if n_splits < splits.get(axis, 1) - 1
-            else (slice(max((n_splits * length) - margin[axis], 0), shape[axis]))
+            else (slice(shape[axis] - length, shape[axis]))
+            if equal_shape
+            else (slice((n_splits * length), shape[axis]))
             for n_splits in range(splits.get(axis, 1))
         )
-        for length, axis in zip(new_shape, splits.keys())
+        for length, axis in zip(ret_shape, splits.keys())
     ]
 
     splits = tuple(product(*slice_list))
@@ -584,28 +625,25 @@ def get_rotation_matrices(
     angular_sampling: float, dim: int = 3, use_optimized_set: bool = True
 ) -> NDArray:
     """
-    Returns rotation matrices in format k x dim x dim, where k is determined
-    by ``angular_sampling``.
+    Returns rotation matrices with desired ``angular_sampling`` rate.
 
     Parameters
     ----------
     angular_sampling : float
-        The angle in degrees used for the generation of rotation matrices.
+        The desired angular sampling in degrees.
     dim : int, optional
         Dimension of the rotation matrices.
     use_optimized_set : bool, optional
-        Whether to use pre-computed rotational sets with more optimal sampling.
-        Currently only available when dim=3.
+        Use optimized rotational sets, True by default and available for dim=3.
 
     Notes
     -----
-        For the case of dim = 3 optimized rotational sets are used, otherwise
-        QR-decomposition.
+        For dim = 3 optimized sets are used, otherwise QR-decomposition.
 
     Returns
     -------
     NDArray
-        Array of shape (k, dim, dim) containing k rotation matrices.
+        Array of shape (n, d, d) containing n rotation matrices.
     """
     if dim == 3 and use_optimized_set:
         quaternions, *_ = load_quaternions_by_angle(angular_sampling)
@@ -706,144 +744,82 @@ def get_rotations_around_vector(
     return rotation_angles
 
 
-def minimum_enclosing_box(
-    coordinates: NDArray,
-    margin: NDArray = None,
-    use_geometric_center: bool = False,
-) -> Tuple[int]:
+def load_quaternions_by_angle(
+    angular_sampling: float,
+) -> Tuple[NDArray, NDArray, float]:
     """
-    Computes the minimal enclosing box around coordinates with margin.
+    Get orientations and weights proportional to the given angular_sampling.
 
     Parameters
     ----------
-    coordinates : NDArray
-        Coordinates of which the enclosing box should be computed. The shape
-        of this array should be [d, n] with d dimensions and n coordinates.
-    margin : NDArray, optional
-        Box margin. Defaults to None.
-    use_geometric_center : bool, optional
-        Whether the box should accommodate the geometric or the coordinate
-        center. Defaults to False.
+    angular_sampling : float
+        Requested angular sampling.
 
     Returns
     -------
-    tuple
-        Integers corresponding to the minimum enclosing box shape.
+    Tuple[NDArray, NDArray, float]
+        Quaternion representations of orientations, weights associated with each
+        quaternion and closest angular sampling to the requested sampling.
     """
-    point_cloud = np.asarray(coordinates)
-    dim = point_cloud.shape[0]
-    point_cloud = point_cloud - point_cloud.min(axis=1)[:, None]
+    # Metadata contains (N orientations, rotational sampling, coverage as values)
+    with open(
+        os.path.join(os.path.dirname(__file__), "data", "metadata.yaml"), "r"
+    ) as infile:
+        metadata = yaml.full_load(infile)
 
-    margin = np.zeros(dim) if margin is None else margin
-    margin = np.asarray(margin).astype(int)
+    set_diffs = {
+        setname: abs(angular_sampling - set_angle)
+        for setname, (_, set_angle, _) in metadata.items()
+    }
+    fname = min(set_diffs, key=set_diffs.get)
 
-    norm_cloud = point_cloud - point_cloud.mean(axis=1)[:, None]
-    # Adding one avoids clipping during scipy.ndimage.affine_transform
-    shape = np.repeat(
-        np.ceil(2 * np.linalg.norm(norm_cloud, axis=0).max()) + 1, dim
-    ).astype(int)
-    if use_geometric_center:
-        hull = ConvexHull(point_cloud.T)
-        distance, _ = max_euclidean_distance(point_cloud[:, hull.vertices].T)
-        distance += np.linalg.norm(np.ones(dim))
-        shape = np.repeat(np.rint(distance).astype(int), dim)
+    infile = os.path.join(os.path.dirname(__file__), "data", fname)
+    quat_weights = np.load(infile)
 
-    return shape
+    quat = quat_weights[:, :4]
+    weights = quat_weights[:, -1]
+    angle = metadata[fname][0]
+
+    return quat, weights, angle
 
 
-def crop_input(
-    target: "Density",
-    template: "Density",
-    target_mask: "Density" = None,
-    template_mask: "Density" = None,
-    map_cutoff: float = 0,
-    template_cutoff: float = 0,
-) -> Tuple[int]:
+def quaternion_to_rotation_matrix(quaternions: NDArray) -> NDArray:
     """
-    Crop target and template maps for efficient fitting. Input densities
-    are cropped in place.
+    Convert quaternions to rotation matrices.
 
     Parameters
     ----------
-    target : Density
-        Target to be fitted on.
-    template : Density
-        Template to fit onto the target.
-    target_mask : Density, optional
-        Path to mask of target. Will be croppped like target.
-    template_mask : Density, optional
-        Path to mask of template. Will be cropped like template.
-    map_cutoff : float, optional
-        Cutoff value for trimming the target Density. Default is 0.
-    map_cutoff : float, optional
-        Cutoff value for trimming the template Density. Default is 0.
+    quaternions : NDArray
+        Quaternion data of shape (n, 4).
 
     Returns
     -------
-    Tuple[int]
-        Tuple containing reference fit index
+    NDArray
+        Rotation matrices corresponding to the given quaternions.
     """
-    convolution_shape_init = np.add(target.shape, template.shape) - 1
-    # If target and template are aligned, fitting should return this index
-    reference_fit = np.subtract(template.shape, 1)
+    q0 = quaternions[:, 0]
+    q1 = quaternions[:, 1]
+    q2 = quaternions[:, 2]
+    q3 = quaternions[:, 3]
 
-    target_box = tuple(slice(0, x) for x in target.shape)
-    if map_cutoff is not None:
-        target_box = target.trim_box(cutoff=map_cutoff)
+    s = np.linalg.norm(quaternions, axis=1) * 2
+    rotmat = np.zeros((quaternions.shape[0], 3, 3), dtype=np.float64)
 
-    target_mask_box = target_box
-    if target_mask is not None and map_cutoff is not None:
-        target_mask_box = target_mask.trim_box(cutoff=map_cutoff)
-    target_box = tuple(
-        slice(min(arr.start, mask.start), max(arr.stop, mask.stop))
-        for arr, mask in zip(target_box, target_mask_box)
-    )
+    rotmat[:, 0, 0] = 1.0 - s * ((q2 * q2) + (q3 * q3))
+    rotmat[:, 0, 1] = s * ((q1 * q2) - (q0 * q3))
+    rotmat[:, 0, 2] = s * ((q1 * q3) + (q0 * q2))
 
-    template_box = tuple(slice(0, x) for x in template.shape)
-    if template_cutoff is not None:
-        template_box = template.trim_box(cutoff=template_cutoff)
+    rotmat[:, 1, 0] = s * ((q2 * q1) + (q0 * q3))
+    rotmat[:, 1, 1] = 1.0 - s * ((q3 * q3) + (q1 * q1))
+    rotmat[:, 1, 2] = s * ((q2 * q3) - (q0 * q1))
 
-    template_mask_box = template_box
-    if template_mask is not None and template_cutoff is not None:
-        template_mask_box = template_mask.trim_box(cutoff=template_cutoff)
-    template_box = tuple(
-        slice(min(arr.start, mask.start), max(arr.stop, mask.stop))
-        for arr, mask in zip(template_box, template_mask_box)
-    )
+    rotmat[:, 2, 0] = s * ((q3 * q1) - (q0 * q2))
+    rotmat[:, 2, 1] = s * ((q3 * q2) + (q0 * q1))
+    rotmat[:, 2, 2] = 1.0 - s * ((q1 * q1) + (q2 * q2))
 
-    cut_right = np.array(
-        [shape - x.stop for shape, x in zip(template.shape, template_box)]
-    )
-    cut_left = np.array([x.start for x in target_box])
+    np.around(rotmat, decimals=8, out=rotmat)
 
-    origin_difference = np.divide(target.origin - template.origin, target.sampling_rate)
-    origin_difference = origin_difference.astype(int)
-
-    target.adjust_box(target_box)
-    template.adjust_box(template_box)
-
-    if target_mask is not None:
-        target_mask.adjust_box(target_box)
-    if template_mask is not None:
-        template_mask.adjust_box(template_box)
-
-    reference_fit -= cut_right + cut_left + origin_difference
-
-    convolution_shape = np.array(target.shape)
-    convolution_shape += np.array(template.shape) - 1
-
-    print(f"Cropped volume of target is: {target.shape}")
-    print(f"Cropped volume of template is: {template.shape}")
-    saving = 1 - (np.prod(convolution_shape)) / np.prod(convolution_shape_init)
-    saving *= 100
-
-    print(
-        "Cropping changed array size from "
-        f"{round(4*np.prod(convolution_shape_init)/1e6, 3)} MB "
-        f"to {round(4*np.prod(convolution_shape)/1e6, 3)} MB "
-        f"({'-' if saving > 0 else ''}{abs(round(saving, 2))}%)"
-    )
-    return reference_fit
+    return rotmat
 
 
 def euler_to_rotationmatrix(angles: Tuple[float], convention: str = "zyx") -> NDArray:
@@ -866,12 +842,8 @@ def euler_to_rotationmatrix(angles: Tuple[float], convention: str = "zyx") -> ND
     angle_convention = convention[:n_angles]
     if n_angles == 1:
         angles = (angles, 0, 0)
-    rotation_matrix = (
-        Rotation.from_euler(angle_convention, angles, degrees=True)
-        .as_matrix()
-        .astype(np.float32)
-    )
-    return rotation_matrix
+    rotation_matrix = Rotation.from_euler(angle_convention, angles, degrees=True)
+    return rotation_matrix.as_matrix().astype(np.float32)
 
 
 def euler_from_rotationmatrix(
@@ -883,9 +855,10 @@ def euler_from_rotationmatrix(
     Parameters
     ----------
     rotation_matrix : NDArray
-        A 2 x 2 or 3 x 3 rotation matrix in z y x form.
+        A 2 x 2 or 3 x 3 rotation matrix in zyx form.
     convention : str, optional
-        Euler angle convention.
+        Euler angle convention, zyx by default.
+
     Returns
     -------
     Tuple
@@ -895,12 +868,8 @@ def euler_from_rotationmatrix(
         temp_matrix = np.eye(3)
         temp_matrix[:2, :2] = rotation_matrix
         rotation_matrix = temp_matrix
-    euler_angles = (
-        Rotation.from_matrix(rotation_matrix)
-        .as_euler(convention, degrees=True)
-        .astype(np.float32)
-    )
-    return euler_angles
+    rotation = Rotation.from_matrix(rotation_matrix)
+    return rotation.as_euler(convention, degrees=True).astype(np.float32)
 
 
 def rotation_aligning_vectors(
@@ -961,23 +930,19 @@ def rigid_transform(
     Parameters
     ----------
     coordinates : NDArray
-        An array representing the coordinates to be transformed [d x N].
+        An array representing the coordinates to be transformed (d,n).
     rotation_matrix : NDArray
-        The rotation matrix to be applied [d x d].
+        The rotation matrix to be applied (d,d).
     translation : NDArray
-        The translation vector to be applied [d].
+        The translation vector to be applied (d,).
     out : NDArray
-        The output array to store the transformed coordinates.
+        The output array to store the transformed coordinates (d,n).
     coordinates_mask : NDArray, optional
-        An array representing the mask for the coordinates [d x T].
+        An array representing the mask for the coordinates (d,t).
     out_mask : NDArray, optional
-        The output array to store the transformed coordinates mask.
+        The output array to store the transformed coordinates mask (d,t).
     use_geometric_center : bool, optional
         Whether to use geometric or coordinate center.
-
-    Returns
-    -------
-    None
     """
     coordinate_dtype = coordinates.dtype
     center = coordinates.mean(axis=1) if center is None else center
@@ -1004,71 +969,67 @@ def rigid_transform(
         out += translation[:, None]
 
 
-def _format_string(string: str) -> str:
+def minimum_enclosing_box(
+    coordinates: NDArray, margin: NDArray = None, use_geometric_center: bool = False
+) -> Tuple[int]:
     """
-    Formats a string by adding quotation marks if it contains white spaces.
+    Computes the minimal enclosing box around coordinates with margin.
 
     Parameters
     ----------
-    string : str
-        Input string to be formatted.
+    coordinates : NDArray
+        Coordinates of shape (d,n) to compute the enclosing box of.
+    margin : NDArray, optional
+        Box margin, zero by default.
+    use_geometric_center : bool, optional
+        Whether box accommodates the geometric or coordinate center, False by default.
 
     Returns
     -------
-    str
-        Formatted string with added quotation marks if needed.
+    tuple of ints
+        Minimum enclosing box shape.
     """
-    if " " in string:
-        return f"'{string}'"
-    # Occurs e.g. for C1' atoms. The trailing whitespace is necessary.
-    if string.count("'") == 1:
-        return f'"{string}"'
-    return string
+    point_cloud = np.asarray(coordinates)
+    dim = point_cloud.shape[0]
+    point_cloud = point_cloud - point_cloud.min(axis=1)[:, None]
+
+    margin = np.zeros(dim) if margin is None else margin
+    margin = np.asarray(margin).astype(int)
+
+    norm_cloud = point_cloud - point_cloud.mean(axis=1)[:, None]
+    # Adding one avoids clipping during scipy.ndimage.affine_transform
+    shape = np.repeat(
+        np.ceil(2 * np.linalg.norm(norm_cloud, axis=0).max()) + 1, dim
+    ).astype(int)
+    if use_geometric_center:
+        hull = ConvexHull(point_cloud.T)
+        distance, _ = max_euclidean_distance(point_cloud[:, hull.vertices].T)
+        distance += np.linalg.norm(np.ones(dim))
+        shape = np.repeat(np.rint(distance).astype(int), dim)
+
+    return shape
 
 
-def _format_mmcif_colunns(subdict: Dict) -> Dict:
-    """
-    Formats the columns of a mmcif dictionary.
-
-    Parameters
-    ----------
-    subdict : dict
-        Input dictionary where each key corresponds to a column and the
-        values are iterables containing the column values.
-
-    Returns
-    -------
-    dict
-        Formatted dictionary with the columns of the mmcif file.
-    """
-    subdict = {k: [_format_string(s) for s in v] for k, v in subdict.items()}
-    key_length = {
-        key: len(max(value, key=lambda x: len(x), default=""))
-        for key, value in subdict.items()
-    }
-    padded_subdict = {
-        key: [s.ljust(key_length[key] + 1) for s in values]
-        for key, values in subdict.items()
-    }
-    return padded_subdict
-
-
-def create_mask(
-    mask_type: str, sigma_decay: float = 0, mask_cutoff: float = 0.135, **kwargs
-) -> NDArray:
+def create_mask(mask_type: str, sigma_decay: float = 0, **kwargs) -> NDArray:
     """
     Creates a mask of the specified type.
 
     Parameters
     ----------
     mask_type : str
-        Type of the mask to be created. Can be "ellipse", "box", or "tube".
+        Type of the mask to be created. Can be one of:
+
+            +---------+----------------------------------------------------------+
+            | box     | Box mask (see :py:meth:`box_mask`)                       |
+            +---------+----------------------------------------------------------+
+            | tube    | Cylindrical mask (see :py:meth:`tube_mask`)              |
+            +---------+----------------------------------------------------------+
+            | ellipse | Ellipsoidal mask (see :py:meth:`elliptical_mask`)        |
+            +---------+----------------------------------------------------------+
     sigma_decay : float, optional
-        Standard deviation of an optionally applied Gaussian filter.
-    mask_cutoff : float, optional
-        Values below mask_cutoff will be set to zero. By default, exp(-2).
+        Smoothing along mask edges using a Gaussian filter, 0 by default.
     kwargs : dict
-        Additional parameters required by the mask creating functions.
+        Parameters passed to the indivdual mask creation funcitons.
 
     Returns
     -------
@@ -1079,12 +1040,6 @@ def create_mask(
     ------
     ValueError
         If the mask_type is invalid.
-
-    See Also
-    --------
-    :py:meth:`elliptical_mask`
-    :py:meth:`box_mask`
-    :py:meth:`tube_mask`
     """
     mapping = {"ellipse": elliptical_mask, "box": box_mask, "tube": tube_mask}
     if mask_type not in mapping:
@@ -1092,9 +1047,9 @@ def create_mask(
 
     mask = mapping[mask_type](**kwargs)
     if sigma_decay > 0:
-        mask = gaussian_filter(mask.astype(np.float32), sigma=sigma_decay)
-
-    mask[mask < mask_cutoff] = 0
+        mask_filter = gaussian_filter(mask.astype(np.float32), sigma=sigma_decay)
+        mask = np.add(mask, (1 - mask) * mask_filter)
+        mask[mask < np.exp(-np.square(sigma_decay))] = 0
 
     return mask
 
@@ -1126,6 +1081,7 @@ def elliptical_mask(
 
     Examples
     --------
+    >>> from tme.matching_utils import elliptical_mask
     >>> mask = elliptical_mask(shape = (20,20), radius = (5,5), center = (10,10))
     """
     center, shape, radius = np.asarray(center), np.asarray(shape), np.asarray(radius)
@@ -1154,17 +1110,23 @@ def box_mask(shape: Tuple[int], center: Tuple[int], height: Tuple[int]) -> np.nd
 
     Parameters
     ----------
-    shape : Tuple[int]
+    shape : tuple of ints
         Shape of the output array.
-    center : Tuple[int]
+    center : tuple of ints
         Center point coordinates of the box.
-    height : Tuple[int]
+    height : tuple of ints
         Height (side length) of the box along each axis.
 
     Returns
     -------
     NDArray
         The created box mask.
+
+    Raises
+    ------
+    ValueError
+        If ``shape`` and ``center`` do not have the same length.
+        If ``center`` and ``height`` do not have the same length.
     """
     if len(shape) != len(center) or len(center) != len(height):
         raise ValueError("The length of shape, center, and height must be consistent.")
@@ -1216,9 +1178,9 @@ def tube_mask(
     Raises
     ------
     ValueError
-        If the inner radius is larger than the outer radius, height is larger
-        than the symmetry axis shape, or if base_center and shape do not have the
-        same length.
+        If ``inner_radius`` is larger than ``outer_radius``.
+        If ``height`` is larger than the symmetry axis.
+        If ``base_center`` and ``shape`` do not have the same length.
     """
     if inner_radius > outer_radius:
         raise ValueError("inner_radius should be smaller than outer_radius.")
@@ -1277,91 +1239,39 @@ def scramble_phases(
     normalize_power: bool = True,
 ) -> NDArray:
     """
-    Applies random phase scrambling to a given array.
-
-    This function takes an input array, applies a Fourier transform, then scrambles the
-    phase with a given proportion of noise, and finally applies an
-    inverse Fourier transform to the scrambled data. The phase scrambling
-    is controlled by a random seed.
+    Perform random phase scrambling of ``arr``.
 
     Parameters
     ----------
     arr : NDArray
-        The input array to be scrambled.
+        Input data.
     noise_proportion : float, optional
-        The proportion of noise in the phase scrambling, by default 0.5.
+        Proportion of scrambled phases, 0.5 by default.
     seed : int, optional
-        The seed for the random phase scrambling, by default 42.
+        The seed for the random phase scrambling, 42 by default.
     normalize_power : bool, optional
-        Whether the returned template should have the same sum of squares as arr.
+        Return value has same sum of squares as ``arr``.
 
     Returns
     -------
     NDArray
-        The array with scrambled phases.
-
-    Raises
-    ------
-    ValueError
-        If noise_proportion is not within [0, 1].
+        Phase scrambled version of ``arr``.
     """
-    if noise_proportion < 0 or noise_proportion > 1:
-        raise ValueError("noise_proportion has to be within [0, 1].")
+    np.random.seed(seed)
+    noise_proportion = max(min(noise_proportion, 1), 0)
 
     arr_fft = np.fft.fftn(arr)
+    amp, ph = np.abs(arr_fft), np.angle(arr_fft)
 
-    amp = np.abs(arr_fft)
-    ph = np.angle(arr_fft)
-
-    np.random.seed(seed)
     ph_noise = np.random.permutation(ph)
     ph_new = ph * (1 - noise_proportion) + ph_noise * noise_proportion
     ret = np.real(np.fft.ifftn(amp * np.exp(1j * ph_new)))
 
     if normalize_power:
-        np.divide(
-            np.subtract(ret, ret.min()), np.subtract(ret.max(), ret.min()), out=ret
-        )
+        np.divide(ret - ret.min(), ret.max() - ret.min(), out=ret)
         np.multiply(ret, np.subtract(arr.max(), arr.min()), out=ret)
         np.add(ret, arr.min(), out=ret)
-
         scaling = np.divide(np.abs(arr).sum(), np.abs(ret).sum())
         np.multiply(ret, scaling, out=ret)
 
     return ret
-
-
-def conditional_execute(func: Callable, execute_operation: bool = True) -> Callable:
-    """
-    Return the given function or a no-operation function based on execute_operation.
-
-    Parameters
-    ----------
-    func : callable
-        The function to be executed if execute_operation is True.
-    execute_operation : bool, optional
-        A flag that determines whether to return `func` or a no-operation function.
-        Default is True.
-
-    Returns
-    -------
-    callable
-        Either the given function `func` or a no-operation function.
-
-    Examples
-    --------
-    >>> def greet(name):
-    ...     return f"Hello, {name}!"
-    ...
-    >>> operation = conditional_execute(greet, False)
-    >>> operation("Alice")
-    >>> operation = conditional_execute(greet, True)
-    >>> operation("Alice")
-    'Hello, Alice!'
-    """
-
-    def noop(*args, **kwargs):
-        """No operation function."""
-        pass
-
-    return func if execute_operation else noop

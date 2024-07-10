@@ -8,7 +8,6 @@
 import os
 import argparse
 import warnings
-import importlib.util
 from sys import exit
 from time import time
 from typing import Tuple
@@ -22,7 +21,6 @@ from tme.matching_utils import (
     get_rotation_matrices,
     get_rotations_around_vector,
     compute_parallelization_schedule,
-    euler_from_rotationmatrix,
     scramble_phases,
     generate_tempfile_name,
     write_pickle,
@@ -52,7 +50,7 @@ def print_block(name: str, data: dict, label_width=20) -> None:
 
 def print_entry() -> None:
     width = 80
-    text = f" pyTME v{__version__} "
+    text = f" pytme v{__version__} "
     padding_total = width - len(text) - 2
     padding_left = padding_total // 2
     padding_right = padding_total - padding_left
@@ -273,7 +271,7 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
                 return_real_fourier=True,
             )
         ctf.sampling_rate = template.sampling_rate
-        ctf.flip_phase = not args.no_flip_phase
+        ctf.flip_phase = args.no_flip_phase
         ctf.amplitude_contrast = args.amplitude_contrast
         ctf.spherical_aberration = args.spherical_aberration
         ctf.acceleration_voltage = args.acceleration_voltage * 1e3
@@ -306,6 +304,12 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
             if highpass is not None:
                 highpass = np.max(np.divide(template.sampling_rate, highpass))
 
+        try:
+            if args.lowpass >= args.highpass:
+                warnings.warn("--lowpass should be smaller than --highpass.")
+        except Exception:
+            pass
+
         bandpass = BandPassFilter(
             use_gaussian=args.no_pass_smooth,
             lowpass=lowpass,
@@ -313,7 +317,9 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
             sampling_rate=template.sampling_rate,
         )
         template_filter.append(bandpass)
-        target_filter.append(bandpass)
+
+        if not args.no_filter_target:
+            target_filter.append(bandpass)
 
     if args.whiten_spectrum:
         whitening_filter = LinearWhiteningFilter()
@@ -335,7 +341,10 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Perform template matching.")
+    parser = argparse.ArgumentParser(
+        description="Perform template matching.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
 
     io_group = parser.add_argument_group("Input / Output")
     io_group.add_argument(
@@ -405,13 +414,6 @@ def parse_args():
         choices=list(MATCHING_EXHAUSTIVE_REGISTER.keys()),
         help="Template matching scoring function.",
     )
-    scoring_group.add_argument(
-        "-p",
-        dest="peak_calling",
-        action="store_true",
-        default=False,
-        help="Perform peak calling instead of score aggregation.",
-    )
 
     angular_group = parser.add_argument_group("Angular Sampling")
     angular_exclusive = angular_group.add_mutually_exclusive_group(required=True)
@@ -445,7 +447,7 @@ def parse_args():
         type=check_positive,
         default=360.0,
         required=False,
-        help="Sampling angle along the z-axis of the cone. Defaults to 360.",
+        help="Sampling angle along the z-axis of the cone.",
     )
     angular_group.add_argument(
         "--axis_sampling",
@@ -513,8 +515,7 @@ def parse_args():
         required=False,
         type=float,
         default=0.85,
-        help="Fraction of available memory that can be used. Defaults to 0.85 and is "
-        "ignored if --ram is set",
+        help="Fraction of available memory to be used. Ignored if --ram is set.",
     )
     computation_group.add_argument(
         "--temp_directory",
@@ -552,9 +553,9 @@ def parse_args():
         dest="pass_format",
         type=str,
         required=False,
+        default="sampling_rate",
         choices=["sampling_rate", "voxel", "frequency"],
-        help="How values passed to --lowpass and --highpass should be interpreted. "
-        "By default, they are assumed to be in units of sampling rate, e.g. Ångstrom.",
+        help="How values passed to --lowpass and --highpass should be interpreted. ",
     )
     filter_group.add_argument(
         "--whiten_spectrum",
@@ -613,6 +614,13 @@ def parse_args():
         required=False,
         help="Analogous to --interpolation_order but for reconstruction.",
     )
+    filter_group.add_argument(
+        "--no_filter_target",
+        dest="no_filter_target",
+        action="store_true",
+        default=False,
+        help="Whether to not apply potential filters to the target.",
+    )
 
     ctf_group = parser.add_argument_group("Contrast Transfer Function")
     ctf_group.add_argument(
@@ -647,7 +655,7 @@ def parse_args():
         type=float,
         required=False,
         default=300,
-        help="Acceleration voltage in kV, defaults to 300.",
+        help="Acceleration voltage in kV.",
     )
     ctf_group.add_argument(
         "--spherical_aberration",
@@ -663,14 +671,14 @@ def parse_args():
         type=float,
         required=False,
         default=0.07,
-        help="Amplitude contrast, defaults to 0.07.",
+        help="Amplitude contrast.",
     )
     ctf_group.add_argument(
         "--no_flip_phase",
         dest="no_flip_phase",
         action="store_false",
         required=False,
-        help="Whether the phase of the computed CTF should not be flipped.",
+        help="Perform phase-flipping CTF correction.",
     )
     ctf_group.add_argument(
         "--correct_defocus_gradient",
@@ -722,13 +730,21 @@ def parse_args():
         "it is safe to use this flag and benefit from the performance gain.",
     )
     performance_group.add_argument(
+        "--no_filter_padding",
+        dest="no_filter_padding",
+        action="store_true",
+        default=False,
+        help="Omits padding of optional template filters. Particularly effective when "
+        "the target is much larger than the template. However, for fast osciliating "
+        "filters setting this flag can introduce aliasing effects.",
+    )
+    performance_group.add_argument(
         "--interpolation_order",
         dest="interpolation_order",
         required=False,
         type=int,
         default=3,
-        help="Spline interpolation used for template rotations. If less than zero "
-        "no interpolation is performed.",
+        help="Spline interpolation used for rotations.",
     )
     performance_group.add_argument(
         "--use_mixed_precision",
@@ -754,6 +770,13 @@ def parse_args():
         type=float,
         default=0,
         help="Minimum template matching scores to consider for analysis.",
+    )
+    analyzer_group.add_argument(
+        "-p",
+        dest="peak_calling",
+        action="store_true",
+        default=False,
+        help="Perform peak calling instead of score aggregation.",
     )
 
     args = parser.parse_args()
@@ -927,8 +950,8 @@ def main():
     available_memory = backend.get_available_memory()
     if args.use_gpu:
         args.cores = len(args.gpu_indices)
-        has_torch = importlib.util.find_spec("torch") is not None
-        has_cupy = importlib.util.find_spec("cupy") is not None
+        has_cupy = "cupy" in backend._BACKEND_REGISTRY
+        has_torch = "pytorch" in backend._BACKEND_REGISTRY
 
         if not has_torch and not has_cupy:
             raise ValueError(
@@ -978,17 +1001,15 @@ def main():
         rotations=parse_rotation_logic(args=args, ndim=template.data.ndim),
     )
 
-    template_filter, target_filter = setup_filter(args, template, target)
-    matching_data.template_filter = template_filter
-    matching_data.target_filter = target_filter
+    matching_data.template_filter, matching_data.target_filter = setup_filter(
+        args, template, target
+    )
 
     template_box = matching_data._output_template_shape
     if not args.pad_fourier:
-        template_box = np.ones(len(template_box), dtype=int)
+        template_box = tuple(0 for _ in range(len(template_box)))
 
-    target_padding = np.zeros(
-        (backend.size(matching_data._output_template_shape)), dtype=int
-    )
+    target_padding = tuple(0 for _ in range(len(template_box)))
     if args.pad_target_edges:
         target_padding = matching_data._output_template_shape
 
@@ -1021,26 +1042,35 @@ def main():
     )
     gpus_used = 0 if args.gpu_indices is None else len(args.gpu_indices)
     options = {
-        "CPU Cores": args.cores,
-        "Run on GPU": f"{args.use_gpu} [N={gpus_used}]",
-        "Use Mixed Precision": args.use_mixed_precision,
-        "Assigned Memory [MB]": f"{args.memory // 1e6} [out of {available_memory//1e6}]",
-        "Temporary Directory": args.temp_directory,
+        "Angular Sampling": f"{args.angular_sampling}"
+        f" [{matching_data.rotations.shape[0]} rotations]",
+        "Center Template": not args.no_centering,
+        "Scramble Template": args.scramble_phases,
+        "Invert Contrast": args.invert_target_contrast,
         "Extend Fourier Grid": not args.no_fourier_padding,
         "Extend Target Edges": not args.no_edge_padding,
         "Interpolation Order": args.interpolation_order,
-        "Score": f"{args.score}",
         "Setup Function": f"{get_func_fullname(matching_setup)}",
         "Scoring Function": f"{get_func_fullname(matching_score)}",
-        "Angular Sampling": f"{args.angular_sampling}"
-        f" [{matching_data.rotations.shape[0]} rotations]",
-        "Scramble Template": args.scramble_phases,
-        "Target Splits": f"{target_split} [N={n_splits}]",
     }
 
     print_block(
-        name="Template Matching Options",
+        name="Template Matching",
         data=options,
+        label_width=max(len(key) for key in options.keys()) + 2,
+    )
+
+    compute_options = {
+        "Backend": backend._BACKEND_REGISTRY[backend._backend_name],
+        "Compute Devices": f"CPU [{args.cores}], GPU [{gpus_used}]",
+        "Use Mixed Precision": args.use_mixed_precision,
+        "Assigned Memory [MB]": f"{args.memory // 1e6} [out of {available_memory//1e6}]",
+        "Temporary Directory": args.temp_directory,
+        "Target Splits": f"{target_split} [N={n_splits}]",
+    }
+    print_block(
+        name="Computation",
+        data=compute_options,
         label_width=max(len(key) for key in options.keys()) + 2,
     )
 
@@ -1059,7 +1089,7 @@ def main():
         filter_args["CTF File"] = args.ctf_file
         filter_args["Defocus"] = args.defocus
         filter_args["Phase Shift"] = args.phase_shift
-        filter_args["No Flip Phase"] = args.no_flip_phase
+        filter_args["Flip Phase"] = args.no_flip_phase
         filter_args["Acceleration Voltage"] = args.acceleration_voltage
         filter_args["Spherical Aberration"] = args.spherical_aberration
         filter_args["Amplitude Contrast"] = args.amplitude_contrast
@@ -1075,14 +1105,12 @@ def main():
 
     analyzer_args = {
         "score_threshold": args.score_threshold,
-        "number_of_peaks": 1000,
-        "convolution_mode": "valid",
+        "number_of_peaks": 5,
         "use_memmap": args.use_memmap,
     }
-    analyzer_args = {"Analyzer": callback_class, **analyzer_args}
     print_block(
-        name="Score Analysis Options",
-        data=analyzer_args,
+        name="Analyzer",
+        data={"Analyzer": callback_class, **analyzer_args},
         label_width=max(len(key) for key in options.keys()) + 2,
     )
     print("\n" + "-" * 80)
@@ -1104,6 +1132,7 @@ def main():
         target_splits=splits,
         pad_target_edges=args.pad_target_edges,
         pad_fourier=args.pad_fourier,
+        pad_template_filter=not args.no_filter_padding,
         interpolation_order=args.interpolation_order,
     )
 
@@ -1117,15 +1146,14 @@ def main():
             dtype = np.float32 if nbytes == 4 else np.float16
             rot_dim = matching_data.rotations.shape[1]
             candidates[3] = {
-                x: euler_from_rotationmatrix(
-                    np.frombuffer(i, dtype=dtype).reshape(rot_dim, rot_dim)
-                )
+                x: np.frombuffer(i, dtype=dtype).reshape(rot_dim, rot_dim)
                 for i, x in candidates[3].items()
             }
     candidates.append((target.origin, template.origin, template.sampling_rate, args))
     write_pickle(data=candidates, filename=args.output)
 
     runtime = time() - start
+    print("\n" + "-" * 80)
     print(f"\nRuntime real: {runtime:.3f}s user: {(runtime * args.cores):.3f}s.")
 
 

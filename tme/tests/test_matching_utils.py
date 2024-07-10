@@ -7,15 +7,15 @@ import numpy as np
 from scipy.signal import correlate
 
 from tme import Density
+
 from tme.matching_utils import (
     compute_parallelization_schedule,
-    crop_input,
     elliptical_mask,
     box_mask,
     tube_mask,
     create_mask,
     scramble_phases,
-    split_numpy_array_slices,
+    split_shape,
     compute_full_convolution_index,
     apply_convolution_mode,
     get_rotation_matrices,
@@ -23,9 +23,9 @@ from tme.matching_utils import (
     load_pickle,
     euler_from_rotationmatrix,
     euler_to_rotationmatrix,
-    handle_traceback,
 )
-from tme.matching_memory import MATCHING_MEMORY_REGISTRY
+from tme.memory import MATCHING_MEMORY_REGISTRY
+from tme.matching_exhaustive import _handle_traceback
 
 
 class TestMatchingUtils:
@@ -53,19 +53,6 @@ class TestMatchingUtils:
             max_ram=max_ram,
             max_splits=256,
         )
-
-    def test_crop_input(self):
-        target = self.density.copy()
-        target_mask = self.density.copy()
-        template = self.structure_density.copy()
-        template_mask = self.structure_density.copy()
-        ret = crop_input(
-            target=target,
-            template=template,
-            target_mask=target_mask,
-            template_mask=template_mask,
-        )
-        assert ret.size == target.data.ndim
 
     def test_create_mask(self):
         create_mask(
@@ -137,12 +124,6 @@ class TestMatchingUtils:
     def test_scramble_phases(self):
         scramble_phases(arr=self.density.data, noise_proportion=0.5)
 
-    def test_scramble_phases_error(self):
-        with pytest.raises(ValueError):
-            scramble_phases(arr=self.density.data, noise_proportion=1.5)
-        with pytest.raises(ValueError):
-            scramble_phases(arr=self.density.data, noise_proportion=-1.5)
-
     @pytest.mark.parametrize("dim", range(1, 3, 5))
     @pytest.mark.parametrize("angular_sampling", [10, 15, 20])
     def test_get_rotation_matrices(self, dim, angular_sampling):
@@ -165,8 +146,12 @@ class TestMatchingUtils:
         inner_splits = [dict(zip(i, [2] * len(i))) for i in list(inner_split)]
 
         for outer_split, inner_split in product(outer_splits, inner_splits):
-            splits1 = split_numpy_array_slices(shape=arr1.shape, splits=outer_split)
-            splits2 = split_numpy_array_slices(shape=arr2.shape, splits=inner_split)
+            splits1 = split_shape(
+                shape=arr1.shape, splits=outer_split, equal_shape=False
+            )
+            splits2 = split_shape(
+                shape=arr2.shape, splits=inner_split, equal_shape=False
+            )
 
             full = correlate(arr1, arr2, method="direct", mode="full")
             temp = np.zeros_like(full)
@@ -222,7 +207,7 @@ class TestMatchingUtils:
         except Exception:
             type_, value_, traceback_ = sys.exc_info()
             with pytest.raises(Exception, match="Test error"):
-                handle_traceback(type_, value_, traceback_)
+                _handle_traceback(type_, value_, traceback_)
 
     def test_pickle_io(self):
         _, filename = mkstemp()

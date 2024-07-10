@@ -3,20 +3,14 @@ import numpy as np
 
 from multiprocessing.managers import SharedMemoryManager
 
-from tme.backends import MatchingBackend, NumpyFFTWBackend, BackendManager
+from tme.backends import MatchingBackend, NumpyFFTWBackend, BackendManager, backend
 
-
-BACKEND_CLASSES = ["NumpyFFTWBackend", "PytorchBackend", "CupyBackend", "MLXBackend"]
 BACKENDS_TO_TEST = []
-for backend_class in BACKEND_CLASSES:
+for backend_class in backend._BACKEND_REGISTRY.values():
     try:
-        BackendClass = getattr(
-            __import__("tme.backends", fromlist=[backend_class]), backend_class
-        )
-        BACKENDS_TO_TEST.append(BackendClass(device="cpu"))
+        BACKENDS_TO_TEST.append(backend_class(device="cpu"))
     except ImportError:
         print(f"Couldn't import {backend_class}. Skipping...")
-
 
 METHODS_TO_TEST = MatchingBackend.__abstractmethods__
 
@@ -111,21 +105,14 @@ class TestBackends:
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     @pytest.mark.parametrize("shape", ((10, 15), (10, 15, 20)))
-    def test_zeros(self, shape, backend):
-        base = self.backend.zeros(shape)
-        other = backend.zeros(shape)
-        assert np.allclose(base, backend.to_numpy_array(other), rtol=0.01)
-
-    @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
-    @pytest.mark.parametrize("shape", ((10, 15), (10, 15, 20)))
     @pytest.mark.parametrize(
         "dtype", (("_float_dtype", "_complex_dtype", "_int_dtype"))
     )
-    def test_preallocate_array(self, shape, backend, dtype):
+    def test_zeros(self, shape, backend, dtype):
         dtype_base = getattr(self.backend, dtype)
         dtype_backend = getattr(backend, dtype)
-        base = self.backend.preallocate_array(shape, dtype=dtype_base)
-        other = backend.preallocate_array(shape, dtype=dtype_backend)
+        base = self.backend.zeros(shape, dtype=dtype_base)
+        other = backend.zeros(shape, dtype=dtype_backend)
         assert np.allclose(base, backend.to_numpy_array(other), rtol=0.01)
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
@@ -156,8 +143,8 @@ class TestBackends:
     @pytest.mark.parametrize("fill_value", (-1, 0, 1))
     def test_fill(self, shape, backend, fill_value):
         base = self.backend.full(shape, fill_value=fill_value)
-        other = backend.full(shape, fill_value=20)
-        backend.fill(other, fill_value)
+        other = backend.zeros(shape)
+        other = backend.fill(other, fill_value)
         assert np.allclose(base, backend.to_numpy_array(other), rtol=0.01)
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
@@ -212,7 +199,7 @@ class TestBackends:
             return_counts=return_counts,
             return_index=return_index,
         )
-        if type(base) != tuple:
+        if isinstance(base, tuple):
             base, other = tuple(base), tuple(other)
         for k in range(len(base)):
             print(
@@ -223,7 +210,9 @@ class TestBackends:
                 return_counts,
                 return_index,
             )
-            assert np.allclose(base[k], backend.to_numpy_array(other[k]), rtol=0.1)
+            assert np.allclose(
+                base[k].ravel(), backend.to_numpy_array(other[k]).ravel(), rtol=0.1
+            )
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     @pytest.mark.parametrize("k", (0, 15, 30))
@@ -251,8 +240,6 @@ class TestBackends:
     def test_indices(self, backend):
         base = self.backend.indices(self.x1.shape)
         other = backend.indices(backend.to_backend_array(self.x1).shape)
-        print(base)
-        print(other)
         assert np.allclose(base, backend.to_numpy_array(other), rtol=0.1)
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
@@ -260,26 +247,24 @@ class TestBackends:
         mem = backend.get_available_memory()
         assert isinstance(mem, int)
 
-    # @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
-    # def test_shared_memory(self, backend):
-    #     shared_memory_handler = None
-    #     base = backend.to_backend_array(self.x1)
-    #     shared = backend.arr_to_sharedarr(
-    #         arr=base, shared_memory_handler=shared_memory_handler
-    #     )
-    #     arr = backend.sharedarr_to_arr(shape=base.shape, dtype=base.dtype, shm=shared)
-    #     assert np.allclose(backend.to_numpy_array(arr), backend.to_numpy_array(base))
+    @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
+    def test_shared_memory(self, backend):
+        shared_memory_handler = None
+        base = backend.to_backend_array(self.x1)
+        shared = backend.to_sharedarr(
+            arr=base, shared_memory_handler=shared_memory_handler
+        )
+        arr = backend.from_sharedarr(shared)
+        assert np.allclose(backend.to_numpy_array(arr), backend.to_numpy_array(base))
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     def test_shared_memory_managed(self, backend):
         with SharedMemoryManager() as shared_memory_handler:
             base = backend.to_backend_array(self.x1)
-            shared = backend.arr_to_sharedarr(
+            shared = backend.to_sharedarr(
                 arr=base, shared_memory_handler=shared_memory_handler
             )
-            arr = backend.sharedarr_to_arr(
-                shape=base.shape, dtype=base.dtype, shm=shared
-            )
+            arr = backend.from_sharedarr(shared)
             assert np.allclose(
                 backend.to_numpy_array(arr), backend.to_numpy_array(base)
             )
@@ -342,7 +327,7 @@ class TestBackends:
     @pytest.mark.parametrize("dim", (2, 3))
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     @pytest.mark.parametrize("create_mask", (False, True))
-    def test_rotate_array(self, backend, dim, create_mask):
+    def test_rigid_transform(self, backend, dim, create_mask):
         shape = tuple(50 for _ in range(dim))
         arr = np.zeros(shape)
         if dim == 2:
@@ -367,7 +352,7 @@ class TestBackends:
 
         rotation_matrix = backend.to_backend_array(rotation_matrix)
 
-        backend.rotate_array(
+        backend.rigid_transform(
             arr=arr,
             arr_mask=arr_mask,
             rotation_matrix=rotation_matrix,

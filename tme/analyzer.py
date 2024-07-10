@@ -4,59 +4,58 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-from time import sleep
-from typing import Tuple, List, Dict
-from abc import ABC, abstractmethod
 from contextlib import nullcontext
-from multiprocessing import RawValue, Manager, Lock
+from abc import ABC, abstractmethod
+from multiprocessing import Manager, Lock
+from typing import Tuple, List, Dict, Generator
 
 import numpy as np
-from numpy.typing import NDArray
-from scipy.stats import entropy
 from sklearn.cluster import DBSCAN
 from skimage.feature import peak_local_max
 from skimage.registration._phase_cross_correlation import _upsampled_dft
-from .extensions import max_index_by_label, online_statistics, find_candidate_indices
+
+from .backends import backend as be
+from .types import BackendArray, NDArray
+from .extensions import max_index_by_label, find_candidate_indices
 from .matching_utils import (
-    split_numpy_array_slices,
+    split_shape,
     array_to_memmap,
     generate_tempfile_name,
     euler_to_rotationmatrix,
     apply_convolution_mode,
 )
-from .backends import backend
+
+PeakType = Tuple[BackendArray, BackendArray]
 
 
-def filter_points_indices_bucket(
-    coordinates: NDArray, min_distance: Tuple[int]
-) -> NDArray:
-    coordinates = backend.subtract(coordinates, backend.min(coordinates, axis=0))
-    bucket_indices = backend.astype(backend.divide(coordinates, min_distance), int)
-    multiplier = backend.power(
-        backend.max(bucket_indices, axis=0) + 1, backend.arange(bucket_indices.shape[1])
+def _filter_bucket(coordinates: BackendArray, min_distance: Tuple[int]) -> BackendArray:
+    coordinates = be.subtract(coordinates, be.min(coordinates, axis=0))
+    bucket_indices = be.astype(be.divide(coordinates, min_distance), int)
+    multiplier = be.power(
+        be.max(bucket_indices, axis=0) + 1, be.arange(bucket_indices.shape[1])
     )
-    backend.multiply(bucket_indices, multiplier, out=bucket_indices)
-    flattened_indices = backend.sum(bucket_indices, axis=1)
-    _, unique_indices = backend.unique(flattened_indices, return_index=True)
-    unique_indices = unique_indices[backend.argsort(unique_indices)]
+    be.multiply(bucket_indices, multiplier, out=bucket_indices)
+    flattened_indices = be.sum(bucket_indices, axis=1)
+    _, unique_indices = be.unique(flattened_indices, return_index=True)
+    unique_indices = unique_indices[be.argsort(unique_indices)]
     return unique_indices
 
 
 def filter_points_indices(
-    coordinates: NDArray,
+    coordinates: BackendArray,
     min_distance: float,
     bucket_cutoff: int = 1e4,
     batch_dims: Tuple[int] = None,
-) -> NDArray:
+) -> BackendArray:
     if min_distance <= 0:
-        return backend.arange(coordinates.shape[0])
+        return be.arange(coordinates.shape[0])
     if coordinates.shape[0] == 0:
         return ()
 
     if batch_dims is not None:
-        coordinates_new = backend.zeros(coordinates.shape, coordinates.dtype)
+        coordinates_new = be.zeros(coordinates.shape, coordinates.dtype)
         coordinates_new[:] = coordinates
-        coordinates_new[..., batch_dims] = backend.astype(
+        coordinates_new[..., batch_dims] = be.astype(
             coordinates[..., batch_dims] * (2 * min_distance), coordinates_new.dtype
         )
         coordinates = coordinates_new
@@ -66,7 +65,7 @@ def filter_points_indices(
     elif coordinates.shape[0] > bucket_cutoff or not isinstance(
         coordinates, np.ndarray
     ):
-        return filter_points_indices_bucket(coordinates, min_distance)
+        return _filter_bucket(coordinates, min_distance)
     distances = np.linalg.norm(coordinates[:, None] - coordinates, axis=-1)
     distances = np.tril(distances)
     keep = np.sum(distances > min_distance, axis=1)
@@ -76,7 +75,7 @@ def filter_points_indices(
 
 def filter_points(
     coordinates: NDArray, min_distance: Tuple[int], batch_dims: Tuple[int] = None
-) -> NDArray:
+) -> BackendArray:
     unique_indices = filter_points_indices(coordinates, min_distance, batch_dims)
     coordinates = coordinates[unique_indices]
     return coordinates
@@ -96,8 +95,13 @@ class PeakCaller(ABC):
         Minimum distance to array boundaries.
     batch_dims : int, optional
         Peak calling batch dimensions.
+    minimum_score : float
+        Minimum score from which to consider peaks. If provided, superseeds limits
+        presented by :py:attr:`PeakCaller.number_of_peaks`.
+    maximum_score : float
+        Maximum score upon which to consider peaks,
     **kwargs
-        Additional keyword arguments.
+        Optional keyword arguments.
 
     Raises
     ------
@@ -112,12 +116,10 @@ class PeakCaller(ABC):
         min_distance: int = 1,
         min_boundary_distance: int = 0,
         batch_dims: Tuple[int] = None,
+        minimum_score: float = None,
+        maximum_score: float = None,
         **kwargs,
     ):
-        number_of_peaks = int(number_of_peaks)
-        min_distance, min_boundary_distance = int(min_distance), int(
-            min_boundary_distance
-        )
         if number_of_peaks <= 0:
             raise ValueError(
                 f"number_of_peaks has to be larger than 0, got {number_of_peaks}"
@@ -130,13 +132,15 @@ class PeakCaller(ABC):
             )
 
         self.peak_list = []
-        self.min_distance = min_distance
-        self.min_boundary_distance = min_boundary_distance
-        self.number_of_peaks = number_of_peaks
+        self.min_distance = int(min_distance)
+        self.number_of_peaks = int(number_of_peaks)
+        self.min_boundary_distance = int(min_boundary_distance)
 
         self.batch_dims = batch_dims
         if batch_dims is not None:
             self.batch_dims = tuple(int(x) for x in self.batch_dims)
+
+        self.minimum_score, self.maximum_score = minimum_score, maximum_score
 
         # Postprocesing arguments
         self.fourier_shift = kwargs.get("fourier_shift", None)
@@ -144,12 +148,12 @@ class PeakCaller(ABC):
         self.targetshape = kwargs.get("targetshape", None)
         self.templateshape = kwargs.get("templateshape", None)
 
-    def __iter__(self):
+    def __iter__(self) -> Generator:
         """
         Returns a generator to list objects containing translation,
         rotation, score and details of a given candidate.
         """
-        self.peak_list = [backend.to_cpu_array(arr) for arr in self.peak_list]
+        self.peak_list = [be.to_cpu_array(arr) for arr in self.peak_list]
         yield from self.peak_list
 
     @staticmethod
@@ -181,34 +185,24 @@ class PeakCaller(ABC):
 
         yield from _generate_slices_recursive(0, ())
 
-    def __call__(
-        self,
-        score_space: NDArray,
-        rotation_matrix: NDArray,
-        minimum_score: float = None,
-        maximum_score: float = None,
-        **kwargs,
-    ) -> None:
+    def __call__(self, scores: BackendArray, rotation_matrix: BackendArray, **kwargs):
         """
         Update the internal parameter store based on input array.
 
         Parameters
         ----------
-        score_space : NDArray
-            Array containing the score space.
-        rotation_matrix : NDArray
+        scores : BackendArray
+            Score space data.
+        rotation_matrix : BackendArray
             Rotation matrix used to obtain the score array.
-        minimum_score : float
-            Minimum score from which to consider peaks. If provided, superseeds limits
-            presented by :py:attr:`PeakCaller.number_of_peaks`.
-        maximum_score : float
-            Maximum score upon which to consider peaks,
         **kwargs
-            Optional keyword arguments passed to :py:meth:`PeakCaller.call_peak`.
+            Optional keyword aguments passed to :py:meth:`PeakCaller.call_peaks`.
         """
-        for subset, offset in self._batchify(score_space.shape, self.batch_dims):
+        minimum_score, maximum_score = self.minimum_score, self.maximum_score
+        for subset, batch_offset in self._batchify(scores.shape, self.batch_dims):
+            batch_offset = be.to_backend_array(batch_offset)
             peak_positions, peak_details = self.call_peaks(
-                score_space=score_space[subset],
+                scores=scores[subset],
                 rotation_matrix=rotation_matrix,
                 minimum_score=minimum_score,
                 maximum_score=maximum_score,
@@ -221,34 +215,28 @@ class PeakCaller(ABC):
                 continue
 
             if peak_details is None:
-                peak_details = backend.full((peak_positions.shape[0],), fill_value=-1)
+                peak_details = be.full((peak_positions.shape[0],), fill_value=-1)
 
-            backend.add(peak_positions, offset, out=peak_positions)
-            peak_positions = backend.astype(peak_positions, int)
+            peak_positions = be.to_backend_array(peak_positions)
+            peak_positions = be.add(peak_positions, batch_offset, out=peak_positions)
+            peak_positions = be.astype(peak_positions, int)
             if self.min_boundary_distance > 0:
-                upper_limit = backend.subtract(
-                    score_space.shape, self.min_boundary_distance
-                )
-                valid_peaks = backend.multiply(
+                upper_limit = be.subtract(scores.shape, self.min_boundary_distance)
+                valid_peaks = be.multiply(
                     peak_positions < upper_limit,
                     peak_positions >= self.min_boundary_distance,
                 )
                 if self.batch_dims is not None:
                     valid_peaks[..., self.batch_dims] = True
 
-                valid_peaks = (
-                    backend.sum(valid_peaks, axis=1) == peak_positions.shape[1]
-                )
+                valid_peaks = be.sum(valid_peaks, axis=1) == peak_positions.shape[1]
 
-                if backend.sum(valid_peaks) == 0:
+                if be.sum(valid_peaks) == 0:
                     continue
+                peak_positions = peak_positions[valid_peaks]
+                peak_details = peak_details[valid_peaks]
 
-                peak_positions, peak_details = (
-                    peak_positions[valid_peaks],
-                    peak_details[valid_peaks],
-                )
-
-            peak_scores = score_space[tuple(peak_positions.T)]
+            peak_scores = scores[tuple(peak_positions.T)]
             if minimum_score is not None:
                 valid_peaks = peak_scores >= minimum_score
                 peak_positions, peak_details, peak_scores = (
@@ -267,7 +255,7 @@ class PeakCaller(ABC):
             if peak_positions.shape[0] == 0:
                 continue
 
-            rotations = backend.repeat(
+            rotations = be.repeat(
                 rotation_matrix.reshape(1, *rotation_matrix.shape),
                 peak_positions.shape[0],
                 axis=0,
@@ -278,83 +266,71 @@ class PeakCaller(ABC):
                 peak_details=peak_details,
                 peak_scores=peak_scores,
                 rotations=rotations,
-                batch_offset=offset,
-                **kwargs,
             )
 
         return None
 
     @abstractmethod
-    def call_peaks(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
-    ) -> Tuple[NDArray, NDArray]:
+    def call_peaks(self, scores: BackendArray, **kwargs) -> PeakType:
         """
         Call peaks in the score space.
 
-        This function is not intended to be called directly, but should rather be
-        defined by classes inheriting from :py:class:`PeakCaller` to execute a given
-        peak calling algorithm.
-
         Parameters
         ----------
-        score_space : NDArray
-            Data array of scores.
-        **kwargs : Dict, optional
-            Keyword arguments passed to __call__.
+        scores : BackendArray
+            Score array.
+        **kwargs : dict
+            Optional keyword arguments passed to underlying implementations.
 
         Returns
         -------
-        Tuple[NDArray, NDArray]
+        Tuple[BackendArray, BackendArray]
             Array of peak coordinates and peak details.
         """
 
     @classmethod
-    def merge(cls, candidates=List[List], **kwargs) -> NDArray:
+    def merge(cls, candidates=List[List], **kwargs) -> Tuple:
         """
         Merge multiple instances of :py:class:`PeakCaller`.
 
         Parameters
         ----------
-        candidate_fits : list of lists
+        candidates : list of lists
             Obtained by invoking list on the generator returned by __iter__.
-        param_stores : list of tuples, optional
-            List of parameter stores. Each tuple contains candidate data and number
-            of candidates.
         **kwargs
-            Additional keyword arguments.
+            Optional keyword arguments.
 
         Returns
         -------
-        NDArray
-            NDArray of candidates.
+        Tuple
+            Tuple of translation, rotation, score and details of candidates.
         """
         base = cls(**kwargs)
         for candidate in candidates:
             if len(candidate) == 0:
                 continue
             peak_positions, rotations, peak_scores, peak_details = candidate
-            kwargs["translation_offset"] = backend.zeros(peak_positions.shape[1])
             base._update(
-                peak_positions=backend.to_backend_array(peak_positions),
-                peak_details=backend.to_backend_array(peak_details),
-                peak_scores=backend.to_backend_array(peak_scores),
-                rotations=backend.to_backend_array(rotations),
-                **kwargs,
+                peak_positions=be.to_backend_array(peak_positions),
+                peak_details=be.to_backend_array(peak_details),
+                peak_scores=be.to_backend_array(peak_scores),
+                rotations=be.to_backend_array(rotations),
+                offset=kwargs.get("offset", None),
             )
         return tuple(base)
 
     @staticmethod
     def oversample_peaks(
-        score_space: NDArray, peak_positions: NDArray, oversampling_factor: int = 8
+        scores: BackendArray, peak_positions: BackendArray, oversampling_factor: int = 8
     ):
         """
         Refines peaks positions in the corresponding score space.
 
         Parameters
         ----------
-        score_space : NDArray
+        scores : BackendArray
             The d-dimensional array representing the score space.
-        peak_positions : NDArray
+        peak_positions : BackendArray
             An array of shape (n, d) containing the peak coordinates
             to be refined, where n is the number of peaks and d is the
             dimensionality of the score space.
@@ -363,14 +339,14 @@ class PeakCaller(ABC):
 
         Returns
         -------
-        NDArray
+        BackendArray
             An array of shape (n, d) containing the refined subpixel
             coordinates of the peaks.
 
         Notes
         -----
         Floating point peak positions are determined by oversampling the
-        score_space around peak_positions. The accuracy
+        scores around peak_positions. The accuracy
         of refinement scales with 1 / oversampling_factor.
 
         References
@@ -382,8 +358,8 @@ class PeakCaller(ABC):
                 DOI:10.1364/OL.33.000156
 
         """
-        score_space = backend.to_numpy_array(score_space)
-        peak_positions = backend.to_numpy_array(peak_positions)
+        scores = be.to_numpy_array(scores)
+        peak_positions = be.to_numpy_array(peak_positions)
 
         peak_positions = np.round(
             np.divide(
@@ -396,10 +372,10 @@ class PeakCaller(ABC):
             dftshift, np.multiply(peak_positions, oversampling_factor)
         )
 
-        score_space_ft = np.fft.fftn(score_space).conj()
+        scores_ft = np.fft.fftn(scores).conj()
         for index in range(sample_region_offset.shape[0]):
             cross_correlation_upsampled = _upsampled_dft(
-                data=score_space_ft,
+                data=scores_ft,
                 upsampled_region_size=upsampled_region_size,
                 upsample_factor=oversampling_factor,
                 axis_offsets=sample_region_offset[index],
@@ -412,73 +388,66 @@ class PeakCaller(ABC):
             maxima = np.divide(np.subtract(maxima, dftshift), oversampling_factor)
             peak_positions[index] = np.add(peak_positions[index], maxima)
 
-        peak_positions = backend.to_backend_array(peak_positions)
+        peak_positions = be.to_backend_array(peak_positions)
 
         return peak_positions
 
     def _update(
         self,
-        peak_positions: NDArray,
-        peak_details: NDArray,
-        peak_scores: NDArray,
-        rotations: NDArray,
-        **kwargs,
-    ) -> None:
+        peak_positions: BackendArray,
+        peak_details: BackendArray,
+        peak_scores: BackendArray,
+        rotations: BackendArray,
+        offset: BackendArray = None,
+    ):
         """
         Update internal parameter store.
 
         Parameters
         ----------
-        peak_positions : NDArray
-            Position of peaks with shape n x d where n is the number of
-            peaks and d the dimension.
-        peak_scores : NDArray
-            Corresponding score obtained at each peak.
-        translation_offset : NDArray, optional
-            Offset of the score_space, occurs e.g. when template matching
-            to parts of a tomogram.
-        rotations: NDArray
-            Rotations used to obtain the score space from which
-            the candidate stem.
+        peak_positions : BackendArray
+            Position of peaks (n, d).
+        peak_details : BackendArray
+            Details of each peak (n, ).
+        rotations: BackendArray
+            Rotation at each peak (n, d, d).
+        rotations: BackendArray
+            Rotation at each peak (n, d, d).
+        offset : BackendArray, optional
+            Translation offset, e.g. from splitting, (n, ).
         """
-        translation_offset = kwargs.get(
-            "translation_offset", backend.zeros(peak_positions.shape[1])
-        )
-        translation_offset = backend.astype(translation_offset, peak_positions.dtype)
+        if offset is not None:
+            offset = be.astype(offset, peak_positions.dtype)
+            peak_positions = be.add(peak_positions, offset, out=peak_positions)
 
-        backend.add(peak_positions, translation_offset, out=peak_positions)
         if not len(self.peak_list):
             self.peak_list = [peak_positions, rotations, peak_scores, peak_details]
-
-        peak_positions = backend.concatenate((self.peak_list[0], peak_positions))
-        rotations = backend.concatenate((self.peak_list[1], rotations))
-        peak_scores = backend.concatenate((self.peak_list[2], peak_scores))
-        peak_details = backend.concatenate((self.peak_list[3], peak_details))
+        else:
+            peak_positions = be.concatenate((self.peak_list[0], peak_positions))
+            rotations = be.concatenate((self.peak_list[1], rotations))
+            peak_scores = be.concatenate((self.peak_list[2], peak_scores))
+            peak_details = be.concatenate((self.peak_list[3], peak_details))
 
         if self.batch_dims is None:
-            top_n = min(backend.size(peak_scores), self.number_of_peaks)
-            top_scores, *_ = backend.topk_indices(peak_scores, top_n)
+            top_n = min(be.size(peak_scores), self.number_of_peaks)
+            top_scores, *_ = be.topk_indices(peak_scores, top_n)
         else:
             # Not very performant but fairly robust
             batch_indices = peak_positions[..., self.batch_dims]
-            backend.subtract(
-                batch_indices, backend.min(batch_indices, axis=0), out=batch_indices
+            batch_indices = be.subtract(batch_indices, be.min(batch_indices, axis=0))
+            multiplier = be.power(
+                be.max(batch_indices, axis=0) + 1,
+                be.arange(batch_indices.shape[1]),
             )
-            multiplier = backend.power(
-                backend.max(batch_indices, axis=0) + 1,
-                backend.arange(batch_indices.shape[1]),
-            )
-            backend.multiply(batch_indices, multiplier, out=batch_indices)
-            batch_indices = backend.sum(batch_indices, axis=1)
-            unique_indices, batch_counts = backend.unique(
-                batch_indices, return_counts=True
-            )
-            total_indices = backend.arange(peak_scores.shape[0])
+            batch_indices = be.multiply(batch_indices, multiplier, out=batch_indices)
+            batch_indices = be.sum(batch_indices, axis=1)
+            unique_indices, batch_counts = be.unique(batch_indices, return_counts=True)
+            total_indices = be.arange(peak_scores.shape[0])
             batch_indices = [total_indices[batch_indices == x] for x in unique_indices]
-            top_scores = backend.concatenate(
+            top_scores = be.concatenate(
                 [
                     total_indices[indices][
-                        backend.topk_indices(
+                        be.topk_indices(
                             peak_scores[indices], min(y, self.number_of_peaks)
                         )
                     ]
@@ -500,7 +469,14 @@ class PeakCaller(ABC):
         self.peak_list[3] = peak_details[final_order]
 
     def _postprocess(
-        self, fourier_shift, convolution_mode, targetshape, templateshape, **kwargs
+        self,
+        fast_shape: Tuple[int],
+        targetshape: Tuple[int],
+        templateshape: Tuple[int],
+        fourier_shift: Tuple[int] = None,
+        convolution_mode: str = None,
+        shared_memory_handler=None,
+        **kwargs,
     ):
         if not len(self.peak_list):
             return self
@@ -509,52 +485,43 @@ class PeakCaller(ABC):
         if not len(peak_positions):
             return self
 
-        if targetshape is None or templateshape is None:
-            return self
-
-        # Remove padding to next fast fourier length
-        score_space_shape = backend.add(targetshape, templateshape) - 1
-
+        # Wrap peaks around score space
+        fast_shape = be.to_backend_array(fast_shape)
         if fourier_shift is not None:
-            peak_positions = backend.add(peak_positions, fourier_shift)
-
-            backend.subtract(
+            fourier_shift = be.to_backend_array(fourier_shift)
+            peak_positions = be.add(peak_positions, fourier_shift)
+            peak_positions = be.subtract(
                 peak_positions,
-                backend.multiply(
-                    backend.astype(
-                        backend.divide(peak_positions, score_space_shape), int
-                    ),
-                    score_space_shape,
+                be.multiply(
+                    be.astype(be.divide(peak_positions, fast_shape), int),
+                    fast_shape,
                 ),
-                out=peak_positions,
             )
 
-        if convolution_mode is None:
-            return None
-
-        if convolution_mode == "full":
-            output_shape = score_space_shape
-        elif convolution_mode == "same":
+        # Remove padding to fast Fourier (and potential full convolution) shape
+        targetshape = be.to_backend_array(targetshape)
+        templateshape = be.to_backend_array(templateshape)
+        fast_shape = be.minimum(be.add(targetshape, templateshape) - 1, fast_shape)
+        output_shape = fast_shape
+        if convolution_mode == "same":
             output_shape = targetshape
         elif convolution_mode == "valid":
-            output_shape = backend.add(
-                backend.subtract(targetshape, templateshape),
-                backend.mod(templateshape, 2),
+            output_shape = be.add(
+                be.subtract(targetshape, templateshape),
+                be.mod(templateshape, 2),
             )
 
-        output_shape = backend.to_backend_array(output_shape)
-        starts = backend.divide(backend.subtract(score_space_shape, output_shape), 2)
-        starts = backend.astype(starts, int)
-        stops = backend.add(starts, output_shape)
-
-        valid_peaks = (
-            backend.sum(
-                backend.multiply(peak_positions > starts, peak_positions <= stops),
-                axis=1,
-            )
-            == peak_positions.shape[1]
+        output_shape = be.to_backend_array(output_shape)
+        starts = be.astype(
+            be.divide(be.subtract(fast_shape, output_shape), 2),
+            be._int_dtype,
         )
-        self.peak_list[0] = backend.subtract(peak_positions, starts)
+        stops = be.add(starts, output_shape)
+
+        valid_peaks = be.multiply(peak_positions > starts, peak_positions <= stops)
+        valid_peaks = be.sum(valid_peaks, axis=1) == peak_positions.shape[1]
+
+        self.peak_list[0] = be.subtract(peak_positions, starts)
         self.peak_list = [x[valid_peaks] for x in self.peak_list]
         return self
 
@@ -565,27 +532,14 @@ class PeakCallerSort(PeakCaller):
     highest scores.
     """
 
-    def call_peaks(self, score_space: NDArray, **kwargs) -> Tuple[NDArray, NDArray]:
-        """
-        Call peaks in the score space.
+    def call_peaks(self, scores: BackendArray, **kwargs) -> PeakType:
+        flat_scores = scores.reshape(-1)
+        k = min(self.number_of_peaks, be.size(flat_scores))
 
-        Parameters
-        ----------
-        score_space : NDArray
-            Data array of scores.
+        top_k_indices, *_ = be.topk_indices(flat_scores, k)
 
-        Returns
-        -------
-        Tuple[NDArray, NDArray]
-            Array of peak coordinates and peak details.
-        """
-        flat_score_space = score_space.reshape(-1)
-        k = min(self.number_of_peaks, backend.size(flat_score_space))
-
-        top_k_indices, *_ = backend.topk_indices(flat_score_space, k)
-
-        coordinates = backend.unravel_index(top_k_indices, score_space.shape)
-        coordinates = backend.transpose(backend.stack(coordinates))
+        coordinates = be.unravel_index(top_k_indices, scores.shape)
+        coordinates = be.transpose(be.stack(coordinates))
 
         return coordinates, None
 
@@ -594,28 +548,11 @@ class PeakCallerMaximumFilter(PeakCaller):
     """
     Find local maxima by applying a maximum filter and enforcing a distance
     constraint subsequently. This is similar to the strategy implemented in
-    skimage.feature.peak_local_max.
+    :obj:`skimage.feature.peak_local_max`.
     """
 
-    def call_peaks(self, score_space: NDArray, **kwargs) -> Tuple[NDArray, NDArray]:
-        """
-        Call peaks in the score space.
-
-        Parameters
-        ----------
-        score_space : NDArray
-            Data array of scores.
-        kwargs: Dict, optional
-            Optional keyword arguments.
-
-        Returns
-        -------
-        Tuple[NDArray, NDArray]
-            Array of peak coordinates and peak details.
-        """
-        peaks = backend.max_filter_coordinates(score_space, self.min_distance)
-
-        return peaks, None
+    def call_peaks(self, scores: BackendArray, **kwargs) -> PeakType:
+        return be.max_filter_coordinates(scores, self.min_distance), None
 
 
 class PeakCallerFast(PeakCaller):
@@ -627,56 +564,39 @@ class PeakCallerFast(PeakCaller):
 
     """
 
-    def call_peaks(self, score_space: NDArray, **kwargs) -> Tuple[NDArray, NDArray]:
-        """
-        Call peaks in the score space.
-
-        Parameters
-        ----------
-        score_space : NDArray
-            Data array of scores.
-
-        Returns
-        -------
-        Tuple[NDArray, NDArray]
-            Array of peak coordinates and peak details.
-        """
+    def call_peaks(self, scores: BackendArray, **kwargs) -> PeakType:
         splits = {
-            axis: score_space.shape[axis] // self.min_distance
-            for axis in range(score_space.ndim)
+            axis: scores.shape[axis] // self.min_distance for axis in range(scores.ndim)
         }
-        slices = split_numpy_array_slices(score_space.shape, splits)
+        slices = split_shape(scores.shape, splits)
 
-        coordinates = backend.to_backend_array(
+        coordinates = be.to_backend_array(
             [
-                backend.unravel_index(
-                    backend.argmax(score_space[subvol]), score_space[subvol].shape
-                )
+                be.unravel_index(be.argmax(scores[subvol]), scores[subvol].shape)
                 for subvol in slices
             ]
         )
-        offset = backend.to_backend_array(
+        offset = be.to_backend_array(
             [tuple(x.start for x in subvol) for subvol in slices]
         )
-        backend.add(coordinates, offset, out=coordinates)
+        be.add(coordinates, offset, out=coordinates)
         coordinates = coordinates[
-            backend.flip(backend.argsort(score_space[tuple(coordinates.T)]), (0,))
+            be.flip(be.argsort(scores[tuple(coordinates.T)]), (0,))
         ]
 
         if coordinates.shape[0] == 0:
             return None
 
-        starts = backend.maximum(coordinates - self.min_distance, 0)
-        stops = backend.minimum(coordinates + self.min_distance, score_space.shape)
+        starts = be.maximum(coordinates - self.min_distance, 0)
+        stops = be.minimum(coordinates + self.min_distance, scores.shape)
         slices_list = [
             tuple(slice(*coord) for coord in zip(start_row, stop_row))
             for start_row, stop_row in zip(starts, stops)
         ]
 
-        scores = score_space[tuple(coordinates.T)]
         keep = [
-            score >= backend.max(score_space[subvol])
-            for subvol, score in zip(slices_list, scores)
+            score_subvol >= be.max(scores[subvol])
+            for subvol, score_subvol in zip(slices_list, scores[tuple(coordinates.T)])
         ]
         coordinates = coordinates[keep,]
 
@@ -694,26 +614,26 @@ class PeakCallerRecursiveMasking(PeakCaller):
 
     def call_peaks(
         self,
-        score_space: NDArray,
-        rotation_matrix: NDArray,
-        mask: NDArray = None,
+        scores: BackendArray,
+        rotation_matrix: BackendArray,
+        mask: BackendArray = None,
         minimum_score: float = None,
-        rotation_space: NDArray = None,
+        rotation_space: BackendArray = None,
         rotation_mapping: Dict = None,
         **kwargs,
-    ) -> Tuple[NDArray, NDArray]:
+    ) -> PeakType:
         """
         Call peaks in the score space.
 
         Parameters
         ----------
-        score_space : NDArray
+        scores : BackendArray
             Data array of scores.
-        rotation_matrix : NDArray
+        rotation_matrix : BackendArray
             Rotation matrix.
-        mask : NDArray, optional
+        mask : BackendArray, optional
             Mask array, by default None.
-        rotation_space : NDArray, optional
+        rotation_space : BackendArray, optional
             Rotation space array, by default None.
         rotation_mapping : Dict optional
             Dictionary mapping values in rotation_space to Euler angles.
@@ -724,7 +644,7 @@ class PeakCallerRecursiveMasking(PeakCaller):
 
         Returns
         -------
-        Tuple[NDArray, NDArray]
+        Tuple[BackendArray, BackendArray]
             Array of peak coordinates and peak details.
 
         Notes
@@ -738,26 +658,26 @@ class PeakCallerRecursiveMasking(PeakCaller):
 
         if mask is None:
             masking_function = self._mask_scores_box
-            shape = tuple(self.min_distance for _ in range(score_space.ndim))
-            mask = backend.zeros(shape, dtype=backend._float_dtype)
+            shape = tuple(self.min_distance for _ in range(scores.ndim))
+            mask = be.zeros(shape, dtype=be._float_dtype)
 
-        rotated_template = backend.zeros(mask.shape, dtype=mask.dtype)
+        rotated_template = be.zeros(mask.shape, dtype=mask.dtype)
 
         peak_limit = self.number_of_peaks
         if minimum_score is not None:
-            peak_limit = backend.size(score_space)
+            peak_limit = be.size(scores)
         else:
-            minimum_score = backend.min(score_space) - 1
+            minimum_score = be.min(scores) - 1
 
-        scores = backend.zeros(score_space.shape, dtype=score_space.dtype)
-        scores[:] = score_space
+        scores_copy = be.zeros(scores.shape, dtype=scores.dtype)
+        scores_copy[:] = scores
 
         while True:
-            backend.argmax(scores)
-            peak = backend.unravel_index(
-                indices=backend.argmax(scores), shape=scores.shape
+            be.argmax(scores_copy)
+            peak = be.unravel_index(
+                indices=be.argmax(scores_copy), shape=scores_copy.shape
             )
-            if scores[tuple(peak)] < minimum_score:
+            if scores_copy[tuple(peak)] < minimum_score:
                 break
 
             coordinates.append(peak)
@@ -770,7 +690,7 @@ class PeakCallerRecursiveMasking(PeakCaller):
             )
 
             masking_function(
-                score_space=scores,
+                scores=scores_copy,
                 rotation_matrix=current_rotation_matrix,
                 peak=peak,
                 mask=mask,
@@ -780,33 +700,33 @@ class PeakCallerRecursiveMasking(PeakCaller):
             if len(coordinates) >= peak_limit:
                 break
 
-        peaks = backend.to_backend_array(coordinates)
+        peaks = be.to_backend_array(coordinates)
         return peaks, None
 
     @staticmethod
     def _get_rotation_matrix(
-        peak: NDArray,
-        rotation_space: NDArray,
-        rotation_mapping: NDArray,
-        rotation_matrix: NDArray,
-    ) -> NDArray:
+        peak: BackendArray,
+        rotation_space: BackendArray,
+        rotation_mapping: BackendArray,
+        rotation_matrix: BackendArray,
+    ) -> BackendArray:
         """
         Get rotation matrix based on peak and rotation data.
 
         Parameters
         ----------
-        peak : NDArray
+        peak : BackendArray
             Peak coordinates.
-        rotation_space : NDArray
+        rotation_space : BackendArray
             Rotation space array.
         rotation_mapping : Dict
             Dictionary mapping values in rotation_space to Euler angles.
-        rotation_matrix : NDArray
+        rotation_matrix : BackendArray
             Current rotation matrix.
 
         Returns
         -------
-        NDArray
+        BackendArray
             Rotation matrix.
         """
         if rotation_space is None or rotation_mapping is None:
@@ -814,135 +734,117 @@ class PeakCallerRecursiveMasking(PeakCaller):
 
         rotation = rotation_mapping[rotation_space[tuple(peak)]]
 
-        rotation_matrix = backend.to_backend_array(
-            euler_to_rotationmatrix(backend.to_numpy_array(rotation))
-        )
-        return rotation_matrix
+        # TODO: Newer versions of rotation mapping contain rotation matrices not angles
+        if len(rotation) == 3:
+            rotation = be.to_backend_array(
+                euler_to_rotationmatrix(be.to_numpy_array(rotation))
+            )
+        return rotation
 
     @staticmethod
     def _mask_scores_box(
-        score_space: NDArray, peak: NDArray, mask: NDArray, **kwargs: Dict
+        scores: BackendArray, peak: BackendArray, mask: BackendArray, **kwargs: Dict
     ) -> None:
         """
         Mask scores in a box around a peak.
 
         Parameters
         ----------
-        score_space : NDArray
+        scores : BackendArray
             Data array of scores.
-        peak : NDArray
+        peak : BackendArray
             Peak coordinates.
-        mask : NDArray
+        mask : BackendArray
             Mask array.
         """
-        start = backend.maximum(backend.subtract(peak, mask.shape), 0)
-        stop = backend.minimum(backend.add(peak, mask.shape), score_space.shape)
-        start, stop = backend.astype(start, int), backend.astype(stop, int)
+        start = be.maximum(be.subtract(peak, mask.shape), 0)
+        stop = be.minimum(be.add(peak, mask.shape), scores.shape)
+        start, stop = be.astype(start, int), be.astype(stop, int)
         coords = tuple(slice(*pos) for pos in zip(start, stop))
-        score_space[coords] = 0
+        scores[coords] = 0
         return None
 
     @staticmethod
     def _mask_scores_rotate(
-        score_space: NDArray,
-        peak: NDArray,
-        mask: NDArray,
-        rotated_template: NDArray,
-        rotation_matrix: NDArray,
+        scores: BackendArray,
+        peak: BackendArray,
+        mask: BackendArray,
+        rotated_template: BackendArray,
+        rotation_matrix: BackendArray,
         **kwargs: Dict,
     ) -> None:
         """
-        Mask score_space using mask rotation around a peak.
+        Mask scores using mask rotation around a peak.
 
         Parameters
         ----------
-        score_space : NDArray
+        scores : BackendArray
             Data array of scores.
-        peak : NDArray
+        peak : BackendArray
             Peak coordinates.
-        mask : NDArray
+        mask : BackendArray
             Mask array.
-        rotated_template : NDArray
+        rotated_template : BackendArray
             Empty array to write mask rotations to.
-        rotation_matrix : NDArray
+        rotation_matrix : BackendArray
             Rotation matrix.
         """
-        left_pad = backend.divide(mask.shape, 2).astype(int)
-        right_pad = backend.add(left_pad, backend.mod(mask.shape, 2).astype(int))
+        left_pad = be.divide(mask.shape, 2).astype(int)
+        right_pad = be.add(left_pad, be.mod(mask.shape, 2).astype(int))
 
-        score_start = backend.subtract(peak, left_pad)
-        score_stop = backend.add(peak, right_pad)
+        score_start = be.subtract(peak, left_pad)
+        score_stop = be.add(peak, right_pad)
 
-        template_start = backend.subtract(backend.maximum(score_start, 0), score_start)
-        template_stop = backend.subtract(
-            score_stop, backend.minimum(score_stop, score_space.shape)
-        )
-        template_stop = backend.subtract(mask.shape, template_stop)
+        template_start = be.subtract(be.maximum(score_start, 0), score_start)
+        template_stop = be.subtract(score_stop, be.minimum(score_stop, scores.shape))
+        template_stop = be.subtract(mask.shape, template_stop)
 
-        score_start = backend.maximum(score_start, 0)
-        score_stop = backend.minimum(score_stop, score_space.shape)
-        score_start = backend.astype(score_start, int)
-        score_stop = backend.astype(score_stop, int)
+        score_start = be.maximum(score_start, 0)
+        score_stop = be.minimum(score_stop, scores.shape)
+        score_start = be.astype(score_start, int)
+        score_stop = be.astype(score_stop, int)
 
-        template_start = backend.astype(template_start, int)
-        template_stop = backend.astype(template_stop, int)
+        template_start = be.astype(template_start, int)
+        template_stop = be.astype(template_stop, int)
         coords_score = tuple(slice(*pos) for pos in zip(score_start, score_stop))
         coords_template = tuple(
             slice(*pos) for pos in zip(template_start, template_stop)
         )
 
         rotated_template.fill(0)
-        backend.rotate_array(
+        be.rigid_transform(
             arr=mask, rotation_matrix=rotation_matrix, order=1, out=rotated_template
         )
 
-        score_space[coords_score] = backend.multiply(
-            score_space[coords_score], (rotated_template[coords_template] <= 0.1)
+        scores[coords_score] = be.multiply(
+            scores[coords_score], (rotated_template[coords_template] <= 0.1)
         )
         return None
 
 
 class PeakCallerScipy(PeakCaller):
     """
-    Peak calling using skimage.feature.peak_local_max to compute local maxima.
+    Peak calling using :obj:`skimage.feature.peak_local_max` to compute local maxima.
     """
 
     def call_peaks(
-        self, score_space: NDArray, minimum_score: float = None, **kwargs
-    ) -> Tuple[NDArray, NDArray]:
-        """
-        Call peaks in the score space.
-
-        Parameters
-        ----------
-        score_space : NDArray
-            Data array of scores.
-        minimum_score : float
-            Minimum score value to consider. If provided, superseeds limit given
-            by :py:attr:`PeakCaller.number_of_peaks`.
-
-        Returns
-        -------
-        Tuple[NDArray, NDArray]
-            Array of peak coordinates and peak details.
-        """
-        score_space = backend.to_numpy_array(score_space)
+        self, scores: BackendArray, minimum_score: float = None, **kwargs
+    ) -> PeakType:
+        scores = be.to_numpy_array(scores)
         num_peaks = self.number_of_peaks
         if minimum_score is not None:
             num_peaks = np.inf
 
-        non_squeezable_dims = tuple(
-            i for i, x in enumerate(score_space.shape) if x != 1
-        )
+        non_squeezable_dims = tuple(i for i, x in enumerate(scores.shape) if x != 1)
         peaks = peak_local_max(
-            np.squeeze(score_space),
+            np.squeeze(scores),
             num_peaks=num_peaks,
             min_distance=self.min_distance,
             threshold_abs=minimum_score,
         )
-        peaks_full = np.zeros((peaks.shape[0], score_space.ndim), peaks.dtype)
+        peaks_full = np.zeros((peaks.shape[0], scores.ndim), peaks.dtype)
         peaks_full[..., non_squeezable_dims] = peaks[:]
-        peaks = backend.to_backend_array(peaks_full)
+        peaks = be.to_backend_array(peaks_full)
         return peaks, None
 
 
@@ -967,7 +869,7 @@ class PeakClustering(PeakCallerSort):
         Parameters
         ----------
         **kwargs
-            Additional keyword arguments passed to :py:meth:`PeakCaller.merge`.
+            Optional keyword arguments passed to :py:meth:`PeakCaller.merge`.
 
         Returns
         -------
@@ -999,263 +901,31 @@ class PeakClustering(PeakCallerSort):
         return peaks, rotations, scores, details
 
 
-class ScoreStatistics(PeakCallerFast):
-    """
-    Compute basic statistics on score spaces with respect to a reference
-    score or value.
-
-    This class is used to evaluate a blurring or scoring method when the correct fit
-    is known. It is thread-safe and is designed to be shared among multiple processes
-    with write permissions to the internal parameters.
-
-    After instantiation, the class's functionality can be accessed through the
-    `__call__` method.
-
-    Parameters
-    ----------
-    reference_position : int, optional
-        Index of the correct fit in the array passed to call. Defaults to None.
-    min_distance : float, optional
-        Minimum distance for local maxima. Defaults to None.
-    reference_fit : float, optional
-        Score of the correct fit. If set, `reference_position` will be ignored.
-        Defaults to None.
-    number_of_peaks : int, optional
-        Number of candidate fits to consider. Defaults to 1.
-    """
-
-    def __init__(
-        self,
-        reference_position: Tuple[int] = None,
-        min_distance: float = 10,
-        reference_fit: float = None,
-        number_of_peaks: int = 1,
-    ):
-        super().__init__(number_of_peaks=number_of_peaks, min_distance=min_distance)
-        self.lock = Lock()
-
-        self.n = RawValue("Q", 0)
-        self.rmean = RawValue("d", 0)
-        self.ssqd = RawValue("d", 0)
-        self.nbetter_or_equal = RawValue("Q", 0)
-        self.maximum_value = RawValue("f", 0)
-        self.minimum_value = RawValue("f", 2**32)
-        self.shannon_entropy = Manager().list()
-        self.candidate_fits = Manager().list()
-        self.rotation_names = Manager().list()
-        self.reference_fit = RawValue("f", 0)
-        self.has_reference = RawValue("i", 0)
-
-        self.reference_position = reference_position
-        if reference_fit is not None:
-            self.reference_fit.value = reference_fit
-            self.has_reference.value = 1
-
-    def __call__(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
-    ) -> None:
-        """
-        Processes the input array and rotation matrix.
-
-        Parameters
-        ----------
-        arr : NDArray
-            Input data array.
-        rotation_matrix : NDArray
-            Rotation matrix for processing.
-        """
-        self.set_reference(score_space, rotation_matrix)
-
-        while not self.has_reference.value:
-            print("Stalling processes until reference_fit has been set.")
-            sleep(0.5)
-
-        name = "_".join([str(value) for value in rotation_matrix.ravel()])
-        n, rmean, ssqd, nbetter_or_equal, max_value, min_value = online_statistics(
-            score_space, 0, 0.0, 0.0, self.reference_fit.value
-        )
-
-        freq, _ = np.histogram(score_space, bins=100)
-        shannon_entropy = entropy(freq / score_space.size)
-
-        peaks, _ = super().call_peaks(
-            score_space=score_space, rotation_matrix=rotation_matrix, **kwargs
-        )
-        scores = score_space[tuple(peaks.T)]
-        rotations = np.repeat(
-            rotation_matrix.reshape(1, *rotation_matrix.shape),
-            peaks.shape[0],
-            axis=0,
-        )
-        distances = np.linalg.norm(peaks - self.reference_position[None, :], axis=1)
-
-        self._update(
-            peak_positions=peaks,
-            rotations=rotations,
-            peak_scores=scores,
-            peak_details=distances,
-            n=n,
-            rmean=rmean,
-            ssqd=ssqd,
-            nbetter_or_equal=nbetter_or_equal,
-            max_value=max_value,
-            min_value=min_value,
-            entropy=shannon_entropy,
-            name=name,
-        )
-
-    def __iter__(self):
-        param_store = (
-            self.peak_list[0],
-            self.peak_list[1],
-            self.peak_list[2],
-            self.peak_list[3],
-            self.n.value,
-            self.rmean.value,
-            self.ssqd.value,
-            self.nbetter_or_equal.value,
-            self.maximum_value.value,
-            self.minimum_value.value,
-            list(self.shannon_entropy),
-            list(self.rotation_names),
-            self.reference_fit.value,
-        )
-        yield from param_store
-
-    def _update(
-        self,
-        n: int,
-        rmean: float,
-        ssqd: float,
-        nbetter_or_equal: int,
-        max_value: float,
-        min_value: float,
-        entropy: float,
-        name: str,
-        **kwargs,
-    ) -> None:
-        """
-        Updates the internal statistics of the analyzer.
-
-        Parameters
-        ----------
-        n : int
-            Sample size.
-        rmean : float
-            Running mean.
-        ssqd : float
-            Sum of squared differences.
-        nbetter_or_equal : int
-            Number of values better or equal to reference.
-        max_value : float
-            Maximum value.
-        min_value : float
-            Minimum value.
-        entropy : float
-            Shannon entropy.
-        candidates : list
-            List of candidate fits.
-        name : str
-            Name or label for the data.
-        kwargs : dict
-            Keyword arguments passed to PeakCaller._update.
-        """
-        with self.lock:
-            super()._update(**kwargs)
-
-            n_total = self.n.value + n
-            delta = rmean - self.rmean.value
-            delta2 = delta * delta
-            self.rmean.value += delta * n / n_total
-            self.ssqd.value += ssqd + delta2 * (n * self.n.value) / n_total
-            self.n.value = n_total
-            self.nbetter_or_equal.value += nbetter_or_equal
-            self.minimum_value.value = min(self.minimum_value.value, min_value)
-            self.maximum_value.value = max(self.maximum_value.value, max_value)
-            self.shannon_entropy.append(entropy)
-            self.rotation_names.append(name)
-
-    @classmethod
-    def merge(cls, param_stores: List[Tuple]) -> Tuple:
-        """
-        Merges multiple instances of :py:class`ScoreStatistics`.
-
-        Parameters
-        ----------
-        param_stores : list of tuple
-            Internal parameter store. Obtained by running `tuple(instance)`.
-            Defaults to a list with two empty tuples.
-
-        Returns
-        -------
-        tuple
-            Contains the reference fit, the z-transform of the reference fit,
-            number of scores, and various other statistics.
-        """
-        base = cls(reference_position=np.zeros(3, int))
-        for param_store in param_stores:
-            base._update(
-                peak_positions=param_store[0],
-                rotations=param_store[1],
-                peak_scores=param_store[2],
-                peak_details=param_store[3],
-                n=param_store[4],
-                rmean=param_store[5],
-                ssqd=param_store[6],
-                nbetter_or_equal=param_store[7],
-                max_value=param_store[8],
-                min_value=param_store[9],
-                entropy=param_store[10],
-                name=param_store[11],
-            )
-        base.reference_fit.value = param_store[12]
-        return tuple(base)
-
-    def set_reference(self, score_space: NDArray, rotation_matrix: NDArray) -> None:
-        """
-        Sets the reference for the analyzer based on the input array
-        and rotation matrix.
-
-        Parameters
-        ----------
-        score_space : NDArray
-            Input data array.
-        rotation_matrix : NDArray
-            Rotation matrix for setting reference.
-        """
-        is_ref = np.allclose(
-            rotation_matrix,
-            np.eye(rotation_matrix.shape[0], dtype=rotation_matrix.dtype),
-        )
-        if not is_ref:
-            return None
-
-        reference_position = self.reference_position
-        if reference_position is None:
-            reference_position = np.divide(score_space.shape, 2).astype(int)
-        self.reference_position = reference_position
-        self.reference_fit.value = score_space[tuple(reference_position)]
-        self.has_reference.value = 1
-
-
 class MaxScoreOverRotations:
     """
-    Obtain the maximum translation score over various rotations.
+    Determine the rotation maximizing the score of all given translations.
 
     Attributes
     ----------
-    score_space : NDArray
-        The score space for the observed rotations.
-    rotations : NDArray
-        The rotation identifiers for each score.
-    translation_offset : NDArray, optional
-        The offset applied during translation.
-    observed_rotations : int
-        Count of observed rotations.
+    shape : tuple of ints.
+        Shape of ``scores`` and rotations.
+    scores : BackendArray
+        Array mapping translations to scores.
+    rotations : BackendArray
+        Array mapping translations to rotation indices.
+    rotation_mapping : Dict
+        Mapping of rotation matrix bytestrings to rotation indices.
+    offset : BackendArray, optional
+        Coordinate origin considered during merging, zeryo by default
     use_memmap : bool, optional
-        Whether to offload internal data arrays to disk
+        Memmap scores and rotations arrays, False by default.
     thread_safe: bool, optional
-        Whether access to internal data arrays should be thread safe
+        Allow class to be modified by multiple processes, True by default.
+
+    Raises
+    ------
+    ValueError
+        If the data shape cannot be determined from the parameters.
 
     Examples
     --------
@@ -1263,11 +933,7 @@ class MaxScoreOverRotations:
     instance
 
     >>> from tme.analyzer import MaxScoreOverRotations
-    >>> analyzer = MaxScoreOverRotations(
-    >>>    score_space_shape = (50, 50),
-    >>>    score_space_dtype = np.float32,
-    >>>    rotation_space_dtype = np.int32,
-    >>> )
+    >>> analyzer = MaxScoreOverRotations(shape = (50, 50))
 
     The following simulates a template matching run by creating random data for a range
     of rotations and sending it to ``analyzer`` via its __call__ method
@@ -1275,7 +941,7 @@ class MaxScoreOverRotations:
     >>> for rotation_number in range(10):
     >>>     scores = np.random.rand(50,50)
     >>>     rotation = np.random.rand(scores.ndim, scores.ndim)
-    >>>     analyzer(score_space = scores, rotation_matrix = rotation)
+    >>>     analyzer(scores = scores, rotation_matrix = rotation)
 
     The aggregated scores can be exctracted by invoking the __iter__ method of
     ``analyzer``
@@ -1307,186 +973,146 @@ class MaxScoreOverRotations:
 
     def __init__(
         self,
-        score_space_shape: Tuple[int],
-        score_space_dtype: type,
-        translation_offset: NDArray = None,
+        shape: Tuple[int] = None,
+        scores: BackendArray = None,
+        rotations: BackendArray = None,
+        offset: BackendArray = None,
         score_threshold: float = 0,
         shared_memory_handler: object = None,
-        rotation_space_dtype: type = int,
         use_memmap: bool = False,
         thread_safe: bool = True,
         **kwargs,
     ):
-        score_space_shape = tuple(int(x) for x in score_space_shape)
-        self.score_space = backend.arr_to_sharedarr(
-            backend.full(
-                shape=score_space_shape,
-                dtype=score_space_dtype,
-                fill_value=score_threshold,
-            ),
-            shared_memory_handler=shared_memory_handler,
-        )
-        self.rotations = backend.arr_to_sharedarr(
-            backend.full(score_space_shape, dtype=rotation_space_dtype, fill_value=-1),
-            shared_memory_handler,
-        )
-        if translation_offset is None:
-            translation_offset = backend.zeros(len(score_space_shape))
+        if shape is None and scores is None:
+            raise ValueError("Either scores_shape or scores need to be specified.")
 
-        self.translation_offset = backend.astype(translation_offset, int)
-        self.score_space_shape = score_space_shape
-        self.rotation_space_dtype = rotation_space_dtype
-        self.score_space_dtype = score_space_dtype
+        if scores is None:
+            shape = tuple(int(x) for x in shape)
+            scores = be.full(
+                shape=shape,
+                dtype=be._float_dtype,
+                fill_value=score_threshold,
+            )
+        self.scores, self.shape = scores, scores.shape
+
+        if rotations is None:
+            rotations = be.full(shape, dtype=be._int_dtype, fill_value=-1)
+        self.rotations = rotations
+
+        self.scores_dtype = self.scores.dtype
+        self.rotations_dtype = self.rotations.dtype
+        self.scores = be.to_sharedarr(self.scores, shared_memory_handler)
+        self.rotations = be.to_sharedarr(self.rotations, shared_memory_handler)
+
+        if offset is None:
+            offset = be.zeros(len(self.shape), be._int_dtype)
+        self.offset = be.astype(offset, int)
 
         self.use_memmap = use_memmap
         self.lock = Manager().Lock() if thread_safe else nullcontext()
-        self.lock_is_nullcontext = isinstance(
-            self.score_space, type(backend.zeros((1)))
-        )
-        self.observed_rotations = Manager().dict() if thread_safe else {}
+        self.lock_is_nullcontext = isinstance(self.scores, type(self.offset))
+        self.rotation_mapping = Manager().dict() if thread_safe else {}
 
     def _postprocess(
         self,
-        fourier_shift,
-        convolution_mode,
-        targetshape,
-        templateshape,
+        targetshape: Tuple[int],
+        templateshape: Tuple[int],
+        fourier_shift: Tuple[int] = None,
+        convolution_mode: str = None,
         shared_memory_handler=None,
+        fast_shape: Tuple[int] = None,
         **kwargs,
-    ):
-        internal_scores = backend.sharedarr_to_arr(
-            shape=self.score_space_shape,
-            dtype=self.score_space_dtype,
-            shm=self.score_space,
-        )
-        internal_rotations = backend.sharedarr_to_arr(
-            shape=self.score_space_shape,
-            dtype=self.rotation_space_dtype,
-            shm=self.rotations,
-        )
-
+    ) -> "MaxScoreOverRotations":
+        """
+        Correct padding to Fourier (and if requested convolution) shape.
+        """
+        scores = be.from_sharedarr(self.scores)
+        rotations = be.from_sharedarr(self.rotations)
         if fourier_shift is not None:
             axis = tuple(i for i in range(len(fourier_shift)))
-            internal_scores = backend.roll(
-                internal_scores, shift=fourier_shift, axis=axis
-            )
-            internal_rotations = backend.roll(
-                internal_rotations, shift=fourier_shift, axis=axis
-            )
+            scores = be.roll(scores, shift=fourier_shift, axis=axis)
+            rotations = be.roll(rotations, shift=fourier_shift, axis=axis)
 
+        convargs = {
+            "s1": targetshape,
+            "s2": templateshape,
+            "convolution_mode": convolution_mode,
+        }
         if convolution_mode is not None:
-            internal_scores = apply_convolution_mode(
-                internal_scores,
-                convolution_mode=convolution_mode,
-                s1=targetshape,
-                s2=templateshape,
-            )
-            internal_rotations = apply_convolution_mode(
-                internal_rotations,
-                convolution_mode=convolution_mode,
-                s1=targetshape,
-                s2=templateshape,
-            )
+            scores = apply_convolution_mode(scores, **convargs)
+            rotations = apply_convolution_mode(rotations, **convargs)
 
-        self.score_space_shape = internal_scores.shape
-        self.score_space = backend.arr_to_sharedarr(
-            internal_scores, shared_memory_handler
-        )
-        self.rotations = backend.arr_to_sharedarr(
-            internal_rotations, shared_memory_handler
-        )
+        self.shape = scores.shape
+        self.scores = be.to_sharedarr(scores, shared_memory_handler)
+        self.rotations = be.to_sharedarr(rotations, shared_memory_handler)
         return self
 
-    def __iter__(self):
-        internal_scores = backend.sharedarr_to_arr(
-            shape=self.score_space_shape,
-            dtype=self.score_space_dtype,
-            shm=self.score_space,
-        )
-        internal_rotations = backend.sharedarr_to_arr(
-            shape=self.score_space_shape,
-            dtype=self.rotation_space_dtype,
-            shm=self.rotations,
-        )
+    def __iter__(self) -> Generator:
+        scores = be.from_sharedarr(self.scores)
+        rotations = be.from_sharedarr(self.rotations)
 
-        internal_scores = backend.to_numpy_array(internal_scores)
-        internal_rotations = backend.to_numpy_array(internal_rotations)
+        scores = be.to_numpy_array(scores)
+        rotations = be.to_numpy_array(rotations)
         if self.use_memmap:
-            internal_scores_filename = array_to_memmap(internal_scores)
-            internal_rotations_filename = array_to_memmap(internal_rotations)
-            internal_scores = np.memmap(
-                internal_scores_filename,
+            scores = np.memmap(
+                array_to_memmap(scores),
                 mode="r",
-                dtype=internal_scores.dtype,
-                shape=internal_scores.shape,
+                dtype=scores.dtype,
+                shape=scores.shape,
             )
-            internal_rotations = np.memmap(
-                internal_rotations_filename,
+            rotations = np.memmap(
+                array_to_memmap(rotations),
                 mode="r",
-                dtype=internal_rotations.dtype,
-                shape=internal_rotations.shape,
+                dtype=rotations.dtype,
+                shape=rotations.shape,
             )
         else:
-            # Avoid invalidation by shared memory handler with copy
-            internal_scores = internal_scores.copy()
-            internal_rotations = internal_rotations.copy()
+            # Copy to avoid invalidation by shared memory handler
+            scores, rotations = scores.copy(), rotations.copy()
 
         param_store = (
-            internal_scores,
-            backend.to_numpy_array(self.translation_offset),
-            internal_rotations,
-            dict(self.observed_rotations),
+            scores,
+            be.to_numpy_array(self.offset),
+            rotations,
+            dict(self.rotation_mapping),
         )
         yield from param_store
 
-    def __call__(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
-    ) -> None:
+    def __call__(self, scores: BackendArray, rotation_matrix: BackendArray):
         """
-        Update internal parameter store based on `score_space`.
+        Update internal parameter store based on `scores`.
 
         Parameters
         ----------
-        score_space : ndarray
-            Numpy array containing the score space.
-        rotation_matrix : ndarray
+        scores : BackendArray
+            Array containing the score space.
+        rotation_matrix : BackendArray
             Square matrix describing the current rotation.
-        **kwargs
-            Arbitrary keyword arguments.
         """
-        rotation = backend.tobytes(rotation_matrix)
+        rotation = be.tobytes(rotation_matrix)
 
         if self.lock_is_nullcontext:
-            rotation_index = self.observed_rotations.setdefault(
-                rotation, len(self.observed_rotations)
+            rotation_index = self.rotation_mapping.setdefault(
+                rotation, len(self.rotation_mapping)
             )
-            backend.max_score_over_rotations(
-                score_space=score_space,
-                internal_scores=self.score_space,
-                internal_rotations=self.rotations,
+            self.scores, self.rotations = be.max_score_over_rotations(
+                scores=scores,
+                max_scores=self.scores,
+                rotations=self.rotations,
                 rotation_index=rotation_index,
             )
             return None
 
         with self.lock:
-            rotation_index = self.observed_rotations.setdefault(
-                rotation, len(self.observed_rotations)
+            rotation_index = self.rotation_mapping.setdefault(
+                rotation, len(self.rotation_mapping)
             )
-            internal_scores = backend.sharedarr_to_arr(
-                shape=self.score_space_shape,
-                dtype=self.score_space_dtype,
-                shm=self.score_space,
-            )
-            internal_rotations = backend.sharedarr_to_arr(
-                shape=self.score_space_shape,
-                dtype=self.rotation_space_dtype,
-                shm=self.rotations,
-            )
-
-            backend.max_score_over_rotations(
-                score_space=score_space,
-                internal_scores=internal_scores,
-                internal_rotations=internal_rotations,
+            internal_scores = be.from_sharedarr(self.scores)
+            internal_rotations = be.from_sharedarr(self.rotations)
+            internal_sores, internal_rotations = be.max_score_over_rotations(
+                scores=scores,
+                max_scores=internal_scores,
+                rotations=internal_rotations,
                 rotation_index=rotation_index,
             )
             return None
@@ -1501,7 +1127,7 @@ class MaxScoreOverRotations:
         param_stores : list of tuples, optional
             Internal parameter store. Obtained by running `tuple(instance)`.
         **kwargs
-            Arbitrary keyword arguments.
+            Optional keyword arguments.
 
         Returns
         -------
@@ -1513,51 +1139,51 @@ class MaxScoreOverRotations:
         if len(param_stores) == 1:
             return param_stores[0]
 
-        new_rotation_mapping, base_max = {}, None
-        scores_out_dtype, rotations_out_dtype = None, None
+        # Determine output array shape and create consistent rotation map
+        new_rotation_mapping, out_shape = {}, None
         for i in range(len(param_stores)):
             if param_stores[i] is None:
                 continue
-            score_space, offset, rotations, rotation_mapping = param_stores[i]
-            if base_max is None:
-                base_max = np.zeros(score_space.ndim, int)
-                scores_out_dtype = score_space.dtype
-                rotations_out_dtype = rotations.dtype
-            np.maximum(base_max, np.add(offset, score_space.shape), out=base_max)
+
+            scores, offset, rotations, rotation_mapping = param_stores[i]
+            if out_shape is None:
+                out_shape = np.zeros(scores.ndim, int)
+                scores_dtype, rotations_dtype = scores.dtype, rotations.dtype
+            out_shape = np.maximum(out_shape, np.add(offset, scores.shape))
 
             for key, value in rotation_mapping.items():
                 if key not in new_rotation_mapping:
                     new_rotation_mapping[key] = len(new_rotation_mapping)
 
-        if base_max is None:
+        if out_shape is None:
             return None
 
-        base_max = tuple(int(x) for x in base_max)
+        out_shape = tuple(int(x) for x in out_shape)
         use_memmap = kwargs.get("use_memmap", False)
         if use_memmap:
             scores_out_filename = generate_tempfile_name()
             rotations_out_filename = generate_tempfile_name()
 
             scores_out = np.memmap(
-                scores_out_filename, mode="w+", shape=base_max, dtype=scores_out_dtype
+                scores_out_filename, mode="w+", shape=out_shape, dtype=scores_dtype
             )
             scores_out.fill(kwargs.get("score_threshold", 0))
             scores_out.flush()
             rotations_out = np.memmap(
                 rotations_out_filename,
                 mode="w+",
-                shape=base_max,
-                dtype=rotations_out_dtype,
+                shape=out_shape,
+                dtype=rotations_dtype,
             )
             rotations_out.fill(-1)
             rotations_out.flush()
         else:
             scores_out = np.full(
-                base_max,
+                out_shape,
                 fill_value=kwargs.get("score_threshold", 0),
-                dtype=scores_out_dtype,
+                dtype=scores_dtype,
             )
-            rotations_out = np.full(base_max, fill_value=-1, dtype=rotations_out_dtype)
+            rotations_out = np.full(out_shape, fill_value=-1, dtype=rotations_dtype)
 
         for i in range(len(param_stores)):
             if param_stores[i] is None:
@@ -1567,21 +1193,21 @@ class MaxScoreOverRotations:
                 scores_out = np.memmap(
                     scores_out_filename,
                     mode="r+",
-                    shape=base_max,
-                    dtype=scores_out_dtype,
+                    shape=out_shape,
+                    dtype=scores_dtype,
                 )
                 rotations_out = np.memmap(
                     rotations_out_filename,
                     mode="r+",
-                    shape=base_max,
-                    dtype=rotations_out_dtype,
+                    shape=out_shape,
+                    dtype=rotations_dtype,
                 )
-            score_space, offset, rotations, rotation_mapping = param_stores[i]
-            stops = np.add(offset, score_space.shape).astype(int)
+            scores, offset, rotations, rotation_mapping = param_stores[i]
+            stops = np.add(offset, scores.shape).astype(int)
             indices = tuple(slice(*pos) for pos in zip(offset, stops))
 
-            indices_update = score_space > scores_out[indices]
-            scores_out[indices][indices_update] = score_space[indices_update]
+            indices_update = scores > scores_out[indices]
+            scores_out[indices][indices_update] = scores[indices_update]
 
             lookup_table = np.arange(
                 len(rotation_mapping) + 1, dtype=rotations_out.dtype
@@ -1594,24 +1220,24 @@ class MaxScoreOverRotations:
                 rotations_out[indices][indices_update] = lookup_table[updated_rotations]
 
             if use_memmap:
-                score_space._mmap.close()
+                scores._mmap.close()
                 rotations._mmap.close()
                 scores_out.flush()
                 rotations_out.flush()
                 scores_out, rotations_out = None, None
 
             param_stores[i] = None
-            score_space, rotations = None, None
+            scores, rotations = None, None
 
         if use_memmap:
             scores_out = np.memmap(
-                scores_out_filename, mode="r", shape=base_max, dtype=scores_out_dtype
+                scores_out_filename, mode="r", shape=out_shape, dtype=scores_dtype
             )
             rotations_out = np.memmap(
                 rotations_out_filename,
                 mode="r",
-                shape=base_max,
-                dtype=rotations_out_dtype,
+                shape=out_shape,
+                dtype=rotations_dtype,
             )
         return (
             scores_out,
@@ -1620,6 +1246,10 @@ class MaxScoreOverRotations:
             new_rotation_mapping,
         )
 
+    @property
+    def shared(self):
+        return True
+
 
 class _MaxScoreOverTranslations(MaxScoreOverRotations):
     """
@@ -1627,11 +1257,11 @@ class _MaxScoreOverTranslations(MaxScoreOverRotations):
 
     Attributes
     ----------
-    score_space : NDArray
+    scores : BackendArray
         The score space for the observed rotations.
-    rotations : NDArray
+    rotations : BackendArray
         The rotation identifiers for each score.
-    translation_offset : NDArray, optional
+    translation_offset : BackendArray, optional
         The offset applied during translation.
     observed_rotations : int
         Count of observed rotations.
@@ -1642,36 +1272,36 @@ class _MaxScoreOverTranslations(MaxScoreOverRotations):
     """
 
     def __call__(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
+        self, scores: BackendArray, rotation_matrix: BackendArray, **kwargs
     ) -> None:
         """
-        Update internal parameter store based on `score_space`.
+        Update internal parameter store based on `scores`.
 
         Parameters
         ----------
-        score_space : ndarray
+        scores : BackendArray
             Numpy array containing the score space.
-        rotation_matrix : ndarray
+        rotation_matrix : BackendArray
             Square matrix describing the current rotation.
         **kwargs
-            Arbitrary keyword arguments.
+            Optional keyword arguments.
         """
         from tme.matching_utils import centered_mask
 
         with self.lock:
-            rotation = backend.tobytes(rotation_matrix)
+            rotation = be.tobytes(rotation_matrix)
             if rotation not in self.observed_rotations:
                 self.observed_rotations[rotation] = len(self.observed_rotations)
-            score_space = centered_mask(score_space, kwargs["template_shape"])
+            scores = centered_mask(scores, kwargs["template_shape"])
             rotation_index = self.observed_rotations[rotation]
-            internal_scores = backend.sharedarr_to_arr(
-                shape=self.score_space_shape,
-                dtype=self.score_space_dtype,
-                shm=self.score_space,
+            internal_scores = be.from_sharedarr(
+                shape=self.shape,
+                dtype=self.scores_dtype,
+                shm=self.scores,
             )
-            max_score = score_space.max(axis=(1, 2, 3))
-            mean_score = score_space.mean(axis=(1, 2, 3))
-            std_score = score_space.std(axis=(1, 2, 3))
+            max_score = scores.max(axis=(1, 2, 3))
+            mean_score = scores.mean(axis=(1, 2, 3))
+            std_score = scores.std(axis=(1, 2, 3))
             z_score = (max_score - mean_score) / std_score
             internal_scores[rotation_index] = z_score
 
@@ -1695,7 +1325,7 @@ class MemmapHandler:
     indices : tuple of slice, optional
         Slices specifying which parts of the memmap array will be updated by `__call__`.
     **kwargs
-        Arbitrary keyword arguments.
+        Optional keyword arguments.
     """
 
     def __init__(
@@ -1718,15 +1348,13 @@ class MemmapHandler:
         self.dtype = dtype
         self._indices = indices
 
-    def __call__(
-        self, score_space: NDArray, rotation_matrix: NDArray, **kwargs
-    ) -> None:
+    def __call__(self, scores: NDArray, rotation_matrix: NDArray) -> None:
         """
-        Write `score_space` to memmap object on disk.
+        Write `scores` to memmap object on disk.
 
         Parameters
         ----------
-        score_space : ndarray
+        scores : ndarray
             Numpy array containing the score space.
         rotation_matrix : ndarray
             Square matrix describing the current rotation.
@@ -1738,7 +1366,7 @@ class MemmapHandler:
         array = np.memmap(current_object, mode="r+", shape=self.shape, dtype=self.dtype)
         # Does not really need a lock because processes operate on different rotations
         with self.lock:
-            array[self._indices] += score_space
+            array[self._indices] += scores
             array.flush()
 
     def __iter__(self):

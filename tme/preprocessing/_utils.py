@@ -5,12 +5,14 @@
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 from numpy.typing import NDArray
 
-from ..backends import backend
+from ..types import BackendArray
+from ..backends import backend as be
+from ..backends import NumpyFFTWBackend
 from ..matching_utils import euler_to_rotationmatrix
 
 
@@ -93,18 +95,27 @@ def frequency_grid_at_angle(
     tilt_shape = compute_tilt_shape(
         shape=shape, opening_axis=opening_axis, reduce_dim=False
     )
-    index_grid = centered_grid(shape=tilt_shape)
+
+    if angle == 0:
+        index_grid = fftfreqn(
+            tuple(x for x in tilt_shape if x != 1),
+            sampling_rate=1,
+            compute_euclidean_norm=True,
+        )
+
     if angle != 0:
         angles = np.zeros(len(shape))
         angles[tilt_axis] = angle
         rotation_matrix = euler_to_rotationmatrix(np.roll(angles, opening_axis - 1))
+
+        index_grid = fftfreqn(tilt_shape, sampling_rate=None)
         index_grid = np.einsum("ij,j...->i...", rotation_matrix, index_grid)
+        norm = np.multiply(sampling_rate, shape).astype(int)
 
-    norm = np.divide(1, 2 * sampling_rate * np.divide(shape, 2).astype(int))
+        index_grid = np.divide(index_grid.T, norm).T
+        index_grid = np.squeeze(index_grid)
+        index_grid = np.linalg.norm(index_grid, axis=(0))
 
-    index_grid = np.multiply(index_grid.T, norm).T
-    index_grid = np.squeeze(index_grid)
-    index_grid = np.linalg.norm(index_grid, axis=(0))
     return index_grid
 
 
@@ -113,9 +124,10 @@ def fftfreqn(
     sampling_rate: Tuple[float],
     compute_euclidean_norm: bool = False,
     shape_is_real_fourier: bool = False,
+    return_sparse_grid: bool = False,
 ) -> NDArray:
     """
-    Generate the n-dimensional discrete Fourier Transform sample frequencies.
+    Generate the n-dimensional discrete Fourier transform sample frequencies.
 
     Parameters:
     -----------
@@ -133,56 +145,74 @@ def fftfreqn(
     NDArray
         The sample frequencies.
     """
-    center = backend.astype(backend.divide(shape, 2), backend._int_dtype)
-
-    norm = np.ones(len(shape))
+    # There is no real need to have these operations on GPU right now
+    temp_backend = NumpyFFTWBackend()
+    norm = temp_backend.full(len(shape), fill_value=1)
+    center = temp_backend.astype(temp_backend.divide(shape, 2), temp_backend._int_dtype)
     if sampling_rate is not None:
-        norm = backend.astype(backend.multiply(shape, sampling_rate), int)
+        norm = temp_backend.astype(temp_backend.multiply(shape, sampling_rate), int)
 
     if shape_is_real_fourier:
-        center[-1] = 0
-        norm[-1] = 1
+        center[-1], norm[-1] = 0, 1
         if sampling_rate is not None:
             norm[-1] = (shape[-1] - 1) * 2 * sampling_rate
 
-    indices = backend.transpose(backend.indices(shape))
-    indices -= center
-    indices = backend.divide(indices, norm)
-    indices = backend.transpose(indices)
+    grids = []
+    for i, x in enumerate(shape):
+        baseline_dims = tuple(1 if i != t else x for t in range(len(shape)))
+        grid = (temp_backend.arange(x) - center[i]) / norm[i]
+        grids.append(temp_backend.reshape(grid, baseline_dims))
 
     if compute_euclidean_norm:
-        indices = backend.square(indices)
-        indices = backend.sum(indices, axis=0)
-        backend.sqrt(indices, out=indices)
+        grids = sum(temp_backend.square(x) for x in grids)
+        temp_backend.sqrt(grids, out=grids)
+        return grids
 
-    return indices
+    if return_sparse_grid:
+        return grids
+
+    grid_flesh = temp_backend.full(shape, fill_value=1)
+    grids = temp_backend.stack(tuple(grid * grid_flesh for grid in grids))
+
+    return grids
 
 
-def crop_real_fourier(data: NDArray) -> NDArray:
+def crop_real_fourier(data: BackendArray) -> BackendArray:
     """
     Crop the real part of a Fourier transform.
 
     Parameters:
     -----------
-    data : NDArray
+    data : BackendArray
         The Fourier transformed data.
 
     Returns:
     --------
-    NDArray
+    BackendArray
         The cropped data.
     """
     stop = 1 + (data.shape[-1] // 2)
     return data[..., :stop]
 
 
-def shift_fourier(data: NDArray, shape_is_real_fourier: bool = False):
-    shift = backend.add(
-        backend.astype(backend.divide(data.shape, 2), int),
-        backend.mod(data.shape, 2),
-    )
+def compute_fourier_shape(
+    shape: Tuple[int], shape_is_real_fourier: bool = False
+) -> List[int]:
+    if shape_is_real_fourier:
+        return shape
+    shape = [int(x) for x in shape]
+    shape[-1] = shape[-1] // 2 + 1
+    return shape
+
+
+def shift_fourier(
+    data: BackendArray, shape_is_real_fourier: bool = False
+) -> BackendArray:
+    shape = be.to_backend_array(data.shape)
+    shift = be.add(be.divide(shape, 2), be.mod(shape, 2))
+    shift = be.astype(shift, int)
     if shape_is_real_fourier:
         shift[-1] = 0
 
-    data = backend.roll(data, shift, tuple(i for i in range(len(shift))))
+    data = be.roll(data, shift, tuple(i for i in range(len(shift))))
     return data

@@ -7,7 +7,7 @@
 
 from typing import Tuple, Dict
 
-from tme.backends import backend
+from tme.backends import backend as be
 
 
 class Compose:
@@ -43,8 +43,9 @@ class Compose:
             ret = transform(**kwargs)
 
             if ret.get("is_multiplicative_filter", False):
-                backend.multiply(ret["data"], meta["data"], out=ret["data"])
-                ret["merge"] = None
+                prev_data = meta.pop("data")
+                ret["data"] = be.multiply(ret["data"], prev_data, out=ret["data"])
+                ret["merge"], prev_data = None, None
 
             meta = ret
 

@@ -18,24 +18,23 @@ import numpy as np
 import skimage.io as skio
 
 from scipy.ndimage import (
-    laplace,
-    generic_gradient_magnitude,
-    minimum_filter,
-    sobel,
-    binary_erosion,
     zoom,
+    laplace,
+    sobel,
+    minimum_filter,
+    binary_erosion,
+    generic_gradient_magnitude,
 )
 from scipy.spatial import ConvexHull
 
+from .types import NDArray
+from .backends import NumpyFFTWBackend
 from .structure import Structure
 from .matching_utils import (
-    minimum_enclosing_box,
     array_to_memmap,
     memmap_to_array,
+    minimum_enclosing_box,
 )
-from .types import NDArray
-from .helpers import is_gzipped
-from .backends import NumpyFFTWBackend
 
 
 class Density:
@@ -44,44 +43,49 @@ class Density:
 
     Parameters
     ----------
-    data : NDArray
-        Array of data values.
-    origin : NDArray, optional
-        Origin of the coordinate system. Defaults to zero.
-    sampling_rate : NDArray, optional
-        Sampling rate along data axis. Defaults to one.
+    data : array_like
+        Array of densities.
+    origin : array_like, optional
+        Origin of the coordinate system, zero by default.
+    sampling_rate : array_like, optional
+        Sampling rate along data axis, one by default.
     metadata : dict, optional
         Dictionary with metadata information, empty by default.
 
     Raises
     ------
     ValueError
-        The metadata parameter is not a dictionary.
+        If the sampling rate is not defined for a single or all axes.
+
+        If the origin is not defined for a single or all axes.
+
+        If the metadata parameter is not a dictionary.
 
     Examples
     --------
-    The following achieves the minimal definition of a :py:class:`Density` instance.
+    The following achieves the minimal definition of a :py:class:`Density` instance
 
     >>> import numpy as np
     >>> from tme import Density
     >>> data = np.random.rand(50,70,40)
-    >>> Density(data = data)
+    >>> Density(data=data)
 
-    Optional parameters are ``origin`` and ``sampling_rate`` that correspond
-    to the coordinate system reference and the edge length per axis element,
-    as well as the ``metadata`` dictionary. By default,
-    :py:attr:`Density.origin` is set to zero and :py:attr:`Density.sampling_rate`
-    to 1. If provided, origin or sampling_rate either need to be a single value:
+    Optional parameters ``origin`` correspond to the coordinate system reference,
+    ``sampling_rate`` to the spatial length per axis element, and ``metadata`` to
+    a dictionary with supplementary information. By default,
+    :py:attr:`Density.origin` is set to zero, :py:attr:`Density.sampling_rate`
+    to one, and :py:attr:`Density.metadata` is an empty dictionary. If provided,
+    ``origin`` and ``sampling_rate`` either need to be a single value
 
-    >>> Density(data = data, origin = 0, sampling_rate = 1)
+    >>> Density(data=data, origin=0, sampling_rate=1)
 
-    Be specified along each data axis:
+    be specified along each data axis
 
-    >>> Density(data = data, origin = (0, 0, 0), sampling_rate = (1.5, 1.1, 1.2))
+    >>> Density(data=data, origin=(0, 0, 0), sampling_rate=(1.5, 1.1, 1.2))
 
-    Or a combination of both:
+    or be a combination of both
 
-    >>> Density(data = data, origin = 0, sampling_rate = (1.5, 1.1, 1.2))
+    >>> Density(data=data, origin=0, sampling_rate=(1.5, 1.1, 1.2))
     """
 
     def __init__(
@@ -124,22 +128,22 @@ class Density:
         cls, filename: str, subset: Tuple[slice] = None, use_memmap: bool = False
     ) -> "Density":
         """
-        Reads in a file and converts it into :py:class:`Density` instance.
+        Reads a file into a :py:class:`Density` instance.
 
         Parameters
         ----------
         filename : str
             Path to a file in CCP4/MRC, EM, HDF5 or a format supported by
-            skimage.io.imread. The file can be gzip compressed.
+            :obj:`skimage.io.imread`. The file can be gzip compressed.
         subset : tuple of slices, optional
             Slices representing the desired subset along each dimension.
         use_memmap : bool, optional
-            Whether the Density objects data attribute should be memmory mapped.
+            Memory map the data contained in ``filename`` to save memory.
 
         Returns
         -------
-        Density
-            An instance of the :py:class:`Density` class.
+        :py:class:`Density`
+            Class instance representing the data in ``filename``.
 
         References
         ----------
@@ -149,7 +153,7 @@ class Density:
 
         Examples
         --------
-        :py:meth:`Density.from_file` reads files in  CCP4/MRC, EM, or a format supported
+        :py:meth:`Density.from_file` reads files in CCP4/MRC, EM, or a format supported
         by skimage.io.imread and converts them into a :py:class:`Density` instance. The
         following outlines how to read a file in the CCP4/MRC format [1]_:
 
@@ -163,9 +167,9 @@ class Density:
         >>> subset_slices = (slice(0, 50), slice(0, 50), slice(0, 50))
         >>> Density.from_file("/path/to/file.mrc", subset=subset_slices)
 
-        For large density maps, memory mapping can be used to read the file directly
-        from disk without loading it entirely into memory. This is particularly useful
-        for large datasets or when working with limited memory resources:
+        Memory mapping can be used to read the file from disk without loading
+        it entirely into memory. This is particularly useful for large datasets
+        or when working with limited memory resources:
 
         >>> Density.from_file("/path/to/large_file.mrc", use_memmap=True)
 
@@ -178,18 +182,17 @@ class Density:
         >>> Density.from_file("/path/to/file.em.gz")
 
         If the file format is not CCP4/MRC or EM, :py:meth:`Density.from_file` attempts
-        to use skimage.io.imread to read the file [3]_. This fallback does not extract
+        to use :obj:`skimage.io.imread` to read the file [3]_, which does not extract
         origin or sampling_rate information from the file:
 
         >>> Density.from_file("/path/to/other_format.tif")
 
         Notes
         -----
-        If ``filename`` ends with ".em" or ".em.gz" the method will parse it as EM file,
-        if it ends with "h5" or "h5.gz" the method will parse the file as HDF5.
-        Otherwise the method defaults to the CCP4/MRC format and on failure, switches to
-        :obj:`skimage.io.imread` regardless of the extension. Currently, the later does not
-        extract origin or sampling_rate information from the file.
+        If ``filename`` ends ".em" or ".h5" it will be parsed as EM or HDF5 file.
+        Otherwise, the default reader is CCP4/MRC and on failure
+        :obj:`skimage.io.imread` is used regardless of extension. The later does
+        not extract origin or sampling_rate information from the file.
 
         See Also
         --------
@@ -314,7 +317,7 @@ class Density:
             use_memmap = False
 
         if subset is not None:
-            subset_shape = [x.stop - x.start for x in subset]
+            subset_shape = tuple(x.stop - x.start for x in subset)
             if np.allclose(subset_shape, data_shape):
                 return cls._load_mrc(
                     filename=filename, subset=None, use_memmap=use_memmap
@@ -337,7 +340,6 @@ class Density:
                 data = mrc.data
 
         if not np.all(crs_index == (0, 1, 2)):
-            data.setflags(write=True)
             data = np.transpose(data, crs_index)
             start = np.take(start, crs_index)
 
@@ -738,9 +740,9 @@ class Density:
         >>> )
 
         :py:meth:`Density.from_structure` supports a variety of methods to convert
-        atoms into densities. In additino to 'atomic_weight', 'atomic_number',
-        'van_der_waals_radius' its possible to use experimentally determined scattering
-        factors from various sources:
+        atoms into densities. In addition to 'atomic_weight', 'atomic_number',
+        and 'van_der_waals_radius', its possible to use experimentally determined
+        scattering factors from various sources:
 
         >>> density = Density.from_structure(
         >>>    filename_or_structure = path_to_structure,
@@ -782,20 +784,20 @@ class Density:
             data=volume,
             origin=origin,
             sampling_rate=sampling_rate,
-            metadata=structure.details.copy(),
+            metadata=structure.metadata.copy(),
         )
 
     def to_file(self, filename: str, gzip: bool = False) -> None:
         """
-        Writes current class instance to disk.
+        Writes class instance to disk.
 
         Parameters
         ----------
         filename : str
             Path to write to.
         gzip : bool, optional
-            If True, the output will be gzip compressed and "gz" will be added
-            to the filename if not already present. By default False.
+            Gzip compress the output and add corresponding suffix to filename
+            if not present. False by default.
 
         References
         ----------
@@ -811,7 +813,7 @@ class Density:
         >>> import numpy as np
         >>> from tme import Density
         >>> data = np.random.rand(50,50,50)
-        >>> dens = Density(data = data, origin = (0, 0, 0), sampling_rate = (1, 1, 1))
+        >>> dens = Density(data=data, origin=(0, 0, 0), sampling_rate=(1, 1, 1))
         >>> dens.to_file("example.mrc")
 
         The output file can also be directly ``gzip`` compressed. The corresponding
@@ -826,14 +828,14 @@ class Density:
         In addition, a variety of image file formats are supported [3]_:
 
         >>> data = np.random.rand(50,50)
-        >>> dens = Density(data = data, origin = (0, 0), sampling_rate = (1, 1))
+        >>> dens = Density(data=data, origin=(0, 0), sampling_rate=(1, 1))
         >>> dens.to_file("example.tiff")
 
         Notes
         -----
-        If ``filename`` ends with "em" or "em.gz" will create an EM file, "h5" or
-        "h5.gz" will create a HDF5 file. Otherwise, the method defaults to the CCP4/MRC
-        format, and on failure, falls back to :obj:`skimage.io.imsave`.
+        If ``filename`` endswith ".em" or ".h5" a EM file or HDF5 file will be created.
+        The default output format is CCP4/MRC and on failure, :obj:`skimage.io.imsave`
+        is used.
 
         See Also
         --------
@@ -854,7 +856,7 @@ class Density:
 
     def _save_mrc(self, filename: str, gzip: bool = False) -> None:
         """
-        Writes current class instance to disk as mrc file.
+        Writes class instance to disk as mrc file.
 
         Parameters
         ----------
@@ -974,7 +976,7 @@ class Density:
             self.metadata["std"] = self.metadata.get("std", 0)
             self.metadata["min"] = self.metadata.get("min", 0)
             self.metadata["max"] = self.metadata.get("max", 0)
-            if type(self.data) != np.memmap:
+            if not isinstance(self.data, np.memmap):
                 self.metadata["mean"] = self.data.mean()
                 self.metadata["std"] = self.data.std()
                 self.metadata["min"] = self.data.min()
@@ -986,11 +988,15 @@ class Density:
     @property
     def empty(self) -> "Density":
         """
-        Returns a copy of the current class instance with all elements in
-        :py:attr:`Density.data` set to zero. :py:attr:`Density.origin` and
-        :py:attr:`Density.sampling_rate` will be copied, while
-        :py:attr:`Density.metadata` will be initialized to contain min, max,
-        mean and standard deviation of :py:attr:`Density.data`.
+        Returns a copy of the class instance with all elements in
+        :py:attr:`Density.data` set to zero. :py:attr:`Density.metadata` will be
+        initialized accordingly. :py:attr:`Density.origin` and
+        :py:attr:`Density.sampling_rate` are copied.
+
+        Returns
+        -------
+        :py:class:`Density`
+            Empty class instance.
 
         Examples
         --------
@@ -1010,7 +1016,12 @@ class Density:
 
     def copy(self) -> "Density":
         """
-        Returns a copy of the current :py:class:`Density` instance.
+        Create a copy of the class instance.
+
+        Returns
+        -------
+        :py:class:`Density`
+            A copy of the class instance.
 
         Examples
         --------
@@ -1029,8 +1040,7 @@ class Density:
 
     def to_memmap(self) -> None:
         """
-        Converts the current class instance's :py:attr:`Density.data` attribute to
-        a :obj:`numpy.memmap` instance.
+        Converts :py:attr:`Density.data` to a :obj:`numpy.memmap`.
 
         Examples
         --------
@@ -1055,7 +1065,7 @@ class Density:
         --------
         :py:meth:`Density.to_numpy`
         """
-        if type(self.data) == np.memmap:
+        if isinstance(self.data, np.memmap):
             return None
 
         filename = array_to_memmap(arr=self.data)
@@ -1066,8 +1076,7 @@ class Density:
 
     def to_numpy(self) -> None:
         """
-        Converts the current class instance's :py:attr:`Density.data` attribute to
-        an in-memory :obj:`numpy.ndarray`.
+        Converts :py:attr:`Density.data` to an in-memory :obj:`numpy.ndarray`.
 
         Examples
         --------
@@ -1085,8 +1094,7 @@ class Density:
     @property
     def shape(self) -> Tuple[int]:
         """
-        Returns the dimensions of current instance's :py:attr:`Density.data`
-        attribute.
+        Returns the dimensions of :py:attr:`Density.data`.
 
         Returns
         -------
@@ -1095,8 +1103,6 @@ class Density:
 
         Examples
         --------
-        The following outlines the usage of :py:attr:`Density.shape`:
-
         >>> import numpy as np
         >>> from tme import Density
         >>> dens = Density(np.array([0, 1, 1, 1, 0]))
@@ -1108,13 +1114,12 @@ class Density:
     @property
     def data(self) -> NDArray:
         """
-        Returns the value of the current instance's :py:attr:`Density.data`
-        attribute.
+        Returns the value of :py:attr:`Density.data`.
 
         Returns
         -------
         NDArray
-            Value of the current instance's :py:attr:`Density.data` attribute.
+            Value of the instance's :py:attr:`Density.data` attribute.
 
         Examples
         --------
@@ -1132,20 +1137,20 @@ class Density:
     @data.setter
     def data(self, data: NDArray) -> None:
         """
-        Sets the value of the current instance's :py:attr:`Density.data` attribute.
+        Sets the value of the instance's :py:attr:`Density.data` attribute.
         """
         self._data = data
 
     @property
     def origin(self) -> NDArray:
         """
-        Returns the value of the current instance's :py:attr:`Density.origin`
+        Returns the value of the instance's :py:attr:`Density.origin`
         attribute.
 
         Returns
         -------
         NDArray
-            Value of the current instance's :py:attr:`Density.origin` attribute.
+            Value of the instance's :py:attr:`Density.origin` attribute.
 
         Examples
         --------
@@ -1171,8 +1176,7 @@ class Density:
     @property
     def sampling_rate(self) -> NDArray:
         """
-        Returns the value of the current instance's :py:attr:`Density.sampling_rate`
-        attribute.
+        Returns the value of the instance's :py:attr:`Density.sampling_rate` attribute.
 
         Returns
         -------
@@ -1193,7 +1197,7 @@ class Density:
     @property
     def metadata(self) -> Dict:
         """
-        Returns the current instance's :py:attr:`Density.metadata` dictionary attribute.
+        Returns the instance's :py:attr:`Density.metadata` attribute.
 
         Returns
         -------
@@ -1235,7 +1239,7 @@ class Density:
         Pads the internal data array according to box.
 
         Negative slices indices will result in a left-hand padding, while
-        slice indices larger than the box_size property of the current class
+        slice indices larger than the box_size property of the class
         instance will result in a right-hand padding.
 
         Parameters
@@ -1264,17 +1268,15 @@ class Density:
 
     def adjust_box(self, box: Tuple[slice], pad_kwargs: Dict = {}) -> None:
         """
-        Adjusts the internal data array and origin of the current class instance
+        Adjusts :py:attr:`Density.data` and :py:attr:`Density.origin`
         according to the provided box.
 
         Parameters
         ----------
         box : tuple of slices
-            A tuple of slices describing how each axis of the volume array
-            should be sliced. See :py:meth:`Density.trim_box` on how to produce
-            such an object.
+            Description of how each axis of :py:attr:`Density.data` should be sliced.
         pad_kwargs: dict, optional
-            Parameter dictionary passed to numpy pad.
+            Parameter dictionary passed to :obj:`numpy.pad`.
 
         See Also
         --------
@@ -1522,7 +1524,7 @@ class Density:
         Returns
         -------
         :py:class:`Density`
-            A centered copy of the current class instance.
+            A centered copy of the class instance.
         NDArray
             The offset between array center and center of mass.
 
@@ -1530,7 +1532,6 @@ class Density:
         --------
         :py:meth:`Density.trim_box`
         :py:meth:`Density.minimum_enclosing_box`
-
 
         Examples
         --------
@@ -1591,114 +1592,6 @@ class Density:
         shift = np.subtract(center, self.center_of_mass(ret.data, cutoff))
         return ret, shift
 
-    @classmethod
-    def rotate_array(
-        cls,
-        arr: NDArray,
-        rotation_matrix: NDArray,
-        arr_mask: NDArray = None,
-        translation: NDArray = None,
-        use_geometric_center: bool = False,
-        out: NDArray = None,
-        out_mask: NDArray = None,
-        order: int = 3,
-    ) -> None:
-        """
-        Rotates coordinates of arr according to rotation_matrix.
-
-        If no output array is provided, this method will compute an array with
-        sufficient space to hold all elements. If both `arr` and `arr_mask`
-        are provided, `arr_mask` will be centered according to arr.
-
-        Parameters
-        ----------
-        arr : NDArray
-            The input array to be rotated.
-        arr_mask : NDArray, optional
-            The mask of `arr` that will be equivalently rotated.
-        rotation_matrix : NDArray
-            The rotation matrix to apply [d x d].
-        translation : NDArray
-            The translation to apply [d].
-        use_geometric_center : bool, optional
-            Whether the rotation should be centered around the geometric
-            or mass center. Default is mass center.
-        out : NDArray, optional
-            The output array to write the rotation of `arr` to.
-        out_mask : NDArray, optional
-            The output array to write the rotation of `arr_mask` to.
-        order : int, optional
-            Spline interpolation order. Has to be in the range 0-5.
-        """
-
-        return NumpyFFTWBackend().rotate_array(
-            arr=arr,
-            rotation_matrix=rotation_matrix,
-            arr_mask=arr_mask,
-            translation=translation,
-            use_geometric_center=use_geometric_center,
-            out=out,
-            out_mask=out_mask,
-            order=order,
-        )
-
-    @staticmethod
-    def rotate_array_coordinates(
-        arr: NDArray,
-        coordinates: NDArray,
-        rotation_matrix: NDArray,
-        translation: NDArray = None,
-        out: NDArray = None,
-        use_geometric_center: bool = True,
-        arr_mask: NDArray = None,
-        mask_coordinates: NDArray = None,
-        out_mask: NDArray = None,
-    ) -> None:
-        """
-        Rotates coordinates of arr according to rotation_matrix.
-
-        If no output array is provided, this method will compute an array with
-        sufficient space to hold all elements. If both `arr` and `arr_mask`
-        are provided, `arr_mask` will be centered according to arr.
-
-        No centering will be performed if the rotation matrix is the identity matrix.
-
-        Parameters
-        ----------
-        arr : NDArray
-            The input array to be rotated.
-        coordinates : NDArray
-            The pointcloud [d x N] containing elements of `arr` that should be rotated.
-            See :py:meth:`Density.to_pointcloud` on how to obtain the coordinates.
-        rotation_matrix : NDArray
-            The rotation matrix to apply [d x d].
-        rotation_matrix : NDArray
-            The translation to apply [d].
-        out : NDArray, optional
-            The output array to write the rotation of `arr` to.
-        use_geometric_center : bool, optional
-            Whether the rotation should be centered around the geometric
-            or mass center.
-        arr_mask : NDArray, optional
-            The mask of `arr` that will be equivalently rotated.
-        mask_coordinates : NDArray, optional
-            Equivalent to `coordinates`, but containing elements of `arr_mask`
-            that should be rotated.
-        out_mask : NDArray, optional
-            The output array to write the rotation of `arr_mask` to.
-        """
-        return NumpyFFTWBackend().rotate_array_coordinates(
-            arr=arr,
-            coordinates=coordinates,
-            rotation_matrix=rotation_matrix,
-            translation=translation,
-            out=out,
-            use_geometric_center=use_geometric_center,
-            arr_mask=arr_mask,
-            mask_coordinates=mask_coordinates,
-            out_mask=out_mask,
-        )
-
     def rigid_transform(
         self,
         rotation_matrix: NDArray,
@@ -1707,7 +1600,7 @@ class Density:
         use_geometric_center: bool = False,
     ) -> "Density":
         """
-        Performs a rigid transform of the current class instance.
+        Performs a rigid transform of the class instance.
 
         Parameters
         ----------
@@ -1756,89 +1649,134 @@ class Density:
         --------
         :py:meth:`Density.centered`, :py:meth:`Density.minimum_enclosing_box`
         """
-        transformed_map = self.empty
-
-        self.rotate_array(
+        ret = self.empty
+        NumpyFFTWBackend().rigid_transform(
             arr=self.data,
             rotation_matrix=rotation_matrix,
             translation=translation,
-            order=order,
             use_geometric_center=use_geometric_center,
-            out=transformed_map.data,
+            out=ret.data,
+            order=order,
         )
-        eps = np.finfo(transformed_map.data.dtype).eps
-        transformed_map.data[transformed_map.data < eps] = 0
-        return transformed_map
 
-    def align_origins(self, other_map: "Density") -> "Density":
-        """
-        Aligns the origin of another to the origin of the current class instance.
-
-        Parameters
-        ----------
-        other_map : Density
-            An instance of :py:class:`Density` class to align with the current map.
-
-        Raises
-        ------
-        ValueError
-            If the sampling_rate of both class instances does not match.
-
-        Returns
-        -------
-        Density
-            A modified copy of `other_map` with aligned origin.
-        """
-        if not np.allclose(self.sampling_rate, other_map.sampling_rate):
-            raise ValueError("sampling_rate of both maps have to match.")
-
-        origin_difference = np.divide(
-            np.subtract(self.origin, other_map.origin), self.sampling_rate
-        )
-        origin_difference = origin_difference.astype(int)
-
-        box_start = np.minimum(origin_difference, other_map.shape)
-        box_end = np.maximum(origin_difference, other_map.shape)
-
-        new_box = tuple(slice(*pos) for pos in zip(box_start, box_end))
-
-        ret = other_map.copy()
-        ret.adjust_box(new_box)
+        eps = np.finfo(ret.data.dtype).eps
+        ret.data[np.abs(ret.data) < eps] = 0
         return ret
 
-    def resample(self, new_sampling_rate: Tuple[float], order: int = 1) -> "Density":
+    def resample(
+        self, new_sampling_rate: Tuple[float], method: str = "spline", order: int = 1
+    ) -> "Density":
         """
-        Resamples the current class instance to ``new_sampling_rate`` using
-        spline interpolation of order ``order``.
+        Resamples :py:attr:`Density.data` to ``new_sampling_rate``.
 
         Parameters
         ----------
         new_sampling_rate : tuple of floats or float
-            Sampling rate to resample to.
+            Sampling rate to resample to for a single or all axes.
+        method: str, optional
+            Resampling method to use, defaults to `spline`. Availabe options are:
+
+            +---------+----------------------------------------------------------+
+            | spline  | Smooth spline interpolation via :obj:`scipy.ndimage.zoom`|
+            +---------+----------------------------------------------------------+
+            | fourier | Frequency preserving Fourier cropping                    |
+            +---------+----------------------------------------------------------+
+
         order : int, optional
-            Order of spline used for interpolation, by default 1.
+            Order of spline used for interpolation, by default 1. Ignored when
+            ``method`` is `fourier`.
+
+        Raises
+        ------
+        ValueError
+            If ``method`` is not supported.
 
         Returns
         -------
-        Density
-            A resampled instance of `Density` class.
+        :py:class:`Density`
+            A resampled copy of the class instance.
+
+        Examples
+        --------
+        The following makes use of :py:meth:`tme.matching_utils.create_mask`
+        to define a :py:class:`Density` instance containing a 2D circle with
+        a sampling rate of 2
+
+        >>> from tme import Density
+        >>> from tme.matching_utils import create_mask
+        >>> mask = create_mask(
+        >>>     mask_type="ellipse",
+        >>>     shape=(11,11),
+        >>>     center=(5,5),
+        >>>     radius=3
+        >>> )
+        >>> dens = Density(mask, sampling_rate=2)
+        >>> dens
+        Origin: (0.0, 0.0), sampling_rate: (2, 2), Shape: (11, 11)
+
+        Using :py:meth:`Density.resample` we can modulate the sampling rate
+        using spline interpolation of desired order
+
+        >>> dens.resample(new_sampling_rate= 4, method="spline", order=3)
+        Origin: (0.0, 0.0), sampling_rate: (4, 4), Shape: (6, 6)
+
+        Or Fourier cropping which results in a less smooth output, but more faithfully
+        captures the contained frequency information
+
+        >>> dens.resample(new_sampling_rate=4, method="fourier")
+        Origin: (0.0, 0.0), sampling_rate: (4, 4), Shape: (6, 6)
+
+        ``new_sampling_rate`` can also be specified per axis
+
+        >>> dens.resample(new_sampling_rate=(4,1), method="spline", order=3)
+        Origin: (0.0, 0.0), sampling_rate: (4, 1), Shape: (6, 22)
+
         """
-        map_copy, new_sampling_rate = self.copy(), np.array(new_sampling_rate)
+        _supported_methods = ("spline", "fourier")
+        if method not in _supported_methods:
+            raise ValueError(
+                f"Expected method to be one of {_supported_methods}, got '{method}'."
+            )
+        new_sampling_rate = np.array(new_sampling_rate)
         new_sampling_rate = np.repeat(
-            new_sampling_rate, map_copy.data.ndim // new_sampling_rate.size
+            new_sampling_rate, self.data.ndim // new_sampling_rate.size
         )
-        scale_factor = np.divide(map_copy.sampling_rate, new_sampling_rate)
 
-        map_copy.data = zoom(map_copy.data, scale_factor, order=order)
-        map_copy.sampling_rate = new_sampling_rate
+        ret = self.copy()
+        scale_factor = np.divide(ret.sampling_rate, new_sampling_rate)
+        if method == "spline":
+            ret.data = zoom(ret.data, scale_factor, order=order)
+        elif method == "fourier":
+            ret_shape = np.round(np.multiply(scale_factor, ret.shape)).astype(int)
 
-        return map_copy
+            axis = range(len(ret_shape))
+            mask = np.zeros(self.shape, dtype=bool)
+            mask[tuple(slice(0, x) for x in ret_shape)] = 1
+            mask = np.roll(
+                mask, shift=-np.floor(np.divide(ret_shape, 2)).astype(int), axis=axis
+            )
+            mask_ret = np.zeros(ret_shape, dtype=bool)
+            mask_ret[tuple(slice(0, x) for x in self.shape)] = 1
+            mask_ret = np.roll(
+                mask_ret,
+                shift=-np.floor(np.divide(self.shape, 2)).astype(int),
+                axis=axis,
+            )
+
+            arr_ft = np.fft.fftn(self.data)
+            arr_ft *= np.prod(ret_shape) / np.prod(self.shape)
+            ret_ft = np.zeros(ret_shape, dtype=arr_ft.dtype)
+            ret_ft[mask_ret] = arr_ft[mask]
+            ret.data = np.real(np.fft.ifftn(ret_ft))
+
+        ret.sampling_rate = new_sampling_rate
+        return ret
 
     def density_boundary(
         self, weight: float, fraction_surface: float = 0.1, volume_factor: float = 1.21
     ) -> Tuple[float]:
         """
-        Computes the density boundary of the current class instance. The density
+        Computes the density boundary of the class instance. The density
         boundary in this setting is defined as minimal and maximal density value
         enclosing a certain ``weight``.
 
@@ -1894,31 +1832,31 @@ class Density:
         self, density_boundaries: Tuple[float], method: str = "ConvexHull"
     ) -> NDArray:
         """
-        Calculates the surface coordinates of the current class instance using
+        Calculates the surface coordinates of the class instance using
         different boundary and surface detection methods. This method is relevant
-        for determining coordinates used in template matching,
-        see :py:class:`tme.matching_exhaustive.FitRefinement`.
+        for determining coordinates used in non-exhaustive template matching,
+        see :py:class:`tme.matching_optimization.optimize_match`.
 
         Parameters
         ----------
         density_boundaries : tuple
-            Tuple of two floats with lower and upper bounds of density values
-            to be considered on the surface (see :py:meth:`Density.density_boundary`).
+            Lower and upper bound of density values to be considered
+            (can be obtained from :py:meth:`Density.density_boundary`).
         method : str, optional
-            Surface coordinates are determined using this method:
+            Method to use for surface coordinate computation
 
             +--------------+-----------------------------------------------------+
-            | 'ConvexHull' | Use the lower bound density convex hull vertices.   |
+            | ConvexHull   | Use the lower bound density convex hull vertices.   |
             +--------------+-----------------------------------------------------+
-            | 'Weight'     | Use all coordinates within ``density_boundaries``.  |
+            | Weight       | Use all coordinates within ``density_boundaries``.  |
             +--------------+-----------------------------------------------------+
-            | 'Sobel'      | Set densities below the lower bound density to zero |
+            |  Sobel       | Set densities below the lower bound density to zero |
             |              | apply a sobel filter and return density coordinates |
             |              | larger than 0.5 times the maximum filter value.     |
             +--------------+-----------------------------------------------------+
-            | 'Laplace'    | Like 'Sobel' but with a laplace filter.             |
+            |  Laplace     | Like 'Sobel', but with a Laplace filter.            |
             +--------------+-----------------------------------------------------+
-            | 'Minimum'    | Like 'Sobel' and 'Laplace' but with a spherical     |
+            |  Minimum     | Like 'Sobel' and 'Laplace' but with a spherical     |
             |              | minimum filter on the lower density bound.          |
             +--------------+-----------------------------------------------------+
 
@@ -1930,15 +1868,11 @@ class Density:
         Returns
         -------
         NDArray
-            An array of surface coordinates with shape (number_of_points, dimensions).
+            An array of surface coordinates with shape (points, dimensions).
 
         References
         ----------
-        .. [1] Cragnolini T, Sahota H, Joseph AP, Sweeney A, Malhotra S,
-            Vasishtan D, Topf M (2021a) TEMPy2: A Python library with
-            improved 3D electron microscopy density-fitting and validation
-            workflows. Acta Crystallogr Sect D Struct Biol 77:41–47.
-            https://doi.org/10.1107/S2059798320014928
+        .. [1] Cragnolini T, et al. (2021) Acta Crys Sect D Struct Biol
 
         See Also
         --------
@@ -2001,7 +1935,7 @@ class Density:
     def normal_vectors(self, coordinates: NDArray) -> NDArray:
         """
         Calculates the normal vectors for the given coordinates on the densities
-        of the current class instance. If the normal vector to a given coordinate
+        of the class instance. If the normal vector to a given coordinate
         can not be computed, the zero vector is returned instead. The output of this
         function can e.g. be used in
         :py:class:`tme.matching_optimization.NormalVectorScore`.
@@ -2076,22 +2010,16 @@ class Density:
 
     def core_mask(self) -> NDArray:
         """
-        Calculates the weighted core mask of the current class instance.
-
-        Core mask is calculated by performing binary erosion on the internal
-        data array in an iterative fashion until no non-zero data elements remain.
-        In each iteration, all data elements larger than zero are incremented by one
-        in a mask with same shape as the internal data array. Therefore,
-        data elements in the output array with a value of n remained non-zero for
-        n rounds of binary erosion. The higher the value, the more likely a data element
-        is part of the core of the density map.
+        Calculates a weighted core mask by performing iterative binary erosion on
+        :py:attr:`Density.data`. In each iteration, all mask elements corresponding
+        to a non-zero data elemnt are incremented by one. Therefore, a mask element
+        with value N corresponds to a data value that remained non-zero for N iterations.
+        Mask elements with high values are likely part of the core density [1]_.
 
         Returns
         -------
         NDArray
-            An array with same shape as internal data array. Values contained
-            indicate how many rounds of binary erosion were necessary to nullify
-            a given data element.
+            Core-weighted mask with shape of :py:attr:`Density.data`.
 
         References
         ----------
@@ -2126,19 +2054,7 @@ class Density:
         NDArray
             Center of mass with shape (arr.ndim).
         """
-        cutoff = arr.min() - 1 if cutoff is None else cutoff
-        arr = np.where(arr > cutoff, arr, 0)
-        denominator = np.sum(arr)
-        grids = np.ogrid[tuple(slice(0, i) for i in arr.shape)]
-
-        center_of_mass = np.array(
-            [
-                np.sum(np.multiply(arr, grids[dim].astype(float))) / denominator
-                for dim in range(arr.ndim)
-            ]
-        )
-
-        return center_of_mass
+        return NumpyFFTWBackend().center_of_mass(arr, cutoff)
 
     @classmethod
     def match_densities(
@@ -2187,21 +2103,20 @@ class Density:
         -----
         No densities below cutoff_template are present in the returned Density object.
         """
-        from .matching_exhaustive import normalize_under_mask
+        from .matching_utils import normalize_template
         from .matching_optimization import optimize_match, create_score_object
 
         template_mask = template.empty
-        template_mask.data[:] = 1
+        template_mask.data.fill(1)
 
-        normalize_under_mask(
+        normalize_template(
             template=template.data,
             mask=template_mask.data,
-            mask_intensity=template_mask.data.sum(),
+            n_observations=template_mask.data.sum(),
         )
 
         target_sampling_rate = np.array(target.sampling_rate)
         template_sampling_rate = np.array(template.sampling_rate)
-
         target_sampling_rate = np.repeat(
             target_sampling_rate, target.data.ndim // target_sampling_rate.size
         )
@@ -2341,49 +2256,6 @@ class Density:
         return out, final_translation, rotation_matrix
 
     @staticmethod
-    def align_coordinate_systems(target: "Density", template: "Density") -> "Density":
-        """
-        Aligns the coordinate system of `target` and `template`.
-
-        Parameters
-        ----------
-        target : Density
-            The target density whose coordinate system should remain unchanged.
-        template : Density
-            The template density that will be aligned to match the target's
-            coordinate system.
-
-        Raises
-        ------
-        ValueError
-            If the `sampling_rate` of `target` and `template` do not match.
-
-        Returns
-        -------
-        Density
-            A copy of `template` aligned to the coordinate system of `target`.
-            The `box_size` and `origin` will match that of `target`.
-
-        See Also
-        --------
-        :py:meth:`Density.match_densities` : To match aligned template to target.
-        """
-        if not np.allclose(target.sampling_rate, template.sampling_rate):
-            raise ValueError("sampling_rate of both maps have to match.")
-
-        template = template.copy()
-        template.pad(target.shape, center=True)
-
-        origin_difference = np.divide(
-            np.subtract(template.origin, target.origin), target.sampling_rate
-        )
-        template = template.rigid_transform(
-            rotation_matrix=np.eye(template.data.ndim), translation=origin_difference
-        )
-        template.origin = target.origin.copy()
-        return template
-
-    @staticmethod
     def fourier_shell_correlation(density1: "Density", density2: "Density") -> NDArray:
         """
         Computes the Fourier Shell Correlation (FSC) between two instances of `Density`.
@@ -2439,3 +2311,9 @@ class Density:
         qidx = np.where(qbins < qx.max())
 
         return np.vstack((qbins[qidx], FSC[qidx])).T
+
+
+def is_gzipped(filename: str) -> bool:
+    """Check if a file is a gzip file by reading its magic number."""
+    with open(filename, "rb") as f:
+        return f.read(2) == b"\x1f\x8b"

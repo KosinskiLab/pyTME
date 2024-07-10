@@ -1,7 +1,5 @@
 #!python3
-""" Simplify picking adequate filtering and masking parameters using a GUI.
-    Exposes tme.preprocessor.Preprocessor and tme.fitter_utils member functions
-    to achieve this aim.
+""" GUI for identifying adequate template matching filter and masks.
 
     Copyright (c) 2023 European Molecular Biology Laboratory
 
@@ -12,17 +10,20 @@ import argparse
 from typing import Tuple, Callable, List
 from typing_extensions import Annotated
 
+import napari
 import numpy as np
 import pandas as pd
-import napari
+from scipy.fft import next_fast_len
 from napari.layers import Image
 from napari.utils.events import EventedList
-
 from magicgui import widgets
 from qtpy.QtWidgets import QFileDialog
 from numpy.typing import NDArray
 
+from tme.backends import backend
 from tme import Preprocessor, Density
+from tme.preprocessing import BandPassFilter
+from tme.preprocessing.tilt_series import CTF
 from tme.matching_utils import create_mask, load_pickle
 
 preprocessor = Preprocessor()
@@ -35,19 +36,57 @@ def gaussian_filter(template: NDArray, sigma: float, **kwargs: dict) -> NDArray:
 
 def bandpass_filter(
     template: NDArray,
-    minimum_frequency: float,
-    maximum_frequency: float,
-    gaussian_sigma: float,
-    **kwargs: dict,
+    lowpass_angstrom: float = 30,
+    highpass_angstrom: float = 140,
+    hard_edges: bool = False,
+    sampling_rate=None,
 ) -> NDArray:
-    return preprocessor.bandpass_filter(
-        template=template,
-        minimum_frequency=minimum_frequency,
-        maximum_frequency=maximum_frequency,
-        sampling_rate=1,
-        gaussian_sigma=gaussian_sigma,
-        **kwargs,
+    bpf = BandPassFilter(
+        lowpass=lowpass_angstrom,
+        highpass=highpass_angstrom,
+        sampling_rate=np.max(sampling_rate),
+        use_gaussian=not hard_edges,
+        shape_is_real_fourier=True,
+        return_real_fourier=True,
     )
+    template_ft = np.fft.rfftn(template, s=template.shape)
+
+    mask = bpf(shape=template_ft.shape)["data"]
+    np.multiply(template_ft, mask, out=template_ft)
+    return np.fft.irfftn(template_ft, s=template.shape).real
+
+
+def ctf_filter(
+    template: NDArray,
+    defocus_angstrom: float = 30000,
+    acceleration_voltage: float = 300,
+    spherical_aberration: float = 2.7,
+    amplitude_contrast: float = 0.07,
+    phase_shift: float = 0,
+    defocus_angle: float = 0,
+    sampling_rate=None,
+    flip_phase: bool = False,
+) -> NDArray:
+    fast_shape = [next_fast_len(x) for x in np.multiply(template.shape, 2)]
+    template_pad = backend.topleft_pad(template, fast_shape)
+    template_ft = np.fft.rfftn(template_pad, s=template_pad.shape)
+    ctf = CTF(
+        angles=[0],
+        shape=fast_shape,
+        defocus_x=[defocus_angstrom],
+        acceleration_voltage=acceleration_voltage * 1e3,
+        spherical_aberration=spherical_aberration * 1e7,
+        amplitude_contrast=amplitude_contrast,
+        phase_shift=[phase_shift],
+        defocus_angle=[defocus_angle],
+        sampling_rate=np.max(sampling_rate),
+        return_real_fourier=True,
+        flip_phase=flip_phase,
+    )
+    np.multiply(template_ft, ctf()["data"], out=template_ft)
+    template_pad = np.fft.irfftn(template_ft, s=template_pad.shape).real
+    template = backend.topleft_pad(template_pad, template.shape)
+    return template
 
 
 def difference_of_gaussian_filter(
@@ -107,61 +146,6 @@ def mean(
     **kwargs: dict,
 ) -> NDArray:
     return preprocessor.mean_filter(template=template, width=width)
-
-
-def resolution_sphere(
-    template: NDArray,
-    cutoff_angstrom: float,
-    highpass: bool = False,
-    sampling_rate=None,
-) -> NDArray:
-    if cutoff_angstrom == 0:
-        return template
-
-    cutoff_frequency = np.max(2 * sampling_rate / cutoff_angstrom)
-
-    min_freq, max_freq = 0, cutoff_frequency
-    if highpass:
-        min_freq, max_freq = cutoff_frequency, 1e10
-
-    mask = preprocessor.bandpass_mask(
-        shape=template.shape,
-        minimum_frequency=min_freq,
-        maximum_frequency=max_freq,
-        omit_negative_frequencies=False,
-    )
-
-    template_ft = np.fft.fftn(template)
-    np.multiply(template_ft, mask, out=template_ft)
-    return np.fft.ifftn(template_ft).real
-
-
-def resolution_gaussian(
-    template: NDArray,
-    cutoff_angstrom: float,
-    highpass: bool = False,
-    sampling_rate=None,
-) -> NDArray:
-    if cutoff_angstrom == 0:
-        return template
-
-    grid = preprocessor.fftfreqn(
-        shape=template.shape, sampling_rate=sampling_rate / sampling_rate.max()
-    )
-
-    sigma_fourier = np.divide(
-        np.max(2 * sampling_rate / cutoff_angstrom), np.sqrt(2 * np.log(2))
-    )
-
-    mask = np.exp(-(grid**2) / (2 * sigma_fourier**2))
-    if highpass:
-        mask = 1 - mask
-
-    mask = np.fft.ifftshift(mask)
-
-    template_ft = np.fft.fftn(template)
-    np.multiply(template_ft, mask, out=template_ft)
-    return np.fft.ifftn(template_ft).real
 
 
 def wedge(
@@ -274,8 +258,7 @@ WRAPPED_FUNCTIONS = {
     "mean_filter": mean,
     "wedge_filter": wedge,
     "power_spectrum": compute_power_spectrum,
-    "resolution_gaussian": resolution_gaussian,
-    "resolution_sphere": resolution_sphere,
+    "ctf": ctf_filter,
 }
 
 EXCLUDED_FUNCTIONS = [
@@ -421,6 +404,7 @@ def sphere_mask(
     center_y: float,
     center_z: float,
     radius: float,
+    sigma_decay: float = 0,
     **kwargs,
 ) -> NDArray:
     return create_mask(
@@ -428,6 +412,7 @@ def sphere_mask(
         shape=template.shape,
         center=(center_x, center_y, center_z),
         radius=radius,
+        sigma_decay=sigma_decay,
     )
 
 
@@ -439,6 +424,7 @@ def ellipsod_mask(
     radius_x: float,
     radius_y: float,
     radius_z: float,
+    sigma_decay: float = 0,
     **kwargs,
 ) -> NDArray:
     return create_mask(
@@ -446,6 +432,7 @@ def ellipsod_mask(
         shape=template.shape,
         center=(center_x, center_y, center_z),
         radius=(radius_x, radius_y, radius_z),
+        sigma_decay=sigma_decay,
     )
 
 
@@ -457,6 +444,7 @@ def box_mask(
     height_x: int,
     height_y: int,
     height_z: int,
+    sigma_decay: float = 0,
     **kwargs,
 ) -> NDArray:
     return create_mask(
@@ -464,6 +452,7 @@ def box_mask(
         shape=template.shape,
         center=(center_x, center_y, center_z),
         height=(height_x, height_y, height_z),
+        sigma_decay=sigma_decay,
     )
 
 
@@ -476,6 +465,7 @@ def tube_mask(
     inner_radius: float,
     outer_radius: float,
     height: int,
+    sigma_decay: float = 0,
     **kwargs,
 ) -> NDArray:
     return create_mask(
@@ -486,6 +476,7 @@ def tube_mask(
         inner_radius=inner_radius,
         outer_radius=outer_radius,
         height=height,
+        sigma_decay=sigma_decay,
     )
 
 
@@ -890,6 +881,7 @@ class PointCloudWidget(widgets.Container):
 
         self.viewer = viewer
         self.dataframes = {}
+        self.selected_category = -1
 
         self.import_button = widgets.PushButton(
             name="Import", text="Import Point Cloud"
@@ -902,9 +894,97 @@ class PointCloudWidget(widgets.Container):
         self.export_button.clicked.connect(self._export_point_cloud)
         self.export_button.enabled = False
 
+        self.annotation_container = widgets.Container(name="Label", layout="horizontal")
+        self.positive_button = widgets.PushButton(name="Positive", text="Positive")
+        self.negative_button = widgets.PushButton(name="Negative", text="Negative")
+        self.positive_button.clicked.connect(self._set_positive)
+        self.negative_button.clicked.connect(self._set_negative)
+        self.annotation_container.append(self.positive_button)
+        self.annotation_container.append(self.negative_button)
+
+        self.face_color_select = widgets.ComboBox(
+            name="Color", choices=["Label", "Score"], value=None, nullable=True
+        )
+        self.face_color_select.changed.connect(self._update_face_color_mode)
+
         self.append(self.import_button)
         self.append(self.export_button)
+        self.append(self.annotation_container)
+        self.append(self.face_color_select)
+
         self.viewer.layers.selection.events.changed.connect(self._update_buttons)
+
+        self.viewer.layers.events.inserted.connect(self._initialize_points_layer)
+
+    def _update_face_color_mode(self, event: str = None):
+        for layer in self.viewer.layers:
+            if not isinstance(layer, napari.layers.Points):
+                continue
+
+            layer.face_color = "white"
+            if event == "Label":
+                if len(layer.properties.get("detail", ())) == 0:
+                    continue
+                layer.face_color = "detail"
+                layer.face_color_cycle = {
+                    -1: "grey",
+                    0: "red",
+                    1: "green",
+                }
+                layer.face_color_mode = "cycle"
+            elif event == "Score":
+                if len(layer.properties.get("score_scaled", ())) == 0:
+                    continue
+                layer.face_color = "score_scaled"
+                layer.face_colormap = "turbo"
+                layer.face_color_mode = "colormap"
+
+            layer.refresh_colors()
+
+        return None
+
+    def _set_positive(self, event):
+        self.selected_category = 1 if self.selected_category != 1 else -1
+        self._update_annotation_buttons()
+
+    def _set_negative(self, event):
+        self.selected_category = 0 if self.selected_category != 0 else -1
+        self._update_annotation_buttons()
+
+    def _update_annotation_buttons(self):
+        selected_style = "background-color: darkgrey"
+        default_style = "background-color: none"
+
+        self.positive_button.native.setStyleSheet(
+            selected_style if self.selected_category == 1 else default_style
+        )
+        self.negative_button.native.setStyleSheet(
+            selected_style if self.selected_category == 0 else default_style
+        )
+
+    def _initialize_points_layer(self, event):
+        layer = event.value
+        if not isinstance(layer, napari.layers.Points):
+            return
+        if len(layer.properties) == 0:
+            layer.properties = {"detail": [-1]}
+
+        if "detail" not in layer.properties:
+            layer["detail"] = [-1]
+
+        layer.mouse_drag_callbacks.append(self._on_click)
+        return None
+
+    def _on_click(self, layer, event):
+        if layer.mode == "add":
+            layer.current_properties["detail"][-1] = self.selected_category
+        elif layer.mode == "select":
+            for index in layer.selected_data:
+                layer.properties["detail"][index] = self.selected_category
+
+        # TODO: Check whether current face color is the desired one already
+        self._update_face_color_mode(self.face_color_select.value)
+        layer.refresh_colors()
 
     def _update_buttons(self, event):
         is_pointcloud = isinstance(
@@ -951,9 +1031,7 @@ class PointCloudWidget(widgets.Container):
 
             if "score" in merged_data.columns:
                 merged_data["score"] = merged_data["score"].fillna(1)
-            if "detail" in merged_data.columns:
-                merged_data["detail"] = merged_data["detail"].fillna(2)
-
+            merged_data["detail"] = layer.properties["detail"]
             merged_data.to_csv(filename, sep="\t", index=False)
 
     def _get_load_path(self, event):
@@ -977,7 +1055,7 @@ class PointCloudWidget(widgets.Container):
             dataframe["score"] = 1
 
         if "detail" not in dataframe.columns:
-            dataframe["detail"] = -2
+            dataframe["detail"] = -1
 
         point_properties = {
             "score": np.array(dataframe["score"].values),
@@ -991,8 +1069,6 @@ class PointCloudWidget(widgets.Container):
             points,
             size=10,
             properties=point_properties,
-            face_color="score_scaled",
-            face_colormap="turbo",
             name=layer_name,
         )
         self.dataframes[layer_name] = dataframe
@@ -1025,9 +1101,14 @@ class MatchingWidget(widgets.Container):
     def _load_data(self, filename):
         data = load_pickle(filename)
 
-        _ = self.viewer.add_image(data=data[2], name="Rotations", colormap="orange")
+        metadata = {"origin": data[-1][1], "sampling_rate": data[-1][2]}
+        _ = self.viewer.add_image(
+            data=data[2], name="Rotations", colormap="orange", metadata=metadata
+        )
 
-        _ = self.viewer.add_image(data=data[0], name="Scores", colormap="turbo")
+        _ = self.viewer.add_image(
+            data=data[0], name="Scores", colormap="turbo", metadata=metadata
+        )
 
 
 def main():
@@ -1045,10 +1126,9 @@ def main():
         widget=alignment_widget, name="Alignment", area="right"
     )
     viewer.window.add_dock_widget(widget=mask_widget, name="Mask", area="right")
+    viewer.window.add_dock_widget(widget=export_widget, name="Export", area="right")
     viewer.window.add_dock_widget(widget=point_cloud, name="PointCloud", area="left")
     viewer.window.add_dock_widget(widget=matching_widget, name="Matching", area="left")
-
-    viewer.window.add_dock_widget(widget=export_widget, name="Export", area="right")
 
     napari.run()
 

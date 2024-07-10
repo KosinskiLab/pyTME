@@ -39,7 +39,7 @@ class TestPreprocessor:
 
     def test_method_to_id(self):
         ret = self.preprocessor.method_to_id(method="gaussian_filter", parameters={})
-        assert type(ret) == str
+        assert isinstance(ret, str)
 
     @pytest.mark.parametrize("n", [10, 100, 1000])
     @pytest.mark.parametrize("sampling_rate", range(1, 4))
@@ -99,13 +99,6 @@ class TestPreprocessor:
             sigma=3,
         )
 
-    @pytest.mark.parametrize("sigma_range", [(2, 4), (1, 6)])
-    def test_ntree_filter(self, sigma_range):
-        _ = self.preprocessor.ntree_filter(
-            template=self.structure_density.data,
-            sigma_range=sigma_range,
-        )
-
     @pytest.mark.parametrize("width", range(1, 9, 3))
     def test_mean_filter(self, width):
         _ = self.preprocessor.mean_filter(
@@ -139,20 +132,6 @@ class TestPreprocessor:
         _ = self.preprocessor.rank_filter(
             template=self.structure_density.data,
             rank=rank,
-        )
-
-    @pytest.mark.parametrize("level", [1, 2, 3])
-    def test_mipmap_filter(self, level):
-        _ = self.preprocessor.mipmap_filter(
-            template=np.random.rand(50, 50, 50),
-            level=level,
-        )
-
-    @pytest.mark.parametrize("level", [0, 3, 5])
-    def test_wavelet_filter(self, level):
-        _ = self.preprocessor.wavelet_filter(
-            template=self.structure_density.data,
-            level=level,
         )
 
     def test_wedge_mask(self):
@@ -192,147 +171,3 @@ class TestPreprocessor:
             shape=(50, 50, 50),
             extrude_plane=extrude_plane,
         )
-
-
-# @pytest.fixture(name="VarManager", scope="class")
-# def variable_manager():
-#     class VarManager:
-#         def __init__(self):
-#             self._e_map = Map.from_file(filename="./dge/tests/data/Raw/em_map.map")
-#             self._s_map = Map.from_structure(
-#                 filename_or_structure="./dge/tests/data/Structures/5khe.cif",
-#                 origin=self._e_map.origin,
-#                 shape=self._e_map.shape,
-#                 sampling_rate=self._e_map.sampling_rate,
-#             )
-
-#     return VarManager()
-
-
-# def test_gaussian(VarManager):
-#     PB = ProteinBlurrer()
-#     blur1 = PB.gaussian_blur(
-#         template=VarManager._s_map.data, apix=VarManager._e_map.sampling_rate, sigma=2
-#     )
-#     blur2 = PB.gaussian_blur(
-#         template=VarManager._s_map.data,
-#         apix=VarManager._e_map.sampling_rate,
-#         sigma_coeff=1,
-#         resolution=2,
-#     )
-#     assert np.allclose(blur1, blur2)
-#     valid = np.load("./dge/tests/data/Blurring/gaussian_sigma2.npy")
-#     assert np.allclose(blur1, valid, atol=1e-6)
-
-
-# def test_mean(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.mean_blur(template=VarManager._s_map.data, filter_size=5)
-#     valid = np.load("./dge/tests/data/Blurring/mean_size5.npy")
-#     assert np.allclose(blur, valid, atol=1e-6)
-
-
-# def test_rank(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.rank_blur(template=VarManager._s_map.data, rank=3)
-#     valid = np.load("./dge/tests/data/Blurring/rank_rank3.npy")
-#     assert np.allclose(blur, valid, atol=1e-6)
-
-
-# def test_ntree(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.ntree_blur(
-#         template=VarManager._s_map.data,
-#         apix=VarManager._s_map.sampling_rate,
-#         sigma_range=(0.5, 10),
-#         target=VarManager._s_map.data,
-#     )
-#     valid = np.load("./dge/tests/data/Blurring/ntree_sigma0510.npy")
-#     assert np.allclose(blur, valid, atol=1e-6)
-
-
-# def test_hamming(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.hamming_blur(template=VarManager._s_map.data, width=6)
-#     valid = np.load("./dge/tests/data/Blurring/hamming_width6.npy")
-#     assert np.allclose(blur, valid, atol=1e-6)
-
-
-# def test_blob(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.blob_blur(template=VarManager._s_map.data, width=18)
-#     valid = np.load("./dge/tests/data/Blurring/blob_width18.npy")
-#     assert np.allclose(blur, valid, atol=1e-6)
-
-
-# def test_kaiserb(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.kaiserb_blur(template=VarManager._s_map.data, width=18)
-#     valid = np.load("./dge/tests/data/Blurring/kaiserb_width18.npy")
-#     assert np.allclose(blur, valid, atol=1e-6)
-
-
-# # TODO: CREATE GROUND TRUTH
-# def test_edgegaussian_sobel(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.edge_gaussian(
-#         template=VarManager._s_map.data,
-#         apix=VarManager._s_map.sampling_rate,
-#         sigma=3,
-#         edge_algorithm="sobel",
-#         reverse=False,
-#     )
-#     valid = np.load("./dge/tests/data/Blurring/edgegaussian_sigma3.npy")
-#     assert True
-
-
-# def test_edgegaussian_gaussian_laplace(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.edge_gaussian(
-#         template=VarManager._s_map.data,
-#         apix=VarManager._s_map.sampling_rate,
-#         sigma=3,
-#         edge_algorithm="gaussian_laplace",
-#         reverse=False,
-#     )
-#     valid = np.load("./dge/tests/data/Blurring/edgegaussian_sigma3.npy")
-#     assert True
-
-
-# def test_edgegaussian_sobel_reverse(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.edge_gaussian(
-#         template=VarManager._s_map.data,
-#         apix=VarManager._s_map.sampling_rate,
-#         sigma=3,
-#         edge_algorithm="sobel",
-#         reverse=True,
-#     )
-#     valid = np.load("./dge/tests/data/Blurring/edgegaussian_sigma3.npy")
-#     assert True
-
-
-# def test_edgegaussian_gaussian_laplace_reverse(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.edge_gaussian(
-#         template=VarManager._s_map.data,
-#         apix=VarManager._s_map.sampling_rate,
-#         sigma=3,
-#         edge_algorithm="gaussian_laplace",
-#         reverse=True,
-#     )
-#     valid = np.load("./dge/tests/data/Blurring/edgegaussian_sigma3.npy")
-#     assert True
-
-
-# def test_gaussian_local_gaussian(VarManager):
-#     PB = ProteinBlurrer()
-#     blur = PB.gaussian_local_gaussian(
-#         template=VarManager._s_map.data,
-#         apix=VarManager._s_map.sampling_rate,
-#         gaussian_sigma=3,
-#         lbd=20,
-#         sigma_range=(0.5, 10),
-#     )
-#     valid = np.load("./dge/tests/data/Blurring/localgaussian_sigma0510.npy")
-#     assert np.allclose(blur, valid, atol=1e-6)
