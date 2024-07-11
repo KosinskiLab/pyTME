@@ -201,7 +201,7 @@ def compute_fourier_shape(
     if shape_is_real_fourier:
         return shape
     shape = [int(x) for x in shape]
-    shape[-1] = shape[-1] // 2 + 1
+    shape[-1] = 1 + shape[-1] // 2
     return shape
 
 

@@ -50,7 +50,6 @@ def create_reconstruction_filter(
         +---------------+----------------------------------------------------+
         | hamming       | |w| * (.54 + .46 ( cos(|w| * pi))) [2]_            |
         +---------------+----------------------------------------------------+
-
     kwargs: Dict
         Keyword arguments for particular filter_types.
 

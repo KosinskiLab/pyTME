@@ -42,6 +42,9 @@ class Compose:
             kwargs.update(meta)
             ret = transform(**kwargs)
 
+            if "data" not in ret:
+                continue
+
             if ret.get("is_multiplicative_filter", False):
                 prev_data = meta.pop("data")
                 ret["data"] = be.multiply(ret["data"], prev_data, out=ret["data"])

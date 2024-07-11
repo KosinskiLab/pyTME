@@ -55,11 +55,9 @@ class Density:
     Raises
     ------
     ValueError
-        If the sampling rate is not defined for a single or all axes.
+        If metadata is not a dictionary.
 
-        If the origin is not defined for a single or all axes.
-
-        If the metadata parameter is not a dictionary.
+        If sampling rate / origin is not defined for a single or all axes.
 
     Examples
     --------

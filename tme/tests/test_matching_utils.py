@@ -5,9 +5,10 @@ from itertools import combinations, chain, product
 import pytest
 import numpy as np
 from scipy.signal import correlate
+from scipy.spatial.transform import Rotation
 
 from tme import Density
-
+from tme.backends import backend as be
 from tme.matching_utils import (
     compute_parallelization_schedule,
     elliptical_mask,
@@ -23,6 +24,9 @@ from tme.matching_utils import (
     load_pickle,
     euler_from_rotationmatrix,
     euler_to_rotationmatrix,
+    get_rotations_around_vector,
+    rotation_aligning_vectors,
+    _normalize_template_overflow_safe,
 )
 from tme.memory import MATCHING_MEMORY_REGISTRY
 from tme.matching_exhaustive import _handle_traceback
@@ -231,6 +235,78 @@ class TestMatchingUtils:
         write_pickle(data=data, filename=filename)
         loaded_data = load_pickle(filename)
         assert np.array_equal(loaded_data, data)
+
+    @pytest.mark.parametrize(
+        "cone_angle, cone_sampling, axis_angle, axis_sampling, vector, n_symmetry, convention",
+        [
+            (30, 5, 360, None, (1, 0, 0), 1, None),
+            (45, 10, 180, 15, (0, 1, 0), 2, "zyx"),
+            (60, 15, 90, 30, (0, 0, 1), 4, "xyz"),
+        ],
+    )
+    def test_get_rotations_around_vector(
+        self,
+        cone_angle,
+        cone_sampling,
+        axis_angle,
+        axis_sampling,
+        vector,
+        n_symmetry,
+        convention,
+    ):
+        result = get_rotations_around_vector(
+            cone_angle,
+            cone_sampling,
+            axis_angle,
+            axis_sampling,
+            vector,
+            n_symmetry,
+            convention,
+        )
+
+        assert isinstance(result, np.ndarray)
+        if convention is None:
+            assert result.shape[1:] == (3, 3)
+        else:
+            assert result.shape[1] == 3
+
+    @pytest.mark.parametrize(
+        "initial_vector, target_vector, convention",
+        [
+            ([1, 0, 0], [0, 1, 0], None),
+            ([0, 1, 0], [0, 0, 1], "zyx"),
+            ([1, 1, 1], [1, 0, 0], "xyz"),
+        ],
+    )
+    def test_rotation_aligning_vectors(self, initial_vector, target_vector, convention):
+        result = rotation_aligning_vectors(initial_vector, target_vector, convention)
+
+        assert isinstance(result, np.ndarray)
+        if convention is None:
+            assert result.shape == (3, 3)
+            assert np.allclose(np.dot(result, result.T), np.eye(3), atol=1e-6)
+        else:
+            assert len(result) == 3
+            result = Rotation.from_euler(convention, result, degrees=True).as_matrix()
+            assert np.allclose(np.dot(result, result.T), np.eye(3), atol=1e-6)
+
+        rotated = np.dot(Rotation.from_matrix(result).as_matrix(), initial_vector)
+        assert np.allclose(
+            rotated / np.linalg.norm(rotated),
+            target_vector / np.linalg.norm(target_vector),
+            atol=1e-6,
+        )
+
+    def test_normalize_template_overflow_safe(self):
+        template = be.random.random((10, 10)).astype(be.float32)
+        mask = be.ones_like(template)
+        n_observations = 100.0
+
+        result = _normalize_template_overflow_safe(template, mask, n_observations)
+        assert result.shape == template.shape
+        assert result.dtype == template.dtype
+        assert np.allclose(result.mean(), 0, atol=0.1)
+        assert np.allclose(result.std(), 1, atol=0.1)
 
     def test_euler_conversion(self):
         rotation_matrix_initial = np.array(

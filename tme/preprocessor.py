@@ -351,7 +351,6 @@ class Preprocessor:
             +-------------------+------------------------------------------------+
             | 'gaussian_laplace | See scipy.ndimage.gaussian_laplace             |
             +-------------------+------------------------------------------------+
-
         reverse : bool, optional
             If true, the filterring is strong along edges. Default is False.
 
@@ -740,79 +739,11 @@ class Preprocessor:
 
         return arr
 
-    @staticmethod
-    def fftfreqn(shape: NDArray, sampling_rate: NDArray = 1) -> NDArray:
-        """
-        Calculate the N-dimensional equivalent to the inverse fftshifted
-        absolute of numpy's fftfreq function, supporting anisotropic sampling.
-
-        Parameters
-        ----------
-        shape : NDArray
-            The shape of the N-dimensional array.
-        sampling_rate : NDArray
-            The sampling rate in the N-dimensional array.
-
-        Returns
-        -------
-        NDArray
-            A numpy array representing the norm of indices after normalization.
-
-        Examples
-        --------
-        >>> import numpy as np
-        >>> from tme import Preprocessor
-        >>> freq = Preprocessor().fftfreqn((10,), 1)
-        >>> freq_numpy = np.fft.fftfreq(10, 1)
-        >>> np.allclose(freq, np.abs(np.fft.ifftshift(freq_numpy)))
-        """
-        indices = np.indices(shape).T
-        norm = np.multiply(shape, sampling_rate)
-        indices -= np.divide(shape, 2).astype(int)
-        indices = np.divide(indices, norm)
-        return np.linalg.norm(indices, axis=-1).T
-
-    def _approximate_butterworth(
-        self,
-        radial_frequencies: NDArray,
-        lowcut: float,
-        highcut: float,
-        gaussian_sigma: float,
-    ) -> NDArray:
-        """
-        Approximate a Butterworth band-pass filter for given radial frequencies.
-        The DC component of the filter is at the origin.
-
-        Parameters
-        ----------
-        radial_frequencies : NDArray
-            The radial frequencies for which the Butterworth band-pass
-            filter is to be calculated.
-        lowcut : float
-            The lower cutoff frequency for the band-pass filter.
-        highcut : float
-            The upper cutoff frequency for the band-pass filter.
-        gaussian_sigma : float
-            The sigma value for the Gaussian smoothing applied to the filter.
-
-        Returns
-        -------
-        NDArray
-            A numpy array representing the approximate Butterworth
-            band-pass filter applied to the radial frequencies.
-        """
-        bpf = ((radial_frequencies <= highcut) & (radial_frequencies >= lowcut)) * 1.0
-        bpf = self.gaussian_filter(template=bpf, sigma=gaussian_sigma, fourier=False)
-        bpf[bpf < np.exp(-2)] = 0
-        bpf = np.fft.ifftshift(bpf)
-
-        return bpf
-
     def bandpass_filter(
         self,
         template: NDArray,
-        minimum_frequency: float,
-        maximum_frequency: float,
+        lowpass: float,
+        highpass: float,
         sampling_rate: NDArray = None,
         gaussian_sigma: float = 0.0,
     ) -> NDArray:
@@ -824,10 +755,10 @@ class Preprocessor:
         ----------
         template : NDArray
             The input numpy array on which the band-pass filter should be applied.
-        minimum_frequency : float
+        lowpass : float
             The lower boundary of the frequency range to be preserved. Lower values will
             retain broader, more global features.
-        maximum_frequency : float
+        highpass : float
             The upper boundary of the frequency range to be preserved.  Higher values
             will emphasize finer details and potentially noise.
         sampling_rate : NDarray, optional
@@ -842,8 +773,8 @@ class Preprocessor:
         """
         bpf = self.bandpass_mask(
             shape=template.shape,
-            minimum_frequency=minimum_frequency,
-            maximum_frequency=maximum_frequency,
+            lowpass=lowpass,
+            highpass=highpass,
             sampling_rate=sampling_rate,
             gaussian_sigma=gaussian_sigma,
             omit_negative_frequencies=False,
@@ -857,8 +788,8 @@ class Preprocessor:
     def bandpass_mask(
         self,
         shape: Tuple[int],
-        minimum_frequency: float,
-        maximum_frequency: float,
+        lowpass: float,
+        highpass: float,
         sampling_rate: NDArray = None,
         gaussian_sigma: float = 0.0,
         omit_negative_frequencies: bool = True,
@@ -871,7 +802,7 @@ class Preprocessor:
         ----------
         shape : tuple of ints
             Shape of the returned bandpass filter.
-        minimum_frequency : float
+        lowpass : float
             The lower boundary of the frequency range to be preserved. Lower values will
             retain broader, more global features.
         maximum_frequency : float
@@ -890,27 +821,15 @@ class Preprocessor:
         NDArray
             Bandpass filtered.
         """
-        if sampling_rate is None:
-            sampling_rate = np.ones(len(shape))
-        sampling_rate = np.asarray(sampling_rate, dtype=np.float32)
-        sampling_rate /= sampling_rate.max()
+        from .preprocessing import BandPassFilter
 
-        if minimum_frequency > maximum_frequency:
-            minimum_frequency, maximum_frequency = maximum_frequency, minimum_frequency
-
-        radial_freq = self.fftfreqn(shape, sampling_rate)
-        bpf = self._approximate_butterworth(
-            radial_frequencies=radial_freq,
-            lowcut=minimum_frequency,
-            highcut=maximum_frequency,
-            gaussian_sigma=gaussian_sigma,
-        )
-
-        if omit_negative_frequencies:
-            stop = 1 + (shape[-1] // 2)
-            bpf = bpf[..., :stop]
-
-        return bpf
+        return BandPassFilter(
+            sampling_rate=sampling_rate,
+            lowpass=lowpass,
+            highpass=highpass,
+            return_real_fourier=omit_negative_frequencies,
+            use_gaussian=gaussian_sigma == 0.0,
+        )(shape=shape)["data"]
 
     def wedge_mask(
         self,
@@ -1255,102 +1174,6 @@ class Preprocessor:
             wedge = wedge[..., :stop]
 
         return wedge
-
-    @staticmethod
-    def _fourier_crop_mask(old_shape: NDArray, new_shape: NDArray) -> NDArray:
-        """
-        Generate a mask for Fourier cropping.
-
-        Parameters
-        ----------
-        old_shape : NDArray
-            The original shape of the array before cropping.
-        new_shape : NDArray
-            The new desired shape for the array after cropping.
-
-        Returns
-        -------
-        NDArray
-            The mask array for Fourier cropping.
-        """
-        mask = np.zeros(old_shape, dtype=bool)
-        mask[tuple(np.indices(new_shape))] = 1
-        box_shift = np.floor(np.divide(new_shape, 2)).astype(int)
-        mask = np.roll(mask, shift=-box_shift, axis=range(len(old_shape)))
-        return mask
-
-    def fourier_crop(
-        self,
-        template: NDArray,
-        reciprocal_template_filter: NDArray,
-        crop_factor: float = 3 / 2,
-    ) -> NDArray:
-        """
-        Perform Fourier uncropping on a given template.
-
-        Parameters
-        ----------
-        template : NDArray
-            The original template to be uncropped.
-        reciprocal_template_filter : NDArray
-            The filter to be applied in the Fourier space.
-        crop_factor : float
-            Cropping factor over reeciprocal_template_filter boundary.
-
-        Returns
-        -------
-        NDArray
-            The uncropped template.
-        """
-        new_boxsize = np.zeros(template.ndim, dtype=int)
-        for i in range(template.ndim):
-            slices = tuple(
-                slice(0, 1) if j != i else slice(template.shape[i] // 2)
-                for j in range(template.ndim)
-            )
-            filt = np.squeeze(reciprocal_template_filter[slices])
-            new_boxsize[i] = np.ceil((np.max(np.where(filt > 0)) + 1) * crop_factor) * 2
-
-        if np.any(np.greater(new_boxsize, template.shape)):
-            new_boxsize = np.array(template.shape).copy()
-
-        mask = self._fourier_crop_mask(old_shape=template.shape, new_shape=new_boxsize)
-        arr_ft = np.fft.fftn(template)
-        arr_ft *= np.prod(new_boxsize) / np.prod(template.shape)
-        arr_ft = np.reshape(arr_ft[mask], new_boxsize)
-        arr_cropped = np.real(np.fft.ifftn(arr_ft))
-        return arr_cropped
-
-    def fourier_uncrop(
-        self, template: NDArray, reciprocal_template_filter: NDArray
-    ) -> NDArray:
-        """
-        Perform an uncrop operation in the Fourier space.
-
-        Parameters
-        ----------
-        template : NDArray
-            The input array.
-        reciprocal_template_filter : NDArray
-            The filter to be applied in the Fourier space.
-
-        Returns
-        -------
-        NDArray
-            Uncropped template with shape reciprocal_template_filter.
-        """
-        mask = self._fourier_crop_mask(
-            old_shape=reciprocal_template_filter.shape, new_shape=template.shape
-        )
-        ft_vol = np.zeros_like(mask)
-        ft_vol[mask] = np.fft.fftn(template).ravel()
-        ft_vol *= np.divide(np.prod(mask.shape), np.prod(template.shape)).astype(
-            ft_vol.dtype
-        )
-        reciprocal_template_filter = reciprocal_template_filter.astype(ft_vol.dtype)
-        np.multiply(ft_vol, reciprocal_template_filter, out=ft_vol)
-        ret = np.real(np.fft.ifftn(ft_vol))
-        return ret
 
 
 def window_kaiserb(width: int, beta: float = 3.2, order: int = 0) -> NDArray:

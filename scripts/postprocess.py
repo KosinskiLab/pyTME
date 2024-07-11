@@ -8,9 +8,8 @@
 import argparse
 from sys import exit
 from os import getcwd
-from os.path import join, abspath
 from typing import List, Tuple
-from os.path import splitext
+from os.path import join, abspath, splitext
 
 import numpy as np
 from numpy.typing import NDArray

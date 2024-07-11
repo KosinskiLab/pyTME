@@ -173,22 +173,6 @@ def memmap_to_array(arr: NDArray) -> NDArray:
     return arr
 
 
-def close_memmap(arr: np.ndarray) -> None:
-    """
-    Remove the file associated with a obj:`numpy.memmap` object.
-
-    Parameters
-    ----------
-    arr : obj:`numpy.memmap`
-        The potential obj:`numpy.memmap` instance.
-    """
-    try:
-        os.remove(arr.filename)
-        # arr._mmap.close()
-    except Exception:
-        pass
-
-
 def write_pickle(data: object, filename: str) -> None:
     """
     Serialize and write data to a file invalidating the input data.

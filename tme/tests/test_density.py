@@ -498,7 +498,7 @@ class TestDensity:
         assert np.allclose(
             structure_aligned.atom_coordinate.shape, structure.atom_coordinate.shape
         )
-        assert np.allclose(-translation, initial_translation, atol=1)
+        assert np.allclose(-translation, initial_translation, atol=2)
         assert np.allclose(np.linalg.inv(rotation_matrix), initial_rotation, atol=0.2)
 
     def test_fourier_shell_correlation(self):

@@ -214,11 +214,10 @@ class MLXBackend(NumpyFFTWBackend):
         if translation is not None:
             translation = self.to_numpy_array(translation)
 
-        out_pass, out_mask_pass = None, None
-        if out is not None:
-            out_pass = self.to_numpy_array(out)
-        if out_mask is not None:
-            out_mask_pass = self.to_numpy_array(out_mask)
+        if out is None:
+            out = self.zeros(arr.shape)
+        if out_mask is None and arr_mask is not None:
+            out_mask_pass = self.zeros(arr_mask.shape)
 
         ret = NumpyFFTWBackend().rigid_transform(
             arr=arr,
@@ -226,24 +225,19 @@ class MLXBackend(NumpyFFTWBackend):
             arr_mask=arr_mask,
             translation=translation,
             use_geometric_center=use_geometric_center,
-            out=out_pass,
-            out_mask=out_mask_pass,
             order=order,
         )
 
-        if ret is not None:
-            if len(ret) == 1 and out is None:
-                out_pass = ret
-            elif len(ret) == 1 and out_mask is None:
-                out_mask_pass = ret
-            else:
-                out_pass, out_mask_pass = ret
+        out_pass, out_mask_pass = ret
+        out[:] = self.to_backend_array(out_pass)
 
-        if out is not None:
-            out[:] = self.to_backend_array(out_pass)
+        if out_mask_pass is not None:
+            out_mask_pass = self.to_backend_array(out_mask_pass)
 
         if out_mask is not None:
-            out_mask[:] = self.to_backend_array(out_mask_pass)
+            out_mask[:] = out_mask_pass
+        else:
+            out_mask = out_mask_pass
 
         return out, out_mask
 

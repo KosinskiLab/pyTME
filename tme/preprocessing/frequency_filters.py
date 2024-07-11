@@ -8,12 +8,12 @@ from math import log, sqrt
 from typing import Tuple, Dict
 
 import numpy as np
-from numpy.typing import NDArray
 from scipy.ndimage import mean as ndimean
 from scipy.ndimage import map_coordinates
 
-from ._utils import fftfreqn, crop_real_fourier, shift_fourier, compute_fourier_shape
+from ..types import BackendArray
 from ..backends import backend as be
+from ._utils import fftfreqn, crop_real_fourier, shift_fourier, compute_fourier_shape
 
 
 class BandPassFilter:
@@ -63,7 +63,7 @@ class BandPassFilter:
         return_real_fourier: bool = False,
         shape_is_real_fourier: bool = False,
         **kwargs,
-    ) -> NDArray:
+    ) -> BackendArray:
         """
         Generate a bandpass filter using discrete frequency cutoffs.
 
@@ -86,7 +86,7 @@ class BandPassFilter:
 
         Returns:
         --------
-        NDArray
+        BackendArray
             The bandpass filter in Fourier space.
         """
         if shape_is_real_fourier:
@@ -127,7 +127,7 @@ class BandPassFilter:
         return_real_fourier: bool = False,
         shape_is_real_fourier: bool = False,
         **kwargs,
-    ) -> NDArray:
+    ) -> BackendArray:
         """
         Generate a bandpass filter using Gaussian functions.
 
@@ -150,7 +150,7 @@ class BandPassFilter:
 
         Returns:
         --------
-        NDArray
+        BackendArray
             The bandpass filter in Fourier space.
         """
         if shape_is_real_fourier:
@@ -237,14 +237,14 @@ class LinearWhiteningFilter:
 
     @staticmethod
     def _compute_spectrum(
-        data_rfft: NDArray, n_bins: int = None, batch_dimension: int = None
-    ) -> Tuple[NDArray, NDArray]:
+        data_rfft: BackendArray, n_bins: int = None, batch_dimension: int = None
+    ) -> Tuple[BackendArray, BackendArray]:
         """
         Compute the spectrum of the input data.
 
         Parameters:
         -----------
-        data_rfft : NDArray
+        data_rfft : BackendArray
             The Fourier transform of the input data.
         n_bins : int, optional
             The number of bins for computing the spectrum, defaults to None.
@@ -253,9 +253,9 @@ class LinearWhiteningFilter:
 
         Returns:
         --------
-        bins : NDArray
+        bins : BackendArray
             Array containing the bin indices for the spectrum.
-        radial_averages : NDArray
+        radial_averages : BackendArray
             Array containing the radial averages of the spectrum.
         """
         shape = tuple(x for i, x in enumerate(data_rfft.shape) if i != batch_dimension)
@@ -292,11 +292,11 @@ class LinearWhiteningFilter:
 
     @staticmethod
     def _interpolate_spectrum(
-        spectrum: NDArray,
+        spectrum: BackendArray,
         shape: Tuple[int],
         shape_is_real_fourier: bool = True,
         order: int = 1,
-    ) -> NDArray:
+    ) -> BackendArray:
         """
         References
         ----------
@@ -317,8 +317,8 @@ class LinearWhiteningFilter:
 
     def __call__(
         self,
-        data: NDArray = None,
-        data_rfft: NDArray = None,
+        data: BackendArray = None,
+        data_rfft: BackendArray = None,
         n_bins: int = None,
         batch_dimension: int = None,
         order: int = 1,
@@ -329,9 +329,9 @@ class LinearWhiteningFilter:
 
         Parameters:
         -----------
-        data : NDArray, optional
+        data : BackendArray, optional
             The input data, defaults to None.
-        data_rfft : NDArray, optional
+        data_rfft : BackendArray, optional
             The Fourier transform of the input data, defaults to None.
         n_bins : int, optional
             The number of bins for computing the spectrum, defaults to None.
