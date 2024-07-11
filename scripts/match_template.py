@@ -31,7 +31,7 @@ from tme.analyzer import (
     MaxScoreOverRotations,
     PeakCallerMaximumFilter,
 )
-from tme.backends import backend
+from tme.backends import backend as be
 from tme.preprocessing import Compose
 
 
@@ -778,7 +778,13 @@ def parse_args():
         default=False,
         help="Perform peak calling instead of score aggregation.",
     )
-
+    analyzer_group.add_argument(
+        "--number_of_peaks",
+        dest="number_of_peaks",
+        action="store_true",
+        default=1000,
+        help="Number of peaks to call, 1000 by default..",
+    )
     args = parser.parse_args()
     args.version = __version__
 
@@ -947,44 +953,60 @@ def main():
             template.data, noise_proportion=1.0, normalize_power=True
         )
 
-    available_memory = backend.get_available_memory()
+    # Determine suitable backend for the selected operation
+    available_backends = be.available_backends()
+    if os.environ.get("PYTME_BACKEND", None) is not None:
+        req_backend = os.environ["PYTME_BACKEND"]
+        if req_backend not in available_backends:
+            raise ValueError(
+                "Backend specified by PYTME_BACKEND variable not available."
+            )
+        available_backends = [
+            req_backend,
+        ]
+
+    be_selection = ("numpyfftw", "pytorch", "jax", "mlx")
     if args.use_gpu:
         args.cores = len(args.gpu_indices)
-        has_cupy = "cupy" in backend._BACKEND_REGISTRY
-        has_torch = "pytorch" in backend._BACKEND_REGISTRY
+        be_selection = ("pytorch", "cupy", "jax")
+    if args.use_mixed_precision:
+        be_selection = tuple(x for x in be_selection if x in ("cupy", "numpyfftw"))
 
-        if not has_torch and not has_cupy:
-            raise ValueError(
-                "Found neither CuPy nor PyTorch installation. You need to install"
-                " either to enable GPU support."
-            )
-
-        if args.peak_calling:
-            preferred_backend = "pytorch"
-            if not has_torch:
-                preferred_backend = "cupy"
-            backend.change_backend(backend_name=preferred_backend, device="cuda")
-        else:
-            preferred_backend = "cupy"
-            if not has_cupy:
-                preferred_backend = "pytorch"
-            backend.change_backend(backend_name=preferred_backend, device="cuda")
-            if args.use_mixed_precision and preferred_backend == "pytorch":
+    available_backends = [x for x in available_backends if x in be_selection]
+    if args.peak_calling:
+        if "jax" in available_backends:
+            available_backends.remove("jax")
+        if args.use_gpu and "pytorch" in available_backends:
+            available_backends = ("pytorch",)
+            if args.interpolation_order == 3:
                 raise NotImplementedError(
-                    "pytorch backend does not yet support mixed precision."
-                    " Consider installing CuPy to enable this feature."
+                    "Pytorch does not support --interpolation_order 3, 1 is supported."
                 )
-            elif args.use_mixed_precision:
-                backend.change_backend(
-                    backend_name="cupy",
-                    default_dtype=backend._array_backend.float16,
-                    complex_dtype=backend._array_backend.complex64,
-                    default_dtype_int=backend._array_backend.int16,
-                )
-        available_memory = backend.get_available_memory() * args.cores
-        if preferred_backend == "pytorch" and args.interpolation_order == 3:
-            args.interpolation_order = 1
+    # dim_match = len(template.shape) == len(target.shape) <= 3
+    # if dim_match and args.use_gpu and "jax" in available_backends:
+    #     args.interpolation_order = 1
+    #     available_backends = ["jax"]
 
+    backend_preference = ("numpyfftw", "pytorch", "jax", "mlx")
+    if args.use_gpu:
+        backend_preference = ("cupy", "pytorch", "jax")
+    for pref in backend_preference:
+        if pref not in available_backends:
+            continue
+        be.change_backend(pref)
+        if pref == "pytorch":
+            be.change_backend(pref, device="cuda" if args.use_gpu else "cpu")
+
+        if args.use_mixed_precision:
+            be.change_backend(
+                backend_name=pref,
+                default_dtype=be._array_backend.float16,
+                complex_dtype=be._array_backend.complex64,
+                default_dtype_int=be._array_backend.int16,
+            )
+        break
+
+    available_memory = be.get_available_memory() * be.device_count()
     if args.memory is None:
         args.memory = int(args.memory_scaling * available_memory)
 
@@ -1022,10 +1044,10 @@ def main():
         split_only_outer=args.use_gpu,
         matching_method=args.score,
         analyzer_method=callback_class.__name__,
-        backend=backend._backend_name,
-        float_nbytes=backend.datatype_bytes(backend._float_dtype),
-        complex_nbytes=backend.datatype_bytes(backend._complex_dtype),
-        integer_nbytes=backend.datatype_bytes(backend._int_dtype),
+        backend=be._backend_name,
+        float_nbytes=be.datatype_bytes(be._float_dtype),
+        complex_nbytes=be.datatype_bytes(be._complex_dtype),
+        integer_nbytes=be.datatype_bytes(be._int_dtype),
     )
 
     if splits is None:
@@ -1057,11 +1079,11 @@ def main():
     print_block(
         name="Template Matching",
         data=options,
-        label_width=max(len(key) for key in options.keys()) + 2,
+        label_width=max(len(key) for key in options.keys()) + 3,
     )
 
     compute_options = {
-        "Backend": backend._BACKEND_REGISTRY[backend._backend_name],
+        "Backend": be._BACKEND_REGISTRY[be._backend_name],
         "Compute Devices": f"CPU [{args.cores}], GPU [{gpus_used}]",
         "Use Mixed Precision": args.use_mixed_precision,
         "Assigned Memory [MB]": f"{args.memory // 1e6} [out of {available_memory//1e6}]",
@@ -1071,7 +1093,7 @@ def main():
     print_block(
         name="Computation",
         data=compute_options,
-        label_width=max(len(key) for key in options.keys()) + 2,
+        label_width=max(len(key) for key in options.keys()) + 3,
     )
 
     filter_args = {
@@ -1100,18 +1122,20 @@ def main():
         print_block(
             name="Filters",
             data=filter_args,
-            label_width=max(len(key) for key in options.keys()) + 2,
+            label_width=max(len(key) for key in options.keys()) + 3,
         )
 
     analyzer_args = {
         "score_threshold": args.score_threshold,
-        "number_of_peaks": 5,
+        "number_of_peaks": args.number_of_peaks,
+        "min_distance": max(template.shape) // 2,
+        "min_boundary_distance": max(template.shape) // 2,
         "use_memmap": args.use_memmap,
     }
     print_block(
         name="Analyzer",
         data={"Analyzer": callback_class, **analyzer_args},
-        label_width=max(len(key) for key in options.keys()) + 2,
+        label_width=max(len(key) for key in options.keys()) + 3,
     )
     print("\n" + "-" * 80)
 
@@ -1142,7 +1166,7 @@ def main():
             candidates[0] *= target_mask.data
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=UserWarning)
-            nbytes = backend.datatype_bytes(backend._float_dtype)
+            nbytes = be.datatype_bytes(be._float_dtype)
             dtype = np.float32 if nbytes == 4 else np.float16
             rot_dim = matching_data.rotations.shape[1]
             candidates[3] = {

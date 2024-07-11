@@ -162,11 +162,14 @@ class BandPassFilter:
             shape_is_real_fourier=shape_is_real_fourier,
             compute_euclidean_norm=True,
         )
+        grid = be.to_backend_array(grid)
         grid = -be.square(grid)
 
         lowpass_filter, highpass_filter = 1, 1
         norm = float(sqrt(2 * log(2)))
-        upper_sampling = float(be.max(be.multiply(2, sampling_rate)))
+        upper_sampling = float(
+            be.max(be.multiply(2, be.to_backend_array(sampling_rate)))
+        )
 
         if lowpass is not None:
             lowpass = float(lowpass)

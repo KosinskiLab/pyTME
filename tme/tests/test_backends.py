@@ -44,6 +44,12 @@ class TestBackendManager:
         with pytest.raises(NotImplementedError):
             self.manager.change_backend(backend_name=None)
 
+    def test_available_backends(self):
+        available = self.manager.available_backends()
+        assert isinstance(available, list)
+        for be in available:
+            assert be in self.manager._BACKEND_REGISTRY
+
 
 class TestBackends:
     def setup_method(self):

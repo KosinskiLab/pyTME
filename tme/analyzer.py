@@ -221,7 +221,9 @@ class PeakCaller(ABC):
             peak_positions = be.add(peak_positions, batch_offset, out=peak_positions)
             peak_positions = be.astype(peak_positions, int)
             if self.min_boundary_distance > 0:
-                upper_limit = be.subtract(scores.shape, self.min_boundary_distance)
+                upper_limit = be.subtract(
+                    be.to_backend_array(scores.shape), self.min_boundary_distance
+                )
                 valid_peaks = be.multiply(
                     peak_positions < upper_limit,
                     peak_positions >= self.min_boundary_distance,
@@ -921,6 +923,8 @@ class MaxScoreOverRotations:
         Memmap scores and rotations arrays, False by default.
     thread_safe: bool, optional
         Allow class to be modified by multiple processes, True by default.
+    only_unique_rotations : bool, optional
+        Whether each rotation will be shown only once, False by default.
 
     Raises
     ------
@@ -981,6 +985,7 @@ class MaxScoreOverRotations:
         shared_memory_handler: object = None,
         use_memmap: bool = False,
         thread_safe: bool = True,
+        only_unique_rotations: bool = False,
         **kwargs,
     ):
         if shape is None and scores is None:
@@ -1010,8 +1015,9 @@ class MaxScoreOverRotations:
 
         self.use_memmap = use_memmap
         self.lock = Manager().Lock() if thread_safe else nullcontext()
-        self.lock_is_nullcontext = isinstance(self.scores, type(self.offset))
+        self.lock_is_nullcontext = isinstance(self.scores, type(be.zeros((1))))
         self.rotation_mapping = Manager().dict() if thread_safe else {}
+        self._inversion_mapping = self.lock_is_nullcontext and only_unique_rotations
 
     def _postprocess(
         self,
@@ -1070,6 +1076,11 @@ class MaxScoreOverRotations:
             # Copy to avoid invalidation by shared memory handler
             scores, rotations = scores.copy(), rotations.copy()
 
+        if self._inversion_mapping:
+            self.rotation_mapping = {
+                be.tobytes(v): k for k, v in self.rotation_mapping.items()
+            }
+
         param_store = (
             scores,
             be.to_numpy_array(self.offset),
@@ -1089,12 +1100,18 @@ class MaxScoreOverRotations:
         rotation_matrix : BackendArray
             Square matrix describing the current rotation.
         """
-        rotation = be.tobytes(rotation_matrix)
-
+        # be.tobytes behaviour caused overhead for certain GPU/CUDA combinations
+        # If the analyzer is not shared and each rotation is unique, we can
+        # use index to rotation mapping and invert prior to merging.
         if self.lock_is_nullcontext:
-            rotation_index = self.rotation_mapping.setdefault(
-                rotation, len(self.rotation_mapping)
-            )
+            rotation_index = len(self.rotation_mapping)
+            if self._inversion_mapping:
+                self.rotation_mapping[rotation_index] = rotation_matrix
+            else:
+                rotation = be.tobytes(rotation_matrix)
+                rotation_index = self.rotation_mapping.setdefault(
+                    rotation, rotation_index
+                )
             self.scores, self.rotations = be.max_score_over_rotations(
                 scores=scores,
                 max_scores=self.scores,
@@ -1103,6 +1120,7 @@ class MaxScoreOverRotations:
             )
             return None
 
+        rotation = be.tobytes(rotation_matrix)
         with self.lock:
             rotation_index = self.rotation_mapping.setdefault(
                 rotation, len(self.rotation_mapping)

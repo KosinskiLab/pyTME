@@ -262,7 +262,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         return arr[box]
 
     def compute_convolution_shapes(
-        self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
+        self, arr1_shape: Tuple[int], arr2_shape: Tuple[int], real : bool = False
     ) -> Tuple[List[int], List[int], List[int]]:
         """
         Computes regular, optimized and fourier convolution shape.
@@ -273,6 +273,8 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
             Tuple of integers corresponding to array1 shape.
         arr2_shape : tuple
             Tuple of integers corresponding to array2 shape.
+        real : bool
+            Whether to return a next_fast_len optimized for rfftns.
 
         Returns
         -------
@@ -429,6 +431,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         yield None
 
     def device_count(self) -> int:
+        """Returns the number of available GPU devices."""
         return 1
 
     @staticmethod

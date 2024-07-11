@@ -4,8 +4,8 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-
 from typing import Dict, List
+from importlib.util import find_spec
 
 from .matching_backend import MatchingBackend
 from .npfftw_backend import NumpyFFTWBackend
@@ -44,7 +44,10 @@ class BackendManager:
 
     >>> backend.change_backend("pytorch")
     >>> backend.multiply(arr1, arr2)
-    # This will use the GPUBackend's multiply method
+    # This will use the pytorchs multiply method
+
+    >>> backend.available_backends()
+    # Backends available on your system
 
     Notes
     -----
@@ -123,15 +126,40 @@ class BackendManager:
             If no backend is found with the provided name.
         """
         if backend_name not in self._BACKEND_REGISTRY:
-            available_backends = ", ".join(
-                [str(x) for x in self._BACKEND_REGISTRY.keys()]
-            )
+            available_backends = ", ".join(self.available_backends())
             raise NotImplementedError(
                 f"Available backends are {available_backends} - not {backend_name}."
             )
         self._backend = self._BACKEND_REGISTRY[backend_name](**backend_kwargs)
         self._backend_name = backend_name
         self._backend_args = backend_kwargs
+
+    def available_backends(self) -> List[str]:
+        """
+        Determines importable backends.
+
+        Returns
+        -------
+        list of str
+            Backends that are available for template matching.
+        """
+        # This is an approximation but avoids runtime polution
+        _dependencies = {
+            "numpyfftw": "numpy",
+            "cupy": "cupy",
+            "pytorch": "pytorch",
+            "mlx": "mlx",
+            "jax": "jax",
+        }
+        available_backends = []
+        for name, backend in self._BACKEND_REGISTRY.items():
+            if name not in _dependencies:
+                continue
+
+            if find_spec(_dependencies[name]) is not None:
+                available_backends.append(name)
+
+        return available_backends
 
 
 backend = BackendManager()

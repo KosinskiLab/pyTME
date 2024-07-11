@@ -76,11 +76,11 @@ def _setup_template_filter_apply_target_filter(
     target_temp = be.topleft_pad(matching_data.target, fast_shape)
     target_temp_ft = be.zeros(fast_ft_shape, be._complex_dtype)
 
-    inv_mask = be.subtract(1, matching_data._batch_mask)
-    filter_shape = be.multiply(fast_ft_shape, inv_mask)
+    inv_mask = be.subtract(1, be.to_backend_array(matching_data._batch_mask))
+    filter_shape = be.multiply(be.to_backend_array(fast_ft_shape), inv_mask)
     filter_shape = tuple(int(x) if x != 0 else 1 for x in filter_shape)
 
-    fast_shape = be.multiply(fast_shape, inv_mask)
+    fast_shape = be.multiply(be.to_backend_array(fast_shape), inv_mask)
     fast_shape = tuple(int(x) for x in fast_shape if x != 0)
 
     target_temp_ft = rfftn(target_temp, target_temp_ft)
@@ -101,7 +101,6 @@ def _setup_template_filter_apply_target_filter(
             data_rfft=target_temp_ft,
             batch_dimension=matching_data._target_dims,
         )["data"]
-        template_filter[tuple(0 for _ in range(template_filter.ndim))] = 0
         template_filter = be.reshape(template_filter, template_filter_shape)
 
     if filter_target:
@@ -113,9 +112,8 @@ def _setup_template_filter_apply_target_filter(
             weight_type=None,
             batch_dimension=matching_data._target_dims,
         )["data"]
-        target_filter[tuple(0 for _ in range(target_filter.ndim))] = 0
         target_filter = be.reshape(target_filter, filter_shape)
-        be.multiply(target_temp_ft, target_filter, out=target_temp_ft)
+        target_temp_ft = be.multiply(target_temp_ft, target_filter, out=target_temp_ft)
 
         target_temp = irfftn(target_temp_ft, target_temp)
         matching_data._target = be.topleft_pad(target_temp, matching_data.target.shape)
@@ -262,6 +260,7 @@ def scan(
         "fast_shape": fast_shape,
         "indices": getattr(matching_data, "indices", None),
         "shared_memory_handler": shared_memory_handler,
+        "only_unique_rotations" : True,
     }
     default_callback_args.update(callback_class_args)
 
@@ -281,7 +280,6 @@ def scan(
         else None
         for _ in range(n_callback_classes)
     ]
-
     callbacks = Parallel(n_jobs=n_jobs)(
         delayed(_wrap_backend(matching_score))(
             backend_name=be._backend_name,

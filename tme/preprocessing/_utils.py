@@ -165,7 +165,7 @@ def fftfreqn(
 
     if compute_euclidean_norm:
         grids = sum(temp_backend.square(x) for x in grids)
-        temp_backend.sqrt(grids, out=grids)
+        grids = temp_backend.sqrt(grids, out=grids)
         return grids
 
     if return_sparse_grid:
@@ -210,7 +210,7 @@ def shift_fourier(
 ) -> BackendArray:
     shape = be.to_backend_array(data.shape)
     shift = be.add(be.divide(shape, 2), be.mod(shape, 2))
-    shift = be.astype(shift, int)
+    shift = [int(x) for x in shift]
     if shape_is_real_fourier:
         shift[-1] = 0
 

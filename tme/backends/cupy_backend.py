@@ -9,6 +9,8 @@ from importlib.util import find_spec
 from contextlib import contextmanager
 from typing import Tuple, Callable, List
 
+import numpy as np
+
 from .npfftw_backend import NumpyFFTWBackend
 from ..types import CupyArray, NDArray, shm_type
 
@@ -55,7 +57,7 @@ class CupyBackend(NumpyFFTWBackend):
         ftype = f"float{self.datatype_bytes(float_dtype) * 8}"
         self._max_score_over_rotations = self._array_backend.ElementwiseKernel(
             f"{ftype} internal_scores, {ftype} scores, {itype} rot_index",
-            f"{ftype} out1, {ftype} rotations",
+            f"{ftype} out1, {itype} rotations",
             "if (internal_scores < scores) {out1 = scores; rotations = rot_index;}",
             "max_score_over_rotations",
         )
@@ -97,16 +99,19 @@ class CupyBackend(NumpyFFTWBackend):
     def to_sharedarr(arr: CupyArray, shared_memory_handler: type = None) -> shm_type:
         return arr
 
+    def zeros(self, *args, **kwargs):
+        return self._array_backend.zeros(*args, **kwargs)
+
     def unravel_index(self, indices, shape):
         return self._array_backend.unravel_index(indices=indices, dims=shape)
 
     def unique(self, ar, axis=None, *args, **kwargs):
         if axis is None:
             return self._array_backend.unique(ar=ar, axis=axis, *args, **kwargs)
-        warnings.warn("Axis argument not yet supported in CupY, falling back to NumPy.")
 
-        ret = super().unique(ar=self.to_numpy_array(ar), axis=axis, *args, **kwargs)
-        if isinstance(ret, tuple):
+        warnings.warn("Axis argument not yet supported in CupY, falling back to NumPy.")
+        ret = np.unique(ar=self.to_numpy_array(ar), axis=axis, *args, **kwargs)
+        if not isinstance(ret, tuple):
             return self.to_backend_array(ret)
         return tuple(self.to_backend_array(k) for k in ret)
 
@@ -130,11 +135,9 @@ class CupyBackend(NumpyFFTWBackend):
 
         real_diff, cmplx_diff = True, True
         if len(fast_shape) == len(previous_transform[0]):
-            real_diff = self.sum(self.subtract(fast_shape, previous_transform[0])) != 0
+            real_diff = fast_shape == previous_transform[0]
         if len(fast_ft_shape) == len(previous_transform[1]):
-            cmplx_diff = (
-                self.sum(self.subtract(fast_ft_shape, previous_transform[1])) != 0
-            )
+            cmplx_diff = fast_ft_shape == previous_transform[1]
 
         if real_diff or cmplx_diff:
             cache.clear()
@@ -152,15 +155,21 @@ class CupyBackend(NumpyFFTWBackend):
     def compute_convolution_shapes(
         self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
     ) -> Tuple[List[int], List[int], List[int]]:
-        conv_shape, fast_shape, fast_ft_shape = super().compute_convolution_shapes(
-            arr1_shape, arr2_shape
-        )
-        # # cuFFT plans do not support automatic padding yet.
-        is_odd = fast_shape[-1] % 2
-        fast_shape[-1] += is_odd
-        fast_ft_shape[-1] += is_odd
+        from cupyx.scipy.fft import next_fast_len
+        # TODO: Benchmark this vs pyfftw padding
+        convolution_shape = [
+            int(x) + int(y) - 1 for x, y in zip(arr1_shape, arr2_shape)
+        ]
+        fast_shape = [next_fast_len(x, real = True) for x in convolution_shape]
+        fast_ft_shape = list(fast_shape[:-1]) + [fast_shape[-1] // 2 + 1]
+        return convolution_shape, fast_shape, fast_ft_shape
 
-        return conv_shape, fast_shape, fast_ft_shape
+        # # cuFFT plans do not support automatic padding yet.
+        # is_odd = fast_shape[-1] % 2
+        # fast_shape[-1] += is_odd
+        # fast_ft_shape[-1] += is_odd
+
+        # return conv_shape, fast_shape, fast_ft_shape
 
     def max_filter_coordinates(self, score_space, min_distance: Tuple[int]):
         score_box = tuple(min_distance for _ in range(score_space.ndim))

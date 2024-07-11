@@ -70,10 +70,10 @@ class MatchingBackend(ABC):
     >>> import numpy as np
     >>> from tme.backends import NumpyFFTWBackend
     >>> backend = NumpyFFTWBackend(
-    >>>     array_backend = np,
-    >>>     float_dtype = np.float32,
-    >>>     complex_dtype = np.complex64,
-    >>>     int_dtype = np.int32
+    >>>     array_backend=np,
+    >>>     float_dtype=np.float32,
+    >>>     complex_dtype=np.complex64,
+    >>>     int_dtype=np.int32
     >>> )
     >>> arr = backend.array([1, 2, 3])
     >>> print(arr)

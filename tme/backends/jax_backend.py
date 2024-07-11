@@ -4,7 +4,6 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-import warnings
 from functools import wraps
 from typing import Tuple, List, Callable
 
@@ -37,10 +36,6 @@ class JaxBackend(NumpyFFTWBackend):
         import jax.scipy as jsp
         import jax.numpy as jnp
 
-        warnings.warn(
-            "JaxBackend is in development and not safe to use outside jitted code."
-        )
-
         float_dtype = jnp.float32 if float_dtype is None else float_dtype
         complex_dtype = jnp.complex64 if complex_dtype is None else complex_dtype
         int_dtype = jnp.int32 if int_dtype is None else int_dtype
@@ -54,6 +49,12 @@ class JaxBackend(NumpyFFTWBackend):
         )
         self.scipy = jsp
         self._create_ufuncs()
+        try:
+            from ._jax_utils import scan as _
+
+            self.scan = self._scan
+        except Exception:
+            pass
 
     def from_sharedarr(self, arr: BackendArray) -> BackendArray:
         return arr
@@ -164,7 +165,7 @@ class JaxBackend(NumpyFFTWBackend):
         rotations = rotations.at[:].set(self.where(update, rotations, rotation_index))
         return max_scores, rotations
 
-    def scan(
+    def _scan(
         self,
         matching_data: type,
         splits: Tuple[Tuple[slice, slice]],
