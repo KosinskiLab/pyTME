@@ -90,23 +90,29 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
 
             ``postprocess.py`` automatically pads the extracted subtomograms to an even number of voxels in each dimension to avoid potential RELION crashes.
 
+    .. tab-item:: Average
+
+        Executing the following code will extract regions around the identified candidates and compute a simple average using the corresponding rotations.
+
+        .. code-block:: bash
+
+            postprocess.py \
+                --input_file output.pickle \
+                --output_prefix average \
+                --output_format average \
+                --min_distance 20 \
+                --number_of_peaks 500 \
+                --peak_caller PeakCallerMaximumFilter
+
 
 You can find an overview of available peak calling methods :ref:`here <analyzer-label>`.
-
-Aim
-===
-
-The aim of postprocessing is to determine regions of high similarity between template and target from the template matching output. This procedure is referred to hereafter as peak calling. Each peak corresponds to a unique occurence of the template in the target, which here is fully characterized by a translation vector, three Euler angles, a score and an additional data column.
-
 
 Background
 ==========
 
-Generally, high scores indicate regions of high similarity, and most scoring functions are limited to the interval [0, 1], with 1 being a perfect match (see :doc:`exhaustive template matching <../reference/matching_exhaustive>` for details on your specific scoring method).
+Postprocessing identifies regions of high similarity from the template matching output, which we refer to as peaks. Each peak corresponds to an occurence of the template in the target, which is fully characterized by a translation vector, a rotation, a score and additional data column.
 
-``match_template.py`` performs an search of all rotational and translation degrees of freedom of the input. For a three-dimensional input this corresponds to a six-dimensional search. Due to memory contraints, this problem is simplified by only storing the maximum score for each translation of the template as well as the rotation used to obtain it. This results in two arrays with the same shape as the target.
-
-To better understand this, lets recall an example from the :ref:`Preprocessing section <preprocess-filtering>`:
+To better understand this, lets recall an example from the :ref:`Preprocessing section <preprocess-filtering>`. Generally, high scores indicate regions of high similarity, and most scoring functions are limited to the interval [0, 1], with 1 being a perfect match (see :doc:`exhaustive template matching <../reference/matching_exhaustive>` for details on your specific scoring method).
 
 .. plot::
 
@@ -136,9 +142,7 @@ To better understand this, lets recall an example from the :ref:`Preprocessing s
     plt.tight_layout()
     plt.show()
 
-The score peak is located within the red rectangle at 111, 240. Therefore, the maximum similariy is obtained when translating the template so that its center of mass is at position 111, 240. This convention used in |project| to represent in scores and candidates is analogous to other tools and figuratively explained in a `skimage tutorial <https://scikit-image.org/docs/stable/auto_examples/features_detection/plot_template.html>`_
-
-The identity matrix is the corresponding rotation matrix for this peak. Different approaches are used to express rotations and translations. |project| centeres rotations around the center of mass and applies translations subsequently by default.
+The score peak is located within the red rectangle at 111, 240. Therefore, the maximum similariy is obtained when translating the template so that its center of mass is at position 111, 240. This convention used in |project| to represent in scores and candidates is analogous to other tools and figuratively explained in a `skimage tutorial <https://scikit-image.org/docs/stable/auto_examples/features_detection/plot_template.html>`_. The corresponding rotation matrix for this peak is the identity matrix.
 
 The following sections explain the output of ``match_template.py`` and outline the peak calling procedure used by ``postprocess.py``.
 
@@ -146,69 +150,24 @@ The following sections explain the output of ``match_template.py`` and outline t
 Template Matching Output
 ========================
 
-The output of ``match_template.py`` is a `pickle <https://docs.python.org/3/library/pickle.html>`_ file that contains the output of the analyzer used on the scores, which by default is :py:class:`tme.analyzer.MaxScoreOverRotations`. The `pickle <https://docs.python.org/3/library/pickle.html>`_ file can be read using :py:meth:`tme.matching_utils.load_pickle` and contains five objects:
+``match_template.py`` evaluates the similarity between target and template along all rotational and translation degrees of freedom. The output is a `pickle <https://docs.python.org/3/library/pickle.html>`_ file, whose content depends on the corresponding analyzer. The `pickle <https://docs.python.org/3/library/pickle.html>`_ file can be read using :py:meth:`tme.matching_utils.load_pickle`. For the default analyzer :py:class:`tme.analyzer.MaxScoreOverRotations`, it contains five objects:
 
-- **Scores Array**: A numpy array with scores mapped to translations.
-- **Translation Offset**: A translation offset informing about shifts in coordinate sytems.
-- **Rotations Array**: A numpy array detailing rotations connected to the scores from specific translations.
-- **Rotation-Euler Dictionary**: A mapping of rotations to their corresponding Euler angles.
-- **Metadata**: Coordinate system information relevant to subsequent analysis as well as all parameters that were used to enable reproducibility.
+- **Scores**: An array with scores mapped to translations.
+- **Offset**: Offset informing about shifts in coordinate sytems.
+- **Rotations**: An array of optimal rotation indices for each translation.
+- **Rotation Dictionary**: Mapping of rotation indices to rotation matrix bytestrings.
+- **Metadata**: Coordinate system information and parameters for reproducibility.
 
+However, when you use the `-p` flag with ``match_template.py``, the output structure differs. The flag triggers direct peak calling, altering the output to:
 
-For those familiar with other tools, the output aligns with what's seen in `STOPGAP <https://github.com/williamnwan/STOPGAP>`_, `PyTom <https://github.com/FridoF/PyTom>`_ and `Situs colores <https://situs.biomachina.org/fguide.html#colores>`_.
-
-
-However, when you use the `-p` flag with ``match_template.py``, the output structure differs. The flag triggers direct peak calling, altering the output to include:
-
-- **Translations**: A numpy array containing translations with shape `number_peaks x dimensions`.
-- **Rotations**: A numpy array containing rotations with shape `number_peaks x dimensions x dimensions`.
-- **Scores**: The scoring values for each peak, defined by its translation and rotation.
+- **Translations**: A numpy array containing translations of peaks.
+- **Rotations**: A numpy array containing rotations of peaks.
+- **Scores**: Score of each peak.
 - **Details**: Additional information regarding each peak.
-- **Metadata**: Coordinate system information relevant to subsequent analysis as well as all parameters that were used to enable reproducibility.
-
-
-Peak Calling
-============
-
-Regardless of the ``output_format``, ``postprocess.py`` will determine orientations where the template is most similar to the target. In the following we will have a look on what ``postprocess.py`` is doing under the hood.
-
-Schematically, we will use the `pickle <https://docs.python.org/3/library/pickle.html>`_ file generated by ``match_template.py``, together with :py:class:`tme.analyzer.PeakCallerScipy` (see :ref:`analyzer-label` for further options) to identify a maximum of 1000 local maxima that are separated by a distance of 5 voxel. Typically it is reasonable to set ``min_distance`` and ``min_boundary_distance`` to the size of the smallest dimension of the template.
-
-.. code-block:: python
-
-    import pickle
-    import numpy as np
-    from tme.analyzer import PeakCallerScipy
-    from tme.matching_utils import load_pickle
-
-    # Loading ``match_template.py`` output.
-    data = load_pickle("output.pickle")
-
-    scores, offset, rotations, rotation_mapping, *_ = data
-
-    # Calling peaks on score array
-    peak_caller = PeakCallerScipy(
-        number_of_peaks = 1000,
-        min_distance = 5
-    )
-    peak_caller(scores, rotation_matrix = np.eye(3))
-    candidates = tuple(peak_caller)
-
-    # Writing orientations to disk
-    header = "\t".join(["z", "y", "x", "euler_z", "euler_y", "euler_x", "score", "detail"])
-    with open("output.tsv", mode = "w", encoding = "utf-8") as ofile:
-        _ = ofile.write(f"{header}\n")
-        for translation, _, score, detail in zip(*candidates):
-            angles = rotation_mapping[rotations[tuple(translation)]]
-            translation_string = "\t".join([str(x) for x in translation])
-            angle_string = "\t".join([str(x) for x in angles])
-            _ = ofile.write(f"{translation_string}\t{angle_string}\t{score}\n")
+- **Metadata**: Coordinate system information and parameters for reproducibility.
 
 .. note::
-
-    The determined candidates heavily depend on the used analyzer. For more details on available analzyers please refer to :ref:`analyzer-label`.
-
-In summary, peak calling determines a local maximum in the computed `scores` array, looks up the corresponding rotation in the `rotations` array, converts the rotation index to Euler angles using `rotation_mapping`. The generated ``output.tsv`` file is equivalent to running ``postprocess.py`` with ``output_format`` orientations.
+    In general, all but the last element of the created output pickle will correspond to return value of a given :doc:`analyzer <../reference/analyzer>`'s merge method.
 
 
 Usage Examples
@@ -220,9 +179,21 @@ The following outlines how to use the output of ``postprocessing.py``'s ``output
 
     .. tab-item:: Particle Picking
 
-        The most commonly used approach towards assessing picked particles is through manual filtering. This procedure is supported by the napari GUI shipped wiith |project|. Like in previous tutorials, using the GUI requires following the installation procedure outlined in the :ref:`gui-installation`. For an introduction how to operate the GUI see the :ref:`preprocessing section <filter-application>`.
+        The code block below will identify no more than 1000 peaks, that are sufficiently distanced from the edges of the tomogram and maintain an individual distance of 30 voxels.
 
-        To showcase the GUI, we are going to utilze particle picks generated on the tomogram TS_037 [1]_. Launch the GUI application, drag and drop the tomogram into the viewer and subseqeuently used the `Import Point Cloud` button to select and import the output.tsv generated with ``postprocess.py`` in ``output_format`` orientations. The colors of the particles correspond to their respective score relativ to other elements of the same point cloud. The particles are colored according to the `Turbo` colorscale, with low scoring particles being colored in blue, and high scoring particles colored in red.
+        .. code-block:: bash
+
+            postprocess.py \
+                --input_file output.pickle \
+                --output_prefix output \
+                --output_format orientations \
+                --min_distance 30 \
+                --mask_edges \
+                --number_of_peaks 1000
+
+        If you are not sure about the number of peaks in your data, you can set score cutoffs using ``--minimum_score`` and ``--maximum_score``, or have the minimum score automatically determined using ``--n_false_positives``.
+
+        Picked particles are typically assessed manually, which is supported by the napari GUI shipped with |project| (:ref:`installation <gui-installation>`, :ref:`usage <filter-application>`). To showcase the GUI, we are going to utilze particle picks generated on the tomogram TS_037 [1]_. Launch the GUI application, drag and drop the tomogram into the viewer and subseqeuently use the ``Import Point Cloud`` button to select and import the result from ``postprocess.py``. Points are colored according to the Turbo colorscale, from low scores in blue to high scores in red.
 
         .. figure:: ../_static/examples/napari_pointcloud_widget_intro.png
             :width: 100 %
@@ -230,7 +201,7 @@ The following outlines how to use the output of ``postprocessing.py``'s ``output
 
         Using the controls outlined in blue, we can remove particles from the set by using the delete key. If you would like to change the color, size, or shape of the particles, you can select everything by clicking on the particle layer followed by Shift + A. Pressing Shift + A again clears the selection.
 
-        Once you have removed particles that were deemed unreliable by manual inspection, you can export the remaining points using the `Export Point Cloud button`. This will generate an orientations tsv file anaologous to ``output_format`` orientations in ``postprocess.py``. You can even use this subsetted list for further analysis. Assuming the file generated by napari is called ``filtered_orientations.tsv`` you can utilize the ``orientations`` parameter of ``postprocess.py`` like so:
+        Once you have removed particles that were deemed unreliable by manual inspection, you can export the remaining points using the `Export Point Cloud button`. This will generate an orientations tsv file anaologous to ``output_format`` orientations in ``postprocess.py``. Assume you generated a file called ``filtered_orientations.tsv`` you can pass it to ``postprocess.py`` using the ``--orientations``
 
         .. code-block:: bash
 
@@ -357,7 +328,7 @@ The following outlines how to use the output of ``postprocessing.py``'s ``output
 Troubleshooting
 ===============
 
-The most insightful piece of information for troubleshooting are the computed scores, and their corresponding orientations. Assuming ``match_template.py`` generated a file ``output.pickle``, you can write the template matching scores and their corresponding rotations to disk within python as follows:
+The most insightful piece of information for troubleshooting are the computed scores, and their corresponding orientations. Assuming ``match_template.py`` generated a file ``output.pickle``, you can directly import it into the GUI using the ``Import Pickle`` button. Alternatively, you can write the scores and rotations to disk for subsequent analysis in a a macromolecular viewer of your choice. For reference, you can have a look at the :ref:`preprocessing section <preprocess-filtering>` to assess whether your results are reminiscent of examples there.
 
 .. code-block:: python
 
@@ -372,12 +343,11 @@ The most insightful piece of information for troubleshooting are the computed sc
     Density(scores).to_file("scores.mrc")
     Density(rotations).to_file("rotations.mrc")
 
-Executing the code above will generated two CCP4/MRC files ``scores.mrc`` and ``rotations.mrc``, that you can open in the napari GUI shipped with |project| or a macromolecular viewer of your choice. For reference, you can have a look at the :ref:`preprocessing section <preprocess-filtering>` to assess whether your results are reminiscent of examples there.
 
-If no examples match your particular case, please feel free to open an issue in the |project| `repository <https://github.com/KosinskiLab/pyTME.git>`_.
+If no examples match your particular case, please feel free to open an `issue <https://github.com/KosinskiLab/pyTME.git>`_.
 
 
 References
 ==========
 
-.. [1] de Teresa-Trueba, I.; Goetz, S. K.; Mattausch, A.; Stojanovska, F.; Zimmerli, C. E.; Toro-Nahuelpan, M.; Cheng, D. W. C.; Tollervey, F.; Pape, C.; Beck, M.; Diz-Munoz, A.; Kreshuk, A.; Mahamid, J.; Zaugg, J. B. Convolutional networks for supervised mining of molecular patterns within cellular context. Nat. Methods 2023, 20, 284–294.
+.. [1] de Teresa-Trueba, I. et al. Nat. Methods 2023, 20, 284–294.

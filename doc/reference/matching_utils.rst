@@ -55,7 +55,6 @@ Utilities
 .. autosummary::
    :toctree: api/
 
-   close_memmap
    scramble_phases
    rigid_transform
    array_to_memmap

@@ -38,7 +38,4 @@ Utilities
 .. autosummary::
    :toctree: api/
 
-   Preprocessor.fftfreqn
-   Preprocessor.fourier_crop
-   Preprocessor.fourier_uncrop
    Preprocessor.interpolate_box
