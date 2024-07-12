@@ -1,5 +1,8 @@
 # Python Template Matching Engine (PyTME)
 
+[![Build Status](https://img.shields.io/github/actions/workflow/status/KosinskiLab/pyTME/main.yml?label=CI)](https://github.com/KosinskiLab/pyTME/actions)
+[![PyPI](https://img.shields.io/pypi/v/pytme.svg)](https://pypi.org/project/pytme/)
+
 **[Documentation](https://kosinskilab.github.io/pyTME/)** | **[Installation](https://kosinskilab.github.io/pyTME/quickstart/installation.html)** | **[API](https://kosinskilab.github.io/pyTME/reference/index.html)**
 
 PyTME is a Python library for data-intensive n-dimensional template matching using CPUs and GPUs.
@@ -12,7 +15,7 @@ Finally, pyTME offers specialized tools for cryogenic electron microscopy data, 
 
 Running into bugs or missing a feature? Help us improve the project by opening an [issue](https://github.com/KosinskiLab/pyTME/issues).
 
-### Installation
+## Installation
 
 We recommend installation using one of the following methods
 
@@ -25,7 +28,7 @@ We recommend installation using one of the following methods
 You can find alternative installation methods in the [documentation](https://kosinskilab.github.io/pyTME/quickstart/installation.html).
 
 
-### Quickstart
+## Quickstart
 
 Learn how to get started with
 
@@ -33,9 +36,7 @@ Learn how to get started with
 - [Template matching:](https://kosinskilab.github.io/pyTME/quickstart/match_template.html) Find your template of interest.
 - [Postprocessing](https://kosinskilab.github.io/pyTME/quickstart/postprocessing.html) Analyze template matching results and downstream integrations.
 
----
-
-### How to Cite
+## How to Cite
 
 If PyTME contributed significantly to your research, please cite the corresponding publication on [SoftwareX](https://www.sciencedirect.com/science/article/pii/S2352711024000074).
 

@@ -18,7 +18,7 @@ from ..types import NDArray, TorchTensor, shm_type
 
 class PytorchBackend(NumpyFFTWBackend):
     """
-    A pytorch based matching backend.
+    A pytorch-based matching backend.
     """
 
     def __init__(

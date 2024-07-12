@@ -260,7 +260,7 @@ def scan(
         "fast_shape": fast_shape,
         "indices": getattr(matching_data, "indices", None),
         "shared_memory_handler": shared_memory_handler,
-        "only_unique_rotations" : True,
+        "only_unique_rotations": True,
     }
     default_callback_args.update(callback_class_args)
 

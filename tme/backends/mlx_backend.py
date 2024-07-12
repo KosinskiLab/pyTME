@@ -14,7 +14,7 @@ from ..types import NDArray, MlxArray, Scalar, shm_type
 
 class MLXBackend(NumpyFFTWBackend):
     """
-    A MLX based matching backend.
+    A mlx-based matching backend.
     """
 
     def __init__(

@@ -20,7 +20,7 @@ TEXTURE_CACHE = {}
 
 class CupyBackend(NumpyFFTWBackend):
     """
-    A cupy based matching backend.
+    A cupy-based matching backend.
     """
 
     def __init__(
@@ -156,20 +156,17 @@ class CupyBackend(NumpyFFTWBackend):
         self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
     ) -> Tuple[List[int], List[int], List[int]]:
         from cupyx.scipy.fft import next_fast_len
-        # TODO: Benchmark this vs pyfftw padding
-        convolution_shape = [
-            int(x) + int(y) - 1 for x, y in zip(arr1_shape, arr2_shape)
-        ]
-        fast_shape = [next_fast_len(x, real = True) for x in convolution_shape]
+
+        convolution_shape = [int(x + y - 1) for x, y in zip(arr1_shape, arr2_shape)]
+        fast_shape = [next_fast_len(x, real=True) for x in convolution_shape]
         fast_ft_shape = list(fast_shape[:-1]) + [fast_shape[-1] // 2 + 1]
+
+        # This almost never happens but avoid cuFFT casting errors
+        is_odd = fast_shape[-1] % 2
+        fast_shape[-1] += is_odd
+        fast_ft_shape[-1] += is_odd
+
         return convolution_shape, fast_shape, fast_ft_shape
-
-        # # cuFFT plans do not support automatic padding yet.
-        # is_odd = fast_shape[-1] % 2
-        # fast_shape[-1] += is_odd
-        # fast_ft_shape[-1] += is_odd
-
-        # return conv_shape, fast_shape, fast_ft_shape
 
     def max_filter_coordinates(self, score_space, min_distance: Tuple[int]):
         score_box = tuple(min_distance for _ in range(score_space.ndim))
@@ -197,7 +194,7 @@ class CupyBackend(NumpyFFTWBackend):
 
         from voltools import StaticVolume
 
-        # TODO: Manage the size of the cache
+        # Only keep template and potential corresponding mask in cache
         if len(TEXTURE_CACHE) >= 2:
             TEXTURE_CACHE.clear()
 

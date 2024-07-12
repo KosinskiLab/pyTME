@@ -29,7 +29,7 @@ def emulate_out(func):
 
 class JaxBackend(NumpyFFTWBackend):
     """
-    A Jax based matching backend.
+    A jax-based matching backend.
     """
 
     def __init__(self, float_dtype=None, complex_dtype=None, int_dtype=None, **kwargs):
@@ -263,7 +263,7 @@ class JaxBackend(NumpyFFTWBackend):
                     thread_safe=False,
                     offset=translation_offsets[index],
                 )
-                temp.observed_rotations = rotation_mapping
+                temp.rotation_mapping = rotation_mapping
                 ret.append(tuple(temp._postprocess(**analyzer_args)))
 
         return ret

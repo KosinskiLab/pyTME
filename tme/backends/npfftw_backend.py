@@ -76,7 +76,7 @@ class _NumpyWrapper:
 
 class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
     """
-    A Numpy and pyfftw based matching backend.
+    A numpy and pyfftw-based matching backend.
     """
 
     def __init__(
@@ -262,7 +262,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         return arr[box]
 
     def compute_convolution_shapes(
-        self, arr1_shape: Tuple[int], arr2_shape: Tuple[int], real : bool = False
+        self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
     ) -> Tuple[List[int], List[int], List[int]]:
         """
         Computes regular, optimized and fourier convolution shape.
@@ -273,8 +273,6 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
             Tuple of integers corresponding to array1 shape.
         arr2_shape : tuple
             Tuple of integers corresponding to array2 shape.
-        real : bool
-            Whether to return a next_fast_len optimized for rfftns.
 
         Returns
         -------
@@ -283,9 +281,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
             fourier transform, shape of the forward fourier transform
             (see :py:meth:`build_fft`).
         """
-        convolution_shape = [
-            int(x) + int(y) - 1 for x, y in zip(arr1_shape, arr2_shape)
-        ]
+        convolution_shape = [int(x + y - 1) for x, y in zip(arr1_shape, arr2_shape)]
         fast_shape = [next_fast_len(x) for x in convolution_shape]
         fast_ft_shape = list(fast_shape[:-1]) + [fast_shape[-1] // 2 + 1]
 
