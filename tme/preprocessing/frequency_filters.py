@@ -29,7 +29,7 @@ class BandPassFilter:
     highpass : float, optional
         The highpass cutoff, defaults to None.
     sampling_rate : Tuple[float], optional
-        The sampling rate in Fourier space, defaults to 1.
+        The sampling r_position_to_molmapate in Fourier space, defaults to 1.
     use_gaussian : bool, optional
         Whether to use Gaussian bandpass filter, defaults to True.
     return_real_fourier : bool, optional

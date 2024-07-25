@@ -170,8 +170,9 @@ def lcc_setup(target: BackendArray, template: BackendArray, **kwargs) -> Dict:
     -----
     To be used with :py:meth:`corr_scoring`.
     """
-    kwargs["target"] = laplace(target, mode="wrap")
-    kwargs["template"] = laplace(template, mode="wrap")
+    target, template = be.to_numpy_array(target), be.to_numpy_array(template)
+    kwargs["target"] = be.to_backend_array(laplace(target, mode="wrap"))
+    kwargs["template"] = be.to_backend_array(laplace(template, mode="wrap"))
     return cc_setup(**kwargs)
 
 

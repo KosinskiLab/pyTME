@@ -119,6 +119,19 @@ class JaxBackend(NumpyFFTWBackend):
 
         return rfftn, irfftn
 
+    def compute_convolution_shapes(
+        self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
+    ) -> Tuple[List[int], List[int], List[int]]:
+        conv_shape, fast_shape, fast_ft_shape = super().compute_convolution_shapes(
+            arr1_shape, arr2_shape
+        )
+
+        is_odd = fast_shape[-1] % 2
+        fast_shape[-1] += is_odd
+        fast_ft_shape[-1] += is_odd
+
+        return conv_shape, fast_shape, fast_ft_shape
+
     def rigid_transform(
         self,
         arr: BackendArray,

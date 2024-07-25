@@ -137,5 +137,5 @@ The computed ``translation`` and ``rotation`` can then be used to recover the co
       use_geometric_center=True
    )
 
-:py:meth:`optimize_match` also supports a range of other optimization schemes that can lead more accurate results at a cost of runtime or find the optimal configuration faster if the initial configuration is close to the global optimum. Alternatively, developers can make use of the :py:meth:`NormalizedCrossCorrelation.score` method that accepts a tuple of translations and Euler angles for us ein custom optimizers.
+:py:meth:`optimize_match` also supports a range of other optimization schemes that can lead more accurate results at a cost of runtime or find the optimal configuration faster if the initial configuration is close to the global optimum. Alternatively, developers can make use of the :py:meth:`CrossCorrelation.score` method that accepts a tuple of translations and Euler angles for use in custom optimizers.
 

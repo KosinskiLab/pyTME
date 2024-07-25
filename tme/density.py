@@ -642,7 +642,7 @@ class Density:
         sampling_rate: NDArray = np.ones(1),
         origin: Tuple[float] = None,
         weight_type: str = "atomic_weight",
-        scattering_args: Dict = dict(),
+        weight_type_args: Dict = {},
         chain: str = None,
         filter_by_elements: Set = None,
         filter_by_residues: Set = None,
@@ -672,6 +672,8 @@ class Density:
         weight_type : str, optional
             Which weight should be given to individual atoms. For valid values
             see :py:meth:`tme.structure.Structure.to_volume`.
+        weight_type_args : dict, optional
+            Additional arguments for atom weight computation.
         chain : str, optional
             The chain that should be extracted from the structure. If multiple chains
             should be selected, they needto be a comma separated string,
@@ -680,8 +682,6 @@ class Density:
             Set of atomic elements to keep. Default is all atoms.
         filter_by_residues : set, optional
             Set of residues to keep. Default is all residues.
-        scattering_args : dict, optional
-            Additional arguments for scattering factor computation.
 
         Returns
         -------
@@ -745,7 +745,7 @@ class Density:
         >>> density = Density.from_structure(
         >>>    filename_or_structure = path_to_structure,
         >>>    weight_type = "scattering_factors",
-        >>>    scattering_args={"source": "dt1969"}
+        >>>    weight_type_args={"source": "dt1969"}
         >>> )
 
         or a lowpass filtered representation introduced in [1]_:
@@ -753,7 +753,7 @@ class Density:
         >>> density = Density.from_structure(
         >>>    filename_or_structure = path_to_structure,
         >>>    weight_type = "lowpass_scattering_factors",
-        >>>    scattering_args={"source": "dt1969"}
+        >>>    weight_type_args={"source": "dt1969"}
         >>> )
 
         See Also
@@ -775,7 +775,7 @@ class Density:
             origin=origin,
             chain=chain,
             weight_type=weight_type,
-            scattering_args=scattering_args,
+            weight_type_args=weight_type_args,
         )
 
         return cls(
@@ -1454,8 +1454,8 @@ class Density:
         Raises
         ------
         ValueError
-            If the length of `new_shape` does not match the dimensionality of the
-            internal data array.
+            If the length of ``new_shape`` does not match the dimensionality of
+            :py:attr:`Density.data`.
 
         Examples
         --------
@@ -1469,13 +1469,6 @@ class Density:
         >>> dens.data
         array([0, 1, 1, 1, 0])
 
-        It's also possible to pass a user-defined ``padding_value``:
-
-        >>> dens = Density(np.array([1,1,1]))
-        >>> dens.pad(new_shape = (5,), center = True, padding_value = -1)
-        >>> dens.data
-        array([-1, 1, 1, 1, -1])
-
         If ``center`` is set to False, the padding values will be appended:
 
         >>> dens = Density(np.array([1,1,1]))
@@ -1483,6 +1476,12 @@ class Density:
         >>> dens.data
         array([1, 1, 1, 0, 0])
 
+        It's also possible to pass a user-defined ``padding_value``:
+
+        >>> dens = Density(np.array([1,1,1]))
+        >>> dens.pad(new_shape = (5,), center = True, padding_value = -1)
+        >>> dens.data
+        array([-1, 1, 1, 1, -1])
         """
         if len(new_shape) != self.data.ndim:
             raise ValueError(

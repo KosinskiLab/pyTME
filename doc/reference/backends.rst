@@ -65,7 +65,6 @@ Array operations
    MatchingBackend.size
    MatchingBackend.fill
    MatchingBackend.clip
-   MatchingBackend.flip
    MatchingBackend.roll
    MatchingBackend.stack
    MatchingBackend.indices

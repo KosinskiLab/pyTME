@@ -141,9 +141,6 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         temp = self._array_backend.zeros(1, dtype=dtype)
         return temp.nbytes
 
-    def flip(self, a, axis, **kwargs):
-        return self._array_backend.flip(a, axis, **kwargs)
-
     @staticmethod
     def astype(arr, dtype):
         return arr.astype(dtype)

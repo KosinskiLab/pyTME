@@ -678,7 +678,7 @@ def parse_args():
         dest="no_flip_phase",
         action="store_false",
         required=False,
-        help="Perform phase-flipping CTF correction.",
+        help="Do not perform phase-flipping CTF correction.",
     )
     ctf_group.add_argument(
         "--correct_defocus_gradient",

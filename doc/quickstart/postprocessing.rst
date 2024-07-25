@@ -155,7 +155,7 @@ Template Matching Output
 - **Scores**: An array with scores mapped to translations.
 - **Offset**: Offset informing about shifts in coordinate sytems.
 - **Rotations**: An array of optimal rotation indices for each translation.
-- **Rotation Dictionary**: Mapping of rotation indices to rotation matrix bytestrings.
+- **Rotation Dictionary**: Mapping of rotation indices to rotation matrices.
 - **Metadata**: Coordinate system information and parameters for reproducibility.
 
 However, when you use the `-p` flag with ``match_template.py``, the output structure differs. The flag triggers direct peak calling, altering the output to:

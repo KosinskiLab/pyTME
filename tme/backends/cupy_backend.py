@@ -71,7 +71,13 @@ class CupyBackend(NumpyFFTWBackend):
             tmp1 *= tmp1;
 
             tmp2 = sqrt(max(tmp2 - tmp1, 0.0));
-            out = (tmp2 < eps) ? 0.0 : arr / (tmp2 * n_obs);
+            // out = (tmp2 < eps) ? 0.0 : arr / (tmp2 * n_obs);
+            tmp1 = arr;
+            if (tmp2 < eps){
+                tmp1 = 0;
+            }
+            tmp2 *= n_obs;
+            out = tmp1 / tmp2;
             """,
             "norm_scores",
         )

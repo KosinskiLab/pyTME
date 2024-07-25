@@ -567,9 +567,7 @@ class PeakCallerFast(PeakCaller):
     """
 
     def call_peaks(self, scores: BackendArray, **kwargs) -> PeakType:
-        splits = {
-            axis: scores.shape[axis] // self.min_distance for axis in range(scores.ndim)
-        }
+        splits = {i: x // self.min_distance for i, x in enumerate(scores.shape)}
         slices = split_shape(scores.shape, splits)
 
         coordinates = be.to_backend_array(
@@ -582,9 +580,7 @@ class PeakCallerFast(PeakCaller):
             [tuple(x.start for x in subvol) for subvol in slices]
         )
         be.add(coordinates, offset, out=coordinates)
-        coordinates = coordinates[
-            be.flip(be.argsort(scores[tuple(coordinates.T)]), (0,))
-        ]
+        coordinates = coordinates[be.argsort(-scores[tuple(coordinates.T)])]
 
         if coordinates.shape[0] == 0:
             return None
@@ -918,7 +914,7 @@ class MaxScoreOverRotations:
     rotation_mapping : Dict
         Mapping of rotation matrix bytestrings to rotation indices.
     offset : BackendArray, optional
-        Coordinate origin considered during merging, zeryo by default
+        Coordinate origin considered during merging, zero by default
     use_memmap : bool, optional
         Memmap scores and rotations arrays, False by default.
     thread_safe: bool, optional
@@ -947,7 +943,7 @@ class MaxScoreOverRotations:
     >>>     rotation = np.random.rand(scores.ndim, scores.ndim)
     >>>     analyzer(scores = scores, rotation_matrix = rotation)
 
-    The aggregated scores can be exctracted by invoking the __iter__ method of
+    The aggregated scores can be extracted by invoking the __iter__ method of
     ``analyzer``
 
     >>> results = tuple(analyzer)
@@ -958,7 +954,7 @@ class MaxScoreOverRotations:
     score for a given translation, (4) a dictionary mapping rotation matrices to the
     indices used in (2).
 
-    We can extract the ``optimal_score`, ``optimal_translation`` and ``optimal_rotation``
+    We can extract the ``optimal_score``, ``optimal_translation`` and ``optimal_rotation``
     as follows
 
     >>> optimal_score = results[0].max()
@@ -1136,13 +1132,13 @@ class MaxScoreOverRotations:
             return None
 
     @classmethod
-    def merge(cls, param_stores=List[Tuple], **kwargs) -> Tuple[NDArray]:
+    def merge(cls, param_stores : List[Tuple], **kwargs) -> Tuple[NDArray]:
         """
         Merges multiple instances of :py:class:`MaxScoreOverRotations`.
 
         Parameters
         ----------
-        param_stores : list of tuples, optional
+        param_stores : list of tuples
             Internal parameter store. Obtained by running `tuple(instance)`.
         **kwargs
             Optional keyword arguments.
@@ -1267,7 +1263,6 @@ class MaxScoreOverRotations:
     @property
     def shared(self):
         return True
-
 
 class _MaxScoreOverTranslations(MaxScoreOverRotations):
     """

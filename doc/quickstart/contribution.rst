@@ -17,12 +17,6 @@ Code Style and Guidelines
 
 4. **Testing**: Write tests for any new features or bug fixes. Ensure that all tests pass before submitting a pull request.
 
-5. **No Unnecessary Getters and Setters**: Avoid using getters and setters unless they provide clear value, such as data validation or computed properties.
-
-6. **Commit Messages**: Write meaningful commit messages that describe the implications of your changes.
-
-7. **Stay Updated**: Make sure your fork and local copies are updated regularly from the main branch to avoid merge conflicts.
-
 Contribution Workflow
 ----------------------
 

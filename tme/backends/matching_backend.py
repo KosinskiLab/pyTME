@@ -6,11 +6,10 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Tuple, Callable, List, Any
 from multiprocessing import shared_memory
+from typing import Tuple, Callable, List, Any, Union, Optional, Generator
 
-from numpy.typing import NDArray
-from ..types import ArrayLike, Scalar, shm_type
+from ..types import BackendArray, NDArray, Scalar, shm_type
 
 
 def _create_metafunction(func_name: str) -> Callable:
@@ -143,7 +142,7 @@ class MatchingBackend(ABC):
         return sorted(base_attributes)
 
     @abstractmethod
-    def to_backend_array(self, arr: NDArray) -> ArrayLike:
+    def to_backend_array(self, arr: NDArray) -> BackendArray:
         """
         Convert a numpy array instance to backend array type.
 
@@ -154,7 +153,7 @@ class MatchingBackend(ABC):
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             An array of the specified backend.
 
         See Also
@@ -164,13 +163,13 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def to_numpy_array(self, arr: ArrayLike) -> NDArray:
+    def to_numpy_array(self, arr: BackendArray) -> NDArray:
         """
         Convert an array of given backend to a numpy array.
 
         Parameters
         ----------
-        arr : NDArray
+        arr : BackendArray
             The array instance to be converted.
 
         Returns
@@ -185,24 +184,40 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def to_cpu_array(self, arr: ArrayLike) -> ArrayLike:
+    def to_cpu_array(self, arr: BackendArray) -> BackendArray:
         """
         Convert an array of a given backend to a CPU array of that backend.
 
         Parameters
         ----------
-        arr : NDArray
+        arr : BackendArray
             The array instance to be converted.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             The CPU array equivalent of arr.
 
         See Also
         --------
         :py:meth:`MatchingBackend.to_numpy_array`
         :py:meth:`MatchingBackend.to_backend_array`
+        """
+
+    def get_fundamental_dtype(self, arr: BackendArray) -> type:
+        """
+        Given an array instance, returns the corresponding fundamental python type,
+        i.e., int, float or complex.
+
+        Parameters
+        ----------
+        arr : BackendArray
+            Input data.
+
+        Returns
+        -------
+        type
+            Data type.
         """
 
     @abstractmethod
@@ -212,366 +227,380 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def add(self, arr1: ArrayLike, arr2: ArrayLike, out: ArrayLike = None) -> ArrayLike:
+    def add(
+        self, arr1: BackendArray, arr2: BackendArray, out: BackendArray = None
+    ) -> BackendArray:
         """
-        Interface for element-wise addition of arrays.
+        Element-wise addition of arrays.
 
         Parameters
         ----------
-        arr1 : ArrayLike
+        arr1 : BackendArray
             Input array.
-        arr2 : ArrayLike
+        arr2 : BackendArray
             Input array.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Element-wise sum of the input arrays.
         """
 
     @abstractmethod
     def subtract(
-        self, arr1: ArrayLike, arr2: ArrayLike, out: ArrayLike = None
-    ) -> ArrayLike:
+        self, arr1: BackendArray, arr2: BackendArray, out: BackendArray = None
+    ) -> BackendArray:
         """
-        Interface for element-wise subtraction of arrays.
+        Element-wise subtraction of arrays.
 
         Parameters
         ----------
-        arr1 : ArrayLike
+        arr1 : BackendArray
             The minuend array.
-        arr2 : ArrayLike
+        arr2 : BackendArray
             The subtrahend array.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Element-wise difference of the input arrays.
         """
 
     @abstractmethod
     def multiply(
-        self, arr1: ArrayLike, arr2: ArrayLike, out: ArrayLike = None
-    ) -> ArrayLike:
+        self, arr1: BackendArray, arr2: BackendArray, out: BackendArray = None
+    ) -> BackendArray:
         """
-        Interface for element-wise multiplication of arrays.
+        Element-wise multiplication of arrays.
 
         Parameters
         ----------
-        arr1 : ArrayLike
+        arr1 : BackendArray
             Input array.
-        arr2 : ArrayLike
+        arr2 : BackendArray
             Input array.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Element-wise product of the input arrays.
         """
 
     @abstractmethod
     def divide(
-        self, arr1: ArrayLike, arr2: ArrayLike, out: ArrayLike = None
-    ) -> ArrayLike:
+        self, arr1: BackendArray, arr2: BackendArray, out: BackendArray = None
+    ) -> BackendArray:
         """
-        Interface for element-wise division of arrays.
+        Element-wise division of arrays.
 
         Parameters
         ----------
-        arr1 : ArrayLike
+        arr1 : BackendArray
             The dividend array.
-        arr2 : ArrayLike
+        arr2 : BackendArray
             The divisor array.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Element-wise quotient of the input arrays.
         """
 
     @abstractmethod
-    def mod(self, arr1: ArrayLike, arr2: ArrayLike, out: ArrayLike = None) -> ArrayLike:
+    def mod(
+        self, arr1: BackendArray, arr2: BackendArray, out: BackendArray = None
+    ) -> BackendArray:
         """
-        Interface for element-wise modulus of arrays.
+        Element-wise modulus of arrays.
 
         Parameters
         ----------
-        arr1 : ArrayLike
+        arr1 : BackendArray
             The dividend array.
-        arr2 : ArrayLike
+        arr2 : BackendArray
             The divisor array.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Element-wise modulus of the input arrays.
         """
 
     @abstractmethod
     def einsum(
-        self, arr1: ArrayLike, arr2: ArrayLike, out: ArrayLike = None
-    ) -> ArrayLike:
+        self, arr1: BackendArray, arr2: BackendArray, out: BackendArray = None
+    ) -> BackendArray:
         """
-        Interface for einstein notation based summation.
+        Compute the einstein notation based summation.
 
         Parameters
         ----------
         subscripts : str
             Specifies the subscripts for summation (see  :obj:`numpy.einsum`).
-        arr1, arr2 : ArrayLike
+        arr1, arr2 : BackendArray
             Input data.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Einsum of input arrays.
         """
 
     @abstractmethod
-    def sum(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
+    def sum(
+        self, arr: BackendArray, axis: Tuple[int] = None
+    ) -> Union[BackendArray, Scalar]:
         """
         Compute the sum of array elements.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         axis : int or tuple of ints, optional
             Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
-        ArrayLike
+        Union[BackendArray, Scalar]
             Sum of ``arr``.
         """
 
     @abstractmethod
-    def mean(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
+    def mean(
+        self, arr: BackendArray, axis: Tuple[int] = None
+    ) -> Union[BackendArray, Scalar]:
         """
         Compute the mean of array elements.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         axis : int or tuple of ints, optional
             Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
-        ArrayLike
+        Union[BackendArray, Scalar]
             Mean of ``arr``.
         """
 
     @abstractmethod
-    def std(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
+    def std(
+        self, arr: BackendArray, axis: Tuple[int] = None
+    ) -> Union[BackendArray, Scalar]:
         """
         Compute the standad deviation of array elements.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         axis : int or tuple of ints, optional
             Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
-        ArrayLike
+        Union[BackendArray, Scalar]
             Standard deviation of ``arr``.
         """
 
     @abstractmethod
-    def max(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
+    def max(
+        self, arr: BackendArray, axis: Tuple[int] = None
+    ) -> Union[BackendArray, Scalar]:
         """
         Compute the maximum of array elements.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         axis : int or tuple of ints, optional
             Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
-        ArrayLike
+        Union[BackendArray, Scalar]
             Maximum of ``arr``.
         """
 
     @abstractmethod
-    def min(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
+    def min(
+        self, arr: BackendArray, axis: Tuple[int] = None
+    ) -> Union[BackendArray, Scalar]:
         """
         Compute the minimum of array elements.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         axis : int or tuple of ints, optional
             Axis or axes to perform the operation on. Default is all.
 
         Returns
         -------
-        ArrayLike
+        Union[BackendArray, Scalar]
             Minimum of ``arr``.
         """
 
     @abstractmethod
     def maximum(
-        self, arr1: ArrayLike, arr2: ArrayLike, out: ArrayLike = None
-    ) -> Scalar:
+        self, arr1: BackendArray, arr2: BackendArray, out: BackendArray = None
+    ) -> BackendArray:
         """
         Compute the element wise maximum of arr1 and arr2.
 
         Parameters
         ----------
-        arr1, arr2 : ArrayLike
+        arr1, arr2 : BackendArray
             Input data.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Element wise maximum of ``arr1`` and ``arr2``.
         """
 
     @abstractmethod
     def minimum(
-        self, arr1: ArrayLike, arr2: ArrayLike, out: ArrayLike = None
-    ) -> Scalar:
+        self, arr1: BackendArray, arr2: BackendArray, out: BackendArray = None
+    ) -> BackendArray:
         """
         Compute the element wise minimum of arr1 and arr2.
 
         Parameters
         ----------
-        arr1, arr2 : ArrayLike
+        arr1, arr2 : BackendArray
             Input data.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Element wise minimum of arr1 and arr2.
         """
 
     @abstractmethod
-    def sqrt(self, arr: ArrayLike, out: ArrayLike = None) -> ArrayLike:
+    def sqrt(self, arr: BackendArray, out: BackendArray = None) -> BackendArray:
         """
         Compute the square root of array elements.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Square root of ``arr``.
         """
 
     @abstractmethod
-    def square(self, arr: ArrayLike, out: ArrayLike = None) -> ArrayLike:
+    def square(self, arr: BackendArray, out: BackendArray = None) -> BackendArray:
         """
         Compute the square of array elements.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Square of ``arr``.
         """
 
     @abstractmethod
-    def abs(self, arr: ArrayLike, out: ArrayLike = None) -> ArrayLike:
+    def abs(self, arr: BackendArray, out: BackendArray = None) -> BackendArray:
         """
         Compute the absolute of array elements.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Absolute value of ``arr``.
         """
 
     @abstractmethod
-    def transpose(self, arr: ArrayLike) -> ArrayLike:
+    def transpose(self, arr: BackendArray) -> BackendArray:
         """
         Compute the transpose of arr.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Transpose of ``arr``.
         """
 
     def power(
         self,
-        arr: ArrayLike = None,
-        power: ArrayLike = None,
-        out: ArrayLike = None,
+        arr: BackendArray = None,
+        power: BackendArray = None,
+        out: BackendArray = None,
         *args,
         **kwargs,
-    ) -> ArrayLike:
+    ) -> BackendArray:
         """
         Compute the n-th power of an array.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
-        power : ArrayLike
+        power : BackendArray
             Power to raise ``arr`` to.
-        arr : ArrayLike
+        arr : BackendArray
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             N-th power of ``arr``.
         """
 
-    def tobytes(self, arr: ArrayLike) -> str:
+    def tobytes(self, arr: BackendArray) -> str:
         """
         Compute the bytestring representation of arr.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
 
         Returns
@@ -581,13 +610,13 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def size(self, arr: ArrayLike) -> int:
+    def size(self, arr: BackendArray) -> int:
         """
         Compute the number of elements of arr.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
 
         Returns
@@ -597,20 +626,20 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def fill(self, arr: ArrayLike, value: Scalar) -> None:
+    def fill(self, arr: BackendArray, value: Scalar) -> None:
         """
         Fills ``arr`` in-place with a given value.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         value : Scalar
             The value to fill the array with.
         """
 
     @abstractmethod
-    def zeros(self, shape: Tuple[int], dtype: type) -> ArrayLike:
+    def zeros(self, shape: Tuple[int], dtype: type) -> BackendArray:
         """
         Returns an aligned array of zeros with specified shape and dtype.
 
@@ -623,14 +652,14 @@ class MatchingBackend(ABC):
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Byte-aligned array of zeros with specified shape and dtype.
         """
 
     @abstractmethod
-    def full(self, shape: Tuple[int], dtype: type, fill_value: Scalar) -> ArrayLike:
+    def full(self, shape: Tuple[int], dtype: type, fill_value: Scalar) -> BackendArray:
         """
-        Returns an aligned array of zeros with specified shape and dtype.
+        Returns an array filled with fill_value of specified shape and dtype.
 
         Parameters
         ----------
@@ -641,15 +670,14 @@ class MatchingBackend(ABC):
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Byte-aligned array of zeros with specified shape and dtype.
         """
 
     @abstractmethod
     def eps(self, dtype: type) -> Scalar:
         """
-        Returns the eps defined as diffeerence between 1.0 and the next
-        representable floating point value larger than 1.0.
+        Returns the minimal difference representable by dtype.
 
         Parameters
         ----------
@@ -659,7 +687,7 @@ class MatchingBackend(ABC):
         Returns
         -------
         Scalar
-            The eps for the given data type
+            The eps for the given data type.
         """
 
     @abstractmethod
@@ -676,77 +704,54 @@ class MatchingBackend(ABC):
         -------
         int
             Number of bytes occupied by the datatype.
-
-        Examples
-        --------
-        >>> MatchingBackend.datatype_bytes(np.float32)
-        4
         """
 
     @abstractmethod
     def clip(
-        self, arr: ArrayLike, a_min: Scalar, a_max: Scalar, out: ArrayLike = None
-    ) -> ArrayLike:
+        self, arr: BackendArray, a_min: Scalar, a_max: Scalar, out: BackendArray = None
+    ) -> BackendArray:
         """
         Clip elements of arr.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         a_min : Scalar
             Lower bound.
         a_max : Scalar
             Upper bound.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Output array to write the result to. Returns a new array by default.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Clipped ``arr``.
         """
 
     @abstractmethod
-    def flip(self, arr: ArrayLike, axis: Tuple[int] = None) -> ArrayLike:
-        """
-        Flip the elements of arr.
-
-        Parameters
-        ----------
-        arr : ArrayLike
-            Input data.
-        axis : int or tuple of ints, optional
-            Axis or axes to perform the operation on. Default is all.
-
-        Returns
-        -------
-        ArrayLike
-            Flipped version of ``arr``.
-        """
-
-    @abstractmethod
-    def astype(arr: ArrayLike, dtype: type) -> ArrayLike:
+    def astype(arr: BackendArray, dtype: type) -> BackendArray:
         """
         Change the datatype of arr.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         dtype : type
             Target data type.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Freshly allocated array containing the data of ``arr`` in ``dtype``.
         """
 
     @abstractmethod
     def arange(
         self, stop: Scalar, start: Scalar = 0, step: Scalar = 1, *args, **kwargs
-    ) -> ArrayLike:
+    ) -> BackendArray:
         """
         Arange values in evenly spaced interval.
 
@@ -761,144 +766,144 @@ class MatchingBackend(ABC):
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Array of evenly spaced values in specified interval.
         """
 
-    def stack(self, *args, **kwargs) -> ArrayLike:
+    def stack(self, *args, **kwargs) -> BackendArray:
         """
         Join a sequence of objects along a new axis.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Sequence of arrays.
         axis : int, optional
             Axis along which to stack the input arrays.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Stacked input data.
         """
 
     @abstractmethod
-    def concatenate(self, *args, **kwargs) -> ArrayLike:
+    def concatenate(self, *args, **kwargs) -> BackendArray:
         """
         Join a sequence of objects along an existing axis.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Sequence of arrays.
         axis : int
             Axis along which to stack the input arrays.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Concatenated input data.
         """
 
     @abstractmethod
-    def repeat(self, *args, **kwargs) -> ArrayLike:
+    def repeat(self, *args, **kwargs) -> BackendArray:
         """
         Repeat each array element a specified number of times.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         repeats : int or tuple of ints
             Number of each repetitions along axis.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Repeated ``arr``.
         """
 
     @abstractmethod
-    def topk_indices(self, arr: NDArray, k: int) -> ArrayLike:
+    def topk_indices(self, arr: NDArray, k: int) -> BackendArray:
         """
         Determinces the indices of largest elements.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         k : int
             Number of maxima to determine.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Indices of ``k`` largest elements in ``arr``.
         """
 
-    def indices(self, *args, **kwargs) -> ArrayLike:
+    def indices(self, *args, **kwargs) -> BackendArray:
         """
         Creates an array representing the index grid of an input.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             The index grid.
         """
 
     @abstractmethod
-    def roll(self, *args, **kwargs) -> ArrayLike:
+    def roll(self, *args, **kwargs) -> BackendArray:
         """
         Roll array elements along a specified axis.
 
         Parameters
         ----------
-        a : ArrayLike
+        a : BackendArray
             Input data.
         shift : int or tuple of ints, optional
             Shift along each axis.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Array with elements rolled.
         """
 
     @abstractmethod
-    def where(condition, *args) -> ArrayLike:
+    def where(condition, *args) -> BackendArray:
         """
         Return elements from input depending on ``condition``.
 
         Parameters
         ----------
-        condition : ArrayLike
+        condition : BackendArray
             Binary condition array.
-        *args : ArrayLike
+        *args : BackendArray
             Values to choose from.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Array of elements according to ``condition``.
         """
 
     @abstractmethod
     def unique(
         self,
-        arr: ArrayLike,
+        arr: BackendArray,
         return_index: bool = False,
         return_inverse: bool = False,
         return_counts: bool = False,
         axis: Tuple[int] = None,
         *args,
         **kwargs,
-    ) -> Tuple[ArrayLike]:
+    ) -> Tuple[BackendArray]:
         """
         Find the unique elements of an array.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         return_index : bool, optional
             Return indices that resulted in unique array, False by default.
@@ -911,91 +916,93 @@ class MatchingBackend(ABC):
 
         Returns
         -------
-        ArrayLike or tuple of ArrayLike
+        BackendArray or tuple of BackendArray
             If `return_index`, `return_inverse`, and `return_counts` keyword
-            arguments are all False (the default), this will be an ArrayLike object
+            arguments are all False (the default), this will be an BackendArray object
             of the sorted unique values. Otherwise, it's a tuple with one
             or more arrays as specified by those keyword arguments.
         """
 
     @abstractmethod
-    def argsort(self, *args, **kwargs) -> ArrayLike:
+    def argsort(self, *args, **kwargs) -> BackendArray:
         """
         Compute the indices to sort a given input array.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input array.
         dtype : type
             Target data type.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Indices that would sort the input data.
         """
 
     @abstractmethod
-    def unravel_index(self, indices: ArrayLike, shape: Tuple[int]) -> Tuple[ArrayLike]:
+    def unravel_index(
+        self, indices: BackendArray, shape: Tuple[int]
+    ) -> Tuple[BackendArray]:
         """
         Convert flat index to array indices.
 
         Parameters
         ----------
-        indices : ArrayLike
+        indices : BackendArray
             Input data.
         shape : tuple of ints
             Shape of the array used for unraveling.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Array indices.
         """
 
     @abstractmethod
-    def tril_indices(self, *args, **kwargs) -> ArrayLike:
+    def tril_indices(self, *args, **kwargs) -> BackendArray:
         """
         Compute indices of upper triangular matrix
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input array.
         dtype : type
             Target data type.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Flipped version of arr.
         """
 
     @abstractmethod
     def max_filter_coordinates(
-        self, score_space: ArrayLike, min_distance: Tuple[int]
-    ) -> ArrayLike:
+        self, score_space: BackendArray, min_distance: Tuple[int]
+    ) -> BackendArray:
         """
         Identifies local maxima in score_space separated by min_distance.
 
         Parameters
         ----------
-        score_space : ArrayLike
+        score_space : BackendArray
             Input score space.
         min_distance : tuple of ints
             Minimum distance along each array axis.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Identified local maxima.
         """
 
     @abstractmethod
     def from_sharedarr(
         self, shape: Tuple[int], dtype: str, shm: shared_memory.SharedMemory
-    ) -> ArrayLike:
+    ) -> BackendArray:
         """
         Returns an array of given shape and dtype from shared memory location.
 
@@ -1010,7 +1017,7 @@ class MatchingBackend(ABC):
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Array of the specified shape and dtype from the shared memory location.
         """
 
@@ -1023,7 +1030,7 @@ class MatchingBackend(ABC):
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Numpy array to convert.
         shared_memory_handler : type, optional
             The type of shared memory handler. Default is None.
@@ -1036,15 +1043,15 @@ class MatchingBackend(ABC):
 
     @abstractmethod
     def topleft_pad(
-        self, arr: ArrayLike, shape: Tuple[int], padval: int = 0
-    ) -> ArrayLike:
+        self, arr: BackendArray, shape: Tuple[int], padval: int = 0
+    ) -> BackendArray:
         """
         Returns an array that has been padded to a specified shape with a padding
         value at the top-left corner.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input array to be padded.
         shape : Tuple[int]
             Desired shape for the output array.
@@ -1053,7 +1060,7 @@ class MatchingBackend(ABC):
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Array that has been padded to the specified shape.
         """
 
@@ -1100,25 +1107,21 @@ class MatchingBackend(ABC):
             Tuple of callables for forward and inverse real Fourier transform.
         """
 
-    def extract_center(self, arr: ArrayLike, newshape: Tuple[int]) -> ArrayLike:
+    def extract_center(self, arr: BackendArray, newshape: Tuple[int]) -> BackendArray:
         """
         Extract the centered portion of an array based on a new shape.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input data.
         newshape : tuple
             Desired shape for the central portion.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Central portion of the array with shape ``newshape``.
-
-        References
-        ----------
-        .. [1] https://github.com/scipy/scipy/blob/v1.11.2/scipy/signal/_signaltools.py
         """
 
     @abstractmethod
@@ -1146,34 +1149,34 @@ class MatchingBackend(ABC):
     @abstractmethod
     def rigid_transform(
         self,
-        arr: NDArray,
-        rotation_matrix: NDArray,
-        arr_mask: NDArray = None,
-        translation: NDArray = None,
+        arr: BackendArray,
+        rotation_matrix: BackendArray,
+        arr_mask: Optional[BackendArray] = None,
+        translation: Optional[BackendArray] = None,
         use_geometric_center: bool = True,
-        out: NDArray = None,
-        out_mask: NDArray = None,
+        out: Optional[BackendArray] = None,
+        out_mask: Optional[BackendArray] = None,
         order: int = 3,
         **kwargs,
-    ) -> None:
+    ) -> Tuple[BackendArray, Optional[BackendArray]]:
         """
         Performs a rigid transformation.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             The input array to be rotated.
-        arr_mask : ArrayLike, optional
+        arr_mask : BackendArray, optional
             The mask of `arr` that will be equivalently rotated.
-        rotation_matrix : ArrayLike
+        rotation_matrix : BackendArray
             The rotation matrix to apply (d, d).
-        translation : ArrayLike
+        translation : BackendArray
             The translation to apply (d,).
         use_geometric_center : bool, optional
             Whether rotation should be performed over the center of mass.
-        out : ArrayLike, optional
+        out : BackendArray, optional
             Location into which the rotation of ``arr`` is written.
-        out_mask : ArrayLike, optional
+        out_mask : BackendArray, optional
             Location into which the rotation of ``arr_mask`` is written.
         order : int, optional
             Interpolation order, one is linear and three is cubic. Specific
@@ -1191,38 +1194,30 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def reverse(arr: ArrayLike) -> ArrayLike:
+    def reverse(arr: BackendArray) -> BackendArray:
         """
         Reverse the order of elements in an array along all its axes.
 
         Parameters
         ----------
-        arr : ArrayLike
+        arr : BackendArray
             Input array.
 
         Returns
         -------
-        ArrayLike
+        BackendArray
             Reversed array.
         """
 
     @abstractmethod
-    def set_device(device_index: int):
+    def set_device(device_index: int) -> Generator:
         """
-        Set the active GPU device as a context.
-
-        This method sets the active GPU device for operations within the context.
+        Context manager that sets active compute device device for operations.
 
         Parameters
         ----------
         device_index : int
-            Index of the GPU device to be set as active.
-
-        Yields
-        ------
-        None
-            Operates as a context manager, yielding None and providing
-            the set GPU context for enclosed operations.
+            Index of the device to be set as active.
         """
 
     @abstractmethod
