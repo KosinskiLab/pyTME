@@ -134,13 +134,6 @@ class TestPreprocessor:
             tilt_angles=angles,
         )
 
-    def test_molmap(self):
-        _ = self.preprocessor.molmap(
-            coordinates=self.structure.atom_coordinate,
-            weights=self.structure._get_atom_weights(self.structure.element_symbol),
-            resolution=10,
-        )
-
     @pytest.mark.parametrize("extrude_plane", [False, True])
     def test_continuous_wedge_mask(self, extrude_plane):
         _ = self.preprocessor.continuous_wedge_mask(

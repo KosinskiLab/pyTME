@@ -184,6 +184,7 @@ class TestDensity:
             "van_der_waals_radius",
             "scattering_factors",
             "lowpass_scattering_factors",
+            "gaussian",
         ],
     )
     def test_from_structure_weight_types(self, weight_type):
@@ -209,7 +210,7 @@ class TestDensity:
         _ = Density.from_structure(
             self.structure_path,
             weight_type=weight_type,
-            scattering_args={"source": scattering_factors},
+            weight_type_args={"source": scattering_factors},
         )
 
     def test_from_structure_error(self):
