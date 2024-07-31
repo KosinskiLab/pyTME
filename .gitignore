@@ -66,13 +66,11 @@ Images
 tme/temp
 doc/compileApiReference.sh
 public
-tme/matching_backend.py
 doc/_build
 doc/reference/api
 tme/package.py
 tme/tests/test_packaging.py
 tme/scoring.py
-tme/backends/_jax_utils.py
 scripts/match_template_devel.py
 scripts/match_template_filters.py
 scripts/refine_matches.py
