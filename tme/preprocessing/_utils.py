@@ -8,11 +8,10 @@
 from typing import Tuple, List
 
 import numpy as np
-from numpy.typing import NDArray
 
-from ..types import BackendArray
 from ..backends import backend as be
 from ..backends import NumpyFFTWBackend
+from ..types import BackendArray, NDArray
 from ..matching_utils import euler_to_rotationmatrix
 
 

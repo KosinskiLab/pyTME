@@ -137,8 +137,7 @@ class Parser(ABC):
 
 class PDBParser(Parser):
     """
-    A Parser subclass for converting PDB file data into a dictionary representation.
-    This class is specifically designed to work with PDB file format.
+    Convert PDB file data into a dictionary representation [1]_.
 
     References
     ----------
@@ -228,8 +227,8 @@ class PDBParser(Parser):
 
 class MMCIFParser(Parser):
     """
-    A Parser subclass for converting MMCIF file data into a dictionary representation.
-    This implementation heavily relies on the atomium library [1]_.
+    Convert MMCIF file data into a dictionary representation. This implementation
+    heavily relies on the atomium library [1]_.
 
     References
     ----------

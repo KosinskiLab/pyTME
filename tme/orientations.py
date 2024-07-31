@@ -62,10 +62,10 @@ class Orientations:
         Array with additional orientation details (n, ).
     """
 
-    #: Array with translations of each orientation (n x d).
+    #: Array with translations of each orientation (n, d).
     translations: np.ndarray
 
-    #: Array with zyx euler angles of each orientation (n x d).
+    #: Array with zyx euler angles of each orientation (n, d).
     rotations: np.ndarray
 
     #: Array with scores of each orientation (n, ).
@@ -158,7 +158,7 @@ class Orientations:
             the file_format from the typical extension. Supported formats are
 
             +---------------+----------------------------------------------------+
-            | text          | pyTME's standard tab-separated orientations file   |
+            | text          | pytme's standard tab-separated orientations file   |
             +---------------+----------------------------------------------------+
             | relion        | Creates a STAR file of orientations                |
             +---------------+----------------------------------------------------+

@@ -9,12 +9,11 @@ from typing import Tuple, Dict
 from dataclasses import dataclass
 
 import numpy as np
-from numpy.typing import NDArray
 
 from .. import Preprocessor
+from ..types import NDArray
 from ..backends import backend as be
 from ..matching_utils import euler_to_rotationmatrix
-
 from ._utils import (
     frequency_grid_at_angle,
     compute_tilt_shape,

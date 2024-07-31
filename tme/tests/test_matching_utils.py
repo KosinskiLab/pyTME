@@ -9,6 +9,8 @@ from scipy.spatial.transform import Rotation
 
 from tme import Density
 from tme.backends import backend as be
+from tme.memory import MATCHING_MEMORY_REGISTRY
+from tme.matching_exhaustive import _handle_traceback
 from tme.matching_utils import (
     compute_parallelization_schedule,
     elliptical_mask,
@@ -28,8 +30,6 @@ from tme.matching_utils import (
     rotation_aligning_vectors,
     _normalize_template_overflow_safe,
 )
-from tme.memory import MATCHING_MEMORY_REGISTRY
-from tme.matching_exhaustive import _handle_traceback
 
 
 class TestMatchingUtils:

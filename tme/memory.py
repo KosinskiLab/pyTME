@@ -14,12 +14,7 @@ from pyfftw import next_fast_len
 
 class MatchingMemoryUsage(ABC):
     """
-    Base class for estimating the memory usage of template matching.
-
-    This class provides a template for estimating memory usage for
-    different matching methods. Users should subclass it and implement the
-    `base_usage` and `per_fork` methods to specify custom memory usage
-    estimates.
+    Class specification for estimating the memory requirements of template matching.
 
     Parameters
     ----------
@@ -80,7 +75,7 @@ class MatchingMemoryUsage(ABC):
 
 class CCMemoryUsage(MatchingMemoryUsage):
     """
-    Memory usage estimation for the CC fitter.
+    Memory usage estimation for CC scoring.
 
     See Also
     --------

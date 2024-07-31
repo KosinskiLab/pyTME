@@ -3,16 +3,16 @@ import pytest
 
 from scipy.ndimage import laplace
 
-from tme.analyzer import MaxScoreOverRotations, PeakCallerSort
+from tme.matching_data import MatchingData
 from tme.memory import MATCHING_MEMORY_REGISTRY
+from tme.matching_utils import get_rotation_matrices
+from tme.analyzer import MaxScoreOverRotations, PeakCallerSort
 from tme.matching_exhaustive import (
     scan,
     scan_subsets,
     MATCHING_EXHAUSTIVE_REGISTER,
     register_matching_exhaustive,
 )
-from tme.matching_data import MatchingData
-from tme.matching_utils import get_rotation_matrices
 
 
 class TestMatchExhaustive:

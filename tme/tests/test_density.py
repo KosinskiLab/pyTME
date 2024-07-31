@@ -1,6 +1,6 @@
+from os import remove
 from tempfile import mkstemp
 from itertools import permutations
-from os import remove
 
 import pytest
 import numpy as np
@@ -74,7 +74,7 @@ class TestDensity:
         density = Density(data, origin, sampling_rate)
         repr_str = density.__repr__()
 
-        response = "Density object at {}\nOrigin: {}, sampling_rate: {}, Shape: {}"
+        response = "Density object at {}\nOrigin: {}, Sampling Rate: {}, Shape: {}"
         response = response.format(
             hex(id(density)),
             tuple(np.round(density.origin, 3)),

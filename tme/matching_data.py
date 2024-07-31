@@ -98,8 +98,7 @@ class MatchingData:
         NDArray
             Loaded array.
         """
-
-        if type(arr) == np.memmap:
+        if isinstance(arr, np.memmap):
             return np.memmap(arr.filename, mode="r", shape=arr.shape, dtype=arr.dtype)
         return arr
 
@@ -153,13 +152,13 @@ class MatchingData:
         arr_slice = tuple(slice(*pos) for pos in zip(arr_start, arr_stop))
         arr_mesh = self._slice_to_mesh(arr_slice, arr.shape)
 
-        if type(arr) == Density:
+        if isinstance(arr, Density):
             if isinstance(arr.data, np.memmap):
                 arr = Density.from_file(arr.data.filename, subset=arr_slice).data
             else:
                 arr = np.asarray(arr.data[*arr_mesh])
         else:
-            if type(arr) == np.memmap:
+            if isinstance(arr, np.memmap):
                 arr = np.memmap(
                     arr.filename, mode="r", shape=arr.shape, dtype=arr.dtype
                 )

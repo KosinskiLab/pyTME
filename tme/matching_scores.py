@@ -860,8 +860,8 @@ def mcc_scoring(
         tol = 1e3 * eps * be.max(be.abs(temp2), axis=axes, keepdims=True)
 
         temp2[temp2 < tol] = 1
-        be.divide(numerator, temp2, out=temp)
-        be.clip(temp, a_min=-1, a_max=1, out=temp)
+        temp = be.divide(numerator, temp2, out=temp)
+        temp = be.clip(temp, a_min=-1, a_max=1, out=temp)
 
         # Apply overlap ratio threshold
         number_px_threshold = overlap_ratio * be.max(

@@ -166,7 +166,7 @@ def memmap_to_array(arr: NDArray) -> NDArray:
     obj:`numpy.ndarray`
         In-memory version of ``arr``.
     """
-    if type(arr) == np.memmap:
+    if isinstance(arr, np.memmap):
         memmap_filepath = arr.filename
         arr = np.array(arr)
         os.remove(memmap_filepath)

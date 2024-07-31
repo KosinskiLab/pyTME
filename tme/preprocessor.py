@@ -1385,7 +1385,7 @@ def _hlpf_fitness(
     orig = int((f_mask.size - 1) / 2)
     dist = np.arange(-orig, orig + 1) * T
     t, c, k = splrep(x=dist, y=f_mask, k=3)
-    i_max = np.ceil(np.divide(f_mask.shape, M))
+    i_max = np.ceil(np.divide(f_mask.shape, M)).astype(int)[0]
     coarse_mask = np.arange(-i_max, i_max + 1) * M
     spline = BSpline(t, c, k)
     coarse_values = spline(coarse_mask)

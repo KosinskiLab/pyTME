@@ -1,5 +1,5 @@
-from tempfile import mkstemp
 from os import remove
+from tempfile import mkstemp
 
 import pytest
 import numpy as np

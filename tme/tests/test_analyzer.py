@@ -3,7 +3,7 @@ from tempfile import mkstemp
 import pytest
 import numpy as np
 
-from tme.backends import backend
+from tme.backends import backend as be
 from tme.analyzer import (
     MaxScoreOverRotations,
     PeakCaller,
@@ -162,7 +162,7 @@ class TestMaxScoreOverRotations:
         score_analyzer(self.data, rotation_matrix=self.rotation_matrix)
         res = tuple(score_analyzer)
         assert np.allclose(res[0].shape, self.data.shape)
-        assert res[0].dtype == backend._float_dtype
+        assert res[0].dtype == be._float_dtype
         assert res[1].size == self.data.ndim
         assert np.allclose(res[2].shape, self.data.shape)
         assert len(res) == 4

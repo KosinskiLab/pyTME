@@ -113,7 +113,7 @@ class Density:
         self.metadata = metadata
 
     def __repr__(self):
-        response = "Density object at {}\nOrigin: {}, sampling_rate: {}, Shape: {}"
+        response = "Density object at {}\nOrigin: {}, Sampling Rate: {}, Shape: {}"
         return response.format(
             hex(id(self)),
             tuple(np.round(self.origin, 3)),

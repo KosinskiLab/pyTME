@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from tme.matching_utils import euler_from_rotationmatrix
 from tme.matching_optimization import (
     MATCHING_OPTIMIZATION_REGISTER,
     register_matching_optimization,
@@ -9,7 +10,6 @@ from tme.matching_optimization import (
     optimize_match,
     create_score_object,
 )
-from tme.matching_utils import euler_from_rotationmatrix
 
 density_to_density = ["FLC"]
 
