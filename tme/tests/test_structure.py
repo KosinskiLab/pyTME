@@ -128,7 +128,7 @@ class TestStructure:
 
         min_residue = np.min(self.structure.residue_sequence_number)
         max_residue = np.max(self.structure.residue_sequence_number)
-        n_residue = self.structure.residue_sequence_number.size
+        n_residue = np.unique(self.structure.residue_sequence_number).size
 
         repr_str = (
             f"Structure object at {id(self.structure)}\n"

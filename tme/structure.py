@@ -15,7 +15,7 @@ from os.path import splitext, basename
 import numpy as np
 
 from .types import NDArray
-from .preprocessor import atom_profile
+from .preprocessor import atom_profile, Preprocessor
 from .parser import PDBParser, MMCIFParser
 from .matching_utils import rigid_transform, minimum_enclosing_box
 
@@ -213,7 +213,7 @@ class Structure:
 
         min_residue = np.min(self.residue_sequence_number)
         max_residue = np.max(self.residue_sequence_number)
-        n_residue = self.residue_sequence_number.size
+        n_residue = np.unique(self.residue_sequence_number).size
 
         repr_str = (
             f"Structure object at {id(self)}\n"
@@ -1101,7 +1101,6 @@ class Structure:
                 scattering_profiles[atoms[atom_index]](distances),
             )
 
-
     @staticmethod
     def _position_to_molmap(
         positions: NDArray,
@@ -1145,38 +1144,31 @@ class Structure:
         pad = int(3 * resolution)
         sigma = sigma_factor * resolution
         sigma_grid = sigma / sampling_rate
-        sigma_grid2 = sigma_grid * sigma_grid
 
-        positions = (positions / sampling_rate)[:, ::-1].astype(int)
+        # Limit padding to numerically stable values
+        smax = np.max(sigma_grid)
+        arr = np.arange(0, pad)
+        gaussian = (
+            np.exp(-0.5 * (arr / smax) ** 2)
+            * np.power(2 * np.pi, -1.5)
+            * np.power(sigma, -3.0)
+        )
+        pad_cutoff = np.max(arr[gaussian > 1e-8])
+        if arr.size != 0:
+            pad = int(pad_cutoff) + 1
 
-        origin = positions.min(axis = 0) - pad
-        positions = positions - origin
-        shape = positions.max(axis = 0) + pad
+        positions = positions[:, ::-1]
+        origin = positions.min(axis=0) - pad * sampling_rate
+        positions = np.rint(np.divide((positions - origin), sampling_rate)).astype(int)
+        shape = positions.max(axis=0).astype(int) + pad + 1
 
-        starts = np.ceil(positions - cutoff_value * sigma_grid)
-        starts = np.maximum(starts, 0).astype(int)
-        stops = np.floor(positions + np.maximum(cutoff_value * sigma_grid, 1))
-        stops = np.minimum(stops, shape).astype(int)
-
-        ranges = tuple(tuple(zip(start, stop)) for start, stop in zip(starts, stops))
-        grid_dim = tuple(1 for _ in range(positions.shape[1]))
-        positions = positions.reshape(*positions.shape, *grid_dim)
-
-        sigma_grid2 = sigma_grid2.reshape(*sigma_grid2.shape, *grid_dim)
         out = np.zeros(shape, dtype=np.float32)
-        for index in range(positions.shape[0]):
-            grid_index = np.meshgrid(*[range(*coord) for coord in ranges[index]])
+        np.add.at(out, tuple(positions.T), weights)
 
-            distances = np.square(np.subtract(grid_index, positions[index]))
-            distances = np.divide(distances, sigma_grid2)
-            np.add.at(
-                out,
-                tuple(grid_index),
-                weights[index] * np.exp(-0.5 * np.sum(distances, axis = 0)),
-            )
-
-        out *= np.power(2 * np.pi, -1.5) * np.power(sigma, -3.0)
-        return out, np.multiply(origin, sampling_rate)
+        out = Preprocessor().gaussian_filter(
+            template=out, sigma=sigma_grid, cutoff_value=cutoff_value
+        )
+        return out, origin
 
     def _get_atom_weights(
         self, atoms: Tuple[str] = None, weight_type: str = "atomic_weight"
@@ -1336,10 +1328,12 @@ class Structure:
             )
         elif weight_type == "gaussian":
             volume, origin = self._position_to_molmap(
-                positions = temp.atom_coordinate,
-                weights = temp._get_atom_weights(atoms=atoms, weight_type="atomic_number"),
-                sampling_rate = sampling_rate,
-                **weight_type_args
+                positions=temp.atom_coordinate,
+                weights=temp._get_atom_weights(
+                    atoms=atoms, weight_type="atomic_number"
+                ),
+                sampling_rate=sampling_rate,
+                **weight_type_args,
             )
 
         self.metadata.update(temp.metadata)

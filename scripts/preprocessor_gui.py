@@ -527,8 +527,8 @@ def threshold_mask(
     template: NDArray,
     invert: bool = False,
     standard_deviation: float = 5.0,
-    sigma : float = 0.0,
-    **kwargs
+    sigma: float = 0.0,
+    **kwargs,
 ) -> NDArray:
     template_mean = template.mean()
     template_deviation = standard_deviation * template.std()
@@ -537,7 +537,7 @@ def threshold_mask(
     mask = np.logical_or(template <= lower, template >= upper)
 
     if sigma != 0:
-        mask_filter = preprocessor.gaussian_filter(template = mask * 1.0, sigma = sigma)
+        mask_filter = preprocessor.gaussian_filter(template=mask * 1.0, sigma=sigma)
         mask = np.add(mask, (1 - mask) * mask_filter)
         mask[mask < np.exp(-np.square(sigma))] = 0
 

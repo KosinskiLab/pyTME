@@ -88,59 +88,11 @@ class Preprocessor:
 
         return "-".join([str(default[key]) for key in sorted(default.keys())])
 
-    @staticmethod
-    def _gaussian_fourier(template: NDArray, sigma: NDArray) -> NDArray:
-        """
-        Apply a Gaussian filter in Fourier space on the provided template.
-
-        Parameters
-        ----------
-        template : NDArray
-            The input template on which to apply the filter.
-        sigma : NDArray
-            The standard deviation for Gaussian kernel. The greater the value,
-            the more spread out is the filter.
-
-        Returns
-        -------
-        NDArray
-            The template after applying the Fourier Gaussian filter.
-        """
-        fourrier_map = ndimage.fourier_gaussian(np.fft.fftn(template), sigma)
-        template = np.real(np.fft.ifftn(fourrier_map))
-
-        return template
-
-    @staticmethod
-    def _gaussian_real(
-        template: NDArray, sigma: NDArray, cutoff_value: float = 4.0
-    ) -> NDArray:
-        """
-        Apply a Gaussian filter on the provided template in real space.
-
-        Parameters
-        ----------
-        template : NDArray
-            The input template on which to apply the filter.
-        sigma : NDArray
-            The standard deviation for Gaussian kernel. The greater the value,
-            the more spread out is the filter.
-        cutoff_value : float, optional
-            The value below which the data should be ignored. Default is 4.0.
-
-        Returns
-        -------
-        NDArray
-            The template after applying the Gaussian filter in real space.
-        """
-        template = ndimage.gaussian_filter(template, sigma, cval=cutoff_value)
-        return template
-
     def gaussian_filter(
         self,
         template: NDArray,
-        sigma: NDArray,
-        fourier: bool = False,
+        sigma: Tuple[float],
+        cutoff_value: float = 4.0,
     ) -> NDArray:
         """
         Convolve an atomic structure with a Gaussian kernel.
@@ -148,31 +100,19 @@ class Preprocessor:
         Parameters
         ----------
         template : NDArray
-            The input atomic structure map.
-        resolution : float, optional
-            The resolution. The product of `resolution` and `sigma_coeff` is used
-            to compute the `sigma` for the discretized Gaussian. Default is None.
-        sigma : NDArray
-            The standard deviation for Gaussian kernel. Should either be a scalar
-            or a sequence of scalars.
-        fourier : bool, optional
-            If true, applies a Fourier Gaussian filter; otherwise, applies a
-            real-space Gaussian filter. Default is False.
+            Input data.
+        sigma : float or tuple of floats
+            The standard deviation of the Gaussian kernel along one or all axes.
+        cutoff_value : float, optional
+            Truncates the Gaussian kernel at cutoff_values times sigma.
 
         Returns
         -------
         NDArray
-            The simulated electron densities after applying the Gaussian filter.
+            Gaussian filtered template.
         """
         sigma = 0 if sigma is None else sigma
-
-        if sigma <= 0:
-            return template
-
-        func = self._gaussian_real if not fourier else self._gaussian_fourier
-        template = func(template, sigma)
-
-        return template
+        return ndimage.gaussian_filter(template, sigma, cval=cutoff_value)
 
     def difference_of_gaussian_filter(
         self, template: NDArray, low_sigma: NDArray, high_sigma: NDArray
@@ -199,8 +139,8 @@ class Preprocessor:
         """
         if np.any(low_sigma > high_sigma):
             print("low_sigma should be smaller than high_sigma.")
-        im1 = self._gaussian_real(template, low_sigma)
-        im2 = self._gaussian_real(template, high_sigma)
+        im1 = self.gaussian_filter(template, low_sigma)
+        im2 = self.gaussian_filter(template, high_sigma)
         return im1 - im2
 
     def local_gaussian_alignment_filter(
@@ -847,9 +787,7 @@ class Preprocessor:
             )
             wedge_volume += plane_rotated
 
-        wedge_volume = self.gaussian_filter(
-            template=wedge_volume, sigma=sigma, fourier=False
-        )
+        wedge_volume = self.gaussian_filter(template=wedge_volume, sigma=sigma)
         wedge_volume = np.where(wedge_volume > np.exp(-2), 1, 0)
         wedge_volume = np.fft.ifftshift(wedge_volume)
 
@@ -955,9 +893,7 @@ class Preprocessor:
         np.fmin(wedge_volume, np.max(weights), wedge_volume)
 
         if sigma > 0:
-            wedge_volume = self.gaussian_filter(
-                template=wedge_volume, sigma=sigma, fourier=False
-            )
+            wedge_volume = self.gaussian_filter(template=wedge_volume, sigma=sigma)
 
         if opening_axis > tilt_axis:
             wedge_volume = np.moveaxis(wedge_volume, 1, 0)
@@ -1075,7 +1011,7 @@ class Preprocessor:
         if not infinite_plane:
             np.multiply(wedge, distances <= shape[tilt_axis] // 2, out=wedge)
 
-        wedge = self.gaussian_filter(template=wedge, sigma=sigma, fourier=False)
+        wedge = self.gaussian_filter(template=wedge, sigma=sigma)
         wedge = np.fft.ifftshift(wedge > np.exp(-2))
 
         if omit_negative_frequencies:

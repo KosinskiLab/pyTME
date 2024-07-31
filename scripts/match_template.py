@@ -523,7 +523,13 @@ def parse_args():
         default=None,
         help="Directory for temporary objects. Faster I/O improves runtime.",
     )
-
+    computation_group.add_argument(
+        "--backend",
+        dest="backend",
+        default=None,
+        choices=be.available_backends(),
+        help="[Expert] Overwrite default computation backend.",
+    )
     filter_group = parser.add_argument_group("Filters")
     filter_group.add_argument(
         "--lowpass",
@@ -783,7 +789,7 @@ def parse_args():
         dest="number_of_peaks",
         action="store_true",
         default=1000,
-        help="Number of peaks to call, 1000 by default..",
+        help="Number of peaks to call, 1000 by default.",
     )
     args = parser.parse_args()
     args.version = __version__
@@ -955,15 +961,11 @@ def main():
 
     # Determine suitable backend for the selected operation
     available_backends = be.available_backends()
-    if os.environ.get("PYTME_BACKEND", None) is not None:
-        req_backend = os.environ["PYTME_BACKEND"]
+    if args.backend is not None:
+        req_backend = args.backend
         if req_backend not in available_backends:
-            raise ValueError(
-                "Backend specified by PYTME_BACKEND variable not available."
-            )
-        available_backends = [
-            req_backend,
-        ]
+            raise ValueError("Requested backend is not available.")
+        available_backends = [req_backend]
 
     be_selection = ("numpyfftw", "pytorch", "jax", "mlx")
     if args.use_gpu:

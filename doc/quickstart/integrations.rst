@@ -1,7 +1,7 @@
 Integrations
 ============
 
-The output of pyTME can be readily integrated with the refinement, classification and averaging procedures of existing software. The following subsections outline such integrations.
+The output of |project| can be readily integrated with the refinement, classification and averaging procedures of existing software. The following subsections outline such integrations.
 
 
 RELION

@@ -1132,7 +1132,7 @@ class MaxScoreOverRotations:
             return None
 
     @classmethod
-    def merge(cls, param_stores : List[Tuple], **kwargs) -> Tuple[NDArray]:
+    def merge(cls, param_stores: List[Tuple], **kwargs) -> Tuple[NDArray]:
         """
         Merges multiple instances of :py:class:`MaxScoreOverRotations`.
 
@@ -1263,6 +1263,7 @@ class MaxScoreOverRotations:
     @property
     def shared(self):
         return True
+
 
 class _MaxScoreOverTranslations(MaxScoreOverRotations):
     """
