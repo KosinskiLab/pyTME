@@ -790,16 +790,6 @@ class CTF:
     def __post_init__(self):
         self.defocus_angle = np.radians(self.defocus_angle)
 
-        kwargs = {
-            "defocus_x": self.defocus_x,
-            "defocus_y": self.defocus_y,
-            "spherical_aberration": self.spherical_aberration,
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        self._update_parameters(
-            electron_wavelength=self._compute_electron_wavelength(), **kwargs
-        )
-
     def _compute_electron_wavelength(self, acceleration_voltage: int = None):
         """Computes the wavelength of an electron in angstrom."""
 
@@ -818,27 +808,9 @@ class CTF:
         electron_wavelength = np.divide(
             planck_constant * light_velocity, np.sqrt(denominator)
         )
+        # Convert to Ångstrom
         electron_wavelength *= 1e10
         return electron_wavelength
-
-    def _update_parameters(self, **kwargs):
-        """Update multiple parameters of the CTF instance."""
-        voxel_based = [
-            "electron_wavelength",
-            "spherical_aberration",
-            "defocus_x",
-            "defocus_y",
-        ]
-        if "sampling_rate" in kwargs:
-            self.sampling_rate = kwargs["sampling_rate"]
-
-        if "acceleration_voltage" in kwargs:
-            kwargs["electron_wavelength"] = self._compute_electron_wavelength()
-
-        for key, value in kwargs.items():
-            if key in voxel_based and value is not None:
-                value = np.divide(value, np.max(self.sampling_rate))
-            setattr(self, key, value)
 
     def __call__(self, **kwargs) -> NDArray:
         func_args = vars(self).copy()
@@ -865,7 +837,6 @@ class CTF:
         shape: Tuple[int],
         defocus_x: Tuple[float],
         angles: Tuple[float],
-        electron_wavelength: float = None,
         opening_axis: int = None,
         tilt_axis: int = None,
         amplitude_contrast: float = 0.07,
@@ -891,8 +862,6 @@ class CTF:
             The defocus value in x direction.
         angles : tuple of float
             The tilt angles.
-        electron_wavelength : float, optional
-            The electron wavelength, defaults to None.
         opening_axis : int, optional
             The axis around which the wedge is opened, defaults to None.
         tilt_axis : int, optional
@@ -939,9 +908,13 @@ class CTF:
         correct_defocus_gradient &= tilt_axis is not None
         correct_defocus_gradient &= opening_axis is not None
 
+        spherical_aberration /= sampling_rate
+        electron_wavelength = self._compute_electron_wavelength() / sampling_rate
         for index, angle in enumerate(angles):
             defocus_x, defocus_y = defoci_x[index], defoci_y[index]
 
+            defocus_x = defocus_x / sampling_rate if defocus_x is not None else None
+            defocus_y = defocus_y / sampling_rate if defocus_y is not None else None
             if correct_defocus_gradient or defocus_y is not None:
                 grid = fftfreqn(
                     shape=shape,
@@ -978,6 +951,7 @@ class CTF:
                 angle=angle,
                 sampling_rate=1,
             )
+            frequency_mask = frequency_grid < .5
             np.square(frequency_grid, out=frequency_grid)
 
             electron_aberration = spherical_aberration * electron_wavelength**2
@@ -993,6 +967,7 @@ class CTF:
                 )
             )
             np.sin(-chi, out=chi)
+            np.multiply(chi, frequency_mask, out = chi)
             stack[index] = chi
 
         # Avoid contrast inversion
