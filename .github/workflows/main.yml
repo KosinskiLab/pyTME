@@ -70,10 +70,9 @@ jobs:
       image: python:3.11.5
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Build Docs
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - name: Install dependencies
         run: |
           python -mpip install .
           python -mpip install \
@@ -84,42 +83,16 @@ jobs:
             sphinx_copybutton \
             sphinx-tabs \
             matplotlib
-          cd doc
-          make clean
-          make html
-          mkdir -p ../public
-          mv _build/html/* ../public/
-
-      - name: Upload Public as Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: public
-          path: public
-
-  pages:
-    runs-on: ubuntu-latest
-    needs: docs
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Download Public Artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: public
-          path: ./public
-
-      - name: List directory after downloading artifact
+      - name: Sphinx build
         run: |
-          ls -al
-          ls -al ./public
-
+          sphinx-build doc _build
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          publish_dir: _build/
+          force_orphan: true
 
   pypi_release:
     if: github.event_name == 'release'
