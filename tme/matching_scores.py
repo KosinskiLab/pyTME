@@ -86,7 +86,7 @@ def _setup_template_filtering(
         forward_ft_shape = template_shape
         inverse_ft_shape = template_filter.shape
 
-    if rfftn is not None and irfftn is not None:
+    if (rfftn is not None and irfftn is not None) or shape_mismatch:
         rfftn, irfftn = be.build_fft(
             fast_shape=forward_ft_shape,
             fast_ft_shape=inverse_ft_shape,
@@ -109,7 +109,10 @@ def _setup_template_filtering(
 
         def _apply_filter_shape_mismatch(template, ft_temp, template_filter):
             _template[:] = template[real_subset]
-            return _apply_template_filter(_template, _ft_temp, template_filter)
+            template[real_subset] = _apply_template_filter(
+                _template, _ft_temp, template_filter
+            )
+            return template
 
         return _apply_filter_shape_mismatch
 

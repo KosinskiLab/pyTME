@@ -1220,7 +1220,7 @@ def scramble_phases(
     arr: NDArray,
     noise_proportion: float = 0.5,
     seed: int = 42,
-    normalize_power: bool = True,
+    normalize_power: bool = False,
 ) -> NDArray:
     """
     Perform random phase scrambling of ``arr``.

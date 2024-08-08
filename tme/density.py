@@ -306,6 +306,10 @@ class Density:
                 "std": float(mrc.header.rms),
             }
 
+        non_standard_crs = not np.all(crs_index == (0, 1, 2))
+        if non_standard_crs:
+            warnings.warn("Non standard MAPC, MAPR, MAPS, adapting data and origin.")
+
         if is_gzipped(filename):
             if use_memmap:
                 warnings.warn(
@@ -315,6 +319,10 @@ class Density:
             use_memmap = False
 
         if subset is not None:
+            subset = tuple(
+                subset[i] if i < len(subset) else slice(0, data_shape[i])
+                for i in crs_index
+            )
             subset_shape = tuple(x.stop - x.start for x in subset)
             if np.allclose(subset_shape, data_shape):
                 return cls._load_mrc(
@@ -328,18 +336,16 @@ class Density:
                 dtype=data_type,
                 header_size=1024 + extended_header,
             )
-            return data, origin, sampling_rate, metadata
-
-        if not use_memmap:
+        elif subset is None and not use_memmap:
             with mrcfile.open(filename, header_only=False) as mrc:
                 data = mrc.data.astype(np.float32, copy=False)
         else:
             with mrcfile.mrcmemmap.MrcMemmap(filename, header_only=False) as mrc:
                 data = mrc.data
 
-        if not np.all(crs_index == (0, 1, 2)):
+        if non_standard_crs:
             data = np.transpose(data, crs_index)
-            start = np.take(start, crs_index)
+            origin = np.take(origin, crs_index)
 
         return data, origin, sampling_rate, metadata
 
@@ -873,6 +879,7 @@ class Density:
             mrc.header.nzstart, mrc.header.nystart, mrc.header.nxstart = np.rint(
                 np.divide(self.origin, self.sampling_rate)
             )
+            mrc.header.origin = tuple(x for x in self.origin)
             # mrcfile library expects origin to be in xyz format
             mrc.header.mapc, mrc.header.mapr, mrc.header.maps = (1, 2, 3)
             mrc.header["origin"] = tuple(self.origin[::-1])
@@ -1594,7 +1601,7 @@ class Density:
         rotation_matrix: NDArray,
         translation: NDArray = None,
         order: int = 3,
-        use_geometric_center: bool = False,
+        use_geometric_center: bool = True,
     ) -> "Density":
         """
         Performs a rigid transform of the class instance.
@@ -1847,13 +1854,13 @@ class Density:
             +--------------+-----------------------------------------------------+
             | Weight       | Use all coordinates within ``density_boundaries``.  |
             +--------------+-----------------------------------------------------+
-            |  Sobel       | Set densities below the lower bound density to zero |
+            | Sobel        | Set densities below the lower bound density to zero |
             |              | apply a sobel filter and return density coordinates |
             |              | larger than 0.5 times the maximum filter value.     |
             +--------------+-----------------------------------------------------+
-            |  Laplace     | Like 'Sobel', but with a Laplace filter.            |
+            | Laplace      | Like 'Sobel', but with a Laplace filter.            |
             +--------------+-----------------------------------------------------+
-            |  Minimum     | Like 'Sobel' and 'Laplace' but with a spherical     |
+            | Minimum      | Like 'Sobel' and 'Laplace' but with a spherical     |
             |              | minimum filter on the lower density bound.          |
             +--------------+-----------------------------------------------------+
 
@@ -1879,12 +1886,12 @@ class Density:
         :py:class:`tme.matching_optimization.Envelope`
         :py:class:`tme.matching_optimization.Chamfer`
         """
-        available_methods = ["ConvexHull", "Weight", "Sobel", "Laplace", "Minimum"]
+        _available_methods = ["ConvexHull", "Weight", "Sobel", "Laplace", "Minimum"]
 
-        if method not in available_methods:
+        if method not in _available_methods:
             raise ValueError(
                 "Argument method has to be one of the following: %s"
-                % ", ".join(available_methods)
+                % ", ".join(_available_methods)
             )
 
         lower_bound, upper_bound = density_boundaries
@@ -1982,12 +1989,7 @@ class Density:
         in_box = np.logical_and(
             coordinates < np.array(self.shape), coordinates >= 0
         ).min(axis=1)
-
-        out_of_box = np.invert(in_box)
-        if out_of_box.sum() > 0:
-            print(coordinates[out_of_box, :])
-            raise ValueError("Coordinates outside of self.data detected.")
-
+        coordinates = coordinates[in_box, :]
         for index in range(coordinates.shape[0]):
             point = coordinates[index, :]
             start = np.maximum(point - 1, 0)
