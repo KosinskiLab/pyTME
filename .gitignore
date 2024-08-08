@@ -71,7 +71,6 @@ doc/reference/api
 doc/reference/data_structures/api
 doc/reference/preprocessing/api
 doc/reference/template_matching/api
-
 tme/package.py
 tme/tests/test_packaging.py
 tme/scoring.py
