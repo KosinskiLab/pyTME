@@ -16,7 +16,7 @@ Backends allows users to effortlessly switch between different array and FFT imp
 Backend Manager
 ~~~~~~~~~~~~~~~
 
-Modules that support flexible backends import a global instance of :py:class:`tme.backends.BackendManager` like so: :code:`from tme.backends import backend`. The import is quasi-equivalent to :code:`import numpy as np`, with the exception being the naming difference. Notably, backend agnostic code is written without instance specific methods such as the ones defined by ``np.ndarray``. Instance-specific functions are wrapped instead, e.g. :py:meth:`NumpyFFTWBackend.fill`. For additional information please refer to the class documentation below.
+Modules that support flexible backends import a global instance of :py:class:`BackendManager <tme.backends.BackendManager>` like so: :code:`from tme.backends import backend`. The import is quasi-equivalent to :code:`import numpy as np`, with the exception being the naming difference. Notably, backend agnostic code is written without instance specific methods such as the ones defined by ``np.ndarray``. Instance-specific functions are wrapped instead, e.g. :py:meth:`NumpyFFTWBackend.fill`. For additional information please refer to the class documentation below.
 
 .. autosummary::
    :toctree: api/
@@ -27,7 +27,7 @@ Modules that support flexible backends import a global instance of :py:class:`tm
 Abstract Base Backend
 ~~~~~~~~~~~~~~~~~~~~~
 
-:py:class:`tme.backends.MatchingBackend` serves as specification for new backends. Generally the aim is to create a structure that is syntactically similar to numpy.
+:py:class:`MatchingBackend <tme.backends.MatchingBackend>` serves as specification for new backends. Generally the aim is to create a structure that is syntactically similar to numpy.
 
 .. autosummary::
    :toctree: api/

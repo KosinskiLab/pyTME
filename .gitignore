@@ -75,5 +75,6 @@ scripts/match_template_devel.py
 scripts/match_template_filters.py
 scripts/refine_matches.py
 scripts/extract_candidates.py
+scripts/eval.py
 update_github.sh
 doc/quickstart/plot.py

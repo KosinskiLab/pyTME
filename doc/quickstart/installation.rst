@@ -1,9 +1,9 @@
 .. include:: ../substitutions.rst
 
 Installation
-============
+------------
 
-This section provides instructions on how to install the |project| library. Depending on your preferred method or system setup, you can choose between the installation with Conda, PyPI, or from source. Click on the tabs below to view the instructions for each method.
+This section provides instructions on how to install the |project| library. The available options are outlined in the tabs below.
 
 .. _installation-section:
 
@@ -13,52 +13,32 @@ This section provides instructions on how to install the |project| library. Depe
 
       Conda provides an isolated environment, helps avoid conflicts with other packages, and installs necessary dependencies.
 
-      1. **Create a New Conda Environment and Install Dependencies**:
+      .. code-block:: bash
 
-         .. code-block:: bash
+         conda create \
+            --name pytme \
+            -c conda-forge \
+            python=3.11 \
+            pyfftw \
+            napari \
+            magicgui \
+            pyqt
 
-            conda create \
-               --name pytme \
-               -c conda-forge \
-               python=3.11 \
-               pyfftw \
-               napari \
-               magicgui \
-               pyqt
+      The following will download and install the newest version of |project| into the Conda environment..
 
-      2. **Activate the Environment**:
+      .. code-block:: bash
 
-         .. code-block:: bash
+         conda activate pytme
+         pip install git+https://github.com/KosinskiLab/pyTME.git
 
-            conda activate pytme
-
-      3. **Install from Source**:
-
-         The following will download and install the newest version of |project|.
-
-         .. code-block:: bash
-
-            pip install git+https://github.com/KosinskiLab/pyTME.git
 
    .. tab-item:: PyPI
 
       Pip will fetch the required packages from PyPI and install them on your system.
 
-      1. **Prerequisite**:
-
-      Ensure you have Python 3.11 or higher installed on your system:
-
       .. code-block:: bash
 
-         python --version
-
-      2. **Install from PyPI**:
-
-         Once available on PyPI, the installation is a single command.
-
-         .. code-block:: bash
-
-            pip install pytme
+         pip install pytme
 
       .. note::
 
@@ -67,112 +47,116 @@ This section provides instructions on how to install the |project| library. Depe
 
    .. tab-item:: Source
 
-      Installing from source is ideal for developers and contributors who need access to the latest, unreleased changes and plan to modify the code. This method involves cloning the repository and setting up a local development environment.
+      Installing from Source provides you with the latest unreleased changes.
 
-      For detailed information on contributing to the project, see our :doc:`contribution`.
-
-      1. **Prerequisite**:
-
-         Ensure you have Python 3.11 or higher and Git installed on your system:
-
-         .. code-block:: bash
-
-            python --version
-            git --version
-
-      2. **Clone the Repository**:
-
-         First, clone the |project| repository and navigate into it:
-
-         .. code-block:: bash
-
-            git clone https://github.com/KosinskiLab/pyTME.git
-            cd pyTME
-
-      3. **Set Up a Development Environment**:
-
-         It's recommended to create a virtual environment:
-
-         .. code-block:: bash
-
-            python -m venv pytme
-            source pytme/bin/activate
-
-      4. **Install the Package in Editable Mode**:
-
-         Install the library in editable mode with `pip`. This allows you to modify the source code and see changes immediately:
-
-         .. code-block:: bash
-
-            pip install -e .
-
-         This will automatically install all required dependencies for |project|. Remember to navigate out of the source directory before using |project|. This ensures the built extensions are properly loaded from the installed library, avoiding potential issues.
-
-      .. note::
-
-         The above method is suited for development purposes. If you simply want to install the latest version of the package without cloning, you can use:
-
-         .. code-block:: bash
+      .. code-block:: bash
 
             pip install git+https://github.com/KosinskiLab/pyTME.git
 
-         This method installs the package directly from the repository without the need for cloning and is suitable for users who don't plan to modify the source code.
+   .. tab-item:: Docker
+
+      Docker provides a consistent and isolated environment for running |project|.
+
+      To build the Docker image locally
+
+      .. code-block:: bash
+
+         docker build -t pytme -f docker/Dockerfile_GPU .
+
+      Alternatively, you can pull the latest version from Docker Hub
+
+      .. code-block:: bash
+
+         docker pull dquz/pytme:latest
+
+      .. note::
+
+         Latest corresponds to the current version of the main branch. You can also use a release version by specifiying the corresponding tag.
 
 
-.. _gui-installation:
+CPU/GPU/TPU Support
+-------------------
 
-Optional GUI Setup
-------------------
-
-If you installed |project| using Conda, you will only need to execute the following to use the preprocessing GUI:
-
-.. code-block:: bash
-
-   pip install git+https://github.com/maurerv/napari-density-io.git
-
-Otherwise, you also have to install the remaining GUI dependencies:
-
-.. code-block:: bash
-
-   pip install napari magicgui PyQt5
-
-
-GPU Support
------------
-
-To enable GPU support in |project|, install one of the following GPU-accelerated libraries: PyTorch or CuPy. While both are supported, CuPy is the recommended choice.
-
-**Check Your CUDA Version**:
-
-Use the `nvidia-smi` command to get information about your NVIDIA driver and GPU:
-
-.. code-block:: bash
-
-   nvidia-smi
-
-Look for the CUDA version in the output; it's usually displayed in the top right corner. After determining your CUDA version, you can proceed to install one of the supported GPU-accelerated libraries.
+|project|'s `backend agnostic design <https://kosinskilab.github.io/pyTME/reference/backends.html>`_ enables the same code to be run on practically any hardware platform using a best-of-breed approach. To enable |project| to utilize compute devices other than CPUs, install one of the libraries below. |project| defaults to CuPy for GPU applications, but expert users can decide freely between their desired backend.
 
 .. tab-set::
 
    .. tab-item:: CuPy (Recommended)
 
-      If you have CUDA version 12 or upwards, install CuPy using:
+      The following will install the CuPy dependencies of |project|
+
+      .. code-block:: bash
+
+         pip install "pytme[cupy]"
+
+      Alternatively, you can install CuPy directly
 
       .. code-block:: bash
 
          pip install cupy-cuda12x
 
-      If your CUDA version is different or you encounter any issues, please refer to CuPy's official `installation guide <https://docs.cupy.dev/en/stable/install.html>`_ for a version tailored to your system and detailed instructions.
+      If your CUDA version is lower than 12 or you encounter any issues, please refer to CuPy's official `installation guide <https://docs.cupy.dev/en/stable/install.html>`_ for a version tailored to your system and detailed instructions.
 
    .. tab-item:: PyTorch
 
-      Alternatively, you can use PyTorch for GPU computations:
+      The following will install the PyTorch dependencies of |project|
+
+      .. code-block:: bash
+
+         pip install "pytme[torch]"
+
+      Alternatively, you can install PyTorch directly
 
       .. code-block:: bash
 
          pip install torch torchvision
 
       PyTorch's installation might vary based on your system and the specific GPU in use. Consult the official `PyTorch website <https://pytorch.org/>`_ for detailed installation options tailored for your environment.
+
+
+   .. tab-item:: JAX
+
+      The following will install the JAX dependencies of |project|
+
+      .. code-block:: bash
+
+         pip install "pytme[jax]"
+
+      Alternatively, you can install JAX directly
+
+      .. code-block:: bash
+
+         pip install "jax[cuda12]"
+
+      Setting up JAX might require additional attention on certain platforms. Consult the `JAX documentation <https://jax.readthedocs.io/en/latest/installation.html>`_ for tailored options.
+
+   .. tab-item:: MLX
+
+      The following will install the MLX dependencies of |project|
+
+      .. code-block:: bash
+
+         pip install mlx
+
+      The MLX library is only available for Apple silicon chips.
+
+.. _gui-installation:
+
+
+GUI Setup
+---------
+
+If you would like to perform interactive preprocessing and analysis of your data using the GUI shipped with |project|, you need to install the following dependency
+
+.. code-block:: bash
+
+   pip install git+https://github.com/maurerv/napari-density-io.git
+
+If you have installed |project| using Conda, thats it. Otherwise, you have to install the remaining dependencies
+
+.. code-block:: bash
+
+   pip install napari magicgui PyQt5
 
 
 
@@ -185,6 +169,7 @@ To verify that |project| has been installed correctly, you can run the test suit
 
    git clone https://github.com/KosinskiLab/pyTME.git
    cd pyTME
+   ulimit -n 4096
    pytest
 
 If the tests pass without any errors, |project| has been successfully installed.

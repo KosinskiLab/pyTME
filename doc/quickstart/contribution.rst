@@ -4,7 +4,8 @@
 Contributor's Guide
 ====================
 
-We greatly appreciate community contributions to our project. If you're thinking of adding new features, fixing bugs, or making any changes, this guide is designed to get you started and ensure the consistency and quality of the codebase.
+We greatly appreciate community contributions to |project|. If you're thinking of adding new features, fixing bugs, or making any changes, this guide is designed to get you started and ensure the consistency and quality of the codebase.
+
 
 Code Style and Guidelines
 --------------------------
@@ -17,32 +18,6 @@ Code Style and Guidelines
 
 4. **Testing**: Write tests for any new features or bug fixes. Ensure that all tests pass before submitting a pull request.
 
-Contribution Workflow
-----------------------
-
-1. **Fork the Repository**: If you're new to the project, first create a fork of the main repository.
-
-2. **Clone Your Fork Locally**:
-
-   .. code-block:: bash
-
-      $ git clone https://github.com/KosinskiLab/pyTME.git
-
-3. **Set Upstream Remote**: This allows you to pull in changes from the main repository.
-
-   .. code-block:: bash
-
-      $ git remote add upstream https://github.com/KosinskiLab/pyTME.git
-
-4. **Make and Commit Your Changes**: Remember to keep your changes focused on one thing, whether it's a new feature or a bug fix.
-
-5. **Pull the Latest Changes**: Before pushing your changes, pull the latest updates from the master repository.
-
-   .. code-block:: bash
-
-      $ git pull upstream master
-
-6. **Push to Your Fork and Create a Pull Request**: After resolving any potential conflicts, push your changes to your fork and create a pull request against the master repository.
 
 Feedback and Review
 -------------------

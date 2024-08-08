@@ -1,0 +1,112 @@
+﻿Density
+=======
+
+.. currentmodule:: tme.density
+
+.. autoclass:: Density
+
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+           Density.data
+         
+         
+           Density.empty
+         
+         
+           Density.metadata
+         
+         
+           Density.origin
+         
+         
+           Density.sampling_rate
+         
+         
+           Density.shape
+         
+   
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+      
+         
+         
+           Density.adjust_box
+         
+         
+           Density.center_of_mass
+         
+         
+           Density.centered
+         
+         
+           Density.copy
+         
+         
+           Density.core_mask
+         
+         
+           Density.density_boundary
+         
+         
+           Density.fourier_shell_correlation
+         
+         
+           Density.from_file
+         
+         
+           Density.from_structure
+         
+         
+           Density.match_densities
+         
+         
+           Density.match_structure_to_density
+         
+         
+           Density.minimum_enclosing_box
+         
+         
+           Density.normal_vectors
+         
+         
+           Density.pad
+         
+         
+           Density.resample
+         
+         
+           Density.rigid_transform
+         
+         
+           Density.surface_coordinates
+         
+         
+           Density.to_file
+         
+         
+           Density.to_memmap
+         
+         
+           Density.to_numpy
+         
+         
+           Density.to_pointcloud
+         
+         
+           Density.trim_box
+         
+   
+   

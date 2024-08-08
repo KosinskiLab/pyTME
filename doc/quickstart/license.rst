@@ -22,20 +22,21 @@ EMBL and RECIPIENT each individually are referred to as a “Party” and collec
 
 
 PREAMBLE
-~~~~~~~~
+--------
+
 EMBL is an intergovernmental institution under public international law having legal personality, and being granted a variety of privileges and immunities for itself and its staff necessary for the fulfilment of its objectives and for the exercise of its functions, including as established by the “Agreement establishing the European Molecular Biology Laboratory” concluded at Geneva on May 10, 1973, registered with UN-Treaty Series Volume 954, Nr. I-13668.
 
 EMBL has developed pyTME (Python Template Matching Engine), („Licensed Software“), a software library that generalizes template matching tasks with specialized tooling for cryo-electron microscopy data. The RECIPIENT intends to use the Licensed Software for research purposes only. For this purpose, the Parties agree on the following License Terms.
 
 1. Licensed Software
-~~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 1.1.  EMBL will license the Licensed Software as agreed between the Parties in each individual case. The Licensed Software contains full access of all components of pyTME (excluding dependencies) and the respective documentation.
 
 1.2.  Any installation or configuration or training and further support are not part of these License Terms. The RECIPIENT can contact  `valentin.maurer@embl-hamburg.de <mailto:valentin.maurer@embl-hamburg.de>`_ for help with the installation of the Licensed Software.
 
 2. Rights of Use
-~~~~~~~~~~~~~~~~
+----------------
 
 2.1.  As of the Effective Date as defined in section 5 EMBL grants to RECIPIENT a royalty-free, non-exclusive, non-transferable, non-sublicensable right to use the Licensed Software for non-commercial research purposes. For the purposes of these License Terms commercial means any use that directly or indirectly serves the purpose of generating revenues of any kind, irrespective of any intention to make a profit (“Commercial Use”) and including the purpose of performing research projects contracted by third parties against any kind of compensation (“Contract Research”). In particular service projects and collaborative research with for-profit organizations are always considered Contract Research.
 
@@ -65,12 +66,12 @@ EMBL has developed pyTME (Python Template Matching Engine), („Licensed Softwar
 
 
 3. No Licensing Fee
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 The Parties agree that the rights as described herein are granted without license fee.
 
 4. No Warranty
-~~~~~~~~~~~~~~
+--------------
 
 4.1.  EMBL does not assume any warranty for the Licensed Software itself or for the use or modification of the Licensed Software or any derivatives of the Licensed Software by RECIPIENT. EMBL will not assume any liability for damages occurring through the use or modification of the Licensed Software or its derivatives. EMBL does not guarantee the suitability of the Licensed Software or its derivatives for any applications.
 
@@ -82,7 +83,7 @@ The RECIPIENT will indemnify EMBL against any and all third party claims resulti
 
 
 5.  Effective Date, Term and Termination
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------------
 
 5.1.  These License Terms come into force after receipt of the Licensed Software by RECIPIENT or upon successful download of the Licensed Software, but no later than upon commencement of use by the RECIPIENT.
 
@@ -103,7 +104,7 @@ The RECIPIENT will indemnify EMBL against any and all third party claims resulti
 
 
 6.  Confidentiality
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 6.1.  The RECIPIENT agrees to maintain secrecy with regard to Confidential Information of EMBL, which RECIPIENT becomes aware of in connection with this Software License Agreement, and not to disclose such information to third parties or otherwise use it outside the scope of this Software License Agreement. This obligation shall survive the term of this Software License Agreement.
 
@@ -142,7 +143,7 @@ The RECIPIENT will indemnify EMBL against any and all third party claims resulti
 6.7.  The RECIPIENT shall refrain from exploiting or imitating Confidential Information outside the scope of its purpose in any manner whatsoever (in particular by means of reverse engineering) or having it exploited or imitated by third parties and, in particular, from applying for intellectual property rights – in particular trademarks, designs, patents or utility models (*Gebrauchsmuster*) – to the Confidential Information.
 
 7. Miscellaneous
-~~~~~~~~~~~~~~~~
+----------------
 
 7.1.  This Software License Agreement is written in the English language which shall be binding. Terms to which a German term has been added in parentheses and italics shall be interpreted throughout this Software License Agreement in accordance with the German term.
 
@@ -166,7 +167,8 @@ The RECIPIENT has read this Software License Agreement and agrees to uphold the 
 UNDERSTOOD AND AGREED.
 
 Confirmation
-~~~~~~~~~~~~
+------------
+
 Description about the acceptance of terms and final agreement.
 
 UNDERSTOOD AND AGREED.

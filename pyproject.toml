@@ -32,8 +32,8 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-cupy = ["cupy", "voltools==0.6.0"]
-pytorch = ["torch"]
+cupy = ["cupy-cuda12x", "voltools==0.6.0"]
+pytorch = ["torch", "torchvision"]
 jax = ["jax", "jaxlib"]
 all = [
     "cupy",
