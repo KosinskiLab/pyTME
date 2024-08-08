@@ -1037,7 +1037,7 @@ class MatchingBackend(ABC):
 
         Returns
         -------
-        Tupleshared_memory.SharedMemory, tuple of ints, dtype]
+        Tuple[shared_memory.SharedMemory, tuple of ints, dtype]
             The shared memory object containing the numpy array, its shape and dtype.
         """
 

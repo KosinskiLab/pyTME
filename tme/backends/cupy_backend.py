@@ -149,10 +149,10 @@ class CupyBackend(NumpyFFTWBackend):
             cache.clear()
 
         def rfftn(arr: CupyArray, out: CupyArray) -> CupyArray:
-            return cufft.rfftn(arr)
+            return cufft.rfftn(arr, s=fast_shape)
 
         def irfftn(arr: CupyArray, out: CupyArray) -> CupyArray:
-            return cufft.irfftn(arr)
+            return cufft.irfftn(arr, s=fast_shape)
 
         PLAN_CACHE[current_device] = [fast_shape, fast_ft_shape]
 

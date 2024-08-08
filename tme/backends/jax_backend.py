@@ -251,7 +251,7 @@ class JaxBackend(NumpyFFTWBackend):
                 template_filter = template_filter.at[(0,) * template_filter.ndim].set(0)
 
             if create_target_filter:
-                target_filter = matching_data.template_filter(
+                target_filter = matching_data.target_filter(
                     shape=fast_shape, **filter_args
                 )["data"]
                 target_filter = target_filter.at[(0,) * target_filter.ndim].set(0)
@@ -280,3 +280,18 @@ class JaxBackend(NumpyFFTWBackend):
                 ret.append(tuple(temp._postprocess(**analyzer_args)))
 
         return ret
+
+    def get_available_memory(self) -> int:
+        import jax
+
+        _memory = {"cpu": 0, "gpu": 0}
+        for device in jax.devices():
+            if device.platform == "cpu":
+                _memory["cpu"] = super().get_available_memory()
+            else:
+                mem_stats = device.memory_stats()
+                _memory["gpu"] += mem_stats.get("bytes_limit", 0)
+
+        if _memory["gpu"] > 0:
+            return _memory["gpu"]
+        return _memory["cpu"]

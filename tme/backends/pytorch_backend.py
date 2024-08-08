@@ -217,7 +217,7 @@ class PytorchBackend(NumpyFFTWBackend):
 
     def from_sharedarr(self, args) -> TorchTensor:
         if self.device == "cuda":
-            return args[0]
+            return args
 
         shm, shape, dtype = args
         required_size = int(self._array_backend.prod(self.to_backend_array(shape)))
@@ -235,13 +235,12 @@ class PytorchBackend(NumpyFFTWBackend):
 
         nbytes = arr.numel() * arr.element_size()
 
-        if type(shared_memory_handler) == SharedMemoryManager:
+        if isinstance(shared_memory_handler, SharedMemoryManager):
             shm = shared_memory_handler.SharedMemory(size=nbytes)
         else:
             shm = shared_memory.SharedMemory(create=True, size=nbytes)
 
         shm.buf[:nbytes] = arr.numpy().tobytes()
-
         return shm, arr.shape, arr.dtype
 
     def transpose(self, arr):
@@ -415,6 +414,8 @@ class PytorchBackend(NumpyFFTWBackend):
             yield None
 
     def device_count(self) -> int:
+        if self.device == "cpu":
+            return 1
         return self._array_backend.cuda.device_count()
 
     def reverse(self, arr: TorchTensor) -> TorchTensor:

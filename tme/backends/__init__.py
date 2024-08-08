@@ -147,7 +147,7 @@ class BackendManager:
         _dependencies = {
             "numpyfftw": "numpy",
             "cupy": "cupy",
-            "pytorch": "pytorch",
+            "pytorch": "torch",
             "mlx": "mlx",
             "jax": "jax",
         }
