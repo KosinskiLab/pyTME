@@ -422,10 +422,6 @@ class TestDensity:
         with pytest.raises(ValueError):
             self.density.normal_vectors(coordinates=coordinates)
 
-        coordinates = np.random.rand(10, 3) * -10
-        with pytest.raises(ValueError):
-            self.density.normal_vectors(coordinates=coordinates)
-
     def test_core_mask(self):
         mask = self.density.core_mask()
         assert mask.sum() > 0

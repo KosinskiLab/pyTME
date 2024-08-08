@@ -673,6 +673,9 @@ class WedgeReconstructed:
             omit_negative_frequencies=return_real_fourier,
         )
 
+        if not weight_wedge:
+            ret = (ret > 0) * 1.0
+
         return ret
 
 
@@ -951,7 +954,7 @@ class CTF:
                 angle=angle,
                 sampling_rate=1,
             )
-            frequency_mask = frequency_grid < .5
+            frequency_mask = frequency_grid < 0.5
             np.square(frequency_grid, out=frequency_grid)
 
             electron_aberration = spherical_aberration * electron_wavelength**2
@@ -967,7 +970,7 @@ class CTF:
                 )
             )
             np.sin(-chi, out=chi)
-            np.multiply(chi, frequency_mask, out = chi)
+            np.multiply(chi, frequency_mask, out=chi)
             stack[index] = chi
 
         # Avoid contrast inversion

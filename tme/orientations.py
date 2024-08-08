@@ -6,6 +6,7 @@
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 import re
+import warnings
 from collections import deque
 from dataclasses import dataclass
 from string import ascii_lowercase
@@ -301,7 +302,7 @@ class Orientations:
     def _to_relion_star(
         self,
         filename: str,
-        name_prefix: str = None,
+        name: str = None,
         ctf_image: str = None,
         sampling_rate: float = 1.0,
         subtomogram_size: int = 0,
@@ -313,8 +314,9 @@ class Orientations:
         ----------
         filename : str
             The name of the file to save the orientations.
-        name_prefix : str, optional
-            A prefix to add to the image names in the STAR file.
+        name : str or list of str, optional
+            Path to image file the orientation is in reference to. If name is a list
+            its assumed to correspond to _rlnImageName, otherwise _rlnMicrographName.
         ctf_image : str, optional
             Path to CTF or wedge mask RELION.
         sampling_rate : float, optional
@@ -352,6 +354,21 @@ class Orientations:
         optics_header = "\n".join(optics_header)
         optics_data = "\t".join(optics_data)
 
+        if name is None:
+            name = ""
+            warnings.warn(
+                "Consider specifying the name argument. A single string will be "
+                "interpreted as path to the original micrograph, a list of strings "
+                "as path to individual subsets."
+            )
+
+        name_reference = "_rlnImageName"
+        if isinstance(name, str):
+            name = [
+                name,
+            ] * self.translations.shape[0]
+            name_reference = "_rlnMicrographName"
+
         header = [
             "data_particles",
             "",
@@ -359,7 +376,7 @@ class Orientations:
             "_rlnCoordinateX",
             "_rlnCoordinateY",
             "_rlnCoordinateZ",
-            "_rlnImageName",
+            name_reference,
             "_rlnAngleRot",
             "_rlnAngleTilt",
             "_rlnAnglePsi",
@@ -371,8 +388,6 @@ class Orientations:
         ctf_image = "" if ctf_image is None else f"\t{ctf_image}"
 
         header = "\n".join(header)
-        name_prefix = "" if name_prefix is None else name_prefix
-
         with open(filename, mode="w", encoding="utf-8") as ofile:
             _ = ofile.write(f"{optics_header}\n")
             _ = ofile.write(f"{optics_data}\n")
@@ -387,9 +402,8 @@ class Orientations:
 
                 translation_string = "\t".join([str(x) for x in translation][::-1])
                 angle_string = "\t".join([str(x) for x in rotation])
-                name = f"{name_prefix}_{index}.mrc"
                 _ = ofile.write(
-                    f"{translation_string}\t{name}\t{angle_string}\t1{ctf_image}\n"
+                    f"{translation_string}\t{name[index]}\t{angle_string}\t1{ctf_image}\n"
                 )
 
         return None
@@ -584,7 +598,10 @@ class Orientations:
         cls, filename: str, delimiter: str = None
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         ret = cls._parse_star(filename=filename, delimiter=delimiter)
-        ret = ret["data_particles"]
+
+        ret = ret.get("data_particles", None)
+        if ret is None:
+            raise ValueError(f"No data_particles section found in {filename}.")
 
         translation = np.vstack(
             (ret["_rlnCoordinateZ"], ret["_rlnCoordinateY"], ret["_rlnCoordinateX"])

@@ -104,8 +104,8 @@ class TestMatchTemplate:
             "-n": 1,
             "-a": 60,
             "-o": output_path,
-            "--no_edge_padding": True,
-            "--no_fourier_padding": True,
+            "--pad_edges": False,
+            "--pad_fourier": False,
         }
 
         if use_template_mask:
@@ -129,6 +129,7 @@ class TestMatchTemplate:
 
         cmd = argdict_to_command(argdict, executable="match_template.py")
         ret = subprocess.run(cmd, capture_output=True, shell=True)
+        print(ret)
         assert ret.returncode == 0
 
         return output_path
@@ -244,6 +245,7 @@ class TestPostprocessing(TestMatchTemplate):
             "--output_format": output_format,
             "--output_prefix": f"{self.tempdir}/temp",
             "--number_of_peaks": 3,
+            "--peak_caller": "PeakCallerMaximumFilter",
         }
         cmd = argdict_to_command(argdict, executable="postprocess.py")
         ret = subprocess.run(cmd, capture_output=True, shell=True)

@@ -17,15 +17,18 @@ class ComposableFilter(ABC):
     @abstractmethod
     def __call__(self, *args, **kwargs) -> Dict:
         """
-        Parameters:
-        -----------
+
+        Parameters
+        ----------
+
         *args : tuple
             Variable length argument list.
         **kwargs : dict
             Arbitrary keyword arguments.
 
-        Returns:
-        --------
+        Returns
+        -------
+
         Dict
             A dictionary representing the result of the filtering operation.
         """
