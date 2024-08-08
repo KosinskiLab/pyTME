@@ -509,19 +509,7 @@ def main():
 
     target = Density.from_file(cli_args.target)
     if args.invert_target_contrast:
-        if args.output_format == "relion":
-            target.data = target.data * -1
-            target.data = np.divide(
-                np.subtract(target.data, target.data.mean()), target.data.std()
-            )
-        else:
-            target.data = (
-                -np.divide(
-                    np.subtract(target.data, target.data.min()),
-                    np.subtract(target.data.max(), target.data.min()),
-                )
-                + 1
-            )
+        target.data = target.data * -1
 
     if args.output_format in ("extraction", "relion"):
         if not np.all(np.divide(target.shape, template.shape) > 2):
@@ -546,10 +534,14 @@ def main():
 
         working_directory = getcwd()
         if args.output_format == "relion":
+            name = [
+                join(working_directory, f"{args.output_prefix}_{index}.mrc")
+                for index in range(len(cand_slices))
+            ]
             orientations.to_file(
                 filename=f"{args.output_prefix}.star",
                 file_format="relion",
-                name_prefix=join(working_directory, args.output_prefix),
+                name=name,
                 ctf_image=args.wedge_mask,
                 sampling_rate=target.sampling_rate.max(),
                 subtomogram_size=extraction_shape[0],
@@ -606,24 +598,22 @@ def main():
     if args.output_format == "average":
         orientations, cand_slices, obs_slices = orientations.get_extraction_slices(
             target_shape=target.shape,
-            extraction_shape=np.multiply(template.shape, 2),
+            extraction_shape=template.shape,
             drop_out_of_box=True,
             return_orientations=True,
         )
         out = np.zeros_like(template.data)
-        # out = np.zeros(np.multiply(template.shape, 2).astype(int))
         for index in range(len(cand_slices)):
-            from scipy.spatial.transform import Rotation
-
-            rotation = Rotation.from_euler(
-                angles=orientations.rotations[index], seq="zyx", degrees=True
-            )
-            rotation_matrix = rotation.inv().as_matrix()
-
             subset = Density(target.data[obs_slices[index]])
-            subset = subset.rigid_transform(rotation_matrix=rotation_matrix, order=1)
+            rotation_matrix = euler_to_rotationmatrix(orientations.rotations[index])
 
+            subset = subset.rigid_transform(
+                rotation_matrix=np.linalg.inv(rotation_matrix),
+                order=1,
+                use_geometric_center=True,
+            )
             np.add(out, subset.data, out=out)
+
         out /= len(cand_slices)
         ret = Density(out, sampling_rate=template.sampling_rate, origin=0)
         ret.pad(template.shape, center=True)
@@ -640,13 +630,13 @@ def main():
     for index, (translation, angles, *_) in enumerate(orientations):
         rotation_matrix = euler_to_rotationmatrix(angles)
         if template_is_density:
-            translation = np.subtract(translation, center)
             transformed_template = template.rigid_transform(
                 rotation_matrix=rotation_matrix
             )
-            transformed_template.origin = np.add(
-                target_origin, np.multiply(translation, sampling_rate)
-            )
+
+            # Just adapting the coordinate system not the in-box position
+            shift = np.multiply(np.subtract(translation, center), sampling_rate)
+            transformed_template.origin = np.add(template.origin, shift)
 
         else:
             template = Structure.from_file(cli_args.template)

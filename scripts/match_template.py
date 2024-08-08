@@ -99,7 +99,9 @@ def load_and_validate_mask(mask_target: "Density", mask_path: str, **kwargs):
                 f"Expected shape of {mask_path} was {mask_target.shape},"
                 f" got f{mask.shape}"
             )
-        if not np.allclose(mask.sampling_rate, mask_target.sampling_rate):
+        if not np.allclose(
+            np.round(mask.sampling_rate, 2), np.round(mask_target.sampling_rate, 2)
+        ):
             raise ValueError(
                 f"Expected sampling_rate of {mask_path} was {mask_target.sampling_rate}"
                 f", got f{mask.sampling_rate}"
@@ -175,8 +177,52 @@ def parse_rotation_logic(args, ndim):
     return rotations
 
 
-# TODO: Think about whether wedge mask should also be added to target
-# For now leave it at the cost of incorrect upper bound on the scores
+def compute_schedule(
+    args,
+    target: Density,
+    matching_data: MatchingData,
+    callback_class,
+    pad_edges: bool = False,
+):
+    # User requested target padding
+    if args.pad_edges is True:
+        pad_edges = True
+    template_box = matching_data._output_template_shape
+    if not args.pad_fourier:
+        template_box = tuple(0 for _ in range(len(template_box)))
+
+    target_padding = tuple(0 for _ in range(len(template_box)))
+    if pad_edges:
+        target_padding = matching_data._output_template_shape
+
+    splits, schedule = compute_parallelization_schedule(
+        shape1=target.shape,
+        shape2=tuple(int(x) for x in template_box),
+        shape1_padding=tuple(int(x) for x in target_padding),
+        max_cores=args.cores,
+        max_ram=args.memory,
+        split_only_outer=args.use_gpu,
+        matching_method=args.score,
+        analyzer_method=callback_class.__name__,
+        backend=be._backend_name,
+        float_nbytes=be.datatype_bytes(be._float_dtype),
+        complex_nbytes=be.datatype_bytes(be._complex_dtype),
+        integer_nbytes=be.datatype_bytes(be._int_dtype),
+    )
+
+    if splits is None:
+        print(
+            "Found no suitable parallelization schedule. Consider increasing"
+            " available RAM or decreasing number of cores."
+        )
+        exit(-1)
+    n_splits = np.prod(list(splits.values()))
+    if pad_edges is False and n_splits > 1:
+        args.pad_edges = True
+        return compute_schedule(args, target, matching_data, callback_class, True)
+    return splits, schedule
+
+
 def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Compose]:
     from tme.preprocessing import LinearWhiteningFilter, BandPassFilter
     from tme.preprocessing.tilt_series import (
@@ -232,18 +278,23 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
                     weight_wedge=args.tilt_weighting == "angle",
                     create_continuous_wedge=create_continuous_wedge,
                 )
+                wedge_target = WedgeReconstructed(
+                    angles=tilt_angles,
+                    weight_wedge=False,
+                    create_continuous_wedge=create_continuous_wedge,
+                )
+                target_filter.append(wedge_target)
 
         wedge.opening_axis = args.wedge_axes[0]
         wedge.tilt_axis = args.wedge_axes[1]
         wedge.sampling_rate = template.sampling_rate
         template_filter.append(wedge)
         if not isinstance(wedge, WedgeReconstructed):
-            template_filter.append(
-                ReconstructFromTilt(
-                    reconstruction_filter=args.reconstruction_filter,
-                    interpolation_order=args.reconstruction_interpolation_order,
-                )
+            reconstruction_filter = ReconstructFromTilt(
+                reconstruction_filter=args.reconstruction_filter,
+                interpolation_order=args.reconstruction_interpolation_order,
             )
+            template_filter.append(reconstruction_filter)
 
     if args.ctf_file is not None or args.defocus is not None:
         from tme.preprocessing.tilt_series import CTF
@@ -393,8 +444,7 @@ def parse_args():
         dest="invert_target_contrast",
         action="store_true",
         default=False,
-        help="Invert the target's contrast and rescale linearly between zero and one. "
-        "This option is intended for targets where templates to-be-matched have "
+        help="Invert the target's contrast for cases where templates to-be-matched have "
         "negative values, e.g. tomograms.",
     )
     io_group.add_argument(
@@ -719,30 +769,28 @@ def parse_args():
         help="Assumes the template is already centered and omits centering.",
     )
     performance_group.add_argument(
-        "--no_edge_padding",
-        dest="no_edge_padding",
+        "--pad_edges",
+        dest="pad_edges",
         action="store_true",
         default=False,
-        help="Whether to not pad the edges of the target. Can be set if the target"
-        " has a well defined bounding box, e.g. a masked reconstruction.",
+        help="Whether to pad the edges of the target. Useful if the target does not "
+        "a well-defined bounding box. Defaults to True if splitting is required.",
     )
     performance_group.add_argument(
-        "--no_fourier_padding",
-        dest="no_fourier_padding",
+        "--pad_fourier",
+        dest="pad_fourier",
         action="store_true",
         default=False,
         help="Whether input arrays should not be zero-padded to full convolution shape "
-        "for numerical stability. When working with very large targets, e.g. tomograms, "
-        "it is safe to use this flag and benefit from the performance gain.",
+        "for numerical stability. Typically only useful when working with small data.",
     )
     performance_group.add_argument(
-        "--no_filter_padding",
-        dest="no_filter_padding",
+        "--pad_filter",
+        dest="pad_filter",
         action="store_true",
         default=False,
-        help="Omits padding of optional template filters. Particularly effective when "
-        "the target is much larger than the template. However, for fast osciliating "
-        "filters setting this flag can introduce aliasing effects.",
+        help="Pads the filter to the shape of the target. Particularly useful for fast "
+        "oscilating filters to avoid aliasing effects.",
     )
     performance_group.add_argument(
         "--interpolation_order",
@@ -805,9 +853,6 @@ def parse_args():
 
     os.environ["TMPDIR"] = args.temp_directory
 
-    args.pad_target_edges = not args.no_edge_padding
-    args.pad_fourier = not args.no_fourier_padding
-
     if args.score not in MATCHING_EXHAUSTIVE_REGISTER:
         raise ValueError(
             f"score has to be one of {', '.join(MATCHING_EXHAUSTIVE_REGISTER.keys())}"
@@ -862,7 +907,9 @@ def main():
         )
 
     if target.sampling_rate.size == template.sampling_rate.size:
-        if not np.allclose(target.sampling_rate, template.sampling_rate):
+        if not np.allclose(
+            np.round(target.sampling_rate, 2), np.round(template.sampling_rate, 2)
+        ):
             print(
                 f"Resampling template to {target.sampling_rate}. "
                 "Consider providing a template with the same sampling rate as the target."
@@ -956,7 +1003,7 @@ def main():
 
     if args.scramble_phases:
         template.data = scramble_phases(
-            template.data, noise_proportion=1.0, normalize_power=True
+            template.data, noise_proportion=1.0, normalize_power=False
         )
 
     # Determine suitable backend for the selected operation
@@ -980,10 +1027,7 @@ def main():
             available_backends.remove("jax")
         if args.use_gpu and "pytorch" in available_backends:
             available_backends = ("pytorch",)
-            if args.interpolation_order == 3:
-                raise NotImplementedError(
-                    "Pytorch does not support --interpolation_order 3, 1 is supported."
-                )
+
     # dim_match = len(template.shape) == len(target.shape) <= 3
     # if dim_match and args.use_gpu and "jax" in available_backends:
     #     args.interpolation_order = 1
@@ -1008,6 +1052,12 @@ def main():
             )
         break
 
+    if pref == "pytorch" and args.interpolation_order == 3:
+        warnings.warn(
+            "Pytorch does not support --interpolation_order 3, setting it to 1."
+        )
+        args.interpolation_order = 1
+
     available_memory = be.get_available_memory() * be.device_count()
     if args.memory is None:
         args.memory = int(args.memory_scaling * available_memory)
@@ -1025,41 +1075,13 @@ def main():
         rotations=parse_rotation_logic(args=args, ndim=template.data.ndim),
     )
 
+    matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[args.score]
     matching_data.template_filter, matching_data.target_filter = setup_filter(
         args, template, target
     )
 
-    template_box = matching_data._output_template_shape
-    if not args.pad_fourier:
-        template_box = tuple(0 for _ in range(len(template_box)))
+    splits, schedule = compute_schedule(args, target, matching_data, callback_class)
 
-    target_padding = tuple(0 for _ in range(len(template_box)))
-    if args.pad_target_edges:
-        target_padding = matching_data._output_template_shape
-
-    splits, schedule = compute_parallelization_schedule(
-        shape1=target.shape,
-        shape2=tuple(int(x) for x in template_box),
-        shape1_padding=tuple(int(x) for x in target_padding),
-        max_cores=args.cores,
-        max_ram=args.memory,
-        split_only_outer=args.use_gpu,
-        matching_method=args.score,
-        analyzer_method=callback_class.__name__,
-        backend=be._backend_name,
-        float_nbytes=be.datatype_bytes(be._float_dtype),
-        complex_nbytes=be.datatype_bytes(be._complex_dtype),
-        integer_nbytes=be.datatype_bytes(be._int_dtype),
-    )
-
-    if splits is None:
-        print(
-            "Found no suitable parallelization schedule. Consider increasing"
-            " available RAM or decreasing number of cores."
-        )
-        exit(-1)
-
-    matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[args.score]
     n_splits = np.prod(list(splits.values()))
     target_split = ", ".join(
         [":".join([str(x) for x in axis]) for axis in splits.items()]
@@ -1071,8 +1093,8 @@ def main():
         "Center Template": not args.no_centering,
         "Scramble Template": args.scramble_phases,
         "Invert Contrast": args.invert_target_contrast,
-        "Extend Fourier Grid": not args.no_fourier_padding,
-        "Extend Target Edges": not args.no_edge_padding,
+        "Extend Fourier Grid": args.pad_fourier,
+        "Extend Target Edges": args.pad_edges,
         "Interpolation Order": args.interpolation_order,
         "Setup Function": f"{get_func_fullname(matching_setup)}",
         "Scoring Function": f"{get_func_fullname(matching_score)}",
@@ -1108,6 +1130,7 @@ def main():
         "Tilt Angles": args.tilt_angles,
         "Tilt Weighting": args.tilt_weighting,
         "Reconstruction Filter": args.reconstruction_filter,
+        "Extend Filter Grid": args.pad_filter,
     }
     if args.ctf_file is not None or args.defocus is not None:
         filter_args["CTF File"] = args.ctf_file
@@ -1156,9 +1179,9 @@ def main():
         callback_class=callback_class,
         callback_class_args=analyzer_args,
         target_splits=splits,
-        pad_target_edges=args.pad_target_edges,
+        pad_target_edges=args.pad_edges,
         pad_fourier=args.pad_fourier,
-        pad_template_filter=not args.no_filter_padding,
+        pad_template_filter=args.pad_filter,
         interpolation_order=args.interpolation_order,
     )
 

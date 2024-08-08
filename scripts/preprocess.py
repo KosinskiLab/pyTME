@@ -1,93 +1,124 @@
 #!python3
-""" Apply tme.preprocessor.Preprocessor methods to an input file based
-    on a provided yaml configuration obtaiend from preprocessor_gui.py.
+""" Preprocessing routines for template matching.
 
     Copyright (c) 2023 European Molecular Biology Laboratory
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-import yaml
 import argparse
-import textwrap
-from tme import Preprocessor, Density
+import numpy as np
+
+from tme import Density, Structure
+from tme.preprocessing.frequency_filters import BandPassFilter
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=textwrap.dedent(
-            """
-        Apply preprocessing to an input file based on a provided YAML configuration.
+        description="Perform template matching preprocessing.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
 
-        Expected YAML file format:
-        ```yaml
-        <method_name>:
-            <parameter1>: <value1>
-            <parameter2>: <value2>
-            ...
-        ```
-        """
-        ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "-i",
-        "--input_file",
+    io_group = parser.add_argument_group("Input / Output")
+    io_group.add_argument(
+        "-m",
+        "--data",
+        dest="data",
         type=str,
         required=True,
-        help="Path to the input data file in CCP4/MRC format.",
+        help="Path to a file in PDB/MMCIF, CCP4/MRC, EM, H5 or a format supported by "
+        "tme.density.Density.from_file "
+        "https://kosinskilab.github.io/pyTME/reference/api/tme.density.Density.from_file.html",
     )
-    parser.add_argument(
-        "-y",
-        "--yaml_file",
-        type=str,
-        required=True,
-        help="Path to the YAML configuration file.",
-    )
-    parser.add_argument(
+    io_group.add_argument(
         "-o",
-        "--output_file",
+        "--output",
+        dest="output",
         type=str,
         required=True,
-        help="Path to output file in CPP4/MRC format..",
-    )
-    parser.add_argument(
-        "--compress", action="store_true", help="Compress the output file using gzip."
+        help="Path the output should be written to.",
     )
 
+    box_group = parser.add_argument_group("Box")
+    box_group.add_argument(
+        "--box_size",
+        dest="box_size",
+        type=int,
+        required=True,
+        help="Box size of the output",
+    )
+    box_group.add_argument(
+        "--sampling_rate",
+        dest="sampling_rate",
+        type=float,
+        required=True,
+        help="Sampling rate of the output file.",
+    )
+
+    modulation_group = parser.add_argument_group("Modulation")
+    modulation_group.add_argument(
+        "--invert_contrast",
+        dest="invert_contrast",
+        action="store_true",
+        required=False,
+        help="Inverts the template contrast.",
+    )
+    modulation_group.add_argument(
+        "--lowpass",
+        dest="lowpass",
+        type=float,
+        required=False,
+        default=None,
+        help="Lowpass filter the template to the given resolution. Nyquist by default. "
+        "A value of 0 disables the filter.",
+    )
+    modulation_group.add_argument(
+        "--no_centering",
+        dest="no_centering",
+        action="store_true",
+        help="Assumes the template is already centered and omits centering.",
+    )
     args = parser.parse_args()
-
     return args
 
 
-def main():
-    args = parse_args()
-    with open(args.yaml_file, "r") as f:
-        preprocess_settings = yaml.safe_load(f)
-
-    if len(preprocess_settings) > 1:
-        raise NotImplementedError(
-            "Multiple preprocessing methods specified. "
-            "The script currently supports one method at a time."
-        )
-
-    method_name = list(preprocess_settings.keys())[0]
-    if not hasattr(Preprocessor, method_name):
-        raise ValueError(f"Method {method_name} does not exist in Preprocessor.")
-
-    density = Density.from_file(args.input_file)
-    output = density.empty
-
-    method_params = preprocess_settings[method_name]
-    preprocessor = Preprocessor()
-    method = getattr(preprocessor, method_name, None)
-    if not method:
-        raise ValueError(
-            f"{method} does not exist in dge.preprocessor.Preprocessor class."
-        )
-
-    output.data = method(template=density.data, **method_params)
-    output.to_file(args.output_file, gzip=args.compress)
-
-
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+
+    try:
+        data = Structure.from_file(args.data)
+        data = Density.from_structure(data, sampling_rate=args.sampling_rate)
+    except NotImplementedError:
+        data = Density.from_file(args.data)
+
+    if not args.no_centering:
+        data, _ = data.centered(0)
+
+    padding = np.multiply(
+        args.box_size, np.divide(args.sampling_rate, data.sampling_rate)
+    )
+    data.pad(
+        np.multiply(args.box_size, np.divide(args.sampling_rate, data.sampling_rate)),
+        center=True,
+    )
+
+    bpf_mask = 1
+    lowpass = 2 * args.sampling_rate if args.lowpass is None else args.lowpass
+    if args.lowpass != 0:
+        bpf_mask = BandPassFilter(
+            lowpass=lowpass,
+            highpass=None,
+            use_gaussian=True,
+            return_real_fourier=True,
+            shape_is_real_fourier=False,
+        )(shape=data.shape)["data"]
+
+    data_ft = np.fft.rfftn(data.data, s=data.shape)
+    data_ft = np.multiply(data_ft, bpf_mask, out=data_ft)
+    data.data = np.fft.irfftn(data_ft, s=data.shape).real
+
+    data = data.resample(args.sampling_rate, method="spline", order=3)
+
+    if args.invert_contrast:
+        data.data = data.data * -1
+
+    data.to_file(args.output)

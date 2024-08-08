@@ -132,14 +132,6 @@ def local_gaussian_filter(
     )
 
 
-def ntree(
-    template: NDArray,
-    sigma_range: Tuple[float, float],
-    **kwargs: dict,
-) -> NDArray:
-    return preprocessor.ntree_filter(template=template, sigma_range=sigma_range)
-
-
 def mean(
     template: NDArray,
     width: int,
@@ -197,6 +189,10 @@ def compute_power_spectrum(template: NDArray) -> NDArray:
     return np.fft.fftshift(np.log(np.abs(np.fft.fftn(template))))
 
 
+def invert_contrast(template: NDArray) -> NDArray:
+    return template * -1
+
+
 def widgets_from_function(function: Callable, exclude_params: List = ["self"]):
     """
     Creates list of magicui widgets by inspecting function typing ann
@@ -252,13 +248,13 @@ WRAPPED_FUNCTIONS = {
     "gaussian_filter": gaussian_filter,
     "bandpass_filter": bandpass_filter,
     "edge_gaussian_filter": edge_gaussian_filter,
-    "ntree_filter": ntree,
     "local_gaussian_filter": local_gaussian_filter,
     "difference_of_gaussian_filter": difference_of_gaussian_filter,
     "mean_filter": mean,
     "wedge_filter": wedge,
     "power_spectrum": compute_power_spectrum,
     "ctf": ctf_filter,
+    "invert_contrast": invert_contrast,
 }
 
 EXCLUDED_FUNCTIONS = [
@@ -634,6 +630,7 @@ class MaskWidget(widgets.Container):
 
         data = active_layer.data.copy()
         cutoff = np.quantile(data, self.percentile_range_edit.value / 100)
+        cutoff = max(cutoff, np.finfo(np.float32).resolution)
         data[data < cutoff] = 0
 
         center_of_mass = Density.center_of_mass(np.abs(data), 0)
