@@ -186,7 +186,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
     def to_sharedarr(
         self, arr: NDArray, shared_memory_handler: type = None
     ) -> shm_type:
-        if type(shared_memory_handler) == SharedMemoryManager:
+        if isinstance(shared_memory_handler, SharedMemoryManager):
             shm = shared_memory_handler.SharedMemory(size=arr.nbytes)
         else:
             shm = shared_memory.SharedMemory(create=True, size=arr.nbytes)
@@ -347,7 +347,8 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         cache: bool = False,
     ) -> Tuple[NDArray, NDArray]:
         translation = self.zeros(arr.ndim) if translation is None else translation
-        center = self.divide(self.to_backend_array(arr.shape), 2)
+
+        center = self.divide(self.to_backend_array(arr.shape) - 1, 2)
         if not use_geometric_center:
             center = self.center_of_mass(arr, cutoff=0)
 

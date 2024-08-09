@@ -482,7 +482,7 @@ class MatchingData:
         shape_diff = np.multiply(shape_diff, 1 - batch_mask)
         if np.sum(shape_diff < 0) and not pad_fourier:
             warnings.warn(
-                "Target is larger than template and Fourier padding is turned off. "
+                "Template is larger than target and Fourier padding is turned off. "
                 "This may lead to inaccurate results. Prefer swapping template and target, "
                 "enable padding or turn off template centering."
             )

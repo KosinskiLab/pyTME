@@ -40,7 +40,7 @@ The following will fit the newly created structure `6HMS_mod.pdb` into the origi
         -a 40 \
         -o output.pickle
 
-We can also apply various filters to the atomic structure, such as a lowpass filter to 30 Ångstrom, and crop the map to its contour level to improve computational efficiency
+We can also apply various filters to the atomic structure, such as a lowpass filter to 30 Ångstrom
 
 .. code-block:: bash
 
@@ -49,7 +49,6 @@ We can also apply various filters to the atomic structure, such as a lowpass fil
         -i 6HMS_mod.pdb \
         -n 4 \
         -a 40 \
-        --cutoff_target 0.58 \
         --lowpass 30 \
         -o output_mod.pickle
 

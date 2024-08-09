@@ -1,5 +1,5 @@
 #!python3
-""" CLI interface for basic pyTME template matching functions.
+""" CLI for basic pyTME template matching functions.
 
     Copyright (c) 2023 European Molecular Biology Laboratory
 
@@ -22,7 +22,6 @@ from tme.matching_utils import (
     get_rotations_around_vector,
     compute_parallelization_schedule,
     scramble_phases,
-    generate_tempfile_name,
     write_pickle,
 )
 from tme.matching_exhaustive import scan_subsets, MATCHING_EXHAUSTIVE_REGISTER
@@ -107,51 +106,6 @@ def load_and_validate_mask(mask_target: "Density", mask_path: str, **kwargs):
                 f", got f{mask.sampling_rate}"
             )
     return mask
-
-
-def crop_data(data: Density, cutoff: float, data_mask: Density = None) -> bool:
-    """
-    Crop the provided data and mask to a smaller box based on a cutoff value.
-
-    Parameters
-    ----------
-    data : Density
-        The data that should be cropped.
-    cutoff : float
-        The threshold value to determine which parts of the data should be kept.
-    data_mask : Density, optional
-        A mask for the data that should be cropped.
-
-    Returns
-    -------
-    bool
-        Returns True if the data was adjusted (cropped), otherwise returns False.
-
-    Notes
-    -----
-    Cropping is performed in place.
-    """
-    if cutoff is None:
-        return False
-
-    box = data.trim_box(cutoff=cutoff)
-    box_mask = box
-    if data_mask is not None:
-        box_mask = data_mask.trim_box(cutoff=cutoff)
-    box = tuple(
-        slice(min(arr.start, mask.start), max(arr.stop, mask.stop))
-        for arr, mask in zip(box, box_mask)
-    )
-    if box == tuple(slice(0, x) for x in data.shape):
-        return False
-
-    data.adjust_box(box)
-
-    if data_mask:
-        data_mask.adjust_box(box)
-
-    return True
-
 
 def parse_rotation_logic(args, ndim):
     if args.angular_sampling is not None:
@@ -747,22 +701,6 @@ def parse_args():
 
     performance_group = parser.add_argument_group("Performance")
     performance_group.add_argument(
-        "--cutoff_target",
-        dest="cutoff_target",
-        type=float,
-        required=False,
-        default=None,
-        help="Target contour level (used for cropping).",
-    )
-    performance_group.add_argument(
-        "--cutoff_template",
-        dest="cutoff_template",
-        type=float,
-        required=False,
-        default=None,
-        help="Template contour level (used for cropping).",
-    )
-    performance_group.add_argument(
         "--no_centering",
         dest="no_centering",
         action="store_true",
@@ -924,9 +862,6 @@ def main():
     )
 
     initial_shape = target.shape
-    is_cropped = crop_data(
-        data=target, data_mask=target_mask, cutoff=args.cutoff_target
-    )
     print_block(
         name="Target",
         data={
@@ -935,13 +870,6 @@ def main():
             "Final Shape": target.shape,
         },
     )
-    if is_cropped:
-        args.target = generate_tempfile_name(suffix=".mrc")
-        target.to_file(args.target)
-
-        if target_mask:
-            args.target_mask = generate_tempfile_name(suffix=".mrc")
-            target_mask.to_file(args.target_mask)
 
     if target_mask:
         print_block(
@@ -954,8 +882,6 @@ def main():
         )
 
     initial_shape = template.shape
-    _ = crop_data(data=template, data_mask=template_mask, cutoff=args.cutoff_template)
-
     translation = np.zeros(len(template.shape), dtype=np.float32)
     if not args.no_centering:
         template, translation = template.centered(0)

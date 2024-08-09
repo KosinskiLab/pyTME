@@ -5,10 +5,12 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+import warnings
 import argparse
 import numpy as np
 
 from tme import Density, Structure
+from tme.backends import backend as be
 from tme.preprocessing.frequency_filters import BandPassFilter
 
 
@@ -92,6 +94,12 @@ if __name__ == "__main__":
 
     if not args.no_centering:
         data, _ = data.centered(0)
+
+    recommended_box = be.compute_convolution_shapes([args.box_size], [1])[1][0]
+    if recommended_box != args.box_size:
+        warnings.warn(
+            f"Consider using --box_size {recommended_box} instead of {args.box_size}."
+        )
 
     padding = np.multiply(
         args.box_size, np.divide(args.sampling_rate, data.sampling_rate)

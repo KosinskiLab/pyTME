@@ -631,12 +631,13 @@ def main():
         rotation_matrix = euler_to_rotationmatrix(angles)
         if template_is_density:
             transformed_template = template.rigid_transform(
-                rotation_matrix=rotation_matrix
+                rotation_matrix=rotation_matrix,
+                use_geometric_center = True
             )
 
             # Just adapting the coordinate system not the in-box position
             shift = np.multiply(np.subtract(translation, center), sampling_rate)
-            transformed_template.origin = np.add(template.origin, shift)
+            transformed_template.origin = np.add(target_origin, shift)
 
         else:
             template = Structure.from_file(cli_args.template)

@@ -144,8 +144,8 @@ class JaxBackend(NumpyFFTWBackend):
         **kwargs,
     ) -> Tuple[BackendArray, BackendArray]:
         rotate_mask = arr_mask is not None
-        center = self.divide(self.to_backend_array(arr.shape), 2)[:, None]
 
+        center = self.divide(self.to_backend_array(arr.shape) - 1, 2)[:, None]
         indices = self._array_backend.indices(arr.shape, dtype=self._float_dtype)
         indices = indices.reshape((arr.ndim, -1))
         indices = indices.at[:].add(-center)
@@ -217,6 +217,15 @@ class JaxBackend(NumpyFFTWBackend):
         create_template_filter = matching_data.template_filter is not None
         create_filter = create_target_filter or create_template_filter
 
+        # Applying the filter leads to more FFTs
+        fastt_shape = matching_data._template.shape
+        if create_template_filter:
+            fastt_shape, *_ = matching_data._fourier_padding(
+                target_shape=self.to_numpy_array(matching_data._template.shape),
+                template_shape=self.to_numpy_array(matching_data._template.shape),
+                pad_fourier=False,
+            )
+
         ret, template_filter, target_filter = [], 1, 1
         rotation_mapping = {
             self.tobytes(matching_data.rotations[i]): i
@@ -246,7 +255,7 @@ class JaxBackend(NumpyFFTWBackend):
 
             if create_template_filter:
                 template_filter = matching_data.template_filter(
-                    shape=matching_data._template.shape, **filter_args
+                    shape=fastt_shape, **filter_args
                 )["data"]
                 template_filter = template_filter.at[(0,) * template_filter.ndim].set(0)
 
@@ -260,8 +269,8 @@ class JaxBackend(NumpyFFTWBackend):
             base, targets = None, self._array_backend.stack(targets)
             scores, rotations = scan_inner(
                 targets,
-                matching_data.template,
-                matching_data.template_mask,
+                self.topleft_pad(matching_data.template, fastt_shape),
+                self.topleft_pad(matching_data.template_mask, fastt_shape),
                 matching_data.rotations,
                 template_filter,
                 target_filter,

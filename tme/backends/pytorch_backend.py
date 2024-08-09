@@ -81,13 +81,13 @@ class PytorchBackend(NumpyFFTWBackend):
 
     def max(self, *args, **kwargs) -> NDArray:
         ret = self._array_backend.amax(*args, **kwargs)
-        if type(ret) == self._array_backend.Tensor:
+        if isinstance(ret, self._array_backend.Tensor):
             return ret
         return ret[0]
 
     def min(self, *args, **kwargs) -> NDArray:
         ret = self._array_backend.amin(*args, **kwargs)
-        if type(ret) == self._array_backend.Tensor:
+        if isinstance(ret, self._array_backend.Tensor):
             return ret
         return ret[0]
 

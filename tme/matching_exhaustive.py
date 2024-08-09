@@ -73,35 +73,45 @@ def _setup_template_filter_apply_target_filter(
     if not filter_template and not filter_target:
         return template_filter
 
-    target_temp = be.topleft_pad(matching_data.target, fast_shape)
-    target_temp_ft = be.zeros(fast_ft_shape, be._complex_dtype)
-
     inv_mask = be.subtract(1, be.to_backend_array(matching_data._batch_mask))
     filter_shape = be.multiply(be.to_backend_array(fast_ft_shape), inv_mask)
     filter_shape = tuple(int(x) if x != 0 else 1 for x in filter_shape)
-
     fast_shape = be.multiply(be.to_backend_array(fast_shape), inv_mask)
     fast_shape = tuple(int(x) for x in fast_shape if x != 0)
 
+    fastt_shape, fastt_ft_shape = fast_shape, filter_shape
+    if filter_template and not pad_template_filter:
+        fastt_shape, fastt_ft_shape, _ = matching_data._fourier_padding(
+            target_shape=be.to_numpy_array(matching_data._template.shape),
+            template_shape=be.to_numpy_array(matching_data._template.shape),
+            pad_fourier=False,
+        )
+        # FFT shape acrobatics
+        matching_data.template = be.reverse(
+            be.topleft_pad(matching_data.template, fastt_shape)
+        )
+        matching_data.template_mask = be.reverse(
+            be.topleft_pad(matching_data.template_mask, fastt_shape)
+        )
+        matching_data._set_matching_dimension(
+            target_dims=matching_data._target_dims,
+            template_dims=matching_data._template_dims,
+        )
+        fastt_ft_shape = [int(x) for x in matching_data._output_template_shape]
+        fastt_ft_shape[-1] = fastt_ft_shape[-1] // 2 + 1
+
+    target_temp = be.topleft_pad(matching_data.target, fast_shape)
+    target_temp_ft = be.zeros(fast_ft_shape, be._complex_dtype)
     target_temp_ft = rfftn(target_temp, target_temp_ft)
     if filter_template:
-        # TODO: Pad to fast shapes and adapt _setup_template_filtering accordingly
-        template_fast_shape, template_filter_shape = fast_shape, filter_shape
-        if not pad_template_filter:
-            template_fast_shape = tuple(int(x) for x in matching_data._template.shape)
-            template_filter_shape = [
-                int(x) for x in matching_data._output_template_shape
-            ]
-            template_filter_shape[-1] = template_filter_shape[-1] // 2 + 1
-
         template_filter = matching_data.template_filter(
-            shape=template_fast_shape,
+            shape=fastt_shape,
             return_real_fourier=True,
             shape_is_real_fourier=False,
             data_rfft=target_temp_ft,
             batch_dimension=matching_data._target_dims,
         )["data"]
-        template_filter = be.reshape(template_filter, template_filter_shape)
+        template_filter = be.reshape(template_filter, fastt_ft_shape)
 
     if filter_target:
         target_filter = matching_data.target_filter(
