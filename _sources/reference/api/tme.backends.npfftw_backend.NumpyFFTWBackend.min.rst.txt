@@ -1,0 +1,6 @@
+NumpyFFTWBackend.min
+================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.min

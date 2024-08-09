@@ -1,0 +1,749 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Non-exhaustive &#8212; pytme 0.2.3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=63b7f29f" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=a47416a6"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/matching_optimization';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.2.3 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.FLC.html">FLC</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.FLC.rotate_array.html">FLC.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.FLC.score.html">FLC.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.FLC.score_angles.html">FLC.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.FLC.score_translation.html">FLC.score_translation</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.html">CrossCorrelation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.array_from_coordinates.html">CrossCorrelation.array_from_coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.map_coordinates_to_array.html">CrossCorrelation.map_coordinates_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.rotate_array.html">CrossCorrelation.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.score.html">CrossCorrelation.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.score_angles.html">CrossCorrelation.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.CrossCorrelation.score_translation.html">CrossCorrelation.score_translation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.html">LaplaceCrossCorrelation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.array_from_coordinates.html">LaplaceCrossCorrelation.array_from_coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.map_coordinates_to_array.html">LaplaceCrossCorrelation.map_coordinates_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.rotate_array.html">LaplaceCrossCorrelation.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.score.html">LaplaceCrossCorrelation.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.score_angles.html">LaplaceCrossCorrelation.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.LaplaceCrossCorrelation.score_translation.html">LaplaceCrossCorrelation.score_translation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.html">NormalizedCrossCorrelation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.array_from_coordinates.html">NormalizedCrossCorrelation.array_from_coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.map_coordinates_to_array.html">NormalizedCrossCorrelation.map_coordinates_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.rotate_array.html">NormalizedCrossCorrelation.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.score.html">NormalizedCrossCorrelation.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.score_angles.html">NormalizedCrossCorrelation.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelation.score_translation.html">NormalizedCrossCorrelation.score_translation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.html">NormalizedCrossCorrelationMean</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.array_from_coordinates.html">NormalizedCrossCorrelationMean.array_from_coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.map_coordinates_to_array.html">NormalizedCrossCorrelationMean.map_coordinates_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.rotate_array.html">NormalizedCrossCorrelationMean.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.score.html">NormalizedCrossCorrelationMean.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.score_angles.html">NormalizedCrossCorrelationMean.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalizedCrossCorrelationMean.score_translation.html">NormalizedCrossCorrelationMean.score_translation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.html">MaskedCrossCorrelation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.array_from_coordinates.html">MaskedCrossCorrelation.array_from_coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.map_coordinates_to_array.html">MaskedCrossCorrelation.map_coordinates_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.rotate_array.html">MaskedCrossCorrelation.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.score.html">MaskedCrossCorrelation.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.score_angles.html">MaskedCrossCorrelation.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MaskedCrossCorrelation.score_translation.html">MaskedCrossCorrelation.score_translation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.html">PartialLeastSquareDifference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.array_from_coordinates.html">PartialLeastSquareDifference.array_from_coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.map_coordinates_to_array.html">PartialLeastSquareDifference.map_coordinates_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.rotate_array.html">PartialLeastSquareDifference.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.score.html">PartialLeastSquareDifference.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.score_angles.html">PartialLeastSquareDifference.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.PartialLeastSquareDifference.score_translation.html">PartialLeastSquareDifference.score_translation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html">Chamfer</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.rotate_array.html">Chamfer.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score.html">Chamfer.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_angles.html">Chamfer.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_translation.html">Chamfer.score_translation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.html">MutualInformation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.array_from_coordinates.html">MutualInformation.array_from_coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.map_coordinates_to_array.html">MutualInformation.map_coordinates_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.rotate_array.html">MutualInformation.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.score.html">MutualInformation.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.score_angles.html">MutualInformation.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.MutualInformation.score_translation.html">MutualInformation.score_translation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.Envelope.html">Envelope</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Envelope.array_from_coordinates.html">Envelope.array_from_coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Envelope.map_coordinates_to_array.html">Envelope.map_coordinates_to_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Envelope.rotate_array.html">Envelope.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Envelope.score.html">Envelope.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Envelope.score_angles.html">Envelope.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Envelope.score_translation.html">Envelope.score_translation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.rotate_array.html">NormalVectorScore.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score.html">NormalVectorScore.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_angles.html">NormalVectorScore.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_translation.html">NormalVectorScore.score_translation</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.html">Chamfer</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.rotate_array.html">Chamfer.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score.html">Chamfer.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_angles.html">Chamfer.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.Chamfer.score_translation.html">Chamfer.score_translation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.html">NormalVectorScore</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.rotate_array.html">NormalVectorScore.rotate_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score.html">NormalVectorScore.score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_angles.html">NormalVectorScore.score_angles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.matching_optimization.NormalVectorScore.score_translation.html">NormalVectorScore.score_translation</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_optimization.create_score_object.html">create_score_object</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_optimization.optimize_match.html">optimize_match</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Non-exhaustive</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="non-exhaustive">
+<h1>Non-exhaustive<a class="headerlink" href="#non-exhaustive" title="Link to this heading">#</a></h1>
+<p>Within pytme, non-exhaustive template matching problems are distinguished based on whether they operate on <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> objects or coordinates. Therefore, we categorize them into three different classes of matching problems:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+Density to Density</label><div class="sd-tab-content docutils">
+<p>Analogous to exhaustive template matching operations in pytme, the classes below identify the configuration maximizing the similarity
+between two densities.</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.FLC.html#tme.matching_optimization.FLC" title="tme.matching_optimization.FLC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FLC</span></code></a>(target, template[, template_mask, ...])</p></td>
+<td><p>Computes a normalized cross-correlation score of a target f a template g and a mask m:</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+Coordinates to Density</label><div class="sd-tab-content docutils">
+<p>The classes below maximize the similarity between a coordinate set with associated weights and a density. This case is commonly found when matching atomic structures to electron density maps.</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation" title="tme.matching_optimization.CrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CrossCorrelation</span></code></a>(target, ...[, ...])</p></td>
+<td><p>Computes the Cross-Correlation score as:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.LaplaceCrossCorrelation.html#tme.matching_optimization.LaplaceCrossCorrelation" title="tme.matching_optimization.LaplaceCrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LaplaceCrossCorrelation</span></code></a>(target, ...[, ...])</p></td>
+<td><p>Uses the same formalism as <a class="reference internal" href="template_matching/api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation" title="tme.matching_optimization.CrossCorrelation"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossCorrelation</span></code></a> but with Laplace filtered weights (<span class="math notranslate nohighlight">\(\nabla^{2}\)</span>):</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation" title="tme.matching_optimization.NormalizedCrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation</span></code></a>(target, ...[, ...])</p></td>
+<td><p>Computes a normalized version of the <a class="reference internal" href="template_matching/api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation" title="tme.matching_optimization.CrossCorrelation"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossCorrelation</span></code></a> score based on the dot product of <cite>target_weights</cite> and <cite>template_weights</cite>, in order to reduce bias to regions of high local energy.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.NormalizedCrossCorrelationMean.html#tme.matching_optimization.NormalizedCrossCorrelationMean" title="tme.matching_optimization.NormalizedCrossCorrelationMean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalizedCrossCorrelationMean</span></code></a>(**kwargs)</p></td>
+<td><p>Computes a similar score than <a class="reference internal" href="template_matching/api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation" title="tme.matching_optimization.NormalizedCrossCorrelation"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalizedCrossCorrelation</span></code></a>, but additionally factors in the mean of template and target.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.MaskedCrossCorrelation.html#tme.matching_optimization.MaskedCrossCorrelation" title="tme.matching_optimization.MaskedCrossCorrelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaskedCrossCorrelation</span></code></a>(target, ...[, ...])</p></td>
+<td><p>The Masked Cross-Correlation computes the similarity between <cite>target_weights</cite> and <cite>template_weights</cite> under respective masks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.PartialLeastSquareDifference.html#tme.matching_optimization.PartialLeastSquareDifference" title="tme.matching_optimization.PartialLeastSquareDifference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PartialLeastSquareDifference</span></code></a>(target, ...[, ...])</p></td>
+<td><p>The Partial Least Square Difference (PLSQ) between the target <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span> is calculated as:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.Chamfer.html#tme.matching_optimization.Chamfer" title="tme.matching_optimization.Chamfer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Chamfer</span></code></a>(target_coordinates, ...[, ...])</p></td>
+<td><p>The Chamfer distance between the target <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span> is calculated as:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.MutualInformation.html#tme.matching_optimization.MutualInformation" title="tme.matching_optimization.MutualInformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MutualInformation</span></code></a>(target, ...[, ...])</p></td>
+<td><p>The Mutual Information (MI) score between the target <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span> is calculated as:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.Envelope.html#tme.matching_optimization.Envelope" title="tme.matching_optimization.Envelope"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Envelope</span></code></a>([target_threshold])</p></td>
+<td><p>The Envelope score (ENV) between the target <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span> is calculated as:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.NormalVectorScore.html#tme.matching_optimization.NormalVectorScore" title="tme.matching_optimization.NormalVectorScore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalVectorScore</span></code></a>(target_coordinates, ...[, ...])</p></td>
+<td><p>The Normal Vector Score (NVS) between the target's <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span>'s normal vectors is calculated as:</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+Coordinates to Coordinates</label><div class="sd-tab-content docutils">
+<p>The classes below maximize the similarity between two coordinate sets and associated weights. This could be special points within densities, regular coordinate sets, or vectors between template and target that should be aligned.</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.Chamfer.html#tme.matching_optimization.Chamfer" title="tme.matching_optimization.Chamfer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Chamfer</span></code></a>(target_coordinates, ...[, ...])</p></td>
+<td><p>The Chamfer distance between the target <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span> is calculated as:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.NormalVectorScore.html#tme.matching_optimization.NormalVectorScore" title="tme.matching_optimization.NormalVectorScore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalVectorScore</span></code></a>(target_coordinates, ...[, ...])</p></td>
+<td><p>The Normal Vector Score (NVS) between the target's <span class="math notranslate nohighlight">\(f\)</span> and the template <span class="math notranslate nohighlight">\(g\)</span>'s normal vectors is calculated as:</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>In order to perform non-exhaustive template matching, we have to initialize one of the objects outlined above. The following will showcase <a class="reference internal" href="template_matching/api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation" title="tme.matching_optimization.CrossCorrelation"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossCorrelation</span></code></a>, but the procedure can be extended analogously to all scores shown above. We can use __call__ method of the created <code class="docutils literal notranslate"><span class="pre">score_object</span></code> to compute the score of the current configuration.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="n">create_mask</span>
+<span class="kn">from</span> <span class="nn">tme.matching_optimization</span> <span class="kn">import</span> <span class="n">CrossCorrelation</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+   <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+   <span class="n">radius</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+   <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">51</span><span class="p">,</span><span class="mi">51</span><span class="p">,</span><span class="mi">51</span><span class="p">),</span>
+   <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">25</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># Note this could also be any other template that can be expressed as</span>
+<span class="c1"># coordinates, e.g. an atomic structure.</span>
+<span class="n">template</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+   <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+   <span class="n">radius</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">),</span>
+   <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">51</span><span class="p">,</span><span class="mi">51</span><span class="p">,</span><span class="mi">51</span><span class="p">),</span>
+   <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">25</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">template_coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">template</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">template_weights</span> <span class="o">=</span> <span class="n">template</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">template_coordinates</span><span class="p">)]</span>
+
+<span class="n">score_object</span> <span class="o">=</span> <span class="n">CrossCorrelation</span><span class="p">(</span>
+   <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+   <span class="n">template_coordinates</span><span class="o">=</span><span class="n">template_coordinates</span><span class="p">,</span>
+   <span class="n">template_weights</span><span class="o">=</span><span class="n">template_weights</span><span class="p">,</span>
+   <span class="n">negate_score</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># Multiply returned score with -1 for minimization</span>
+<span class="p">)</span>
+
+<span class="n">score_object</span><span class="p">()</span> <span class="c1"># -543.0</span>
+</pre></div>
+</div>
+<p>Alternatively, <code class="docutils literal notranslate"><span class="pre">score_object</span></code> could have been instantiated using the wrapper function <a class="reference internal" href="template_matching/api/tme.matching_optimization.create_score_object.html#tme.matching_optimization.create_score_object" title="tme.matching_optimization.create_score_object"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_score_object()</span></code></a>.</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.create_score_object.html#tme.matching_optimization.create_score_object" title="tme.matching_optimization.create_score_object"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_score_object</span></code></a>(score, **kwargs)</p></td>
+<td><p>Initialize score object with name <code class="docutils literal notranslate"><span class="pre">score</span></code> using <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>pytme defines <a class="reference internal" href="template_matching/api/tme.matching_optimization.optimize_match.html#tme.matching_optimization.optimize_match" title="tme.matching_optimization.optimize_match"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize_match()</span></code></a>, which provides routines for non-exhaustive template matching given a <code class="docutils literal notranslate"><span class="pre">score_object</span></code> and bounds on possible translations and rotations.</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_optimization.optimize_match.html#tme.matching_optimization.optimize_match" title="tme.matching_optimization.optimize_match"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimize_match</span></code></a>(score_object[, ...])</p></td>
+<td><p>Find the translation and rotation optimizing the score returned by <code class="docutils literal notranslate"><span class="pre">score_object</span></code> with respect to provided bounds.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Given our previously defined <code class="docutils literal notranslate"><span class="pre">score_object</span></code>, we can find the optimal configuration:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tme.matching_optimization</span> <span class="kn">import</span> <span class="n">optimize_match</span>
+
+<span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">refined_score</span> <span class="o">=</span> <span class="n">optimize_match</span><span class="p">(</span>
+   <span class="n">score_object</span><span class="o">=</span><span class="n">score_object</span><span class="p">,</span>
+   <span class="n">optimization_method</span><span class="o">=</span><span class="s2">&quot;basinhopping&quot;</span><span class="p">,</span>
+   <span class="n">maxiter</span><span class="o">=</span><span class="mi">500</span>
+<span class="p">)</span>
+<span class="n">translation</span>
+<span class="c1"># array([-7.04120465,  8.17709819,  0.07964882])</span>
+<span class="n">rotation</span>
+<span class="c1"># array([[ 3.0803247e-03,  1.7386347e-04,  9.9999523e-01],</span>
+<span class="c1">#        [ 3.9309423e-02,  9.9922705e-01, -2.9481627e-04],</span>
+<span class="c1">#        [-9.9922234e-01,  3.9310146e-02,  3.0711093e-03]],</span>
+<span class="c1">#  dtype=float32)</span>
+<span class="n">refined_score</span> <span class="c1">#-3069.0</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="template_matching/api/tme.matching_optimization.optimize_match.html#tme.matching_optimization.optimize_match" title="tme.matching_optimization.optimize_match"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize_match()</span></code></a> will update <code class="docutils literal notranslate"><span class="pre">score_object</span></code> so using the __call__ afterwards will yield the values as <code class="docutils literal notranslate"><span class="pre">refined_score</span></code>. Smaller values of <cite>maxiter</cite> might yield suboptimal results.</p>
+</div>
+<p>The computed <code class="docutils literal notranslate"><span class="pre">translation</span></code> and <code class="docutils literal notranslate"><span class="pre">rotation</span></code> can then be used to recover the configuration of the template with maximal similarity to the target. This is functionally similar to the operation performed using <a class="reference internal" href="data_structures/api/tme.density.Density.match_densities.html#tme.density.Density.match_densities" title="tme.density.Density.match_densities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.match_densities()</span></code></a> and <a class="reference internal" href="data_structures/api/tme.density.Density.match_structure_to_density.html#tme.density.Density.match_structure_to_density" title="tme.density.Density.match_structure_to_density"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.match_structure_to_density()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+
+<span class="n">template_density</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+<span class="n">template_density</span> <span class="o">=</span> <span class="n">template_density</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
+   <span class="n">translation</span> <span class="o">=</span> <span class="n">translation</span><span class="p">,</span>
+   <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation</span><span class="p">,</span>
+   <span class="n">order</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+   <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="template_matching/api/tme.matching_optimization.optimize_match.html#tme.matching_optimization.optimize_match" title="tme.matching_optimization.optimize_match"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize_match()</span></code></a> also supports a range of other optimization schemes that can lead more accurate results at a cost of runtime or find the optimal configuration faster if the initial configuration is close to the global optimum. Alternatively, developers can make use of the <a class="reference internal" href="template_matching/api/tme.matching_optimization.CrossCorrelation.score.html#tme.matching_optimization.CrossCorrelation.score" title="tme.matching_optimization.CrossCorrelation.score"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CrossCorrelation.score()</span></code></a> method that accepts a tuple of translations and Euler angles for use in custom optimizers.</p>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/reference/matching_optimization.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

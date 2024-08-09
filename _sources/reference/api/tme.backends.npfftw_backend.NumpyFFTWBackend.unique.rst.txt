@@ -1,0 +1,6 @@
+NumpyFFTWBackend.unique
+===================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.unique

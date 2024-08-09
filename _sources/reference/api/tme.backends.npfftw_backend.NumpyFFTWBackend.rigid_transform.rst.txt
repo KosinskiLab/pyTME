@@ -1,0 +1,6 @@
+NumpyFFTWBackend.rigid\_transform
+============================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.rigid_transform

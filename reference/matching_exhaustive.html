@@ -1,0 +1,613 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Exhaustive &#8212; pytme 0.2.3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=63b7f29f" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=a47416a6"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/matching_exhaustive';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.2.3 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_exhaustive.scan.html">scan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_exhaustive.scan_subsets.html">scan_subsets</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_scores.cc_setup.html">cc_setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_scores.lcc_setup.html">lcc_setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_scores.corr_setup.html">corr_setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_scores.cam_setup.html">cam_setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_scores.flc_setup.html">flc_setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_scores.flcSphericalMask_setup.html">flcSphericalMask_setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_scores.mcc_setup.html">mcc_setup</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_scores.corr_scoring.html">corr_scoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_scores.flc_scoring.html">flc_scoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_scores.mcc_scoring.html">mcc_scoring</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.matching_exhaustive.register_matching_exhaustive.html">register_matching_exhaustive</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Exhaustive</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="exhaustive">
+<h1>Exhaustive<a class="headerlink" href="#exhaustive" title="Link to this heading">#</a></h1>
+<p>Within pytme, exhaustive template matching is modularized into three primary stages: setup, scoring, and callback.</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt><strong>Setup</strong></dt><dd><ul class="simple">
+<li><p>The first step is to prepare the data and set the stage for the matching operation. This step typically involves configuring FFT operations, selecting the appropriate backend for the computations, and defining parameters for the matching. The outcome of this step is a context where template matching is poised to be carried out efficiently. See the <a class="reference internal" href="template_matching/matching_exhaustive.html#setup-functions"><span class="std std-ref">Setup functions</span></a> section for available setup methods.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Scoring</strong></dt><dd><ul class="simple">
+<li><p>Once the environment is set, the actual template matching is done using the scoring method. This method essentially computes how well the template fits at every possible location within the target. Depending on the application, various scoring methods might be employed (e.g., correlation, convolution). See the <a class="reference internal" href="template_matching/matching_exhaustive.html#scoring-functions"><span class="std std-ref">Scoring functions</span></a> section for available scoring methods.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Callback</strong></dt><dd><ul class="simple">
+<li><p>After scoring, it’s often essential to post-process the results, extract valuable metrics, or make decisions based on the scores. The callback is a mechanism that allows for such post-scoring operations. It could be visualizing the results, finding the maximum score, etc. Further details and callback options can be found in <a class="reference internal" href="analyzer.html"><span class="doc">Analyzers</span></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+<p>This concept is embodied in the <a class="reference internal" href="template_matching/api/tme.matching_exhaustive.scan.html#tme.matching_exhaustive.scan" title="tme.matching_exhaustive.scan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.scan()</span></code></a> and <a class="reference internal" href="template_matching/api/tme.matching_exhaustive.scan_subsets.html#tme.matching_exhaustive.scan_subsets" title="tme.matching_exhaustive.scan_subsets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.scan_subsets()</span></code></a> methods below.</p>
+<p>If you wish to integrate custom template matching methods into pytme, please refer to the <a class="reference internal" href="template_matching/matching_exhaustive.html#custom-methods"><span class="std std-ref">Adding Custom Methods</span></a> section.</p>
+<section id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="template_matching/api/tme.matching_exhaustive.scan.html#tme.matching_exhaustive.scan" title="tme.matching_exhaustive.scan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.scan()</span></code></a> orchestrates the matching process, supporting parallel processing and post-scoring operations. <a class="reference internal" href="template_matching/api/tme.matching_exhaustive.scan_subsets.html#tme.matching_exhaustive.scan_subsets" title="tme.matching_exhaustive.scan_subsets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.scan_subsets()</span></code></a> is a wrapper around <a class="reference internal" href="template_matching/api/tme.matching_exhaustive.scan.html#tme.matching_exhaustive.scan" title="tme.matching_exhaustive.scan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.scan()</span></code></a> that enables template matching on data subsets, making it particularly useful for handling large datasets or targeting specific regions.</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_exhaustive.scan.html#tme.matching_exhaustive.scan" title="tme.matching_exhaustive.scan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scan</span></code></a>(matching_data, matching_setup, ...[, ...])</p></td>
+<td><p>Run template matching.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_exhaustive.scan_subsets.html#tme.matching_exhaustive.scan_subsets" title="tme.matching_exhaustive.scan_subsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scan_subsets</span></code></a>(matching_data, matching_score, ...)</p></td>
+<td><p>Wrapper around <a class="reference internal" href="template_matching/api/tme.matching_exhaustive.scan.html#tme.matching_exhaustive.scan" title="tme.matching_exhaustive.scan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scan()</span></code></a> that supports matching on splits of <code class="docutils literal notranslate"><span class="pre">matching_data</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="setup-functions">
+<span id="id1"></span><h2>Setup functions<a class="headerlink" href="#setup-functions" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_scores.cc_setup.html#tme.matching_scores.cc_setup" title="tme.matching_scores.cc_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cc_setup</span></code></a>(rfftn, irfftn, template, target, ...)</p></td>
+<td><p>Setup function for comuting a unnormalized cross-correlation between <code class="docutils literal notranslate"><span class="pre">target</span></code> (f) and <code class="docutils literal notranslate"><span class="pre">template</span></code> (g)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_scores.lcc_setup.html#tme.matching_scores.lcc_setup" title="tme.matching_scores.lcc_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lcc_setup</span></code></a>(target, template, **kwargs)</p></td>
+<td><p>Setup function for computing a laplace cross-correlation between <code class="docutils literal notranslate"><span class="pre">target</span></code> (f) and <code class="docutils literal notranslate"><span class="pre">template</span></code> (g)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_scores.corr_setup.html#tme.matching_scores.corr_setup" title="tme.matching_scores.corr_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corr_setup</span></code></a>(rfftn, irfftn, template, ...)</p></td>
+<td><p>Setup for computing a normalized cross-correlation between a <code class="docutils literal notranslate"><span class="pre">target</span></code> (f), a <code class="docutils literal notranslate"><span class="pre">template</span></code> (g) given  <code class="docutils literal notranslate"><span class="pre">template_mask</span></code> (m)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_scores.cam_setup.html#tme.matching_scores.cam_setup" title="tme.matching_scores.cam_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cam_setup</span></code></a>(template, target, **kwargs)</p></td>
+<td><p>Like <a class="reference internal" href="template_matching/api/tme.matching_scores.corr_setup.html#tme.matching_scores.corr_setup" title="tme.matching_scores.corr_setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">corr_setup()</span></code></a> but with standardized <code class="docutils literal notranslate"><span class="pre">target</span></code>, <code class="docutils literal notranslate"><span class="pre">template</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_scores.flc_setup.html#tme.matching_scores.flc_setup" title="tme.matching_scores.flc_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flc_setup</span></code></a>(rfftn, irfftn, template, ...)</p></td>
+<td><p>Setup function for <a class="reference internal" href="template_matching/api/tme.matching_scores.flc_scoring.html#tme.matching_scores.flc_scoring" title="tme.matching_scores.flc_scoring"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flc_scoring()</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_scores.flcSphericalMask_setup.html#tme.matching_scores.flcSphericalMask_setup" title="tme.matching_scores.flcSphericalMask_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flcSphericalMask_setup</span></code></a>(rfftn, irfftn, ...)</p></td>
+<td><p>Setup for <a class="reference internal" href="template_matching/api/tme.matching_scores.corr_scoring.html#tme.matching_scores.corr_scoring" title="tme.matching_scores.corr_scoring"><code class="xref py py-meth docutils literal notranslate"><span class="pre">corr_scoring()</span></code></a>, like <a class="reference internal" href="template_matching/api/tme.matching_scores.flc_setup.html#tme.matching_scores.flc_setup" title="tme.matching_scores.flc_setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flc_setup()</span></code></a> but for rotation invariant masks.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_scores.mcc_setup.html#tme.matching_scores.mcc_setup" title="tme.matching_scores.mcc_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mcc_setup</span></code></a>(rfftn, irfftn, template, ...)</p></td>
+<td><p>Setup function for <a class="reference internal" href="template_matching/api/tme.matching_scores.mcc_scoring.html#tme.matching_scores.mcc_scoring" title="tme.matching_scores.mcc_scoring"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mcc_scoring()</span></code></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="scoring-functions">
+<span id="id2"></span><h2>Scoring functions<a class="headerlink" href="#scoring-functions" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_scores.corr_scoring.html#tme.matching_scores.corr_scoring" title="tme.matching_scores.corr_scoring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corr_scoring</span></code></a>(template, template_filter, ...)</p></td>
+<td><p>Calculates a normalized cross-correlation between a target f and a template g.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="template_matching/api/tme.matching_scores.flc_scoring.html#tme.matching_scores.flc_scoring" title="tme.matching_scores.flc_scoring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flc_scoring</span></code></a>(template, template_mask, ...)</p></td>
+<td><p>Computes a normalized cross-correlation between <code class="docutils literal notranslate"><span class="pre">target</span></code> (f), <code class="docutils literal notranslate"><span class="pre">template</span></code> (g), and <code class="docutils literal notranslate"><span class="pre">template_mask</span></code> (m)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_scores.mcc_scoring.html#tme.matching_scores.mcc_scoring" title="tme.matching_scores.mcc_scoring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mcc_scoring</span></code></a>(template, template_mask, ...[, ...])</p></td>
+<td><p>Computes a normalized cross-correlation score between <code class="docutils literal notranslate"><span class="pre">target</span></code> (f), <code class="docutils literal notranslate"><span class="pre">template</span></code> (g), <code class="docutils literal notranslate"><span class="pre">template_mask</span></code> (m) and <code class="docutils literal notranslate"><span class="pre">target_mask</span></code> (t)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="adding-custom-methods">
+<span id="custom-methods"></span><h2>Adding Custom Methods<a class="headerlink" href="#adding-custom-methods" title="Link to this heading">#</a></h2>
+<p>For a method to be considered by pytme’s template matching engine, it needs to be registered. The <a class="reference internal" href="template_matching/api/tme.matching_exhaustive.register_matching_exhaustive.html#tme.matching_exhaustive.register_matching_exhaustive" title="tme.matching_exhaustive.register_matching_exhaustive"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_matching_exhaustive()</span></code></a> function is designed for this purpose. It enables developers to specify a unique name, setup function, scoring function, and a custom memory estimation class for their method. This ensures the modular and extensible design of pytme, allowing developers to continuously expand tme’s capabilities.</p>
+<p>Adding a new template matching methods requires defining the following parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">matching</span></code>: Name of the matching method.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">matching_setup</span></code>: The setup function associated with the name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">matching_scoring</span></code>: The scoring function associated with the name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">memory_class</span></code>: A custom memory estimation class, which should extend <a class="reference internal" href="template_matching/api/tme.memory.MatchingMemoryUsage.html#tme.memory.MatchingMemoryUsage" title="tme.memory.MatchingMemoryUsage"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.memory.MatchingMemoryUsage</span></code></a>.</p></li>
+</ul>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="template_matching/api/tme.matching_exhaustive.register_matching_exhaustive.html#tme.matching_exhaustive.register_matching_exhaustive" title="tme.matching_exhaustive.register_matching_exhaustive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_matching_exhaustive</span></code></a>(matching, ...)</p></td>
+<td><p>Registers a new matching scheme.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#methods">Methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-functions">Setup functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scoring-functions">Scoring functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-custom-methods">Adding Custom Methods</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/reference/matching_exhaustive.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

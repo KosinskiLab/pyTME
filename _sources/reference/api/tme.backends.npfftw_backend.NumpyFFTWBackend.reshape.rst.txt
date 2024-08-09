@@ -1,0 +1,6 @@
+NumpyFFTWBackend.reshape
+====================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.reshape

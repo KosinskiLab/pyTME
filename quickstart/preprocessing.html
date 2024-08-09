@@ -1,0 +1,811 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Preprocessing &#8212; pytme 0.2.3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=63b7f29f" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=a47416a6"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart/preprocessing';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.2.3 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Preprocessing</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="preprocessing">
+<h1>Preprocessing<a class="headerlink" href="#preprocessing" title="Link to this heading">#</a></h1>
+<section id="tl-dr">
+<h2>TL;DR<a class="headerlink" href="#tl-dr" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">preprocessor_gui.py</span></code> provides a graphical user interface for common preprocessing operations such as filtering or the creation of masks for template matching. After installation as outlined in the <a class="reference internal" href="installation.html#gui-installation"><span class="std std-ref">GUI Setup</span></a>, you can launch it via:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>preprocessor_gui.py
+</pre></div>
+</div>
+<p>Users that aim to perform these operations programmatically can do so via <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.density.Density</span></code></a>, <a class="reference internal" href="../reference/preprocessing/api/tme.preprocessor.Preprocessor.html#tme.preprocessor.Preprocessor" title="tme.preprocessor.Preprocessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor</span></code></a>, <a class="reference internal" href="../reference/template_matching/api/tme.matching_utils.create_mask.html#tme.matching_utils.create_mask" title="tme.matching_utils.create_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.create_mask()</span></code></a>. For further details refer to <a class="reference internal" href="#filter-application"><span class="std std-ref">Practical Example</span></a>.</p>
+</section>
+<section id="aim">
+<h2>Aim<a class="headerlink" href="#aim" title="Link to this heading">#</a></h2>
+<p>Cross-correlation based template matching is only as good as the data allows it to be. Often times, cross-correlation will result in erroneous matches, although the correct result is evident by eye. Notably, this is not because cross-correlation is a particularly bad similarity metric, but rather owed to the excellent template matching capacity and exponential escalation of the human mind.</p>
+<p>Nevertheless, we can preprocess our data to guide cross-correlation based template matching in the right direction using techniques outliens in the following sections. With preprocessing, we aim to improve template matching accuracy, by increasing the cross-correlation score given to true positive instances of the template, while decreasing the cross-correlation score of false positives.</p>
+</section>
+<section id="background">
+<h2>Background<a class="headerlink" href="#background" title="Link to this heading">#</a></h2>
+<p>In order to understand which factors to focus on during preprocessing, we have to take a schematic look at the computation of the normalized cross-correlation</p>
+<div class="math notranslate nohighlight" id="eq-normcc">
+<span id="equation-eq-normcc"></span><span class="eqno">(1)<a class="headerlink" href="#eq-normcc" title="Link to this equation">#</a></span>\[score = \frac{(x - \mu)}{\sigma}.\]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(x\)</span> represents the non-normalized cross-correlation between the target and the template.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mu\)</span> represents the non-normalized cross-correlation between the target and a mask.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\sigma\)</span> represents the variance in non-normalized cross-correlation between the target and a mask.</p></li>
+<li><p><span class="math notranslate nohighlight">\(score\)</span> represents the normalized cross-correlation which is clipped between zero and one, with one being a perfect match.</p></li>
+</ul>
+<p>Based on this schematic assessment, we can influence the normalized cross-correlation score through two principal approaches:</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#preprocess-filtering"><span class="std std-ref">Apply filters</span></a> to improve the similarity between the template and template instances in the target.</p></li>
+<li><p><a class="reference internal" href="#mask-design"><span class="std std-ref">Design a mask</span></a> that provides a faithful approximation of the cross-correlation background given the template.</p></li>
+</ol>
+<p>These preprocessing approaches will be discussed in the following sections. For a mathematically more rigorous treatment of the normalized cross-correlation we refer the reader to <a class="footnote-reference brackets" href="#id15" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+</section>
+<section id="filtering-use-cases">
+<span id="preprocess-filtering"></span><h2>Filtering Use Cases<a class="headerlink" href="#filtering-use-cases" title="Link to this heading">#</a></h2>
+<p>The goal of preprocessing is to improve the similarity between the template and template instances in the target. This should result in a better detection and in turn a higher precision of the template matching procedure. In the following we focus on two particular applications of filters:</p>
+<ol class="arabic simple">
+<li><p>to remove noise from the data.</p></li>
+<li><p>to emphasize particular components of the data.</p></li>
+</ol>
+<p>Let us better understand these applications through a practical template matching example using the target (left) and template (right) displayed below. Typically template matching also involves evaluating the similarity of different rotations of the template, which we omit because it is not necessary in order to understand the preprocessing concepts.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/1615768967c3c45edc5fd609f7ebbabb/preprocessing-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/ca8c7969b79b0ca9c52df441ed9ce759/preprocessing-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/f4a996413d35788f88230755149f48f3/preprocessing-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/9e8fcdf17b311b53bd01f928512a4f09/preprocessing-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id23">
+<img alt="../_images/preprocessing-1.png" class="plot-directive" src="../_images/preprocessing-1.png" />
+<figcaption>
+<p><span class="caption-text">Template matching data used in this guide.</span><a class="headerlink" href="#id23" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<section id="noise-removal">
+<h3>Noise Removal<a class="headerlink" href="#noise-removal" title="Link to this heading">#</a></h3>
+<p>Real-world data often contain noise, arising from varied sources like sensor imperfections, environmental conditions, or the intricacies of the image acquisition process. This noise can obscure or distort the features of the image that are essential for accurate template matching. Filters are instrumental in mitigating the impact of noise. Filters allow us to reduce the amount of noise. In the following, we explore the impact of two common types of noise: Gaussian and salt-and-pepper (S&amp;P). We then compare the template matching scores with and without the application of appropriate filters before template matching. The template itself remains unchanged.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/ec8a8e92f89fb681a1bf91034f5e9a1d/preprocessing-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/64ff331ee19c3b41d7338cc2cf7d2287/preprocessing-2.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/e2cce50014dc2941a808aa4d379f516c/preprocessing-2.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/e2cc3116818a5928d7f59a4d28500a35/preprocessing-2.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id25">
+<img alt="../_images/preprocessing-2.png" class="plot-directive" src="../_images/preprocessing-2.png" />
+<figcaption>
+<p><span class="caption-text">Assessment of different filters for noise removal prior to template matching.</span><a class="headerlink" href="#id25" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The normalized cross-correlation score of pixels close to boundaries are often elevated. This is a common artifact since these areas do not allow for cross-correlation computation using the entire template, they can be masked. Alternatively <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code> (see <a class="reference internal" href="postprocessing.html"><span class="doc">Postprocessing</span></a>) has a <code class="docutils literal notranslate"><span class="pre">min_boundary_distance</span></code> flag, that disregrads peaks in this area.</p>
+</div>
+<p>When the target image is infused with noise, the template matching score around the true positive position (where the template is expected to match accurately) is notably lower. This decrease in the matching score is indicative of the noise interfering with the ability to find correct matches in the target image. The presence of noise essentially masks or distorts the features that the template is designed to detect, leading to a reduced confidence in identifying the correct location. Furthermore, the presence of noise introduces additional bias, such as erroneous peaks in the template matching score. These peaks are not present in the original, noise-free image, and potentially result in the detection of false positives. In other words, the template might incorrectly identify parts of the noisy image as matches, even though these areas do not actually resemble the template.</p>
+<p>When applying appropriate filters to the noisy data, the template matching score around the true positive position is elevated and erroneous peaks are suppressed, reducing the likelihood of false positives. The filtering process helps in smoothing out the noise, thereby reducing its impact.</p>
+<p>Conclusively, effective noise reduction through filtering can significantly enhance template matching performance. However, it’s pivotal to recognize the complexity of noise in images, often a mix of different types. While Gaussian filters are widely used and generally effective, exploring a variety of filters tailored to specific noise types can yield optimal results in noise reduction and template matching accuracy.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This section was inspired by an <a class="reference external" href="https://docs.opencv.org/4.9.0/d4/dc6/tutorial_py_template_matching.html">OpenCV tutorial</a>, which discusses template matching using different variations of the normalized cross-correlation coefficient.</p>
+</div>
+</section>
+<section id="component-emphasis">
+<h3>Component Emphasis<a class="headerlink" href="#component-emphasis" title="Link to this heading">#</a></h3>
+<p>Building on our understanding of noise removal in preprocessing, we now shift our focus to emphasizing specific components within an image. After addressing noise with filters like Gaussian and median filters, the next step often involves highlighting or isolating particular features or structures in the data through frequency space operations. The Fourier transform is integral to understanding the algorithmic underpinning of template matching, which is futher discussed <a class="reference internal" href="match_template.html#match-template-background"><span class="std std-ref">here</span></a>.</p>
+<p>The Fourier transform translates an image from real space into a spectrum of frequencies, each with a corresponding magnitude and phase, rather than intensities. The real space image (left) is decomposed into its constituent frequencies (right). The center of the Fourier-transformed image represents the zero frequency component, often referred to as the DC component, which signifies the average intensity of the image. As we move outward from the center, we encounter higher frequencies. Notably, all points on a given ellipse correspond to the same frequency, but differ in orientation. For input images with equal dimensions, i.e. square images, points of identical frequency would lie on a circle.</p>
+<p>The distance from the center is directly proportional to the frequency magnitude: closer points represent lower frequencies (broad features), while farther points represent higher frequencies (fine details and noise). By selectively enhancing or suppressing specific frequency components, we can emphasize desired features or reduce undesirable noise in an image.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/26f3075e4a95a9cef0e0cf271adc3db5/preprocessing-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/17770174b4cc01ee5aff0e45d4e4bacb/preprocessing-3.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/6c72289344f238c31a2ca26df30cbf1c/preprocessing-3.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/d4b0b0d08e47b9db5ab5b9cc58508266/preprocessing-3.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id27">
+<img alt="../_images/preprocessing-3.png" class="plot-directive" src="../_images/preprocessing-3.png" />
+<figcaption>
+<p><span class="caption-text">Introduction to the Fourier transform.</span><a class="headerlink" href="#id27" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>In frequency domain image processing, filters like low-pass, high-pass, and bandpass serve as prototypical modulators, each uniquely altering the image’s frequency components.</p>
+<ul class="simple">
+<li><p>Low-pass filters allow only the lower frequencies to pass through, effectively smoothing the image by removing finer details and high-frequency noise. This results in a focus on broader, general features of the image.</p></li>
+<li><p>High-pass filters do the opposite by allowing only the higher frequencies to pass. They enhance fine details and edges, often at the expense of the general layout or broader features.</p></li>
+<li><p>Bandpass filters offer a more selective approach, allowing a specific range of frequencies to pass. This specificity enables the isolation of features of particular sizes or the smoothing out of noise within a certain frequency band.</p></li>
+</ul>
+<p>By multiplying the frequency components of an image using these filters, followed by an inverse Fourier Transform, we can precisely control how features of various scales are emphasized or suppressed. This process effectively translates the modifications made in the frequency domain back to the spatial domain.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/42a66df5cf756daad74eead59b6758bb/preprocessing-4.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+<p>Naturally, the emphasis on particular components has profound effects on the template matching score. The high-pass and band-pass filtered images exhibit sharp pronounced peaks and an overall reduction in the background scores. This is because the template matching score is dominated by low-frequency information, thus creating a situation in which overall template shape and size rather than structural detail drive the detection. For a more complete description and assessment of this phenomenon in the context of cryogenic electron tomography, we refer the reader to <a class="footnote-reference brackets" href="#id16" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/1a2f595e99bab56e6fab041bf92567a8/preprocessing-5.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the application of a filter is commutative in Fourier space, this does not hold for the mask that normalizes the cross-correlation coefficient. Therefore, if the goal is to have the filtering effect reflected in the normalization procedure, the filter needs to be applied to the target.</p>
+</div>
+<p>The possibilities of defining filters in Fourier space is quasi-unlimited and can include far more intricate or periodic filters, such as tilt weighting for tomography or contrast transfer functions (<a class="reference external" href="https://guide.cryosparc.com/processing-data/all-job-types-in-cryosparc/ctf-estimation">CTF</a>).</p>
+<p>To showcase another possibility of placing emphasis on particular image components, we take a look at spectral whitening, which is particulary useful when analyzing large heterogeneous datasets, because the assumptions made are fairly weak. Although neither new nor specific to cryogenic electron microscopy, spectral whitening is a fairly popular <a class="footnote-reference brackets" href="#id17" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#id18" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> approach and graphically explained <a class="reference external" href="https://github.com/ZauggGroup/DeePiCt/blob/main/spectrum_filter/tomo-matcher.svg">here</a>. Briefly, spectral whitening normalizes each frequency by dividing the amplitude of each frequency by its magnitude. This can bring out subtle features that might be overshadowed otherwise <a class="footnote-reference brackets" href="#id16" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. In the context of template matching, we can enforce a more similar frequency composition of template and target, thus reducing bias towards certain frequency ranges. This in turn results in a sharp peak in template matching score around the true positive location and a reduction in background scores compared to the unfiltered template matching scores.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/478e4e65d6af47a51691053856311dc8/preprocessing-6.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/b2045402c6ccf7d637a6ab76b1cca4a2/preprocessing-6.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/d328666906d4ae550cf2eda36dd7efe8/preprocessing-6.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/372248fecdcbddf4c639b79a671a91e3/preprocessing-6.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id29">
+<img alt="../_images/preprocessing-6.png" class="plot-directive" src="../_images/preprocessing-6.png" />
+<figcaption>
+<p><span class="caption-text">Influence of spectral whitening on template matching scores.</span><a class="headerlink" href="#id29" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="mask-design">
+<span id="id6"></span><h2>Mask Design<a class="headerlink" href="#mask-design" title="Link to this heading">#</a></h2>
+<p>As outlined in <a class="reference internal" href="#eq-normcc"><span class="std std-ref">equation 1</span></a>, the mask is pivotal for the normalization of the cross-correlation coefficient. The composition of an optimal mask is problem-specific, but we recommend the following when designing masks:</p>
+<ol class="arabic simple">
+<li><p>The mask should focus on conserved key features.</p></li>
+<li><p>Consider the context in which the mask will be applied. Particularly for <em>in situ</em> images, crowdedness can be problematic if the mask is excessively large.</p></li>
+<li><p>Sharp transitions or edge effects should be avoided by smoothing or sufficiently sized boxes.</p></li>
+</ol>
+<p>To build intuition towards mask design, let us assess the effect of a range of binary masks outlined below. By default, the entire area under the template is considered as mask. While this results in a properly normalized cross-correlation coefficient, it comes with downfalls: 1.) The cross-correlation peak is wide, which is disadvantageous in crowded settings as it may lead to the obfuscation of peaks. 2.) The background score is high, which can yield false positive peaks. When focusing on defining features of the template using an ellipsoidal mask, i.e. eyes, nose and mouth, we observe a sharpening of the peak and a decrease in background score. However, if we make the mask too narrow, as illustrated by the last example, the mask no longer provides a faithful approximation of the cross-correlation background and as thus the template matching scores become uninformative.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/c2099c4c015819bd04090147580f23cd/preprocessing-7.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/8b67a38dd1d9f6f7d70a89aad8fa12e0/preprocessing-7.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/d831a89a6731368c4c6d6731d8b7018e/preprocessing-7.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/6bfaf4c45174a766403158df0cbb22e0/preprocessing-7.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id31">
+<img alt="../_images/preprocessing-7.png" class="plot-directive" src="../_images/preprocessing-7.png" />
+<figcaption>
+<p><span class="caption-text">Influence of mask design on template matching scores.</span><a class="headerlink" href="#id31" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The applied ellipsoidal mask is a suitable choice in this case, because the mask recapitulates the defining features of a face well. Therefore, we also avoid sharp transition in template intensity that could adversely effect the template matching score computation. In the following we look at the effect of smoothing a suboptimal mask, that includes strong changes in intensity. For smoothing the mask, we apply a Gaussian filter that rounds the edges and provides a smoother intensity transition. Albeit difficult to see in this representation, smoothing the mask results in 5% higher peaks, compared to their individual backgrounds. Nevertheless, the benefit of smoothing masks is less obvious and has to be evaluated on a per-problem basis.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/f4bb4d0e429fa4cf8027521446676f7a/preprocessing-8.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/0bf1e7b634f8bb046397af4aa520b9c2/preprocessing-8.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/fb3a6dcc65d913a52b2794f10b5459e9/preprocessing-8.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/979c8331070491d72e6e39e2950e07f7/preprocessing-8.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id33">
+<img alt="../_images/preprocessing-8.png" class="plot-directive" src="../_images/preprocessing-8.png" />
+<figcaption>
+<p><span class="caption-text">Influence of mask smoothing on template matching scores.</span><a class="headerlink" href="#id33" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Generally, the <a class="reference internal" href="#preprocess-filtering"><span class="std std-ref">filtering procedure</span></a> has greater impact on template matching performance than the choice of mask. In practice, it suffices to use a geometric object that recapitulates the size and shape of the template <a class="footnote-reference brackets" href="#id16" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. Examples from the literature include ellipsoids or spheres for ribosomes <a class="footnote-reference brackets" href="#id17" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>, cylinders for nucleasomes <a class="footnote-reference brackets" href="#id20" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a> or proteasomes <a class="footnote-reference brackets" href="#id21" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a> and boxes for membranes <a class="footnote-reference brackets" href="#id22" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a>.</p>
+<p>Noteably, the choice of mask does have an impact on the runtime performance of template matching. Rotation symmetric masks, or masks that encompass all possible rotations of the template do not need to be rotated during template matching, thus reducing the runtime by up to a factor of three.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A more complete treatment of the mathematical implications of using different masks is provided in <a class="footnote-reference brackets" href="#id19" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>, together with <a class="reference external" href="https://pdfs.semanticscholar.org/17e5/419d9eb239b91b46fde52538e6c13b33909a.pdf">explanatory slides</a>. Alternatively, <a class="reference external" href="https://docs.opencv.org/3.4/de/da9/tutorial_template_matching.html">this OpenCV tutorial</a> provides further examples on the effect of masking.</p>
+</div>
+</section>
+<section id="practical-example">
+<span id="filter-application"></span><h2>Practical Example<a class="headerlink" href="#practical-example" title="Link to this heading">#</a></h2>
+<p>The following elaborates how to perform preprocessing using the graphical user interface (GUI) and the application programming interface (API). While the GUI provides access to the most commonly used operations, the API gives access to all components of pytme for developers.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+GUI</label><div class="sd-tab-content docutils">
+<p>The following command will launch a <cite>napari</cite> viewer embedded with custom widgets for preprocessing. For a detailed description of all GUI elements please have a look at the <a class="reference external" href="https://napari.org/stable/tutorials/fundamentals/quick_start.html">napari documentation</a>. Note that using the GUI requires following the installation procedure outlined in the <a class="reference internal" href="installation.html#gui-installation"><span class="std std-ref">GUI Setup</span></a>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>preprocessor_gui.py
+</pre></div>
+</div>
+<p>The launched <cite>napari</cite> viewer instance will appear similar to the figure below. pytme defines a range of widgets, of which three are relevant for this example. The widget in orange contains a variety of methods of filter methods defined in <a class="reference internal" href="../reference/preprocessing/api/tme.preprocessor.Preprocessor.html#tme.preprocessor.Preprocessor" title="tme.preprocessor.Preprocessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor</span></code></a>. The blue widget in blue can be used to create a range of masks, perform axis-alignments and determine sensible default mask parameters. The green widget on the bottom right is used to export data to disk.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/napari_boot.png"><img alt="../_images/napari_boot.png" src="../_images/napari_boot.png" style="width: 100%;" />
+</a>
+</figure>
+<p>Simply drag and drop your data in into <cite>napari</cite> to import it (See <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.from_file.html#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.from_file()</span></code></a> for available formats). Clicking the <cite>Apply Filter</cite> button will apply the filter to the target layer and create a new layer on the left hand side. The name of the new layer is indicative of the filter type used. The figure below shows the target used throughout this guide after application of a bandpass filter as outlined in the <a class="reference internal" href="#preprocess-filtering"><span class="std std-ref">Apply filters</span></a> section.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/napari_filter_widget.png"><img alt="../_images/napari_filter_widget.png" src="../_images/napari_filter_widget.png" style="width: 100%;" />
+</a>
+</figure>
+<p>Note that the procedure is exactly the same for other targets. The figure below shows tomogram TS_037 (EMPIAR-10988, <a class="reference external" href="https://www.ebi.ac.uk/empiar/EMPIAR-10988/">click here</a>) <a class="footnote-reference brackets" href="#id17" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> before (left) and after application of a Gaussian filter (right).</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/napari_filter_widget_tomogram.png"><img alt="../_images/napari_filter_widget_tomogram.png" src="../_images/napari_filter_widget_tomogram.png" style="width: 100%;" />
+</a>
+</figure>
+<p>After selecting an adequate filter and parameter set the filtered data can be exported via the export button. Pressing the export button will open a separate window to determine the save location. If you applied a filter to the data, <cite>napari</cite> will also create a yaml file that contains the utilized parameters. Assuming your output is named <cite>filtered.mrc</cite>, the corresponding yaml file will be <cite>filtered.yaml</cite>.</p>
+<p>For the tomogram example above, the yaml file will contain the following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">gaussian_filter</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0</span>
+</pre></div>
+</div>
+<p>The yaml file can be used in batch processing to apply the same filtering procedure to the new input <cite>other_file.mrc</cite> and write the output to <cite>other_file_processed.mrc</cite> for subsequent use.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>preprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">   </span>-i<span class="w"> </span>other_file.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">   </span>-y<span class="w"> </span>filtered.yml<span class="w"> </span><span class="se">\</span>
+<span class="w">   </span>-o<span class="w"> </span>other_file_processed.mrc
+</pre></div>
+</div>
+<p>The mask widget is operated anologously. In the following, we consider an averaged electron microscope map EMD-3228. We can increase the lower bound on the contrast in the <cite>layer controls</cite> widget and use the display mode toggle highlighted in blue, to obtain a more informative visualization of the map.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/napari_mask_widget_intro.png"><img alt="../_images/napari_mask_widget_intro.png" src="../_images/napari_mask_widget_intro.png" style="width: 100%;" />
+</a>
+</figure>
+<p>The dropdown menu allows users to choose from a variety of masks with a given set of parameter. The <cite>Adapy to layer</cite> button will determine initial mask parameters based on the data of the currently selected layer. <cite>Align to axis</cite> will rotate the axis of largest variation in the selected layer onto the z-Axis, which can simplify mask creation for cases whose initial positioning is suboptimal. <cite>Create mask</cite> will create a specified mask for the currently selected layer.</p>
+<p>When clicking <cite>Adapy to layer</cite> followed by <cite>Create mask</cite>, we observe that the resulting sphere is excessively large. This is because EMD-3228 contains a fair amount of noisy unstructed density around the center structure. This can be assessed by reducing the lower bound on the contrast limit slider.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/napari_mask_widget_map.png"><img alt="../_images/napari_mask_widget_map.png" src="../_images/napari_mask_widget_map.png" style="width: 100%;" />
+</a>
+</figure>
+<p>We can either adapt the mask manually, or make use of the Data Quantile feature. The Data Quantile allows us to only consider a given top percentage of the data for mask generation. In this case, 94.80 appeared to be a reasonable cutoff. Make sure to select the non-mask layer before clicking on <cite>Adapy to layer</cite>. The output is displayed below.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/napari_mask_widget_map2.png"><img alt="../_images/napari_mask_widget_map2.png" src="../_images/napari_mask_widget_map2.png" style="width: 100%;" />
+</a>
+</figure>
+<p>Albeit more reasonable, the mask now cuts-off some parts of the map. We can mitigate this by manually fine-tuning the parameters until the mask at least encapsulates the most important features of the map.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/napari_mask_widget_map3.png"><img alt="../_images/napari_mask_widget_map3.png" src="../_images/napari_mask_widget_map3.png" style="width: 100%;" />
+</a>
+</figure>
+<p>The generated masks can now be exported for subsequent use in template matching.</p>
+<p>Finally, we can also use the viewer to determine the wedge mask specification. For this, drag and drop a CCP4/MRC file for which you would expect a missing wedge into viewer. Select and apply the <cite>Power Spectrum</cite> filter to visualize the missing wedge. You might need to switch the image axis using the widgets on the bottom left. Once the wedge is visible, enable axis using View &gt; Axes &gt; Axes visible. Head over to the mask widget and select wedge. The opening axis corresponds to the axis that runs through the void defined by the wedge, the tilt axis is the axis the plane is tilted over. For the data in the example below, a tilt range of (40, 40), tilt axis 2 and opening axis 0 appears sufficient. <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> follows the same conventions, as you will see in subsequent tutorials.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/napari_mask_widget_wedge.png"><img alt="../_images/napari_mask_widget_wedge.png" src="../_images/napari_mask_widget_wedge.png" style="width: 100%;" />
+</a>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Napari sometimes exits with a bus_error on MacOS systems. Usually its sufficient to reinstall napari and its dependencies, especially pyqt.</p>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+API</label><div class="sd-tab-content docutils">
+<p>The <a class="reference internal" href="../reference/preprocessing/api/tme.preprocessor.Preprocessor.html#tme.preprocessor.Preprocessor" title="tme.preprocessor.Preprocessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor</span></code></a> class defines a range of filters that are outlined on the <a class="reference internal" href="../reference/preprocessor.html"><span class="doc">Preprocessor</span></a> page. <a class="reference internal" href="../reference/preprocessing/api/tme.preprocessor.Preprocessor.html#tme.preprocessor.Preprocessor" title="tme.preprocessor.Preprocessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor</span></code></a> operates on <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> instances, such as the <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.data.html#tme.density.Density.data" title="tme.density.Density.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tme.density.Density.data</span></code></a> attribute of <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.density.Density</span></code></a> instances. <a class="reference internal" href="../reference/template_matching/api/tme.matching_utils.create_mask.html#tme.matching_utils.create_mask" title="tme.matching_utils.create_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.create_mask()</span></code></a> on the other hand can be used to define a variety of masks for template matching.</p>
+<p>The following outlines the creation of an ellipsoidal mask and its subsequent smoothing. For further usage examples please have a look at the code attached to the figures in <a class="reference internal" href="#preprocess-filtering"><span class="std std-ref">Filtering Use Cases</span></a> and <a class="reference internal" href="#mask-design"><span class="std std-ref">Mask Design</span></a>.</p>
+<p>In the following we are going to use <a class="reference internal" href="../reference/template_matching/api/tme.matching_utils.create_mask.html#tme.matching_utils.create_mask" title="tme.matching_utils.create_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.create_mask()</span></code></a> to create an ellipsoid, in this case a sphere, with radius 15 as input. <a class="reference internal" href="../reference/template_matching/api/tme.matching_utils.create_mask.html#tme.matching_utils.create_mask" title="tme.matching_utils.create_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.create_mask()</span></code></a> returns a <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> object, which we use in turn to create a <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.html#tme.density.Density" title="tme.density.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.density.Density</span></code></a> instance. Note that by default, the instances attributes <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.sampling_rate.html#tme.density.Density.sampling_rate" title="tme.density.Density.sampling_rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tme.density.Density.sampling_rate</span></code></a> will be initialized to one unit per voxel, and the <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.origin.html#tme.density.Density.origin" title="tme.density.Density.origin"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tme.density.Density.origin</span></code></a> attribute to zero. We can write the created mask to disk using <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.to_file.html#tme.density.Density.to_file" title="tme.density.Density.to_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.to_file()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="n">create_mask</span>
+
+<span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+   <span class="n">mask_type</span> <span class="o">=</span> <span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+   <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span>
+   <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>
+   <span class="n">radius</span> <span class="o">=</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">Density</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;example.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the following we will proceed with the <code class="docutils literal notranslate"><span class="pre">example.mrc</span></code> file we generated. However, you can adapt this to a file of your choice, as long as it can be read by <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.from_file.html#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.from_file()</span></code></a>. We can apply a Gaussian filter with standard deviation <code class="docutils literal notranslate"><span class="pre">sigma</span></code> using <a class="reference internal" href="../reference/preprocessing/api/tme.preprocessor.Preprocessor.gaussian_filter.html#tme.preprocessor.Preprocessor.gaussian_filter" title="tme.preprocessor.Preprocessor.gaussian_filter"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor.gaussian_filter</span></code></a> and write the output to disk as <code class="docutils literal notranslate"><span class="pre">example_gaussian_filter.mrc</span></code> like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span><span class="p">,</span> <span class="n">Preprocessor</span>
+
+<span class="n">preprocessor</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="p">()</span>
+<span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;example.mrc&quot;</span><span class="p">)</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">empty</span>
+<span class="n">out</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">preprocessor</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span>
+   <span class="n">template</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="p">)</span>
+<span class="n">out</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;example_gaussian_filter.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can visualize the output using your favourite macromolecular viewer. For simplicity, we are showing a maximum intensity projection. The left hand side shows the unfiltered <code class="docutils literal notranslate"><span class="pre">example.mrc</span></code>, while the right hand side displays the filtered <code class="docutils literal notranslate"><span class="pre">example_gaussian_filter.mrc</span></code>. The degree of smoothing depends on the value of the <code class="docutils literal notranslate"><span class="pre">sigma</span></code> parameter.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/7c8f314f5a5577a93121f0096bfc642d/preprocessing-9.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/7cfb09325c51bc265c47ad609bebb377/preprocessing-9.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/a4aa67a690390ddd2f175c5ac1bde6ed/preprocessing-9.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/c6d793e65986131bd7488318f815d4e4/preprocessing-9.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id35">
+<img alt="../_images/preprocessing-9.png" class="plot-directive" src="../_images/preprocessing-9.png" />
+<figcaption>
+<p><span class="caption-text">Mask creation and filter application using the API.</span><a class="headerlink" href="#id35" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="../reference/preprocessing/api/tme.preprocessor.Preprocessor.html#tme.preprocessor.Preprocessor" title="tme.preprocessor.Preprocessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor</span></code></a> supports a range of other operations such as the creation of wedge masks. The following outlines the creation of a continuous wedge mask assuming an infinite plane using <a class="reference internal" href="../reference/preprocessing/api/tme.preprocessor.Preprocessor.continuous_wedge_mask.html#tme.preprocessor.Preprocessor.continuous_wedge_mask" title="tme.preprocessor.Preprocessor.continuous_wedge_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor.continuous_wedge_mask()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span><span class="p">,</span> <span class="n">Preprocessor</span>
+
+<span class="n">preprocessor</span> <span class="o">=</span> <span class="n">Preprocessor</span><span class="p">()</span>
+
+<span class="n">mask</span> <span class="o">=</span> <span class="n">preprocessor</span><span class="o">.</span><span class="n">continuous_wedge_mask</span><span class="p">(</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">),</span>
+    <span class="n">opening_axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">tilt_axis</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">start_tilt</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>
+    <span class="n">stop_tilt</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>
+    <span class="c1"># RELION assumes symmetric FFT</span>
+    <span class="n">omit_negative_frequencies</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="n">Density</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;wedge_mask.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, all Fourier operations in pytme assume the DC component to be at the origin of the array. To observe the typical wedge shape you have to shift the DC component of the mask to the array center, for instance by using <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.fft.fftshift.html#numpy.fft.fftshift" title="(in NumPy v2.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.fft.fftshift</span></code></a> like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">mask_center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+<span class="n">Density</span><span class="p">(</span><span class="n">mask_center</span><span class="p">)</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;wedge_mask_centered.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>Following this guide, you have gained understand of data preprocessing within the context of template matching. Specifically:</p>
+<ul class="simple">
+<li><p>Learned the background and implications of filtering.</p></li>
+<li><p>Assessed how mask design shapes template matching scores.</p></li>
+<li><p>Utilitzed preprocessing techniques from within the <cite>napari</cite> GUI and pytme’s API.</p></li>
+</ul>
+<p>In the subsequent tutorial, you will learn how to put these lessons to use when template matching on biological data.</p>
+</section>
+<section id="references">
+<span id="id14"></span><h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id15" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Briechle, K.; Hanebeck, U. D. Template matching using fast normalized cross correlation. Optical Pattern Recognition XII. 2001; pp 95–102.</p>
+</aside>
+<aside class="footnote brackets" id="id16" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id2">1</a>,<a role="doc-backlink" href="#id5">2</a>,<a role="doc-backlink" href="#id7">3</a>)</span>
+<p>Maurer, V. J.; Siggel, M.; Kosinski, J. The Shape of Things in Cryo-ET: Why Emojis Aren’t Just for Texts. bioRxiv 2023</p>
+</aside>
+<aside class="footnote brackets" id="id17" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id3">1</a>,<a role="doc-backlink" href="#id8">2</a>,<a role="doc-backlink" href="#id13">3</a>)</span>
+<p>de Teresa-Trueba, I.; Goetz, S. K.; Mattausch, A.; Stojanovska, F.; Zimmerli, C. E.; Toro-Nahuelpan, M.; Cheng, D. W. C.; Tollervey, F.; Pape, C.; Beck, M.; Diz-Munoz, A.; Kreshuk, A.; Mahamid, J.; Zaugg, J. B. Convolutional networks for supervised mining of molecular patterns within cellular context. Nat. Methods 2023, 20, 284–294.</p>
+</aside>
+<aside class="footnote brackets" id="id18" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
+<p>Grant, T.; Rohou, A.; Grigorieff, N. cisTEM, user-friendly software for single-particle image processing. eLife 2018, 7, e35383.</p>
+</aside>
+<aside class="footnote brackets" id="id19" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id12">5</a><span class="fn-bracket">]</span></span>
+<p>Padfield, D. Masked FFT registration. 2010 IEEE Computer Society Conference on Computer Vision and Pattern Recognition. 2010; pp 2918–2925</p>
+</aside>
+<aside class="footnote brackets" id="id20" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">6</a><span class="fn-bracket">]</span></span>
+<p>Shujun Cai, C. Chen, Z. Y. Tan, Y. Huang, J. Shi, and L. Gan. Cryo-ET reveals the macromolecular reorganization of S. pombe mitotic chromosomes in vivo. Proc. Natl. Acad. Sci. 115, 10977 (2018).</p>
+</aside>
+<aside class="footnote brackets" id="id21" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">7</a><span class="fn-bracket">]</span></span>
+<p>Stephan Nickell, O. Mihalache, F. Beck, R. Hegerl, A. Korinek, and W. Baumeister. Structural analysis of the 26S proteasome by cryoelectron tomography. Biochem. Biophys. Res. Commun. 353, 115 (2007).</p>
+</aside>
+<aside class="footnote brackets" id="id22" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id11">8</a><span class="fn-bracket">]</span></span>
+<p>Misjael N. Lebbink, W. J. Geerts, T. P. van der Krift, M. Bouwhuis, L. O. Hertzberger, A. J. Verkleij, and A. J. Koster. Electron tomography &amp; template matching of biological membranes. J. Struct. Biol. 158, 327 (2007).</p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tl-dr">TL;DR</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aim">Aim</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#background">Background</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#filtering-use-cases">Filtering Use Cases</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#noise-removal">Noise Removal</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#component-emphasis">Component Emphasis</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mask-design">Mask Design</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example">Practical Example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/quickstart/preprocessing.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

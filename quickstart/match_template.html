@@ -1,0 +1,1024 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Template matching &#8212; pytme 0.2.3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=63b7f29f" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=a47416a6"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart/match_template';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.2.3 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Template matching</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="template-matching">
+<span id="cli-match-template"></span><h1>Template matching<a class="headerlink" href="#template-matching" title="Link to this heading">#</a></h1>
+<section id="tl-dr">
+<h2>TL;DR<a class="headerlink" href="#tl-dr" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> command-line tool facilitates template matching using various scoring metrics. For additional help see <a class="reference internal" href="#command-line-options"><span class="std std-ref">Command-Line Options</span></a>, <a class="reference internal" href="code_examples/match_template_code.html"><span class="doc">source code</span></a> or:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span>--help
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> expects high densities to have positive (white contrast), low densities to have negative values (black contrast). Therefore, input tomograms typically need to be inverted by multiplication with negative one. Version 0.1.4 introduced the <code class="docutils literal notranslate"><span class="pre">--invert_target_contrast</span></code> flag, which automatically performs the inversion for you.</p>
+<p>As of version 0.2.1 you can alternatively provide an appropriately scaled template. This template does need to be centered and <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> needs to be invoked with the <code class="docutils literal notranslate"><span class="pre">--no_centering</span></code> flag.</p>
+</div>
+</section>
+<section id="background">
+<span id="match-template-background"></span><h2>Background<a class="headerlink" href="#background" title="Link to this heading">#</a></h2>
+<p>Template matching is used under many names in the electron microscopy field:</p>
+<ul class="simple">
+<li><p>Fitting an atomic structure to an electron density map</p></li>
+<li><p>Particle picking on tomograms / tilt series / images</p></li>
+<li><p>Alignment in subtomogram averaging</p></li>
+</ul>
+<p>Despite their naming, all of these follow the same template matching formalism.</p>
+<p>The goal of template matching is to optimize the similarity between a template and a target. Typically, the template is an atomic structure or an electron density, while the target is almost always an electron density, e.g. a reconstruction or a tomogram. By default <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> measures similarity using the scoring method <code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.flcSphericalMask_setup()</span></code>, which computes the following</p>
+<div class="math notranslate nohighlight">
+\[\frac{CC\left(f, \frac{g \cdot m - \overline{g \cdot m}}{\sigma_{g \cdot m}}\right)}
+     {N_m \cdot \sqrt{\frac{CC(f^2, m)}{N_m} - \left(\frac{CC(f, m)}{N_m}\right)^2}},\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[CC(f,g) = \mathcal{F}^{-1}(\mathcal{F}(f) \cdot \mathcal{F}(g)^*),
+\label{eq:CC}\]</div>
+<p>with <span class="math notranslate nohighlight">\(\mathcal{F}\)</span> and <span class="math notranslate nohighlight">\(\mathcal{F}^{-1}\)</span> denoting the forward and inverse Fourier transform, <span class="math notranslate nohighlight">\(^*\)</span> the complex conjugate, and <span class="math notranslate nohighlight">\(\cdot\)</span> the element-wise product. <span class="math notranslate nohighlight">\(f\)</span>, <span class="math notranslate nohighlight">\(g\)</span> are the target and template, respectively, and <span class="math notranslate nohighlight">\(m\)</span> is the template mask. <span class="math notranslate nohighlight">\(N_m\)</span> is the number of non-zero elements in <span class="math notranslate nohighlight">\(m\)</span>, <span class="math notranslate nohighlight">\(\overline{g \cdot m}\)</span> and <span class="math notranslate nohighlight">\(\sigma_{g \cdot m}\)</span> the mean and standard deviation of <span class="math notranslate nohighlight">\(g \cdot m\)</span>, respectively.</p>
+<p><code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> will compute a bounding box that encapsulates all possible rotations of the template and move the template’s center of mass to the center of that box. The computed bounding box will be used as default template mask, if none is specified by the user. Subsequently, <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> will compute the similarity between template and target for all integer-valued voxel translations of the template, together with a range of rotations of the template. The fineness of the rotational grid can be specified by the user.</p>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h2>
+<p>The following provides a background on some of the parameters of <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>. For simplicity, the arguments were characterized based on whether they relate to the input, performance or accuracy of <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>. The remaining parameters are outlined in the <a class="reference internal" href="#command-line-options"><span class="std std-ref">Command-Line Options</span></a>.</p>
+<section id="input">
+<h3>Input<a class="headerlink" href="#input" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>target/template</strong>: Specifies the paths to your target and template files, which are essential inputs for <cite>match_template</cite>.</p></li>
+<li><p><strong>target_mask/template_mask</strong>: Define masks for the target and template, allowing the tool to focus only on regions of interest and potentially improve accuracy.</p></li>
+<li><p><strong>invert_target_contrast</strong>: Whether to invert the target’s contrast and perform linear rescaling between zero and one. This option is intended for targets, where the object to-be-matched has negative values, i.e. tomograms with black white contrast.</p></li>
+</ul>
+</section>
+<section id="performance">
+<h3>Performance<a class="headerlink" href="#performance" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>cutoff_target/cutoff_template</strong>: By defining a minimal enclosing box containing all significant density values, the execution time can be significantly improved.</p></li>
+<li><p><strong>no_edge_padding</strong>: By default, each dimension of the target is padded by its mean using the template shape. This helps to avoid erroneous scores at the array boundaries, if the input target has to be split in order to fit into memory. If the target does not have to be split its always save to set this option. If the target has to be split, deactivating edge padding speeds up computations, but might require further consideration in postprocessing.</p></li>
+<li><p><strong>no_fourier_padding</strong>: While zero-padding improves numerical stability, avoiding it can lead to faster computations. When this flag is set, the inputs will not be padded to the full convolution shape, which is defined as cumulative box size of template and target minus one. Users might occasionally observe inaccuracies with this option turned.</p></li>
+<li><p><strong>no_centering</strong>: <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> will automatically move the template’s center of mass to the center of a new box that can contain all possible rotations of the template around the center of mass. If this flag is set, <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> will not perform this action.</p></li>
+<li><p><strong>interpolation_order</strong>: Defines the spline interpolation’s granularity during rotations. While higher values ensure more accuracy reducing it can lead to performance improvements, especially on CPU, at a slight accuracy trade-off.</p></li>
+<li><p><strong>use_mixed_precision</strong>: By utilizing float16 for GPU operations, memory consumption is lowered, and certain hardware might observe a performance boost.</p></li>
+<li><p><strong>use_memmap</strong>: When working with large inputs, this option lets the tool offload objects to the disk, making computations feasible even with limited RAM, though this comes with a slight IO performance overhead.</p></li>
+</ul>
+</section>
+<section id="accuracy">
+<h3>Accuracy<a class="headerlink" href="#accuracy" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>score</strong>: The choice of the scoring function plays a pivotal role in the accuracy of results. Users can select from a variety of options, as detailed in the section <a class="reference internal" href="../reference/matching_exhaustive.html"><span class="doc">exhaustive template matching</span></a>. Note, that if your mask is not symmetric nor encompasses all possible rotations of the template you have to use a scoring method that also rotates the mask, such as FLCF (<code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.flc_scoring()</span></code>) or MCC (<code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_exhaustive.mcc_scoring()</span></code>).</p></li>
+<li><p><strong>angular_sampling</strong>: Determines the granularity of the angular sampling for fitting. A finer sampling (lower value) will be more exhaustive, potentially yielding more accurate results but at a computational cost.</p></li>
+<li><p><strong>scramble_phases</strong>: This option scrambles the phases of the templates to simulate a noise background, aiding in refining the score space.</p></li>
+</ul>
+</section>
+<section id="computation">
+<h3>Computation<a class="headerlink" href="#computation" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>memory_scaling</strong>: Fraction of available memory that will be used. Corresponds to total amount of RAM for CPU backends, and sum of available GPU memory for GPU backends.</p></li>
+<li><p><strong>ram</strong>: Memory in bytes that should be used for computations. If set will overwrite the value determined by <strong>memory_scaling</strong>.</p></li>
+<li><p><strong>use_gpu</strong>: Wheter to perform computations using a GPU backend.</p></li>
+<li><p><strong>gpu_indices</strong>: GPU device indices to use for computation, e.g. 0,1. If this parameter is provided, the shell environment CUDA_VISIBLE_DEVICES that otherwise specifies the GPU device indices will be ignored.</p></li>
+</ul>
+</section>
+</section>
+<section id="usage-examples">
+<span id="match-template-usage-examples"></span><h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading">#</a></h2>
+<p>The following outlines some typical use cases of <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+Particle Picking</label><div class="sd-tab-content docutils">
+<p>When performing particle picking, the goal is to identify and isolate specific particles (in this case, ribosomes) from a larger dataset (tomogram). By using a known structure as a template, <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> can scan the tomogram to find locations where this structure is likely to appear.</p>
+<p><strong>Data sources</strong></p>
+<p>You can download the <strong>target</strong> EMPIAR 10988 by clicking <a class="reference external" href="https://www.ebi.ac.uk/empiar/EMPIAR-10988/">here</a>. Locate the section titled “2. Reconstructed cryo-electron tomograms acquired with defocus-only (DEF) on S. pombe cryo-FIB lamellae”. Manually download the file named <cite>TS_037.rec</cite>. It will be in a ZIP archive. Once downloaded, unzip the file to access the tomogram.</p>
+<p>The <strong>template</strong> used to pick ribosomes is EMD-3228, which you can download by clicking <a class="reference external" href="https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-3228/map/emd_3228.map.gz">here</a>. Alternatively, you can use wget:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-3228/map/emd_3228.map.gz
+</pre></div>
+</div>
+<p><strong>Procedure</strong></p>
+<p>The following outlines the minimal requirements for using <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> to match ribosomes in a tomogram. Executing the code below will perform template matching using an uniformative template mask, 24 Euler angles, 4 CPU cores, edge -and Fourier padding, without filtering the template and automatically resampling the template to the sampling rate of the tomogram.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>TS_037.rec<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>emd_3228.map.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--invert_target_contrast
+</pre></div>
+</div>
+<p>As we have seen in the <a class="reference internal" href="preprocessing.html"><span class="doc">Preprocessing</span></a> guide, template matching accuracy can benefit from the usage of masks to emphasise paticular components of the template and the application of filters to the data. In order to design a suitable mask, we first resample the template to the sampling rate of the tomogram using <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.resample.html#tme.density.Density.resample" title="tme.density.Density.resample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.resample()</span></code></a> from within python.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;TS_037.rec&quot;</span><span class="p">,</span> <span class="n">use_memmap</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">template</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;emd_3228.map.gz&quot;</span><span class="p">)</span>
+
+<span class="n">template_resampled</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">template_resampled</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;emd_3228_bin4.mrc&quot;</span><span class="p">)</span>
+
+<span class="n">template_resampled</span>
+<span class="c1"># Origin: (0.0, 0.0, 0.0), sampling_rate: (13.481, 13.481, 13.481), Shape: (32, 32, 32)</span>
+</pre></div>
+</div>
+<p>Subsequently we can design a spherical mask for template matching. Note that you can just as well use <code class="docutils literal notranslate"><span class="pre">emd_3228_bin4.mrc</span></code> in the <a class="reference internal" href="preprocessing.html#filter-application"><span class="std std-ref">GUI</span></a>, but we will use the API here to create a spherical mask centered at the template’s center of mass 15, 15, 16, with radius 12 voxel.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="n">create_mask</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">template_resampled</span><span class="o">.</span><span class="n">empty</span>
+<span class="n">center</span> <span class="o">=</span> <span class="n">template_resampled</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">template_resampled</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">out</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+    <span class="n">mask_type</span> <span class="o">=</span> <span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">center</span><span class="p">,</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">template_resampled</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">out</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;emd_3228_bin4_mask.mrc&quot;</span><span class="p">)</span>
+
+<span class="n">center</span>
+<span class="c1"># array([15, 15, 16])</span>
+</pre></div>
+</div>
+<p>Due to steric hindrance during data acqusition, the Fourier power spectrum of tomograms contains empty regions, which form a missing wedge for single tilt axis and more complex geometries otherwise. <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> supports applying wedge masks for template matching. However, do note that wedge masks rarely improve template matching accuracy drastically, as they are primarily focused on removing artifacts in order to primarily retain the data that was originally measured. Assuming your data is defined in the xy plane and was tilted over the x axis in 5° steps from -50° to 40°, you can define a wedge mask as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>TS_037.rec<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>emd_3228.map.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--invert_target_contrast<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tilt_range<span class="w"> </span><span class="m">50</span>,40<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--wedge_axes<span class="w"> </span><span class="m">0</span>,2<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tilt_step<span class="w"> </span><span class="m">5</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The tilt angle in pytme is defined as elevation of the data plane. This differs from the definition some microscopes use. To translate the angle definition, simply subtract the absolute value of the angle from 90°. If you are unsure, feel free to validate the wedge definition using the <a class="reference internal" href="preprocessing.html#filter-application"><span class="std std-ref">GUI</span></a>.</p>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+Fit Atomic Structures</label><div class="sd-tab-content docutils">
+<p>When fitting an atomic structure, the objective is to position a structure or a structure subunit within another density. This method determines the optimal orientation and positioning of the atomic structure within the given density.</p>
+<p><strong>Data sources</strong></p>
+<p>You can download the <strong>target</strong> EMD-8621 by clicking <a class="reference external" href="https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-8621/map/emd_8621.map.gz">here</a>. You can download the <strong>template</strong> PDB-5UZ4 by clicking <a class="reference external" href="https://files.rcsb.org/download/5UZ4.pdb">here</a>. Alternatively, you can acquire both using wget:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-8621/map/emd_8621.map.gz
+wget<span class="w"> </span>https://files.rcsb.org/download/5UZ4.pdb
+</pre></div>
+</div>
+<p><strong>Procedure</strong></p>
+<p>To fit an atomic structure into an electron density map:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>emd_8621.map.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>5UZ4.pdb<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cutoff_target<span class="w"> </span><span class="m">0</span>.0309<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cutoff_template<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-a<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--no_edge_padding
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+Alignment of Densities</label><div class="sd-tab-content docutils">
+<p>For density alignment, the aim is to find the best fit between two densities. This involves determining the optimal orientation and alignment that allows one density to closely match and overlap with another.</p>
+<p><strong>Data source</strong></p>
+<p>For this example we will use EMD-8621, which you can download by clicking <a class="reference external" href="https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-8621/map/emd_8621.map.gz">here</a>. Alternatively, you can use wget:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-8621/map/emd_8621.map.gz
+</pre></div>
+</div>
+<p><strong>Procedure</strong></p>
+<p>First lets simulate a translation and rotation of the map:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+
+<span class="n">density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;emd_8621.map.gz&quot;</span><span class="p">)</span>
+<span class="n">new_density</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">centered</span><span class="p">()</span>
+<span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">rotation_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">rotation_matrix</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+<span class="n">new_density</span> <span class="o">=</span> <span class="n">new_density</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
+  <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">,</span>
+  <span class="n">translation</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">new_density</span><span class="o">.</span><span class="n">adjust_box</span><span class="p">(</span>
+  <span class="n">new_density</span><span class="o">.</span><span class="n">trim_box</span><span class="p">(</span><span class="mf">0.0309</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">new_density</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;emd_8621_transformed.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To realign the two densities we can use <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w">   </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>emd_8621.map.gz<span class="w">  </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>emd_8621_transformed.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cutoff_target<span class="w"> </span><span class="m">0</span>.0309<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cutoff_template<span class="w"> </span><span class="m">0</span>.0309<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-a<span class="w"> </span><span class="m">60</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-s<span class="w"> </span>CORR<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--no_edge_padding
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="cluster-execution">
+<h2>Cluster Execution<a class="headerlink" href="#cluster-execution" title="Link to this heading">#</a></h2>
+<p>The efficient memory usage and favorable runtime performance make pytme a great software for high-performance computing environments <a class="footnote-reference brackets" href="#id7" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. However, please note that multi-node jobs using protocols like <a class="reference external" href="https://www.open-mpi.org/">Open MPI</a> are not yet supported.</p>
+<p>The following subsections provide templates for the execution of pytme on different compute cluster architectures. Since <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> performs the ressource intensive template matching operation, the examples will be in reference to this script.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">estimate_ram_usage.py</span></code> script computes an initial memory estimate on a given template matching case for clusters that require memory reservations.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>estimate_ram_usage.py<span class="w"> </span>--help
+</pre></div>
+</div>
+</div>
+<section id="slurm-embl">
+<h3>SLURM (EMBL)<a class="headerlink" href="#slurm-embl" title="Link to this heading">#</a></h3>
+<p>The scripts in this section are designed in particular for use with the <a class="reference external" href="https://www.embl.org/">EMBL</a> SLURM cluster. However, they can be adapted to general SLURM clusters by changing the particion name via <code class="docutils literal notranslate"><span class="pre">#SBATCH</span> <span class="pre">-p</span> <span class="pre">htc-el8</span></code>.</p>
+<p>The templates below are intended to be adapted to your specific use cases and pasted into a new file. This file created by you, lets assume its called <code class="docutils literal notranslate"><span class="pre">submission_script.sbatch</span></code>, can then be run on the cluster like so:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sbatch<span class="w"> </span>submission_script.sbatch
+</pre></div>
+</div>
+<p>Instead of using conda, you can also use the pytme module installed on the cluster. To do so, first determine the newest available version, indicated by it having the higest version number:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>spider<span class="w"> </span>pyTME
+
+<span class="c1"># Versions:</span>
+<span class="c1">#   pyTME/0.1.4-foss-2023a-CUDA-12.1.1</span>
+<span class="c1">#   pyTME/0.1.5-foss-2023a</span>
+</pre></div>
+</div>
+<p>You can then replace every ocurence of:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>load<span class="w"> </span>Anaconda3
+<span class="nb">source</span><span class="w"> </span>activate<span class="w"> </span>pytme
+</pre></div>
+</div>
+<p>by:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>load<span class="w"> </span>pyTME/0.1.5-foss-2023a
+</pre></div>
+</div>
+<section id="cpu-execution">
+<h4>CPU Execution<a class="headerlink" href="#cpu-execution" title="Link to this heading">#</a></h4>
+<p>The sbatch file below is sufficient to perform template matching on a bin 4 tomogram with rough shape 500, 900, 900. This job will request 10 CPU cores and 150 GB of RAM for 16 hours on the partition htc-el8. Make sure to replace all variables in curly brackets with your local paths to use this template.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="c1">#SBATCH -N 1</span>
+<span class="c1">#SBATCH -p htc-el8</span>
+
+<span class="c1">#SBATCH --ntasks=1</span>
+<span class="c1">#SBATCH --cpus-per-task=10</span>
+<span class="c1">#SBATCH --mem 150G</span>
+
+<span class="c1">#SBATCH -t 16:00:00</span>
+
+module<span class="w"> </span>load<span class="w"> </span>Anaconda3
+<span class="nb">source</span><span class="w"> </span>activate<span class="w"> </span>pytme
+
+match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span><span class="o">{</span>target_path<span class="o">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span><span class="o">{</span>template_path<span class="o">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template_mask<span class="w"> </span><span class="o">{</span>template_mask_path<span class="o">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cutoff_template<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-s<span class="w"> </span>FLCSphericalMask<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-n<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-a<span class="w"> </span><span class="o">{</span>angular_sampling<span class="o">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--no_fourier_padding<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span><span class="o">{</span>output_path<span class="o">}</span>
+</pre></div>
+</div>
+</section>
+<section id="gpu-execution">
+<h4>GPU Execution<a class="headerlink" href="#gpu-execution" title="Link to this heading">#</a></h4>
+<p>The following will perform template matching using 2 NVIDIA RTX3090 GPUs. If N is the number of GPUs, you can change it by modifying <code class="docutils literal notranslate"><span class="pre">#SBATCH</span> <span class="pre">--gres=gpu:N</span></code> to a number of your liking.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1">#SBATCH -N 1</span>
+<span class="c1">#SBATCH --export=NONE</span>
+<span class="c1">#SBATCH -p gpu-el8</span>
+
+<span class="c1">#SBATCH --mem 100G</span>
+<span class="c1">#SBATCH -C gpu=3090</span>
+<span class="c1">#SBATCH --gres=gpu:2</span>
+
+<span class="c1">#SBATCH -t 0:30:00</span>
+
+module<span class="w"> </span>load<span class="w"> </span>Anaconda3
+<span class="nb">source</span><span class="w"> </span>activate<span class="w"> </span>pytme
+
+match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span><span class="nv">$TOMOGRAM_PATH</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span><span class="nv">$TOMOGRAM_TEMPLATE</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-n<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_gpu<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-a<span class="w"> </span><span class="nv">$ANGULAR_SAMPLING</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--no_edge_padding<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--no_fourier_padding<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>bin4.pickle
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Using <code class="docutils literal notranslate"><span class="pre">--no_edge_padding</span></code> has no impact on the template matching output if the GPU device has sufficient memory, so that the target does not have to be split into smaller chunks. Otherwise, you might experience boundary effects around the splits.</p>
+</div>
+</section>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>Following this tutorial, you have gained an understanding of template matching using pytme within the realm of electron microscopy. Specifically:</p>
+<ul class="simple">
+<li><p><strong>Applications</strong>: We explored how template matching functions in diverse scenarios like particle picking, atomic structure fitting, and density alignments.</p></li>
+<li><p><strong>Tool Configuration</strong>: By diving into the <cite>match_template</cite> configurations, we highlighted the balance between accuracy, performance, and input requirements.</p></li>
+<li><p><strong>Practical Usage</strong>: Through specific examples, we showcased how to apply the tool effectively.</p></li>
+</ul>
+<p>In the subsequent tutorial, you will learn how to interpret the output of match_template to extract actionable insigts and optimize the extraction of meaningful information from your electron microscopy data.</p>
+</section>
+<section id="command-line-options">
+<span id="id6"></span><h2>Command-Line Options<a class="headerlink" href="#command-line-options" title="Link to this heading">#</a></h2>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-h">
+<span id="cmdoption-match_template.py-help"></span><span class="sig-name descname"><span class="pre">-h</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--help</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-match_template.py-h" title="Link to this definition">#</a></dt>
+<dd><p>Show this help message and exit.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-m">
+<span id="cmdoption-match_template.py-target"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"> <span class="pre">TARGET</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--target</span></span><span class="sig-prename descclassname"> <span class="pre">TARGET</span></span><a class="headerlink" href="#cmdoption-match_template.py-m" title="Link to this definition">#</a></dt>
+<dd><p>Path to a target in CCP4/MRC format.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-target_mask">
+<span class="sig-name descname"><span class="pre">--target_mask</span></span><span class="sig-prename descclassname"> <span class="pre">TARGET_MASK</span></span><a class="headerlink" href="#cmdoption-match_template.py-target_mask" title="Link to this definition">#</a></dt>
+<dd><p>Path to a mask for the target target in CCP4/MRC format.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-cutoff_target">
+<span class="sig-name descname"><span class="pre">--cutoff_target</span></span><span class="sig-prename descclassname"> <span class="pre">CUTOFF_TARGET</span></span><a class="headerlink" href="#cmdoption-match_template.py-cutoff_target" title="Link to this definition">#</a></dt>
+<dd><p>Target contour level (used for cropping).</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-cutoff_template">
+<span class="sig-name descname"><span class="pre">--cutoff_template</span></span><span class="sig-prename descclassname"> <span class="pre">CUTOFF_TEMPLATE</span></span><a class="headerlink" href="#cmdoption-match_template.py-cutoff_template" title="Link to this definition">#</a></dt>
+<dd><p>Template contour level (used for cropping).</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-no_centering">
+<span class="sig-name descname"><span class="pre">--no_centering</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-match_template.py-no_centering" title="Link to this definition">#</a></dt>
+<dd><p>If set, assumes the template is centered and omits centering.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-i">
+<span id="cmdoption-match_template.py-template"></span><span class="sig-name descname"><span class="pre">-i</span></span><span class="sig-prename descclassname"> <span class="pre">TEMPLATE</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--template</span></span><span class="sig-prename descclassname"> <span class="pre">TEMPLATE</span></span><a class="headerlink" href="#cmdoption-match_template.py-i" title="Link to this definition">#</a></dt>
+<dd><p>Path to a template in PDB/MMCIF or CCP4/MRC format.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-template_mask">
+<span class="sig-name descname"><span class="pre">--template_mask</span></span><span class="sig-prename descclassname"> <span class="pre">TEMPLATE_MASK</span></span><a class="headerlink" href="#cmdoption-match_template.py-template_mask" title="Link to this definition">#</a></dt>
+<dd><p>Path to a mask for the template in CCP4/MRC format.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-o">
+<span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"> <span class="pre">OUTPUT</span></span><a class="headerlink" href="#cmdoption-match_template.py-o" title="Link to this definition">#</a></dt>
+<dd><p>Path to output pickle file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-s">
+<span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"> <span class="pre">{CC,LCC,CORR,CAM,FLCSphericalMask,FLC,MCC}</span></span><a class="headerlink" href="#cmdoption-match_template.py-s" title="Link to this definition">#</a></dt>
+<dd><p>Template matching scoring function.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-n">
+<span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"> <span class="pre">CORES</span></span><a class="headerlink" href="#cmdoption-match_template.py-n" title="Link to this definition">#</a></dt>
+<dd><p>Number of cores used for template matching.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-r">
+<span id="cmdoption-match_template.py-ram"></span><span class="sig-name descname"><span class="pre">-r</span></span><span class="sig-prename descclassname"> <span class="pre">MEMORY</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--ram</span></span><span class="sig-prename descclassname"> <span class="pre">MEMORY</span></span><a class="headerlink" href="#cmdoption-match_template.py-r" title="Link to this definition">#</a></dt>
+<dd><p>Amount of memory that can be used in bytes.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-memory_scaling">
+<span class="sig-name descname"><span class="pre">--memory_scaling</span></span><span class="sig-prename descclassname"> <span class="pre">MEMORY_SCALING</span></span><a class="headerlink" href="#cmdoption-match_template.py-memory_scaling" title="Link to this definition">#</a></dt>
+<dd><p>Fraction of available memory that can be used. Defaults to 0.85. Ignored if –ram is set.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-a">
+<span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"> <span class="pre">ANGULAR_SAMPLING</span></span><a class="headerlink" href="#cmdoption-match_template.py-a" title="Link to this definition">#</a></dt>
+<dd><p>Angular sampling rate for template matching. A lower number yields more rotations.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-p">
+<span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-match_template.py-p" title="Link to this definition">#</a></dt>
+<dd><p>When set, perform peak calling instead of score aggregation.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-use_gpu">
+<span class="sig-name descname"><span class="pre">--use_gpu</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-match_template.py-use_gpu" title="Link to this definition">#</a></dt>
+<dd><p>Whether to perform computations on the GPU.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-gpu_indices">
+<span class="sig-name descname"><span class="pre">--gpu_indices</span></span><span class="sig-prename descclassname"> <span class="pre">GPU_INDICES</span></span><a class="headerlink" href="#cmdoption-match_template.py-gpu_indices" title="Link to this definition">#</a></dt>
+<dd><p>Comma-separated list of GPU indices to use. For example, 0,1 for the first and second GPU. Only used if –use_gpu is set.
+If not provided but –use_gpu is set, CUDA_VISIBLE_DEVICES will be respected.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-invert_target_contrast">
+<span class="sig-name descname"><span class="pre">--invert_target_contrast</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-match_template.py-invert_target_contrast" title="Link to this definition">#</a></dt>
+<dd><p>Invert the target contrast via multiplication with negative one and linear rescaling between zero and one.
+Note that this might lead to different baseline scores of individual target splits when using unnormalized scores.
+This option is intended for targets, where the object to-be-matched has negative values, i.e. tomograms.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-no_edge_padding">
+<span class="sig-name descname"><span class="pre">--no_edge_padding</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-match_template.py-no_edge_padding" title="Link to this definition">#</a></dt>
+<dd><p>Whether to pad the edges of the target. This is useful, if the target has a well-defined bounding box, e.g. a density map.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-no_fourier_padding">
+<span class="sig-name descname"><span class="pre">--no_fourier_padding</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-match_template.py-no_fourier_padding" title="Link to this definition">#</a></dt>
+<dd><p>Whether input arrays should be zero-padded to the full convolution shape for numerical stability.
+When working with very large targets such as tomograms it is safe to use this flag and benefit from the performance gain.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-scramble_phases">
+<span class="sig-name descname"><span class="pre">--scramble_phases</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-match_template.py-scramble_phases" title="Link to this definition">#</a></dt>
+<dd><p>Whether to phase scramble the template for subsequent normalization.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-interpolation_order">
+<span class="sig-name descname"><span class="pre">--interpolation_order</span></span><span class="sig-prename descclassname"> <span class="pre">INTERPOLATION_ORDER</span></span><a class="headerlink" href="#cmdoption-match_template.py-interpolation_order" title="Link to this definition">#</a></dt>
+<dd><p>Spline interpolation used during rotations. If less than zero no interpolation is performed.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-use_mixed_precision">
+<span class="sig-name descname"><span class="pre">--use_mixed_precision</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-match_template.py-use_mixed_precision" title="Link to this definition">#</a></dt>
+<dd><p>Use float16 for real values operations where possible.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-use_memmap">
+<span class="sig-name descname"><span class="pre">--use_memmap</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-match_template.py-use_memmap" title="Link to this definition">#</a></dt>
+<dd><p>Use memmaps to offload large data objects to disk. This is particularly useful for large inputs when using –use_gpu.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-temp_directory">
+<span class="sig-name descname"><span class="pre">--temp_directory</span></span><span class="sig-prename descclassname"> <span class="pre">TEMP_DIRECTORY</span></span><a class="headerlink" href="#cmdoption-match_template.py-temp_directory" title="Link to this definition">#</a></dt>
+<dd><p>Directory for temporary objects. Disks with faster I/O typically improves runtime. Especially in conjunction with <strong>use_memmap</strong>.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-gaussian_sigma">
+<span class="sig-name descname"><span class="pre">--gaussian_sigma</span></span><span class="sig-prename descclassname"> <span class="pre">GAUSSIAN_SIGMA</span></span><a class="headerlink" href="#cmdoption-match_template.py-gaussian_sigma" title="Link to this definition">#</a></dt>
+<dd><p>Sigma parameter for Gaussian filtering the template.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-bandpass_band">
+<span class="sig-name descname"><span class="pre">--bandpass_band</span></span><span class="sig-prename descclassname"> <span class="pre">BANDPASS_BAND</span></span><a class="headerlink" href="#cmdoption-match_template.py-bandpass_band" title="Link to this definition">#</a></dt>
+<dd><p>Comma-separated start and stop frequency for bandpass filtering the template, e.g. 0.1,0.5.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-bandpass_smooth">
+<span class="sig-name descname"><span class="pre">--bandpass_smooth</span></span><span class="sig-prename descclassname"> <span class="pre">BANDPASS_SMOOTH</span></span><a class="headerlink" href="#cmdoption-match_template.py-bandpass_smooth" title="Link to this definition">#</a></dt>
+<dd><p>Smooth parameter for the bandpass filter.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-tilt_range">
+<span class="sig-name descname"><span class="pre">--tilt_range</span></span><span class="sig-prename descclassname"> <span class="pre">TILT_RANGE</span></span><a class="headerlink" href="#cmdoption-match_template.py-tilt_range" title="Link to this definition">#</a></dt>
+<dd><p>Comma-separated start and stop stage tilt angle, e.g. 50,45. Used to create a wedge mask to be applied to the template.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-tilt_step">
+<span class="sig-name descname"><span class="pre">--tilt_step</span></span><span class="sig-prename descclassname"> <span class="pre">TILT_STEP</span></span><a class="headerlink" href="#cmdoption-match_template.py-tilt_step" title="Link to this definition">#</a></dt>
+<dd><p>Step size between tilts, e.g. 5. When set a more accurate wedge mask will be computed.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-wedge_axes">
+<span class="sig-name descname"><span class="pre">--wedge_axes</span></span><span class="sig-prename descclassname"> <span class="pre">WEDGE_AXES</span></span><a class="headerlink" href="#cmdoption-match_template.py-wedge_axes" title="Link to this definition">#</a></dt>
+<dd><p>Axis index of wedge opening and tilt axis, e.g. 0,2 for a wedge that is open in z and tilted over x.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-match_template.py-wedge_smooth">
+<span class="sig-name descname"><span class="pre">--wedge_smooth</span></span><span class="sig-prename descclassname"> <span class="pre">WEDGE_SMOOTH</span></span><a class="headerlink" href="#cmdoption-match_template.py-wedge_smooth" title="Link to this definition">#</a></dt>
+<dd><p>Gaussian sigma used to smooth the wedge mask.</p>
+</dd></dl>
+
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id7" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">1</a><span class="fn-bracket">]</span></span>
+<p>Maurer, V. J.; Siggel, M.; Kosinski, J. PyTME (Python Template Matching Engine): A fast, flexible, and multi-purpose template matching library for cryogenic electron microscopy data. bioRxiv 2023</p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tl-dr">TL;DR</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#background">Background</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#input">Input</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#performance">Performance</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#accuracy">Accuracy</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#computation">Computation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-examples">Usage Examples</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cluster-execution">Cluster Execution</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slurm-embl">SLURM (EMBL)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cpu-execution">CPU Execution</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-execution">GPU Execution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#command-line-options">Command-Line Options</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/quickstart/match_template.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

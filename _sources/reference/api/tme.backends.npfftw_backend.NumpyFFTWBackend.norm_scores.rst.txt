@@ -1,0 +1,6 @@
+NumpyFFTWBackend.norm\_scores
+========================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.norm_scores

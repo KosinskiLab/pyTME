@@ -1,0 +1,6 @@
+NumpyFFTWBackend.sum
+================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.sum

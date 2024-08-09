@@ -1,0 +1,6 @@
+NumpyFFTWBackend.get\_fundamental\_dtype
+==================================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.get_fundamental_dtype

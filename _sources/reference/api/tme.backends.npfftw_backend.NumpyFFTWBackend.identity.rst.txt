@@ -1,0 +1,6 @@
+NumpyFFTWBackend.identity
+=====================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.identity

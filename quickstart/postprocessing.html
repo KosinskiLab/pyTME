@@ -1,0 +1,775 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Postprocessing &#8212; pytme 0.2.3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=63b7f29f" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=a47416a6"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart/postprocessing';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.2.3 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Postprocessing</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="postprocessing">
+<h1>Postprocessing<a class="headerlink" href="#postprocessing" title="Link to this heading">#</a></h1>
+<section id="tl-dr">
+<span id="postprocess-tldr"></span><h2>TL;DR<a class="headerlink" href="#tl-dr" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code> command-line tool can be used to analyze the results generated by <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span>--help
+</pre></div>
+</div>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+Orientations</label><div class="sd-tab-content docutils">
+<p>Executing the following code will generate a tab-separated file named <cite>output.tsv</cite> with eight columns. The z, y and x column correspond to the translation, the euler_z, euler_y and euler_x column to the rotation used to obtain the column score. The detail column provides some additional information based on the process with which the peaks were generated.</p>
+<p>At most 1,000 peaks top scoring that are separated by at least 20 voxel and no less than 30 voxel distanced from the boundaries of the target will be written to disk when executing the following from within the shell:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input_file<span class="w"> </span>output.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_prefix<span class="w"> </span>output<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_format<span class="w"> </span>orientations<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--min_distance<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--min_boundary_distance<span class="w"> </span><span class="m">20</span><span class="se">\</span>
+<span class="w">    </span>--number_of_peaks<span class="w"> </span><span class="m">1000</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>pytme uses the zyx convention, like the CCP4/MRC format. In <a class="reference external" href="https://bio3d.colorado.edu/imod/">IMOD</a> terms, a file read by <a class="reference internal" href="../reference/data_structures/api/tme.density.Density.from_file.html#tme.density.Density.from_file" title="tme.density.Density.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.from_file()</span></code></a> with data shape 500, 928, 960, will contain 960 columns, 928 rows and 500 sections. Similarly, the reported Euler angles are in intrinsic zyx convention (see <a class="reference internal" href="../reference/template_matching/api/tme.matching_utils.euler_to_rotationmatrix.html#tme.matching_utils.euler_to_rotationmatrix" title="tme.matching_utils.euler_to_rotationmatrix"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.euler_to_rotationmatrix()</span></code></a> for reference).</p>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+Alignments</label><div class="sd-tab-content docutils">
+<p>Executing the following code will align the template to the target used in <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> based on high-scoring orientations. These high-scoring orientations are written to disk, either as atomic structure or density depending on which was used as input for <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>. The generated files follow the naming pattern {output_prefix}_{index}.{extension}. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on. Extension corresponds to the file extension of the template used in <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>.</p>
+<p>The following will write at most ten top scoring alignments
+to disk.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input_file<span class="w"> </span>output.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_prefix<span class="w"> </span>output<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_format<span class="w"> </span>alignment<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--number_of_peaks<span class="w"> </span><span class="m">10</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+Extraction</label><div class="sd-tab-content docutils">
+<p>Executing the following code will extract regions from the target with the dimension of the template used in <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>. The output can be used for averaging, i.e. subtomograms, or alignment. The generated files follow the naming pattern {output_prefix}_{index}.mrc. In the following example output_prefix would be output. Index 0 corresponds to the orientation with highest score, index 1 to the second largest and so on.</p>
+<p>The following will write at most 500 top scoring peaks separated by a distance of 20 voxel that have been identified using <a class="reference internal" href="../reference/template_matching/api/tme.analyzer.PeakCallerMaximumFilter.html#tme.analyzer.PeakCallerMaximumFilter" title="tme.analyzer.PeakCallerMaximumFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.analyzer.PeakCallerMaximumFilter</span></code></a> to disk.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input_file<span class="w"> </span>output.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_prefix<span class="w"> </span>output<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_format<span class="w"> </span>extraction<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--min_distance<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--number_of_peaks<span class="w"> </span><span class="m">500</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--peak_caller<span class="w"> </span>PeakCallerMaximumFilter
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-3">
+Relion</label><div class="sd-tab-content docutils">
+<p>This option will generate a <a class="reference external" href="https://en.wikipedia.org/wiki/Self-defining_Text_Archive_and_Retrieval">STAR</a> file and extract subtomograms which can be directly used input for reconstruction, refinement and downstream classification with <a class="reference external" href="https://github.com/3dem/relion">RELION</a>. In terms of peak calling and subtomogram extraction, this option performs identical to the output_format <code class="docutils literal notranslate"><span class="pre">extraction</span></code>. The output STAR file consists of an optics group block which contains informations about the imaging conditions, pixel size, and another data group with tab separated columns containing x, y, z coordinates (in voxels), a file path to the generated cropped subtomogram file, the Euler angles, namely rotation, tilt and psi.</p>
+<p>The output is compatible with RELION 4.0 and was tested with relion_reconstruct, and relion_refine_mpi.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input_file<span class="w"> </span>output.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_prefix<span class="w"> </span>output<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_format<span class="w"> </span>relion<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--min_distance<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--number_of_peaks<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-—wedge_mask<span class="w"> </span>mask.mrc
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Without a wedge mask or a fully fledged CTF, the averages computed by <a class="reference external" href="https://github.com/3dem/relion">RELION</a> might be overly distorted due to preferential alignment of subtomograms on the missing wedge. Wedge mask can be generated with pytme (see <a class="reference internal" href="../reference/preprocessing/api/tme.preprocessor.Preprocessor.wedge_mask.html#tme.preprocessor.Preprocessor.wedge_mask" title="tme.preprocessor.Preprocessor.wedge_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor.wedge_mask()</span></code></a> and <a class="reference internal" href="../reference/preprocessing/api/tme.preprocessor.Preprocessor.continuous_wedge_mask.html#tme.preprocessor.Preprocessor.continuous_wedge_mask" title="tme.preprocessor.Preprocessor.continuous_wedge_mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.preprocessor.Preprocessor.continuous_wedge_mask()</span></code></a>) or the Napari GUI (see <a class="reference internal" href="preprocessing.html#filter-application"><span class="std std-ref">preprocessing section</span></a>).</p>
+<p><code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code> automatically pads the extracted subtomograms to an even number of voxels in each dimension to avoid potential RELION crashes.</p>
+</div>
+</div>
+<input id="sd-tab-item-4" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-4">
+Average</label><div class="sd-tab-content docutils">
+<p>Executing the following code will extract regions around the identified candidates and compute a simple average using the corresponding rotations.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input_file<span class="w"> </span>output.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_prefix<span class="w"> </span>average<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_format<span class="w"> </span>average<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--min_distance<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--number_of_peaks<span class="w"> </span><span class="m">500</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--peak_caller<span class="w"> </span>PeakCallerMaximumFilter
+</pre></div>
+</div>
+</div>
+</div>
+<p>You can find an overview of available peak calling methods <a class="reference internal" href="../reference/template_matching/analyzer.html#analyzer-label"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="background">
+<h2>Background<a class="headerlink" href="#background" title="Link to this heading">#</a></h2>
+<p>Postprocessing identifies regions of high similarity from the template matching output, which we refer to as peaks. Each peak corresponds to an occurence of the template in the target, which is fully characterized by a translation vector, a rotation, a score and additional data column.</p>
+<p>To better understand this, lets recall an example from the <a class="reference internal" href="preprocessing.html#preprocess-filtering"><span class="std std-ref">Preprocessing section</span></a>. Generally, high scores indicate regions of high similarity, and most scoring functions are limited to the interval [0, 1], with 1 being a perfect match (see <a class="reference internal" href="../reference/matching_exhaustive.html"><span class="doc">exhaustive template matching</span></a> for details on your specific scoring method).</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/c3577782623d9ed9ad4539cee88e7f80/postprocessing-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/380699f3b10092e22627249449fc70e0/postprocessing-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/e7aa5ab31d3ecebbd0b8cd7ad9647da0/postprocessing-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/23e87fc6c59861bba2c675db5f6880dd/postprocessing-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/postprocessing-1.png" class="plot-directive" src="../_images/postprocessing-1.png" />
+</figure>
+<p>The score peak is located within the red rectangle at 111, 240. Therefore, the maximum similariy is obtained when translating the template so that its center of mass is at position 111, 240. This convention used in pytme to represent in scores and candidates is analogous to other tools and figuratively explained in a <a class="reference external" href="https://scikit-image.org/docs/stable/auto_examples/features_detection/plot_template.html">skimage tutorial</a>. The corresponding rotation matrix for this peak is the identity matrix.</p>
+<p>The following sections explain the output of <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> and outline the peak calling procedure used by <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code>.</p>
+</section>
+<section id="template-matching-output">
+<h2>Template Matching Output<a class="headerlink" href="#template-matching-output" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> evaluates the similarity between target and template along all rotational and translation degrees of freedom. The output is a <a class="reference external" href="https://docs.python.org/3/library/pickle.html">pickle</a> file, whose content depends on the corresponding analyzer. The <a class="reference external" href="https://docs.python.org/3/library/pickle.html">pickle</a> file can be read using <a class="reference internal" href="../reference/template_matching/api/tme.matching_utils.load_pickle.html#tme.matching_utils.load_pickle" title="tme.matching_utils.load_pickle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.matching_utils.load_pickle()</span></code></a>. For the default analyzer <a class="reference internal" href="../reference/template_matching/api/tme.analyzer.MaxScoreOverRotations.html#tme.analyzer.MaxScoreOverRotations" title="tme.analyzer.MaxScoreOverRotations"><code class="xref py py-class docutils literal notranslate"><span class="pre">tme.analyzer.MaxScoreOverRotations</span></code></a>, it contains five objects:</p>
+<ul class="simple">
+<li><p><strong>Scores</strong>: An array with scores mapped to translations.</p></li>
+<li><p><strong>Offset</strong>: Offset informing about shifts in coordinate sytems.</p></li>
+<li><p><strong>Rotations</strong>: An array of optimal rotation indices for each translation.</p></li>
+<li><p><strong>Rotation Dictionary</strong>: Mapping of rotation indices to rotation matrices.</p></li>
+<li><p><strong>Metadata</strong>: Coordinate system information and parameters for reproducibility.</p></li>
+</ul>
+<p>However, when you use the <cite>-p</cite> flag with <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code>, the output structure differs. The flag triggers direct peak calling, altering the output to:</p>
+<ul class="simple">
+<li><p><strong>Translations</strong>: A numpy array containing translations of peaks.</p></li>
+<li><p><strong>Rotations</strong>: A numpy array containing rotations of peaks.</p></li>
+<li><p><strong>Scores</strong>: Score of each peak.</p></li>
+<li><p><strong>Details</strong>: Additional information regarding each peak.</p></li>
+<li><p><strong>Metadata</strong>: Coordinate system information and parameters for reproducibility.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In general, all but the last element of the created output pickle will correspond to return value of a given <a class="reference internal" href="../reference/analyzer.html"><span class="doc">analyzer</span></a>’s merge method.</p>
+</div>
+</section>
+<section id="usage-examples">
+<h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading">#</a></h2>
+<p>The following outlines how to use the output of <code class="docutils literal notranslate"><span class="pre">postprocessing.py</span></code>’s <code class="docutils literal notranslate"><span class="pre">output_format</span></code> orientations for the previous section’s <a class="reference internal" href="match_template.html#match-template-usage-examples"><span class="std std-ref">Usage Examples</span></a>. We assume the generated orientations file is named <code class="docutils literal notranslate"><span class="pre">output.tsv</span></code>.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-5" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-5">
+Particle Picking</label><div class="sd-tab-content docutils">
+<p>The code block below will identify no more than 1000 peaks, that are sufficiently distanced from the edges of the tomogram and maintain an individual distance of 30 voxels.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input_file<span class="w"> </span>output.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_prefix<span class="w"> </span>output<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_format<span class="w"> </span>orientations<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--min_distance<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--mask_edges<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--number_of_peaks<span class="w"> </span><span class="m">1000</span>
+</pre></div>
+</div>
+<p>If you are not sure about the number of peaks in your data, you can set score cutoffs using <code class="docutils literal notranslate"><span class="pre">--minimum_score</span></code> and <code class="docutils literal notranslate"><span class="pre">--maximum_score</span></code>, or have the minimum score automatically determined using <code class="docutils literal notranslate"><span class="pre">--n_false_positives</span></code>.</p>
+<p>Picked particles are typically assessed manually, which is supported by the napari GUI shipped with pytme (<a class="reference internal" href="installation.html#gui-installation"><span class="std std-ref">installation</span></a>, <a class="reference internal" href="preprocessing.html#filter-application"><span class="std std-ref">usage</span></a>). To showcase the GUI, we are going to utilze particle picks generated on the tomogram TS_037 <a class="footnote-reference brackets" href="#id4" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. Launch the GUI application, drag and drop the tomogram into the viewer and subseqeuently use the <code class="docutils literal notranslate"><span class="pre">Import</span> <span class="pre">Point</span> <span class="pre">Cloud</span></code> button to select and import the result from <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code>. Points are colored according to the Turbo colorscale, from low scores in blue to high scores in red.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/napari_pointcloud_widget_intro.png"><img alt="../_images/napari_pointcloud_widget_intro.png" src="../_images/napari_pointcloud_widget_intro.png" style="width: 100%;" />
+</a>
+</figure>
+<p>Using the controls outlined in blue, we can remove particles from the set by using the delete key. If you would like to change the color, size, or shape of the particles, you can select everything by clicking on the particle layer followed by Shift + A. Pressing Shift + A again clears the selection.</p>
+<p>Once you have removed particles that were deemed unreliable by manual inspection, you can export the remaining points using the <cite>Export Point Cloud button</cite>. This will generate an orientations tsv file anaologous to <code class="docutils literal notranslate"><span class="pre">output_format</span></code> orientations in <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code>. Assume you generated a file called <code class="docutils literal notranslate"><span class="pre">filtered_orientations.tsv</span></code> you can pass it to <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code> using the <code class="docutils literal notranslate"><span class="pre">--orientations</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input_file<span class="w"> </span>output.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_prefix<span class="w"> </span>output<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_format<span class="w"> </span>extraction<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--orientations<span class="w"> </span>filtered_orientations.tsv
+</pre></div>
+</div>
+<p>Executing the code above will extract all subtomograms from the filtered orientations file.</p>
+</div>
+<input id="sd-tab-item-6" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-6">
+Fit Atomic Structure</label><div class="sd-tab-content docutils">
+<p>Note, the code example below is equivalent to using <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code> with <code class="docutils literal notranslate"><span class="pre">output_format</span></code> alignment and serves an illustrative purpose.</p>
+<p>For this case, its common to inspect the positioning of the initial structure after translation and rotation in the electron density. The following transforms the initial structure and writes the top ten highest scoring orientations to disk.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span><span class="p">,</span> <span class="n">Structure</span>
+<span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="n">euler_to_rotationmatrix</span><span class="p">,</span> <span class="n">load_pickle</span>
+
+<span class="c1"># Load and extract orientations</span>
+<span class="n">orientations</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;output.tsv&quot;</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">infile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Remove header</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Get coordinate system information</span>
+<span class="n">target_origin</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">load_pickle</span><span class="p">(</span><span class="s2">&quot;output.pickle&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+<span class="c1"># Convert string to floating point</span>
+<span class="k">for</span> <span class="n">orientation</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+    <span class="n">orientation</span> <span class="o">=</span> <span class="n">orientation</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">orientation</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">continue</span>
+    <span class="n">orientations</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">orientation</span><span class="p">])</span>
+
+<span class="c1"># Load template and compute center of mass</span>
+<span class="n">initial_structure</span> <span class="o">=</span> <span class="n">Structure</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;5UZ4.pdb&quot;</span><span class="p">)</span>
+<span class="n">center_of_mass</span> <span class="o">=</span> <span class="n">initial_structure</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># Generate candidates and write to disk</span>
+<span class="n">n_candidates</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">orientations</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_candidates</span><span class="p">):</span>
+    <span class="n">orientation</span> <span class="o">=</span> <span class="n">orientations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span> <span class="o">=</span> <span class="n">orientation</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">orientation</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">),</span>
+        <span class="n">center_of_mass</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">target_origin</span><span class="p">)</span>
+    <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">euler_to_rotationmatrix</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+    <span class="n">transformed_structure</span> <span class="o">=</span> <span class="n">initial_structure</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
+        <span class="n">translation</span> <span class="o">=</span> <span class="n">translation</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">transformed_structure</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.pdb&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Thoe operation outlined above is equivalent to using <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code> with <code class="docutils literal notranslate"><span class="pre">output_format</span></code> alignment.</p>
+</div>
+</div>
+<input id="sd-tab-item-7" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-7">
+Alignment of Densities</label><div class="sd-tab-content docutils">
+<p>Note, the code example below is equivalent to using <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code> with <code class="docutils literal notranslate"><span class="pre">output_format</span></code> alignment and serves an illustrative purpose.</p>
+<p>The following transforms the initial density and writes the top ten highest scoring orientations to disk.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="n">euler_to_rotationmatrix</span><span class="p">,</span> <span class="n">load_pickle</span>
+
+<span class="c1"># Load and extract orientations</span>
+<span class="n">orientations</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;output.tsv&quot;</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">infile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Remove header</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Get coordinate system information</span>
+<span class="n">target_origin</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">load_pickle</span><span class="p">(</span><span class="s2">&quot;output.pickle&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+<span class="c1"># Convert string to floating point</span>
+<span class="k">for</span> <span class="n">orientation</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+    <span class="n">orientation</span> <span class="o">=</span> <span class="n">orientation</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">orientation</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">continue</span>
+    <span class="n">orientations</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">orientation</span><span class="p">])</span>
+
+<span class="c1"># Load template and compute center of mass</span>
+<span class="n">initial_density</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;emd_8621_transformed.mrc&quot;</span><span class="p">)</span>
+<span class="n">initial_density</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">initial_density</span><span class="o">.</span><span class="n">centered</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">center_of_mass</span> <span class="o">=</span> <span class="n">initial_density</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">initial_density</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">n_candidates</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">orientations</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_candidates</span><span class="p">):</span>
+    <span class="n">orientation</span> <span class="o">=</span> <span class="n">orientations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span> <span class="o">=</span> <span class="n">orientation</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">orientation</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">)</span>
+    <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">euler_to_rotationmatrix</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+    <span class="n">transformed_density</span> <span class="o">=</span> <span class="n">initial_density</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
+        <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span>
+    <span class="p">)</span>
+    <span class="n">new_origin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">target_origin</span> <span class="o">/</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">translation</span><span class="p">)</span>
+    <span class="n">transformed_density</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">new_origin</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+    <span class="n">transformed_density</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
+<p>The most insightful piece of information for troubleshooting are the computed scores, and their corresponding orientations. Assuming <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> generated a file <code class="docutils literal notranslate"><span class="pre">output.pickle</span></code>, you can directly import it into the GUI using the <code class="docutils literal notranslate"><span class="pre">Import</span> <span class="pre">Pickle</span></code> button. Alternatively, you can write the scores and rotations to disk for subsequent analysis in a a macromolecular viewer of your choice. For reference, you can have a look at the <a class="reference internal" href="preprocessing.html#preprocess-filtering"><span class="std std-ref">preprocessing section</span></a> to assess whether your results are reminiscent of examples there.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tme</span> <span class="kn">import</span> <span class="n">Density</span>
+<span class="kn">from</span> <span class="nn">tme.matching_utils</span> <span class="kn">import</span> <span class="n">load_pickle</span>
+
+<span class="c1"># Loading ``match_template.py`` output.</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_pickle</span><span class="p">(</span><span class="s2">&quot;output.pickle&quot;</span><span class="p">)</span>
+
+<span class="n">scores</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">rotation_mapping</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">data</span>
+
+<span class="n">Density</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;scores.mrc&quot;</span><span class="p">)</span>
+<span class="n">Density</span><span class="p">(</span><span class="n">rotations</span><span class="p">)</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;rotations.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If no examples match your particular case, please feel free to open an <a class="reference external" href="https://github.com/KosinskiLab/pyTME.git">issue</a>.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">1</a><span class="fn-bracket">]</span></span>
+<p>de Teresa-Trueba, I. et al. Nat. Methods 2023, 20, 284–294.</p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tl-dr">TL;DR</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#background">Background</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#template-matching-output">Template Matching Output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-examples">Usage Examples</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/quickstart/postprocessing.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

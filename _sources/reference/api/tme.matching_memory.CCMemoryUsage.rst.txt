@@ -1,0 +1,28 @@
+﻿CCMemoryUsage
+=============
+
+.. currentmodule:: tme.matching_memory
+
+.. autoclass:: CCMemoryUsage
+
+   
+
+   
+   
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+      
+         
+         
+           CCMemoryUsage.base_usage
+         
+         
+           CCMemoryUsage.per_fork
+         
+   
+   

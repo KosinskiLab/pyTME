@@ -1,0 +1,683 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Structure &#8212; pytme 0.2.3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/general.css?v=63b7f29f" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=a47416a6"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/structure';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.2.3 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/tme.structure.Structure.html">Structure</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.record_type.html">Structure.record_type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.atom_serial_number.html">Structure.atom_serial_number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.atom_name.html">Structure.atom_name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.atom_coordinate.html">Structure.atom_coordinate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.alternate_location_indicator.html">Structure.alternate_location_indicator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.residue_name.html">Structure.residue_name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.chain_identifier.html">Structure.chain_identifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.residue_sequence_number.html">Structure.residue_sequence_number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.code_for_residue_insertion.html">Structure.code_for_residue_insertion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.occupancy.html">Structure.occupancy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.temperature_factor.html">Structure.temperature_factor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.segment_identifier.html">Structure.segment_identifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.element_symbol.html">Structure.element_symbol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.charge.html">Structure.charge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.metadata.html">Structure.metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.align_structures.html">Structure.align_structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.center_of_mass.html">Structure.center_of_mass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.centered.html">Structure.centered</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.compare_structures.html">Structure.compare_structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.copy.html">Structure.copy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.from_file.html">Structure.from_file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.rigid_transform.html">Structure.rigid_transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.subset_by_chain.html">Structure.subset_by_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.subset_by_range.html">Structure.subset_by_range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.to_file.html">Structure.to_file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tme.structure.Structure.to_volume.html">Structure.to_volume</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.record_type.html">Structure.record_type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.atom_serial_number.html">Structure.atom_serial_number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.atom_name.html">Structure.atom_name</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.atom_coordinate.html">Structure.atom_coordinate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.alternate_location_indicator.html">Structure.alternate_location_indicator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.residue_name.html">Structure.residue_name</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.chain_identifier.html">Structure.chain_identifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.residue_sequence_number.html">Structure.residue_sequence_number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.code_for_residue_insertion.html">Structure.code_for_residue_insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.occupancy.html">Structure.occupancy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.temperature_factor.html">Structure.temperature_factor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.segment_identifier.html">Structure.segment_identifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.element_symbol.html">Structure.element_symbol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.charge.html">Structure.charge</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.metadata.html">Structure.metadata</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.to_file.html">Structure.to_file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.from_file.html">Structure.from_file</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.to_volume.html">Structure.to_volume</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.copy.html">Structure.copy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.subset_by_chain.html">Structure.subset_by_chain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.subset_by_range.html">Structure.subset_by_range</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.rigid_transform.html">Structure.rigid_transform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.align_structures.html">Structure.align_structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.compare_structures.html">Structure.compare_structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.center_of_mass.html">Structure.center_of_mass</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/tme.structure.Structure.centered.html">Structure.centered</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Structure</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="structure">
+<h1>Structure<a class="headerlink" href="#structure" title="Link to this heading">#</a></h1>
+<section id="constructor">
+<h2>Constructor<a class="headerlink" href="#constructor" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.html#tme.structure.Structure" title="tme.structure.Structure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure</span></code></a></p></td>
+<td><p>Represents atomic structures per the Protein Data Bank (PDB) specification.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="attributes-and-underlying-data">
+<h2>Attributes and underlying data<a class="headerlink" href="#attributes-and-underlying-data" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.record_type.html#tme.structure.Structure.record_type" title="tme.structure.Structure.record_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.record_type</span></code></a></p></td>
+<td><p>Array of record types, e.g.ATOM.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.atom_serial_number.html#tme.structure.Structure.atom_serial_number" title="tme.structure.Structure.atom_serial_number"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.atom_serial_number</span></code></a></p></td>
+<td><p>Array of serial numbers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.atom_name.html#tme.structure.Structure.atom_name" title="tme.structure.Structure.atom_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.atom_name</span></code></a></p></td>
+<td><p>Array of atom names.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.atom_coordinate.html#tme.structure.Structure.atom_coordinate" title="tme.structure.Structure.atom_coordinate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.atom_coordinate</span></code></a></p></td>
+<td><p>Array of x,y,z atom coordinates.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.alternate_location_indicator.html#tme.structure.Structure.alternate_location_indicator" title="tme.structure.Structure.alternate_location_indicator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.alternate_location_indicator</span></code></a></p></td>
+<td><p>Array of alternate location indices.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.residue_name.html#tme.structure.Structure.residue_name" title="tme.structure.Structure.residue_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.residue_name</span></code></a></p></td>
+<td><p>Array of residue names.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.chain_identifier.html#tme.structure.Structure.chain_identifier" title="tme.structure.Structure.chain_identifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.chain_identifier</span></code></a></p></td>
+<td><p>Array of chain identifiers.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.residue_sequence_number.html#tme.structure.Structure.residue_sequence_number" title="tme.structure.Structure.residue_sequence_number"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.residue_sequence_number</span></code></a></p></td>
+<td><p>Array of residue ids.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.code_for_residue_insertion.html#tme.structure.Structure.code_for_residue_insertion" title="tme.structure.Structure.code_for_residue_insertion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.code_for_residue_insertion</span></code></a></p></td>
+<td><p>Array of insertion information.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.occupancy.html#tme.structure.Structure.occupancy" title="tme.structure.Structure.occupancy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.occupancy</span></code></a></p></td>
+<td><p>Array of occupancy factors.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.temperature_factor.html#tme.structure.Structure.temperature_factor" title="tme.structure.Structure.temperature_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.temperature_factor</span></code></a></p></td>
+<td><p>Array of B-factors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.segment_identifier.html#tme.structure.Structure.segment_identifier" title="tme.structure.Structure.segment_identifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.segment_identifier</span></code></a></p></td>
+<td><p>Array of segment identifiers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.element_symbol.html#tme.structure.Structure.element_symbol" title="tme.structure.Structure.element_symbol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.element_symbol</span></code></a></p></td>
+<td><p>Array of element symbols.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.charge.html#tme.structure.Structure.charge" title="tme.structure.Structure.charge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.charge</span></code></a></p></td>
+<td><p>Array of charges.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.metadata.html#tme.structure.Structure.metadata" title="tme.structure.Structure.metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.metadata</span></code></a></p></td>
+<td><p>Metadata dictionary.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="serialization">
+<h2>Serialization<a class="headerlink" href="#serialization" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.to_file.html#tme.structure.Structure.to_file" title="tme.structure.Structure.to_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.to_file</span></code></a>(filename)</p></td>
+<td><p>Writes the <a class="reference internal" href="data_structures/api/tme.structure.Structure.html#tme.structure.Structure" title="tme.structure.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a> instance to disk.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.from_file.html#tme.structure.Structure.from_file" title="tme.structure.Structure.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.from_file</span></code></a>(filename[, ...])</p></td>
+<td><p>Reads an atomic structure file and into a <a class="reference internal" href="data_structures/api/tme.structure.Structure.html#tme.structure.Structure" title="tme.structure.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a> instance.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="conversion">
+<h2>Conversion<a class="headerlink" href="#conversion" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.to_volume.html#tme.structure.Structure.to_volume" title="tme.structure.Structure.to_volume"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.to_volume</span></code></a>([shape, sampling_rate, ...])</p></td>
+<td><p>Maps class instance to a volume.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="subsetting">
+<h2>Subsetting<a class="headerlink" href="#subsetting" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.copy.html#tme.structure.Structure.copy" title="tme.structure.Structure.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.copy</span></code></a>()</p></td>
+<td><p>Returns a copy of the Structure instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.subset_by_chain.html#tme.structure.Structure.subset_by_chain" title="tme.structure.Structure.subset_by_chain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.subset_by_chain</span></code></a>([chain])</p></td>
+<td><p>Return a subset of the structure that contains only atoms belonging to a specific chain.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.subset_by_range.html#tme.structure.Structure.subset_by_range" title="tme.structure.Structure.subset_by_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.subset_by_range</span></code></a>(start, stop[, chain])</p></td>
+<td><p>Return a subset of the structure within a specific range of residues.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="computations">
+<h2>Computations<a class="headerlink" href="#computations" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.rigid_transform.html#tme.structure.Structure.rigid_transform" title="tme.structure.Structure.rigid_transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.rigid_transform</span></code></a>(rotation_matrix, ...)</p></td>
+<td><p>Performs a rigid transform of internal structure coordinates.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.align_structures.html#tme.structure.Structure.align_structures" title="tme.structure.Structure.align_structures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.align_structures</span></code></a>(structure1, ...)</p></td>
+<td><p>Align <code class="docutils literal notranslate"><span class="pre">structure2</span></code> to <code class="docutils literal notranslate"><span class="pre">structure1</span></code> using the Kabsch Algorithm.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.compare_structures.html#tme.structure.Structure.compare_structures" title="tme.structure.Structure.compare_structures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.compare_structures</span></code></a>(structure1, ...)</p></td>
+<td><p>Compute root mean square deviation (RMSD) between two structures with the same number of atoms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.center_of_mass.html#tme.structure.Structure.center_of_mass" title="tme.structure.Structure.center_of_mass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.center_of_mass</span></code></a>()</p></td>
+<td><p>Calculate the center of mass of the structure.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="data_structures/api/tme.structure.Structure.centered.html#tme.structure.Structure.centered" title="tme.structure.Structure.centered"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Structure.centered</span></code></a>()</p></td>
+<td><p>Shifts the structure analogous to <a class="reference internal" href="data_structures/api/tme.density.Density.centered.html#tme.density.Density.centered" title="tme.density.Density.centered"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tme.density.Density.centered()</span></code></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#constructor">Constructor</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes-and-underlying-data">Attributes and underlying data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serialization">Serialization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conversion">Conversion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subsetting">Subsetting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computations">Computations</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/reference/structure.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

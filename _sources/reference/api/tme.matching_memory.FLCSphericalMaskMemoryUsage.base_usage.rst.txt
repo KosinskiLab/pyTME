@@ -1,0 +1,6 @@
+FLCSphericalMaskMemoryUsage.base\_usage
+==========================================================
+
+.. currentmodule:: tme.matching_memory
+
+.. automethod:: FLCSphericalMaskMemoryUsage.base_usage

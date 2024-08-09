@@ -1,0 +1,6 @@
+NumpyFFTWBackend.dot
+================================================
+
+.. currentmodule:: tme.backends.npfftw_backend
+
+.. automethod:: NumpyFFTWBackend.dot
