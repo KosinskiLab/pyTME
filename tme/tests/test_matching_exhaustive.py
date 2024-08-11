@@ -17,18 +17,18 @@ from tme.matching_exhaustive import (
 
 class TestMatchExhaustive:
     def setup_method(self):
-        target = np.zeros((50, 50, 50))
-        target[20:30, 30:41, 12:17] = 1
+        # To be valid for splitting, the template needs to be fully inside the object
+        target = np.zeros((80, 80, 80))
+        target[25:31, 22:28, 12:16] = 1
 
         self.target = target
-        template = np.zeros((40, 40, 35))
-        template[15:25, 20:31, 17:22] = 1
-        self.template = template
-        self.template_mask = np.ones_like(template)
+        self.template = np.zeros((41, 41, 35))
+        self.template[20:26, 25:31, 17:21] = 1
+        self.template_mask = np.ones_like(self.template)
         self.target_mask = np.ones_like(target)
 
         self.rotations = get_rotation_matrices(60)[0,]
-        self.peak_position = np.array([25, 30, 12])
+        self.peak_position = np.array([25, 17, 12])
 
     def teardown_method(self):
         self.target = None
@@ -67,31 +67,9 @@ class TestMatchExhaustive:
         assert np.allclose(peak, self.peak_position)
         assert np.allclose(scores[peak], theoretical_score, rtol=0.05)
 
-    # Somehow we need to split job_schedule test cases to avoid joblib pickling issues...
     @pytest.mark.parametrize("evaluate_peak", (False, True))
     @pytest.mark.parametrize("score", tuple(MATCHING_EXHAUSTIVE_REGISTER.keys()))
-    @pytest.mark.parametrize("job_schedule", ((2, 1), (2, 2)))
-    @pytest.mark.parametrize("pad_fourier", (True, False))
-    @pytest.mark.parametrize("pad_edge", (True, False))
-    def test_scan_subset_multiple(
-        self,
-        score: str,
-        job_schedule: int,
-        evaluate_peak: bool,
-        pad_fourier: bool,
-        pad_edge: bool,
-    ):
-        self.test_scan_subset(
-            score=score,
-            job_schedule=job_schedule,
-            evaluate_peak=evaluate_peak,
-            pad_fourier=pad_fourier,
-            pad_edge=pad_edge,
-        )
-
-    @pytest.mark.parametrize("evaluate_peak", (False, True))
-    @pytest.mark.parametrize("score", tuple(MATCHING_EXHAUSTIVE_REGISTER.keys()))
-    @pytest.mark.parametrize("job_schedule", ((2, 1), (2, 2)))
+    @pytest.mark.parametrize("job_schedule", ((2, 1), (1, 1)))
     @pytest.mark.parametrize("pad_fourier", (True, False))
     @pytest.mark.parametrize("pad_edge", (True, False))
     def test_scan_subset(
@@ -111,7 +89,10 @@ class TestMatchExhaustive:
         )
 
         setup, process = MATCHING_EXHAUSTIVE_REGISTER[score]
-        target_splits = {i: 1 if i != 0 else 2 for i in range(self.target.ndim)}
+
+        target_splits = {}
+        if job_schedule[0] == 2:
+            target_splits = {0: 2 if i != 0 else 2 for i in range(self.target.ndim)}
 
         callback_class = PeakCallerSort
         if evaluate_peak:
@@ -132,6 +113,7 @@ class TestMatchExhaustive:
             scores = ret[0]
             peak = np.unravel_index(np.argmax(scores), scores.shape)
             achieved_score = scores[tuple(peak)]
+
         else:
             peak, achieved_score = ret[0][0], ret[2][0]
 
@@ -145,7 +127,10 @@ class TestMatchExhaustive:
         elif score == "LCC":
             theoretical_score = (laplace(self.template) * laplace(self.template)).sum()
 
-        assert np.allclose(peak, self.peak_position)
+        if not np.allclose(peak, self.peak_position):
+            print(peak)
+            assert False
+
         assert np.allclose(achieved_score, theoretical_score, rtol=0.3)
 
     def test_register_matching_exhaustive(self):

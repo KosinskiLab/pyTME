@@ -154,7 +154,7 @@ class PytorchBackend(NumpyFFTWBackend):
             1, -1
         )
         if unraveled_coords.size(0) == 1:
-            return tuple(unraveled_coords[0, :].tolist())
+            return (unraveled_coords[0, :],)
 
         else:
             return tuple(unraveled_coords.T)
@@ -206,7 +206,9 @@ class PytorchBackend(NumpyFFTWBackend):
         else:
             raise NotImplementedError("Operation only implemented for 2 and 3D inputs.")
 
-        pool = func(kernel_size=min_distance, return_indices=True)
+        pool = func(
+            kernel_size=min_distance, padding=min_distance // 2, return_indices=True
+        )
         _, indices = pool(score_space.reshape(1, 1, *score_space.shape))
         coordinates = self.unravel_index(indices.reshape(-1), score_space.shape)
         coordinates = self.transpose(self.stack(coordinates))

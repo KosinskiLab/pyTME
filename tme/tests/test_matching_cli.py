@@ -7,6 +7,7 @@ from os import remove, makedirs
 import pytest
 import numpy as np
 from tme import Density
+from tme.backends import backend as be
 
 BACKEND_CLASSES = ["NumpyFFTWBackend", "PytorchBackend", "CupyBackend", "MLXBackend"]
 BACKENDS_TO_TEST = []
@@ -23,6 +24,9 @@ for backend_class in BACKEND_CLASSES:
                 test_gpu = (False, True)
     except ImportError:
         print(f"Couldn't import {backend_class}. Skipping...")
+
+
+available_backends = (x for x in be.available_backends() if x != "mlx")
 
 
 def argdict_to_command(input_args, executable: str):
@@ -87,7 +91,6 @@ class TestMatchTemplate:
     @staticmethod
     def run_matching(
         use_template_mask: bool,
-        use_gpu: bool,
         test_filter: bool,
         call_peaks: bool,
         target_path: str,
@@ -95,6 +98,7 @@ class TestMatchTemplate:
         template_mask_path: str,
         target_mask_path: str,
         use_target_mask: bool = False,
+        backend: str = "numpyfftw",
     ):
         output_path = tempfile.NamedTemporaryFile(delete=False, suffix="pickle").name
 
@@ -106,6 +110,7 @@ class TestMatchTemplate:
             "-o": output_path,
             "--pad_edges": False,
             "--pad_fourier": False,
+            "--backend": backend,
         }
 
         if use_template_mask:
@@ -114,7 +119,7 @@ class TestMatchTemplate:
         if use_target_mask:
             argdict["--target_mask"] = target_mask_path
 
-        if use_gpu:
+        if backend in ("cupy", "pytorch") and True in test_gpu:
             argdict["--use_gpu"] = True
 
         if test_filter:
@@ -131,24 +136,23 @@ class TestMatchTemplate:
         ret = subprocess.run(cmd, capture_output=True, shell=True)
         print(ret)
         assert ret.returncode == 0
-
         return output_path
 
+    @pytest.mark.parametrize("backend", available_backends)
     @pytest.mark.parametrize("call_peaks", (False, True))
     @pytest.mark.parametrize("use_template_mask", (False, True))
     @pytest.mark.parametrize("test_filter", (False, True))
-    @pytest.mark.parametrize("use_gpu", test_gpu)
     def test_match_template(
         self,
-        use_template_mask: bool,
-        use_gpu: bool,
-        test_filter: bool,
+        backend: bool,
         call_peaks: bool,
+        use_template_mask: bool,
+        test_filter: bool,
     ):
         self.run_matching(
             use_template_mask=use_template_mask,
             use_target_mask=True,
-            use_gpu=use_gpu,
+            backend=backend,
             test_filter=test_filter,
             call_peaks=call_peaks,
             template_path=self.template_path,
@@ -166,7 +170,6 @@ class TestPostprocessing(TestMatchTemplate):
         matching_kwargs = {
             "use_template_mask": False,
             "use_target_mask": False,
-            "use_gpu": False,
             "test_filter": False,
             "template_path": cls.template_path,
             "target_path": cls.target_path,

@@ -119,19 +119,6 @@ class JaxBackend(NumpyFFTWBackend):
 
         return rfftn, irfftn
 
-    def compute_convolution_shapes(
-        self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
-    ) -> Tuple[List[int], List[int], List[int]]:
-        conv_shape, fast_shape, fast_ft_shape = super().compute_convolution_shapes(
-            arr1_shape, arr2_shape
-        )
-
-        is_odd = fast_shape[-1] % 2
-        fast_shape[-1] += is_odd
-        fast_ft_shape[-1] += is_odd
-
-        return conv_shape, fast_shape, fast_ft_shape
-
     def rigid_transform(
         self,
         arr: BackendArray,
@@ -200,7 +187,7 @@ class JaxBackend(NumpyFFTWBackend):
         target_shape = tuple(
             (x.stop - x.start + p) for x, p in zip(splits[0][0], target_pad)
         )
-        fast_shape, fast_ft_shape, shift = matching_data._fourier_padding(
+        conv_shape, fast_shape, fast_ft_shape, shift = matching_data._fourier_padding(
             target_shape=self.to_numpy_array(target_shape),
             template_shape=self.to_numpy_array(matching_data._template.shape),
             pad_fourier=False,
@@ -210,7 +197,8 @@ class JaxBackend(NumpyFFTWBackend):
             "convolution_mode": convolution_mode,
             "fourier_shift": shift,
             "targetshape": target_shape,
-            "templateshape": matching_data._template.shape,
+            "templateshape": matching_data.template.shape,
+            "convolution_shape": conv_shape,
         }
 
         create_target_filter = matching_data.target_filter is not None
@@ -220,9 +208,11 @@ class JaxBackend(NumpyFFTWBackend):
         # Applying the filter leads to more FFTs
         fastt_shape = matching_data._template.shape
         if create_template_filter:
-            fastt_shape, *_ = matching_data._fourier_padding(
+            _, fastt_shape, _, tshift = matching_data._fourier_padding(
                 target_shape=self.to_numpy_array(matching_data._template.shape),
-                template_shape=self.to_numpy_array(matching_data._template.shape),
+                template_shape=self.to_numpy_array(
+                    [1 for _ in matching_data._template.shape]
+                ),
                 pad_fourier=False,
             )
 
