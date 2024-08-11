@@ -107,6 +107,7 @@ def load_and_validate_mask(mask_target: "Density", mask_path: str, **kwargs):
             )
     return mask
 
+
 def parse_rotation_logic(args, ndim):
     if args.angular_sampling is not None:
         rotations = get_rotation_matrices(
@@ -1079,8 +1080,7 @@ def main():
     analyzer_args = {
         "score_threshold": args.score_threshold,
         "number_of_peaks": args.number_of_peaks,
-        "min_distance": max(template.shape) // 2,
-        "min_boundary_distance": max(template.shape) // 2,
+        "min_distance": max(template.shape) // 3,
         "use_memmap": args.use_memmap,
     }
     print_block(

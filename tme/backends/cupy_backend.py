@@ -167,11 +167,6 @@ class CupyBackend(NumpyFFTWBackend):
         fast_shape = [next_fast_len(x, real=True) for x in convolution_shape]
         fast_ft_shape = list(fast_shape[:-1]) + [fast_shape[-1] // 2 + 1]
 
-        # This almost never happens but avoid cuFFT casting errors
-        is_odd = fast_shape[-1] % 2
-        fast_shape[-1] += is_odd
-        fast_ft_shape[-1] += is_odd
-
         return convolution_shape, fast_shape, fast_ft_shape
 
     def max_filter_coordinates(self, score_space, min_distance: Tuple[int]):

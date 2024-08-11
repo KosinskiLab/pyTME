@@ -459,14 +459,14 @@ class PeakCaller(ABC):
 
         final_order = top_scores[
             filter_points_indices(
-                coordinates=peak_positions[top_scores],
+                coordinates=peak_positions[top_scores, :],
                 min_distance=self.min_distance,
                 batch_dims=self.batch_dims,
             )
         ]
 
-        self.peak_list[0] = peak_positions[final_order,]
-        self.peak_list[1] = rotations[final_order,]
+        self.peak_list[0] = peak_positions[final_order, :]
+        self.peak_list[1] = rotations[final_order, :]
         self.peak_list[2] = peak_scores[final_order]
         self.peak_list[3] = peak_details[final_order]
 
@@ -475,6 +475,7 @@ class PeakCaller(ABC):
         fast_shape: Tuple[int],
         targetshape: Tuple[int],
         templateshape: Tuple[int],
+        convolution_shape: Tuple[int] = None,
         fourier_shift: Tuple[int] = None,
         convolution_mode: str = None,
         shared_memory_handler=None,
@@ -488,6 +489,7 @@ class PeakCaller(ABC):
             return self
 
         # Wrap peaks around score space
+        convolution_shape = be.to_backend_array(convolution_shape)
         fast_shape = be.to_backend_array(fast_shape)
         if fourier_shift is not None:
             fourier_shift = be.to_backend_array(fourier_shift)
@@ -501,10 +503,9 @@ class PeakCaller(ABC):
             )
 
         # Remove padding to fast Fourier (and potential full convolution) shape
+        output_shape = convolution_shape
         targetshape = be.to_backend_array(targetshape)
         templateshape = be.to_backend_array(templateshape)
-        fast_shape = be.minimum(be.add(targetshape, templateshape) - 1, fast_shape)
-        output_shape = fast_shape
         if convolution_mode == "same":
             output_shape = targetshape
         elif convolution_mode == "valid":
@@ -515,7 +516,7 @@ class PeakCaller(ABC):
 
         output_shape = be.to_backend_array(output_shape)
         starts = be.astype(
-            be.divide(be.subtract(fast_shape, output_shape), 2),
+            be.divide(be.subtract(convolution_shape, output_shape), 2),
             be._int_dtype,
         )
         stops = be.add(starts, output_shape)
@@ -1019,6 +1020,7 @@ class MaxScoreOverRotations:
         self,
         targetshape: Tuple[int],
         templateshape: Tuple[int],
+        convolution_shape: Tuple[int],
         fourier_shift: Tuple[int] = None,
         convolution_mode: str = None,
         shared_memory_handler=None,
@@ -1039,6 +1041,7 @@ class MaxScoreOverRotations:
             "s1": targetshape,
             "s2": templateshape,
             "convolution_mode": convolution_mode,
+            "convolution_shape": convolution_shape,
         }
         if convolution_mode is not None:
             scores = apply_convolution_mode(scores, **convargs)

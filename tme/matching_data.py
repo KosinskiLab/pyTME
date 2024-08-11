@@ -171,6 +171,7 @@ class MatchingData:
                 np.subtract(right_pad, data_voxels_right),
             )
         )
+        # The reflections are later cropped from the scores
         arr = np.pad(arr, padding, mode="reflect")
 
         if invert:
@@ -467,29 +468,35 @@ class MatchingData:
 
         pad_shape = np.maximum(target_shape, template_shape)
         ret = be.compute_convolution_shapes(pad_shape, fourier_pad)
-        convolution_shape, fast_shape, fast_ft_shape = ret
+        conv_shape, fast_shape, fast_ft_shape = ret
+
+        template_mod = np.mod(template_shape, 2)
         if not pad_fourier:
             fourier_shift = 1 - np.divide(template_shape, 2).astype(int)
-            fourier_shift -= np.mod(template_shape, 2)
-            shape_diff = np.subtract(fast_shape, convolution_shape)
-            shape_diff = np.divide(shape_diff, 2).astype(int)
-            shape_diff = np.multiply(shape_diff, 1 - batch_mask)
-            np.add(fourier_shift, shape_diff, out=fourier_shift)
+            fourier_shift = np.subtract(fourier_shift, template_mod)
 
-        fourier_shift = fourier_shift.astype(int)
-
-        shape_diff = np.subtract(target_shape, template_shape)
-        shape_diff = np.multiply(shape_diff, 1 - batch_mask)
-        if np.sum(shape_diff < 0) and not pad_fourier:
+        shape_diff = np.multiply(
+            np.subtract(target_shape, template_shape), 1 - batch_mask
+        )
+        if np.sum(shape_diff < 0):
             warnings.warn(
-                "Template is larger than target and Fourier padding is turned off. "
-                "This may lead to inaccurate results. Prefer swapping template and target, "
-                "enable padding or turn off template centering."
+                "Template is larger than target and padding is turned off. Consider "
+                "swapping them or activate padding. Correcting the shift for now."
             )
-            fourier_shift = np.subtract(fourier_shift, np.divide(shape_diff, 2))
-            fourier_shift = fourier_shift.astype(int)
 
-        return tuple(fast_shape), tuple(fast_ft_shape), tuple(fourier_shift)
+            shape_shift = np.divide(shape_diff, 2)
+            offset = np.mod(shape_diff, 2)
+            if pad_fourier:
+                offset = -np.subtract(
+                    offset,
+                    np.logical_and(np.mod(target_shape, 2) == 0, template_mod == 1),
+                )
+
+            shape_shift = np.add(shape_shift, offset)
+            fourier_shift = np.subtract(fourier_shift, shape_shift).astype(int)
+
+        fourier_shift = tuple(fourier_shift.astype(int))
+        return tuple(conv_shape), tuple(fast_shape), tuple(fast_ft_shape), fourier_shift
 
     def fourier_padding(self, pad_fourier: bool = False) -> Tuple[Tuple, Tuple, Tuple]:
         """

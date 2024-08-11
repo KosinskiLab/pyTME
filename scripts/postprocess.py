@@ -627,12 +627,12 @@ def main():
         target_shape=target.shape,
     )
 
+    # Template is larger than target
     for index, (translation, angles, *_) in enumerate(orientations):
         rotation_matrix = euler_to_rotationmatrix(angles)
         if template_is_density:
             transformed_template = template.rigid_transform(
-                rotation_matrix=rotation_matrix,
-                use_geometric_center = True
+                rotation_matrix=rotation_matrix, use_geometric_center=True
             )
 
             # Just adapting the coordinate system not the in-box position

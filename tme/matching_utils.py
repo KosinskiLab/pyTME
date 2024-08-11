@@ -467,6 +467,7 @@ def apply_convolution_mode(
     convolution_mode: str,
     s1: Tuple[int],
     s2: Tuple[int],
+    convolution_shape: Tuple[int] = None,
     mask_output: bool = False,
 ) -> BackendArray:
     """
@@ -490,6 +491,8 @@ def apply_convolution_mode(
         Tuple of integers corresponding to shape of convolution array 1.
     s2 : tuple of ints
         Tuple of integers corresponding to shape of convolution array 2.
+    convolution_shape : tuple of ints, optional
+        Size of the actually computed convolution. s1 + s2 - 1 by default.
     mask_output : bool, optional
         Whether to mask values outside of convolution_mode rather than
         removing them. Defaults to False.
@@ -500,7 +503,9 @@ def apply_convolution_mode(
         The array after applying the convolution mode.
     """
     # Remove padding to next fast Fourier length
-    arr = arr[tuple(slice(s1[i] + s2[i] - 1) for i in range(len(s1)))]
+    if convolution_shape is None:
+        convolution_shape = [s1[i] + s2[i] - 1 for i in range(len(s1))]
+    arr = arr[tuple(slice(0, x) for x in convolution_shape)]
 
     if convolution_mode not in ("full", "same", "valid"):
         raise ValueError("Supported convolution_mode are 'full', 'same' and 'valid'.")

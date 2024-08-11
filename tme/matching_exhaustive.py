@@ -81,12 +81,14 @@ def _setup_template_filter_apply_target_filter(
 
     fastt_shape, fastt_ft_shape = fast_shape, filter_shape
     if filter_template and not pad_template_filter:
-        fastt_shape, fastt_ft_shape, _ = matching_data._fourier_padding(
+        # FFT shape acrobatics for faster filter application
+        _, fastt_shape, fastt_ft_shape, _ = matching_data._fourier_padding(
             target_shape=be.to_numpy_array(matching_data._template.shape),
-            template_shape=be.to_numpy_array(matching_data._template.shape),
+            template_shape=be.to_numpy_array(
+                [1 for _ in matching_data._template.shape]
+            ),
             pad_fourier=False,
         )
-        # FFT shape acrobatics
         matching_data.template = be.reverse(
             be.topleft_pad(matching_data.template, fastt_shape)
         )
@@ -222,9 +224,13 @@ def scan(
 
     """
     matching_data.to_backend()
-    fast_shape, fast_ft_shape, fourier_shift = matching_data.fourier_padding(
-        pad_fourier=pad_fourier
-    )
+    (
+        conv_shape,
+        fast_shape,
+        fast_ft_shape,
+        fourier_shift,
+    ) = matching_data.fourier_padding(pad_fourier=pad_fourier)
+    template_shape = matching_data.template.shape
 
     rfftn, irfftn = be.build_fft(
         fast_shape=fast_shape,
@@ -266,7 +272,8 @@ def scan(
         "fourier_shift": fourier_shift,
         "convolution_mode": convmode,
         "targetshape": matching_data.target.shape,
-        "templateshape": matching_data.template.shape,
+        "templateshape": template_shape,
+        "convolution_shape": conv_shape,
         "fast_shape": fast_shape,
         "indices": getattr(matching_data, "indices", None),
         "shared_memory_handler": shared_memory_handler,

@@ -19,9 +19,9 @@ def _correlate(template: BackendArray, ft_target: BackendArray) -> BackendArray:
     """
     Computes :py:meth:`tme.matching_exhaustive.cc_setup`.
     """
-    template_ft = jnp.fft.rfftn(template)
+    template_ft = jnp.fft.rfftn(template, s=template.shape)
     template_ft = template_ft.at[:].multiply(ft_target)
-    correlation = jnp.fft.irfftn(template_ft)
+    correlation = jnp.fft.irfftn(template_ft, s=template.shape)
     return correlation
 
 
@@ -77,14 +77,15 @@ def _reciprocal_target_std(
     --------
     :py:meth:`tme.matching_exhaustive.flc_scoring`.
     """
-    ft_template_mask = jnp.fft.rfftn(template_mask)
+    ft_shape = template_mask.shape
+    ft_template_mask = jnp.fft.rfftn(template_mask, s=ft_shape)
 
     # E(X^2)- E(X)^2
-    exp_sq = jnp.fft.irfftn(ft_target2 * ft_template_mask)
+    exp_sq = jnp.fft.irfftn(ft_target2 * ft_template_mask, s=ft_shape)
     exp_sq = exp_sq.at[:].divide(n_observations)
 
     ft_template_mask = ft_template_mask.at[:].multiply(ft_target)
-    sq_exp = jnp.fft.irfftn(ft_template_mask)
+    sq_exp = jnp.fft.irfftn(ft_template_mask, s=ft_shape)
     sq_exp = sq_exp.at[:].divide(n_observations)
     sq_exp = sq_exp.at[:].power(2)
 
@@ -99,7 +100,7 @@ def _reciprocal_target_std(
 
 
 def _apply_fourier_filter(arr: BackendArray, arr_filter: BackendArray) -> BackendArray:
-    arr_ft = jnp.fft.rfftn(arr)
+    arr_ft = jnp.fft.rfftn(arr, s=arr.shape)
     arr_ft = arr_ft.at[:].multiply(arr_filter)
     return arr.at[:].set(jnp.fft.irfftn(arr_ft, s=arr.shape))
 
@@ -128,8 +129,8 @@ def scan(
     if hasattr(target_filter, "shape"):
         target = _apply_fourier_filter(target, target_filter)
 
-    ft_target = jnp.fft.rfftn(target)
-    ft_target2 = jnp.fft.rfftn(jnp.square(target))
+    ft_target = jnp.fft.rfftn(target, s=fast_shape)
+    ft_target2 = jnp.fft.rfftn(jnp.square(target), s=fast_shape)
     inv_denominator, target, scoring_func = None, None, _flc_scoring
     if not rotate_mask:
         n_observations = jnp.sum(template_mask)
