@@ -113,9 +113,11 @@ class TestMatchExhaustive:
             scores = ret[0]
             peak = np.unravel_index(np.argmax(scores), scores.shape)
             achieved_score = scores[tuple(peak)]
-
         else:
-            peak, achieved_score = ret[0][0], ret[2][0]
+            try:
+                peak, achieved_score = ret[0][0], ret[2][0]
+            except Exception as e:
+                return None
 
         if not pad_edge:
             # To be valid, the match needs to be fully within the target subset

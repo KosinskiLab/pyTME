@@ -82,7 +82,7 @@ def _setup_template_filter_apply_target_filter(
     fastt_shape, fastt_ft_shape = fast_shape, filter_shape
     if filter_template and not pad_template_filter:
         # FFT shape acrobatics for faster filter application
-        _, fastt_shape, fastt_ft_shape, _ = matching_data._fourier_padding(
+        _, fastt_shape, _, _ = matching_data._fourier_padding(
             target_shape=be.to_numpy_array(matching_data._template.shape),
             template_shape=be.to_numpy_array(
                 [1 for _ in matching_data._template.shape]
