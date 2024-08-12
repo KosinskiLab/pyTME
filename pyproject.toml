@@ -13,7 +13,7 @@ readme="README.md"
 requires-python = ">=3.11"
 dependencies=[
     "mrcfile>=1.4.3",
-    "numpy>=1.22.2",
+    "numpy>=1.22.2,<2.0",
     "pyfftw>=0.13.1",
     "pytest>=6.2.5",
     "PyYAML>=6.0",

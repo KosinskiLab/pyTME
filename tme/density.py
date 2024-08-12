@@ -116,8 +116,8 @@ class Density:
         response = "Density object at {}\nOrigin: {}, Sampling Rate: {}, Shape: {}"
         return response.format(
             hex(id(self)),
-            tuple(np.round(self.origin, 3)),
-            tuple(np.round(self.sampling_rate, 3)),
+            tuple(float(x) for x in np.round(self.origin, 3)),
+            tuple(float(x) for x in np.round(self.sampling_rate, 3)),
             self.shape,
         )
 
