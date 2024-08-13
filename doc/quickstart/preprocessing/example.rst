@@ -4,9 +4,9 @@ Practical Example
 
 In the following we will demonstrate common preprocessing routines using the API and the GUI. As basis we will use template matching of 80S ribosomes on an *S. pombe* tomogram
 
-1. Tomogram TS_037 (EMPIAR-10988, `download <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_) [1]_.
+1. Tomogram TS_037 from `EMPIAR-10988 <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_ [1]_.
 
-2. 80S average (EMD-3228, `download <https://www.ebi.ac.uk/emdb/EMD-3228>`_).
+2. 80S average `EMD-3228 <https://www.ebi.ac.uk/emdb/EMD-3228>`_.
 
 .. toctree::
    :maxdepth: 2

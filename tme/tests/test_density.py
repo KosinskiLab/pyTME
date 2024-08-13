@@ -77,8 +77,8 @@ class TestDensity:
         response = "Density object at {}\nOrigin: {}, Sampling Rate: {}, Shape: {}"
         response = response.format(
             hex(id(density)),
-            tuple(float(x) for x in np.round(density.origin, 3)),
-            tuple(float(x) for x in np.round(density.sampling_rate, 3)),
+            tuple(round(float(x), 3) for x in density.origin),
+            tuple(round(float(x), 3) for x in density.sampling_rate),
             density.shape,
         )
         assert response == repr_str

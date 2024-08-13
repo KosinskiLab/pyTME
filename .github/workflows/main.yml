@@ -71,16 +71,26 @@ jobs:
   pypi_release:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
-    needs: build
 
     steps:
-      - name: Push to PyPI
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
         run: |
-          python -mpip install twine
-          python -m twine upload --repository pypi dist/*
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          python -m pip install --upgrade pip
+          pip install build twine
+      - name: Build package
+        run: python -m build
+      # - name: Publish to PyPI
+      #   if: success()
+      #   env:
+      #     TWINE_USERNAME: __token__
+      #     TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      #   run: |
+      #     twine upload dist/*
 
   docker:
     runs-on: ubuntu-latest

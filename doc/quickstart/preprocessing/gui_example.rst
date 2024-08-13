@@ -24,7 +24,7 @@ The GUI will appear similar to the figure below. |project| defines a range of wi
  :width: 100 %
  :align: center
 
-Simply drag and drop your data in into `napari` to import it (See :py:meth:`tme.density.Density.from_file` for available formats). Clicking the `Apply Filter` button will apply the filter to the target layer and create a new layer on the left hand side. The name of the new layer is indicative of the filter type used. The figure below shows tomogram TS_037 (EMPIAR-10988, `click here <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_)_ before (left) and after application of a Gaussian filter (right).
+Simply drag and drop your data in into `napari` to import it (See :py:meth:`Density.from_file <tme.density.Density.from_file>` for available formats). Clicking the `Apply Filter` button will apply the filter to the target layer and create a new layer on the left hand side. The name of the new layer is indicative of the filter type used. The figure below shows tomogram TS_037 from `EMPIAR-10988 <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_ before (left) and after application of a Gaussian filter (right).
 
 .. figure:: ../../_static/examples/napari_filter_widget_tomogram.png
  :width: 100 %

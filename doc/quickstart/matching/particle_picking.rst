@@ -6,7 +6,7 @@ Picking Ribosomes
 
 In the following we will use template matching to to identify and isolate ribosomes from a tomogram using a density map as a template.
 
-The tomogram TS_037.rec is part of the dataset EMPIAR-10988 and can be `downloaded <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_ from the section titled *2. Reconstructed cryo-electron tomograms acquired with defocus-only (DEF) on S. pombe cryo-FIB lamellae*. The template used is EMD-3228, which you can download by clicking `here <https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-3228/map/emd_3228.map.gz>`_. Alternatively, you can use wget:
+The tomogram TS_037.rec is part of the dataset `EMPIAR-10988  <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_ and can be downloaded from the section titled *2. Reconstructed cryo-electron tomograms acquired with defocus-only (DEF) on S. pombe cryo-FIB lamellae*. The template used is EMD-3228, which you can download by clicking `here <https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-3228/map/emd_3228.map.gz>`_. Alternatively, you can use wget:
 
 .. code-block:: bash
 
