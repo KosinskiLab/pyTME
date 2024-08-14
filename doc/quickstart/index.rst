@@ -40,4 +40,5 @@ Quickstart
    :caption: Miscellaneous
 
    contribution
+   issues
    license

@@ -83,7 +83,7 @@ def parse_args():
     return args
 
 
-if __name__ == "__main__":
+def main():
     args = parse_args()
 
     try:
@@ -101,9 +101,6 @@ if __name__ == "__main__":
             f"Consider using --box_size {recommended_box} instead of {args.box_size}."
         )
 
-    padding = np.multiply(
-        args.box_size, np.divide(args.sampling_rate, data.sampling_rate)
-    )
     data.pad(
         np.multiply(args.box_size, np.divide(args.sampling_rate, data.sampling_rate)),
         center=True,
@@ -130,3 +127,6 @@ if __name__ == "__main__":
         data.data = data.data * -1
 
     data.to_file(args.output)
+
+if __name__ == "__main__":
+    main()

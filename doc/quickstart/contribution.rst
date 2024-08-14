@@ -1,8 +1,8 @@
 .. include:: ../substitutions.rst
 
-====================
-Contributor's Guide
-====================
+==========
+Contribute
+==========
 
 We greatly appreciate community contributions to |project|. If you're thinking of adding new features, fixing bugs, or making any changes, this guide is designed to get you started and ensure the consistency and quality of the codebase.
 

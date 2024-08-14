@@ -16,7 +16,7 @@ The tomogram TS_037.rec is part of the dataset `EMPIAR-10988  <https://www.ebi.a
 Template and Mask Generation
 ----------------------------
 
-EMD-3228 is at a different sampling rate than the binned tomogram. Although ``match_template.py`` can perform resampling on the fly, its generally recommended to provide a template with the correct sampling rate. This can either be achieved using the API (see :py:meth:`Density.resample <tme.density.Density.resample>` or using ``preprocess.py``. The right box size depends on the use-case, but generally speaking, larger boxes enable more accurate frequency operations and are essential for oscillating filters like the CTF. As a rule of thumb, you can set the box size to two times the minimum enclosing box.
+EMD-3228 is at a different sampling rate than the binned tomogram. Although ``match_template.py`` can perform resampling on the fly, its generally recommended to provide a template with the correct sampling rate. This can either be achieved using the API (see :py:meth:`Density.resample <tme.density.Density.resample>`) or using ``preprocess.py``. The right box size depends on the use-case, but generally speaking, larger boxes enable more accurate frequency operations and are essential for oscillating filters like the CTF. As a rule of thumb, you can set the box size to two times the minimum enclosing box.
 
 .. code-block:: bash
 
@@ -309,5 +309,4 @@ References
 ----------
 
 .. [1] Maurer, V. J.; Siggel, M.; Kosinski, J. What shapes template-matching performance in cryogenic electron tomography in situ?. Acta Crys D 2024
-.. [2] Chaillet, M.L.; van der SChot, G; Gubbins, I.; Roet, S., Veltkamp, R.C; Foerster, F. Int. J. Mol. Sci  2023
-
+.. [2] Chaillet, M.L.; van der Schot, G; Gubbins, I.; Roet, S., Veltkamp, R.C; Foerster, F. Int. J. Mol. Sci  2023

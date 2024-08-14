@@ -3,15 +3,15 @@
 Installation
 ------------
 
-This section provides instructions on how to install the |project| library. The available options are outlined in the tabs below.
-
 .. _installation-section:
+
+This section provides instructions on how to install |project|. We recommend creating an installation enviroment for a clean and isolated setup. Available options for different use cases are outlined in the tabs below.
 
 .. tab-set::
 
    .. tab-item:: Conda
 
-      Conda provides an isolated environment, helps avoid conflicts with other packages, and installs necessary dependencies.
+      Conda is a powerful package manager that creates isolated environments with both Python and non-Python dependencies. Conda is a good choice for more complex setups and cross-platform compatibility.
 
       .. code-block:: bash
 
@@ -24,38 +24,19 @@ This section provides instructions on how to install the |project| library. The 
             magicgui \
             pyqt
 
-      The following will download and install the newest version of |project| into the Conda environment..
+   .. tab-item:: Venv
+
+      Venv is Python's built-in virtual environment module. Venv is a good choice for simpler setups, but does not handle non-Python dependencies.
 
       .. code-block:: bash
 
-         conda activate pytme
-         pip install git+https://github.com/KosinskiLab/pyTME.git
-
-
-   .. tab-item:: PyPI
-
-      Pip will fetch the required packages from PyPI and install them on your system.
-
-      .. code-block:: bash
-
-         pip install pytme
-
-      .. note::
-
-         The Python Package Index (PyPI) provides a simple and convenient way to install |project|. However, installing from Conda or source fetches the most recent version of the code base.
-
-
-   .. tab-item:: Source
-
-      Installing from Source provides you with the latest unreleased changes.
-
-      .. code-block:: bash
-
-            pip install git+https://github.com/KosinskiLab/pyTME.git
+         python3 -m venv pytme
+         source pytme/bin/activate
+         pip install pyfftw napari magicgui PyQt5
 
    .. tab-item:: Docker
 
-      Docker provides a consistent and isolated environment for running |project|.
+      Docker containerizes the entire application and its dependencies, ensuring consistency across different systems. Docker is a good choice for deployment scenarios and provides the highest degree of reproducibility.
 
       To build the Docker image locally
 
@@ -72,6 +53,23 @@ This section provides instructions on how to install the |project| library. The 
       .. note::
 
          Latest corresponds to the current version of the main branch. You can also use a release version by specifiying the corresponding tag.
+
+After setting up your environment, |project| can be installed from PyPi
+
+.. code-block:: bash
+
+   pip install pytme
+
+Alternatively, you can install the development version with the latest changes
+
+.. code-block:: bash
+
+   pip install git+https://github.com/KosinskiLab/pyTME.git
+
+
+.. note::
+
+   If using Docker, |project| will already be installed in the container, so these additional installation steps are not necessary.
 
 
 CPU/GPU/TPU Support
@@ -159,11 +157,35 @@ If you have installed |project| using Conda, thats it. Otherwise, you have to in
    pip install napari magicgui PyQt5
 
 
+Troubleshooting
+---------------
 
-Testing the Installation
-------------------------
+The following presents known issues encountered during installation and outlines solutions to them.
 
-To verify that |project| has been installed correctly, you can run the test suite provided with the project as follows:
+
+pyFFTW
+^^^^^^
+
+The installation of `pyFFTW <https://github.com/pyFFTW/pyFFTW>`_ via pip has been troublesome in the past. Consider using Conda for a smoother experience. Alternatively, pyFFTW can be installed from source. To compile it on my M1 MacBook running homebrew, I had to modify pyFFTW's setup.py variable ``self.library_dirs`` to include the homebrew paths in the EnvironmentSniffer class's ``__init__`` method as follows
+
+.. code-block:: python
+
+   self.library_dirs = get_library_dirs()
+   self.library_dirs.extend(["/opt/homebrew/lib", "/opt/homebrew/opt/fftw/lib"]) # Patch
+
+
+CuPy
+^^^^
+
+GPU backends often require a correct setup of CUDA libraries. CuPy expects the corresponding libraries to be in a set of standard locations and will raise Runtime/Import errors should that not be the case. Possible errors include ``RuntimeError: CuPy failed to load libnvrtc.so``, ``ImportError: libcudart.so: cannot open shared object file`` and ``cupy.cuda.compiler.CompileException``.
+
+Solving this issue typically requires setting as set of environment variables and is outlined in the `cupy installation faq <https://docs.cupy.dev/en/stable/install.html#faq>`_.
+
+
+Testing
+^^^^^^^
+
+The code of |project| is automatically tested before release. Should you run into issues that are not outlined above, you can optionally verify your local installation via the provided test suite as follows
 
 .. code-block:: bash
 
@@ -174,16 +196,15 @@ To verify that |project| has been installed correctly, you can run the test suit
 
 If the tests pass without any errors, |project| has been successfully installed.
 
+.. note::
 
-Troubleshooting
----------------
+   Running the code above may fail when using Conda or Venv. A possible solution is to install |project| in editable mode
 
-The installation of `pyFFTW <https://github.com/pyFFTW/pyFFTW>`_ via pip has been troublesome in the past. Consider using the :ref:`installation method <installation-section>` Conda for a smoother experience. Alternatively, pyFFTW can be installed from source. To compile it on my M1 MacBook running homebrew, I had to modify pyFFTW's setup.py variable self.library_dirs to include the homebrew paths in the EnvironmentSniffer class's __init__ method as follows:
+   .. code-block:: bash
 
-.. code-block:: python
-
-   self.library_dirs = get_library_dirs()
-   self.library_dirs.extend(["/opt/homebrew/lib", "/opt/homebrew/opt/fftw/lib"]) # Patch
+      pip uninstall pytme
+      pip install -e .
+      python3 -m pytest tme/tests/
 
 
 Support
