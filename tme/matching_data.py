@@ -450,7 +450,7 @@ class MatchingData:
         template_shape: NDArray,
         batch_mask: NDArray = None,
         pad_fourier: bool = False,
-    ) -> Tuple[Tuple, Tuple, Tuple]:
+    ) -> Tuple[Tuple, Tuple, Tuple, Tuple]:
         """
         Determines an efficient shape for Fourier transforms considering zero-padding.
         """
@@ -479,17 +479,17 @@ class MatchingData:
             np.subtract(target_shape, template_shape), 1 - batch_mask
         )
         if np.sum(shape_diff < 0):
-            warnings.warn(
-                "Template is larger than target and padding is turned off. Consider "
-                "swapping them or activate padding. Correcting the shift for now."
-            )
-
             shape_shift = np.divide(shape_diff, 2)
             offset = np.mod(shape_diff, 2)
             if pad_fourier:
                 offset = -np.subtract(
                     offset,
                     np.logical_and(np.mod(target_shape, 2) == 0, template_mod == 1),
+                )
+            else:
+                warnings.warn(
+                    "Template is larger than target and padding is turned off. Consider "
+                    "swapping them or activate padding. Correcting the shift for now."
                 )
 
             shape_shift = np.add(shape_shift, offset)
@@ -498,7 +498,9 @@ class MatchingData:
         fourier_shift = tuple(fourier_shift.astype(int))
         return tuple(conv_shape), tuple(fast_shape), tuple(fast_ft_shape), fourier_shift
 
-    def fourier_padding(self, pad_fourier: bool = False) -> Tuple[Tuple, Tuple, Tuple]:
+    def fourier_padding(
+        self, pad_fourier: bool = False
+    ) -> Tuple[Tuple, Tuple, Tuple, Tuple]:
         """
         Computes efficient shape four Fourier transforms and potential associated shifts.
 
@@ -510,8 +512,8 @@ class MatchingData:
 
         Returns
         -------
-        Tuple[tuple of int, tuple of int, tuple of int]
-            Tuple with real and complex Fourier transform shape, and corresponding shift.
+        Tuple[tuple of int, tuple of int, tuple of int, tuple of int]
+            Tuple with convolution, forward FT, inverse FT shape and corresponding shift.
         """
         return self._fourier_padding(
             target_shape=be.to_numpy_array(self._output_target_shape),

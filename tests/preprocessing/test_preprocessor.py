@@ -6,10 +6,10 @@ from tme import Density, Structure, Preprocessor
 
 class TestPreprocessor:
     def setup_method(self):
-        self.density = Density.from_file(filename="./tme/tests/data/Raw/em_map.map")
-        self.structure = Structure.from_file("./tme/tests/data/Structures/5khe.cif")
+        self.density = Density.from_file(filename="tests/data/Raw/em_map.map")
+        self.structure = Structure.from_file("tests/data/Structures/5khe.cif")
         self.structure_density = Density.from_structure(
-            filename_or_structure="./tme/tests/data/Structures/5khe.cif",
+            filename_or_structure="tests/data/Structures/5khe.cif",
             origin=self.density.origin,
             shape=self.density.shape,
             sampling_rate=self.density.sampling_rate,

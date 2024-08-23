@@ -19,8 +19,8 @@ def compute_tilt_shape(shape: Tuple[int], opening_axis: int, reduce_dim: bool = 
     """
     Given an opening_axis, computes the shape of the remaining dimensions.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     shape : Tuple[int]
         The shape of the input array.
     opening_axis : int
@@ -28,8 +28,8 @@ def compute_tilt_shape(shape: Tuple[int], opening_axis: int, reduce_dim: bool = 
     reduce_dim : bool, optional (default=False)
         Whether to reduce the dimensionality after tilting.
 
-    Returns:
-    --------
+    Returns
+    -------
     Tuple[int]
         The shape of the array after tilting.
     """
@@ -44,13 +44,13 @@ def centered_grid(shape: Tuple[int]) -> NDArray:
     """
     Generate an integer valued grid centered around size // 2
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     shape : Tuple[int]
         The shape of the grid.
 
-    Returns:
-    --------
+    Returns
+    -------
     NDArray
         The centered grid.
     """
@@ -70,8 +70,8 @@ def frequency_grid_at_angle(
     """
     Generate a frequency grid from 0 to 1/(2 * sampling_rate) in each axis.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     shape : Tuple[int]
         The shape of the grid.
     angle : float
@@ -128,8 +128,8 @@ def fftfreqn(
     """
     Generate the n-dimensional discrete Fourier transform sample frequencies.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     shape : Tuple[int]
         The shape of the data.
     sampling_rate : float or Tuple[float]
@@ -180,8 +180,8 @@ def crop_real_fourier(data: BackendArray) -> BackendArray:
     """
     Crop the real part of a Fourier transform.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     data : BackendArray
         The Fourier transformed data.
 

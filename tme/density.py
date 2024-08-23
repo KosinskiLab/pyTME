@@ -744,9 +744,16 @@ class Density:
         >>> )
 
         :py:meth:`Density.from_structure` supports a variety of methods to convert
-        atoms into densities. In addition to 'atomic_weight', 'atomic_number',
-        and 'van_der_waals_radius', its possible to use experimentally determined
-        scattering factors from various sources:
+        atoms into densities
+
+        >>> density = Density.from_structure(
+        >>>    filename_or_structure = path_to_structure,
+        >>>    weight_type = "gaussian",
+        >>>    weight_type_args={"resolution": "20"}
+        >>> )
+
+        In addition its possible to use experimentally determined scattering factors
+        from various sources:
 
         >>> density = Density.from_structure(
         >>>    filename_or_structure = path_to_structure,
@@ -754,7 +761,7 @@ class Density:
         >>>    weight_type_args={"source": "dt1969"}
         >>> )
 
-        or a lowpass filtered representation introduced in [1]_:
+        and their lowpass filtered representation introduced in [1]_:
 
         >>> density = Density.from_structure(
         >>>    filename_or_structure = path_to_structure,

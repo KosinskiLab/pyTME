@@ -164,8 +164,8 @@ class ReconstructFromTilt:
         """
         Reconstruct a volume from a tilt series.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         data : NDArray
             The tilt series data.
         shape : tuple of int
@@ -184,8 +184,8 @@ class ReconstructFromTilt:
            Filter window applied during reconstruction.
            See :py:meth:`create_reconstruction_filter` for available options.
 
-        Returns:
-        --------
+        Returns
+        -------
         NDArray
             The reconstructed volume.
         """
@@ -257,8 +257,8 @@ class Wedge:
     """
     Generate wedge mask for tomographic data.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     shape : tuple of int
         The shape of the reconstruction volume.
     tilt_axis : int
@@ -274,8 +274,8 @@ class Wedge:
     frequency_cutoff : float, optional
         The frequency cutoff value, defaults to 0.5.
 
-    Returns:
-    --------
+    Returns
+    -------
     Dict
         A dictionary containing weighted wedges and related information.
     """
@@ -338,8 +338,8 @@ class Wedge:
         """
         Read column data from a text file.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         filename : str
             The path to the text file.
         delimiter : str, optional
@@ -419,8 +419,8 @@ class Wedge:
         angle using the cosine of the angle and a Gaussian lowpass filter computed
         with respect to the exposure per angstrom.
 
-        Returns:
-        --------
+        Returns
+        -------
         NDArray
             Weighted wedges.
         """
@@ -461,8 +461,8 @@ class Wedge:
         """
         Generate weighted wedges based on the formalism introduced in [1]_.
 
-        Returns:
-        --------
+        Returns
+        -------
         NDArray
             Weighted wedges.
 
@@ -510,8 +510,8 @@ class WedgeReconstructed:
     """
     Initialize :py:class:`WedgeReconstructed`.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     angles : Tuple[float], optional
         The tilt angles, defaults to None.
     opening_axis : int, optional
@@ -590,8 +590,8 @@ class WedgeReconstructed:
         """
         Generate a continuous reconstructed wedge.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         shape : tuple of int
             The shape of the reconstruction volume.
         angles : tuple of float
@@ -603,8 +603,8 @@ class WedgeReconstructed:
         return_real_fourier : bool
             Whether to return the real part of the Fourier transform.
 
-        Returns:
-        --------
+        Returns
+        -------
         NDArray
             The reconstructed wedge.
         """
@@ -617,7 +617,7 @@ class WedgeReconstructed:
             opening_axis=opening_axis,
             tilt_axis=tilt_axis,
             omit_negative_frequencies=return_real_fourier,
-            infinite_plane=False,
+            infinite_plane=True,
         )
 
         return ret
@@ -635,8 +635,8 @@ class WedgeReconstructed:
         """
         Generate a step-wise reconstructed wedge.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         shape : tuple of int
             The shape of the reconstruction volume.
         angles : tuple of float
@@ -650,8 +650,8 @@ class WedgeReconstructed:
         return_real_fourier : bool
             Whether to return the real part of the Fourier transform.
 
-        Returns:
-        --------
+        Returns
+        -------
         NDArray
             The reconstructed wedge.
         """
@@ -857,8 +857,8 @@ class CTF:
         """
         Compute the CTF weight tilt stack.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         shape : tuple of int
             The shape of the CTF.
         defocus_x : tuple of float
@@ -890,8 +890,8 @@ class CTF:
         **kwargs : Dict
             Additional keyword arguments.
 
-        Returns:
-        --------
+        Returns
+        -------
         NDArray
             A stack containing the CTF weight.
         """

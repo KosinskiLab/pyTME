@@ -4,7 +4,7 @@
 Using the API
 =============
 
-The :py:class:`Preprocessor <tme.preprocessor.Preprocessor>`, class defines a range of filters that are outlined in the API reference. It's methods operates on :obj:`numpy.ndarray` instances, such as the :py:attr:`data <tme.density.Density.data>` of :py:class:`Density <tme.density.Density>` instances. The :py:class:`create_mask <tme.matching_utils.create_mask>` utility on the other hand can be used to define a variety of masks for template matching.
+The :py:class:`Preprocessor <tme.preprocessor.Preprocessor>` class defines a range of filters that are outlined in the API reference. It's methods operates on :obj:`numpy.ndarray` instances, such as the :py:attr:`data <tme.density.Density.data>` of :py:class:`Density <tme.density.Density>` instances. The :py:class:`create_mask <tme.matching_utils.create_mask>` utility on the other hand can be used to define a variety of masks for template matching.
 
 The following outlines the creation of an ellipsoidal mask using :py:class:`create_mask <tme.matching_utils.create_mask>` to create an ellipsoid, in this case a sphere, with radius 15 as mask. :py:meth:`create_mask <tme.matching_utils.create_mask>` returns a :obj:`numpy.ndarray` object, which we use in turn to create a :py:class:`Density <tme.density.Density>` instance. Note that by default, the instances attributes :py:attr:`sampling_rate <tme.density.Density.sampling_rate>` will be initialized to one unit per voxel, and the :py:attr:`origin <tme.density.Density.origin>` attribute to zero. We can write the created mask to disk using :py:meth:`Density.to_file <tme.density.Density.to_file>`.
 

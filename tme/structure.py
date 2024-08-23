@@ -344,7 +344,7 @@ class Structure:
         --------
         >>> from importlib_resources import files
         >>> from tme import Structure
-        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
         >>> structure = Structure.from_file(filename=fname)
         >>> structure
         Unique Chains: A-B, Atom Range: 1-1564 [N = 1564], Residue Range: 142-239 [N = 1564]
@@ -564,7 +564,7 @@ class Structure:
         >>> from importlib_resources import files
         >>> from tempfile import NamedTemporaryFile
         >>> from tme import Structure
-        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
         >>> oname = NamedTemporaryFile().name
         >>> structure = Structure.from_file(filename=fname)
         >>> structure.to_file(f"{oname}.cif") # Writes an mmCIF file to disk
@@ -760,7 +760,7 @@ class Structure:
         --------
         >>> from importlib_resources import files
         >>> from tme import Structure
-        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
         >>> structure = Structure.from_file(filename=fname)
         >>> structure.subset_by_chain(chain="A")   # Keep A
         >>> structure.subset_by_chain(chain="A,B") # Keep A and B
@@ -804,7 +804,7 @@ class Structure:
         --------
         >>> from importlib_resources import files
         >>> from tme import Structure
-        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
         >>> structure = Structure.from_file(filename=fname)
         >>> structure.subset_by_range(chain="A",start=150,stop=180)
         """
@@ -827,7 +827,7 @@ class Structure:
         --------
         >>> from importlib_resources import files
         >>> from tme import Structure
-        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
         >>> structure = Structure.from_file(filename=fname)
         >>> structure.center_of_mass()
         array([-0.89391639, 29.94908928, -2.64736741])
@@ -863,7 +863,7 @@ class Structure:
         >>> from importlib_resources import files
         >>> from tme import Structure
         >>> from tme.matching_utils import get_rotation_matrices
-        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
         >>> structure = Structure.from_file(filename=fname)
         >>> structure.rigid_transform(
         >>>     rotation_matrix = get_rotation_matrices(60)[2],
@@ -902,7 +902,7 @@ class Structure:
         --------
         >>> from importlib_resources import files
         >>> from tme import Structure
-        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
         >>> structure = Structure.from_file(filename=fname)
         >>> centered_structure, translation = structure.centered()
         >>> translation
@@ -1225,17 +1225,17 @@ class Structure:
         origin : tuple of floats, optional
             Origin of the coordinate system in (z,y,x) form.
         chain : str, optional
-            Chain identified. Either single or comma separated string of chains.
+            Chains to be included. Either single or comma separated string of chains.
             Defaults to None which returns all chains.
         weight_type : str, optional
-            Weight given to individual atoms. Supported weight are:
+            Weight given to individual atoms. Supported weights are:
 
             +----------------------------+---------------------------------------+
-            | atomic_weight              | Using element unit point mass         |
+            | atomic_weight              | Using element weight point mass       |
             +----------------------------+---------------------------------------+
             | atomic_number              | Using atomic number point mass        |
             +----------------------------+---------------------------------------+
-            | gaussian                   | Represent atoms as isotropic Gaussian |
+            | gaussian                   | Using element weighted Gaussian mass  |
             +----------------------------+---------------------------------------+
             | van_der_waals_radius       | Using binary van der waal spheres     |
             +----------------------------+---------------------------------------+
@@ -1256,7 +1256,7 @@ class Structure:
         --------
         >>> from importlib_resources import files
         >>> from tme import Structure
-        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
         >>> structure = Structure.from_file(filename=fname)
         >>> vol, origin, sampling = structure.to_volume()
         >>> vol.shape, origin, sampling
@@ -1374,7 +1374,7 @@ class Structure:
         >>> from importlib_resources import files
         >>> from tme.matching_utils import get_rotation_matrices
         >>> from tme import Structure
-        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
         >>> structure = Structure.from_file(filename=fname)
         >>> transformed = structure.rigid_transform(
         >>>     rotation_matrix = get_rotation_matrices(60)[2],
@@ -1455,7 +1455,7 @@ class Structure:
         >>> from importlib_resources import files
         >>> from tme import Structure
         >>> from tme.matching_utils import get_rotation_matrices
-        >>> fname = str(files("tme.tests.data").joinpath("Structures/5khe.cif"))
+        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
         >>> structure = Structure.from_file(filename=fname)
         >>> transformed = structure.rigid_transform(
         >>>     rotation_matrix = get_rotation_matrices(60)[2],

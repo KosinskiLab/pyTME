@@ -1,6 +1,7 @@
 from os import remove
 from tempfile import mkstemp
 from itertools import permutations
+from importlib_resources import files
 
 import pytest
 import numpy as np
@@ -19,6 +20,8 @@ DEFAULT_DATA = DEFAULT_DATA.astype(np.float32)
 DEFAULT_ORIGIN = np.array([0, 0, 0])
 DEFAULT_SAMPLING_RATE = np.array([1, 1, 1])
 
+BASEPATH = files("tests.data")
+
 
 class TestDensity:
     def setup_method(self):
@@ -34,7 +37,7 @@ class TestDensity:
             },
         )
         _, self.path = mkstemp()
-        self.structure_path = "tme/tests/data/Structures/5khe.cif"
+        self.structure_path = str(BASEPATH.joinpath("Structures/5khe.cif"))
 
     def teardown_method(self):
         del self.density
@@ -98,7 +101,7 @@ class TestDensity:
 
     def test_from_file_baseline(self):
         self.test_to_file(gzip=False)
-        density = Density.from_file("tme/tests/data/Maps/emd_8621.mrc.gz")
+        density = Density.from_file(str(BASEPATH.joinpath("Maps/emd_8621.mrc.gz")))
         assert np.allclose(density.origin, (-1.45, 2.90, 4.35), rtol=0.1)
         assert np.allclose(density.sampling_rate, (1.45), rtol=0.3)
 
@@ -471,10 +474,10 @@ class TestDensity:
         assert np.allclose(np.linalg.inv(rotation), initial_rotation, atol=0.2)
 
     def test_match_structure_to_density(self):
-        density = Density.from_file("tme/tests/data/Maps/emd_8621.mrc.gz")
+        density = Density.from_file("tests/data/Maps/emd_8621.mrc.gz")
         density = density.resample(density.sampling_rate * 4)
         structure = Structure.from_file(
-            "tme/tests/data/Structures/5uz4.cif", filter_by_residues=None
+            "tests/data/Structures/5uz4.cif", filter_by_residues=None
         )
 
         initial_translation = np.array([-1, 0, 5])

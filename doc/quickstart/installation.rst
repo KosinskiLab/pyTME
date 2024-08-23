@@ -50,7 +50,7 @@ This section provides instructions on how to install |project|. We recommend cre
 
          docker pull dquz/pytme:latest
 
-      .. note::
+      .. tip::
 
          Latest corresponds to the current version of the main branch. You can also use a release version by specifiying the corresponding tag.
 
@@ -204,7 +204,7 @@ If the tests pass without any errors, |project| has been successfully installed.
 
       pip uninstall pytme
       pip install -e .
-      python3 -m pytest tme/tests/
+      python3 -m pytest tests/
 
 
 Support

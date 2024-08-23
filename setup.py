@@ -31,7 +31,7 @@ else:
 ext_modules = [
     Pybind11Extension(
         "tme.extensions",
-        ["src/extensions.cpp"],
+        ["tme/external/bindings.cpp"],
         define_macros=[("VERSION_INFO", __version__)],
         extra_compile_args=cpp_args,
     ),
@@ -42,14 +42,15 @@ package_data = {
         os.path.join("data", "*.npy"),
         os.path.join("data", "metadata.yaml"),
         os.path.join("data", "scattering_factors.pickle"),
-    ]
+    ],
+    "tests": ["data/Blurring/*", "data/Structures/*", "data/Raw/*", "data/Maps/*"],
 }
 setup(
     name="pytme",
     author="Valentin Maurer",
     author_email="valentin.maurer@embl-hamburg.de",
     version=__version__,
-    description="Template matching on electron microscopy data.",
+    description="Data-intensive n-dimensional template matching using CPUs and GPUs.",
     package_data=package_data,
     packages=find_packages(),
     scripts=[

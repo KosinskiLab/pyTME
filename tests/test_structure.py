@@ -1,5 +1,6 @@
 from os import remove
 from tempfile import mkstemp
+from importlib_resources import files
 
 import pytest
 import numpy as np
@@ -29,7 +30,9 @@ STRUCTURE_ATTRIBUTES = [
 
 class TestStructure:
     def setup_method(self):
-        self.structure = Structure.from_file("./tme/tests/data/Structures/5khe.cif")
+        self.structure = Structure.from_file(
+            str(files("tests.data").joinpath("Structures/5khe.cif"))
+        )
         _, self.path = mkstemp()
 
     def teardown_method(self):
@@ -42,7 +45,7 @@ class TestStructure:
                 continue
             value = getattr(structure1, attribute)
             value_comparison = getattr(structure2, attribute)
-            if type(value) == np.ndarray:
+            if isinstance(value, np.ndarray):
                 assert np.all(value_comparison == value)
             else:
                 assert value == value_comparison
@@ -69,7 +72,7 @@ class TestStructure:
         for attribute in STRUCTURE_ATTRIBUTES:
             value = getattr(self.structure, attribute)
             value_comparison = getattr(structure, attribute)
-            if type(value) == np.ndarray:
+            if isinstance(value, np.ndarray):
                 assert np.all(value_comparison == value)
             else:
                 assert value == value_comparison
@@ -141,8 +144,8 @@ class TestStructure:
     @pytest.mark.parametrize(
         "path",
         [
-            ("./tme/tests/data/Structures/5khe.cif"),
-            ("./tme/tests/data/Structures/5khe.pdb"),
+            str(files("tests.data").joinpath("Structures/5khe.cif")),
+            str(files("tests.data").joinpath("Structures/5khe.pdb")),
         ],
     )
     def test_fromfile(self, path):

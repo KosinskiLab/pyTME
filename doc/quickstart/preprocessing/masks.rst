@@ -4,7 +4,7 @@
 Masking
 =======
 
-The template mask is pivotal for the normalization of the cross-correlation coefficient. The composition of an optimal mask is problem-specific, but we recommend the following when designing masks:
+The template mask is pivotal for the normalization of the cross-correlation coefficient. The composition of an optimal mask is problem-specific, but we recommend the following when designing masks
 
 1. The mask should focus on conserved key features.
 
@@ -18,7 +18,7 @@ Next to template masks |project| also supports masks for the target, the integra
 Mask Design
 -----------
 
-While filtering typically has greater impact on the performance than the choice of mask, choosing a suitable mask still helps to improve performance.
+While filtering typically has greater impact on the performance than the choice of mask, chosing a suitable mask still helps to improve performance.
 
 By default, |project| uses the entire area under the template as mask. However, this results in wide peaks, which is disadvantageous in corwded settings. When focusing on more defining features using an ellipsoidal mask we observe a sharpening of the peak and a decrease in background score. However, if we make the mask too narrow, as illustrated by the last example, the mask no longer provides a faithful approximation of the cross-correlation background and as thus the template matching scores become uninformative.
 

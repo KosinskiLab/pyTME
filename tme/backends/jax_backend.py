@@ -208,13 +208,14 @@ class JaxBackend(NumpyFFTWBackend):
         # Applying the filter leads to more FFTs
         fastt_shape = matching_data._template.shape
         if create_template_filter:
-            _, fastt_shape, _, tshift = matching_data._fourier_padding(
-                target_shape=self.to_numpy_array(matching_data._template.shape),
-                template_shape=self.to_numpy_array(
-                    [1 for _ in matching_data._template.shape]
-                ),
-                pad_fourier=False,
-            )
+            # _, fastt_shape, _, tshift = matching_data._fourier_padding(
+            #     target_shape=self.to_numpy_array(matching_data._template.shape),
+            #     template_shape=self.to_numpy_array(
+            #         [1 for _ in matching_data._template.shape]
+            #     ),
+            #     pad_fourier=False,
+            # )
+            fastt_shape = matching_data._template.shape
 
         ret, template_filter, target_filter = [], 1, 1
         rotation_mapping = {

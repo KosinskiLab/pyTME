@@ -18,12 +18,10 @@ from ._utils import fftfreqn, crop_real_fourier, shift_fourier, compute_fourier_
 
 class BandPassFilter:
     """
-    This class provides methods to generate bandpass filters in Fourier space,
-    either by directly specifying the frequency cutoffs (discrete_bandpass) or
-    by using Gaussian functions (gaussian_bandpass).
+    Generate bandpass filters in Fourier space.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     lowpass : float, optional
         The lowpass cutoff, defaults to None.
     highpass : float, optional
@@ -67,8 +65,8 @@ class BandPassFilter:
         """
         Generate a bandpass filter using discrete frequency cutoffs.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         shape : tuple of int
             The shape of the bandpass filter.
         lowpass : float
@@ -84,8 +82,8 @@ class BandPassFilter:
         **kwargs : dict
             Additional keyword arguments.
 
-        Returns:
-        --------
+        Returns
+        -------
         BackendArray
             The bandpass filter in Fourier space.
         """
@@ -98,14 +96,16 @@ class BandPassFilter:
             shape_is_real_fourier=shape_is_real_fourier,
             compute_euclidean_norm=True,
         )
+        grid = be.to_backend_array(grid)
+        sampling_rate = be.to_backend_array(sampling_rate)
 
         lowpass = 0 if lowpass is None else lowpass
         highpass = 1e10 if highpass is None else highpass
 
         highcut = grid.max()
         if lowpass > 0:
-            highcut = np.max(2 * sampling_rate / lowpass)
-        lowcut = np.max(2 * sampling_rate / highpass)
+            highcut = be.max(2 * sampling_rate / lowpass)
+        lowcut = be.max(2 * sampling_rate / highpass)
 
         bandpass_filter = ((grid <= highcut) & (grid >= lowcut)) * 1.0
 
@@ -129,10 +129,10 @@ class BandPassFilter:
         **kwargs,
     ) -> BackendArray:
         """
-        Generate a bandpass filter using Gaussian functions.
+        Generate a bandpass filter using Gaussians.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         shape : tuple of int
             The shape of the bandpass filter.
         lowpass : float
@@ -148,8 +148,8 @@ class BandPassFilter:
         **kwargs : dict
             Additional keyword arguments.
 
-        Returns:
-        --------
+        Returns
+        -------
         BackendArray
             The bandpass filter in Fourier space.
         """
@@ -216,14 +216,12 @@ class BandPassFilter:
 
 class LinearWhiteningFilter:
     """
-    This class provides methods to compute the spectrum of the input data and
-    apply linear whitening to the Fourier coefficients.
+    Compute Fourier power spectrums and perform whitening.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     **kwargs : Dict, optional
         Additional keyword arguments.
-
 
     References
     ----------
@@ -243,10 +241,10 @@ class LinearWhiteningFilter:
         data_rfft: BackendArray, n_bins: int = None, batch_dimension: int = None
     ) -> Tuple[BackendArray, BackendArray]:
         """
-        Compute the spectrum of the input data.
+        Compute the power spectrum of the input data.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         data_rfft : BackendArray
             The Fourier transform of the input data.
         n_bins : int, optional
@@ -254,8 +252,8 @@ class LinearWhiteningFilter:
         batch_dimension : int, optional
             Batch dimension to average over.
 
-        Returns:
-        --------
+        Returns
+        -------
         bins : BackendArray
             Array containing the bin indices for the spectrum.
         radial_averages : BackendArray
@@ -330,8 +328,8 @@ class LinearWhiteningFilter:
         """
         Apply linear whitening to the data and return the result.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         data : BackendArray, optional
             The input data, defaults to None.
         data_rfft : BackendArray, optional
@@ -345,8 +343,8 @@ class LinearWhiteningFilter:
         **kwargs : Dict
             Additional keyword arguments.
 
-        Returns:
-        --------
+        Returns
+        -------
         Dict
            Filter data and associated parameters.
         """

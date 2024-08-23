@@ -82,13 +82,14 @@ def _setup_template_filter_apply_target_filter(
     fastt_shape, fastt_ft_shape = fast_shape, filter_shape
     if filter_template and not pad_template_filter:
         # FFT shape acrobatics for faster filter application
-        _, fastt_shape, _, _ = matching_data._fourier_padding(
-            target_shape=be.to_numpy_array(matching_data._template.shape),
-            template_shape=be.to_numpy_array(
-                [1 for _ in matching_data._template.shape]
-            ),
-            pad_fourier=False,
-        )
+        # _, fastt_shape, _, _ = matching_data._fourier_padding(
+        #     target_shape=be.to_numpy_array(matching_data._template.shape),
+        #     template_shape=be.to_numpy_array(
+        #         [1 for _ in matching_data._template.shape]
+        #     ),
+        #     pad_fourier=False,
+        # )
+        fastt_shape = matching_data._template.shape
         matching_data.template = be.reverse(
             be.topleft_pad(matching_data.template, fastt_shape)
         )
@@ -399,7 +400,8 @@ def scan_subsets(
     The template matching procedure is determined by ``matching_setup`` and
     ``matching_score``, which are unique to each score. In the following,
     we will be using the `FLCSphericalMask` score, which is composed of
-    :py:meth:`flcSphericalMask_setup` and :py:meth:`corr_scoring`
+    :py:meth:`tme.matching_scores.flcSphericalMask_setup` and
+    :py:meth:`tme.matching_scores.corr_scoring`
 
     >>> from tme.matching_exhaustive import MATCHING_EXHAUSTIVE_REGISTER
     >>> funcs = MATCHING_EXHAUSTIVE_REGISTER.get("FLCSphericalMask")

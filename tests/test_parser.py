@@ -1,11 +1,12 @@
 import pytest
+from importlib_resources import files
 
 from tme.parser import Parser, PDBParser
 
 
 class TestParser:
     def setup_method(self):
-        self.pdb_file = "./tme/tests/data/Structures/5khe.pdb"
+        self.pdb_file = str(files("tests.data").joinpath("Structures/5khe.pdb"))
 
     def teardown_method(self):
         self.pdb_file = None

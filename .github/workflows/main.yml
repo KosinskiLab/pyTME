@@ -31,12 +31,9 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pip install pytest pytest-cov
+          pip install pytest pytest-cov importlib-resources
           ulimit -n 4096
-          pytest -vvv \
-            --cov=tme \
-            --cov-report=xml \
-            --cov-report=html
+          pytest -vvv
 
   docs:
     runs-on: ubuntu-latest

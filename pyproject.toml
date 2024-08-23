@@ -63,5 +63,5 @@ addopts = [
 
 [tool.coverage.run]
 omit = [
-    "tme/tests/*"
+    "tests/*"
 ]

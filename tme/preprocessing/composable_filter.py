@@ -20,7 +20,6 @@ class ComposableFilter(ABC):
 
         Parameters
         ----------
-
         *args : tuple
             Variable length argument list.
         **kwargs : dict
@@ -28,7 +27,6 @@ class ComposableFilter(ABC):
 
         Returns
         -------
-
         Dict
             A dictionary representing the result of the filtering operation.
         """

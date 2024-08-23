@@ -323,9 +323,7 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
             sampling_rate=template.sampling_rate,
         )
         template_filter.append(bandpass)
-
-        if not args.no_filter_target:
-            target_filter.append(bandpass)
+        target_filter.append(bandpass)
 
     if args.whiten_spectrum:
         whitening_filter = LinearWhiteningFilter()
@@ -342,6 +340,8 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
 
     template_filter = Compose(template_filter) if len(template_filter) else None
     target_filter = Compose(target_filter) if len(target_filter) else None
+    if args.no_filter_target:
+        target_filter = None
 
     return template_filter, target_filter
 

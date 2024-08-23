@@ -17,13 +17,13 @@ class Compose:
     This class allows composing multiple transformations together. Each transformation
     is expected to be a callable that accepts keyword arguments and returns metadata.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     transforms : Tuple[object]
         A tuple containing transformation objects.
 
-    Returns:
-    --------
+    Returns
+    -------
     Dict
         Metadata resulting from the composed transformations.
 
