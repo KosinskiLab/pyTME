@@ -16,8 +16,6 @@ from scipy.interpolate import interp1d, splrep, BSpline
 from scipy.optimize import differential_evolution, minimize
 
 from .types import NDArray
-from .backends import NumpyFFTWBackend
-from .matching_utils import euler_to_rotationmatrix
 
 
 class Preprocessor:
@@ -680,134 +678,14 @@ class Preprocessor:
             use_gaussian=gaussian_sigma == 0.0,
         )(shape=shape)["data"]
 
-    def wedge_mask(
-        self,
-        shape: Tuple[int],
-        tilt_angles: NDArray,
-        opening_axes: NDArray = 0,
-        sigma: float = 0,
-        omit_negative_frequencies: bool = True,
-    ) -> NDArray:
-        """
-        Create a wedge mask with the same shape as template by rotating a
-        plane according to tilt angles. The DC component of the filter is at the origin.
-
-        Parameters
-        ----------
-        shape : Tuple of ints
-            Shape of the output wedge array.
-        tilt_angles : NDArray
-            Tilt angles in format d dimensions N tilts [d x N].
-        opening_axes : NDArray
-            Axis running through the void defined by the wedge in format (N,)
-        sigma : float, optional
-            Standard deviation for Gaussian kernel used for smoothing the wedge.
-        omit_negative_frequencies : bool, optional
-            Whether the wedge mask should omit negative frequencies, i.e. be
-            applicable to symmetric Fourier transforms (see :obj:`numpy.fft.fftn`)
-
-        Returns
-        -------
-        NDArray
-            A numpy array containing the wedge mask.
-
-        Examples
-        --------
-        >>> import numpy as np
-        >>> from tme import Preprocessor
-        >>> angles = np.zeros((3, 10))
-        >>> angles[2, :] = np.linspace(-50, 55, 10)
-        >>> wedge = Preprocessor().wedge_mask(
-        >>>    shape = (50,50,50),
-        >>>    tilt_angles = angles,
-        >>>    omit_negative_frequencies = True
-        >>>    )
-        >>> wedge = np.fft.fftshift(wedge)
-
-        This will create a wedge that is open along axis 1, tilted
-        around axis 2 and propagated along axis 0. The code above would
-        be equivalent to the following
-
-        >>> wedge = Preprocessor().continuous_wedge_mask(
-        >>>    shape=(50,50,50),
-        >>>    start_tilt=50,
-        >>>    stop_tilt=55,
-        >>>    tilt_axis=1,
-        >>>    omit_negative_frequencies=False,
-        >>>    infinite_plane=False
-        >>>    )
-        >>> wedge = np.fft.fftshift(wedge)
-
-        with the difference being that :py:meth:`Preprocessor.continuous_wedge_mask`
-        does not consider individual plane tilts.
-
-        Raises
-        ------
-        ValueError
-            If opening_axes is neither a single value or defined for each tilt.
-
-        See Also
-        --------
-        :py:meth:`Preprocessor.step_wedge_mask`
-        :py:meth:`Preprocessor.continuous_wedge_mask`
-        """
-        opening_axes = np.asarray(opening_axes)
-        opening_axes = np.repeat(
-            opening_axes, tilt_angles.shape[1] // opening_axes.size
-        )
-
-        if opening_axes.size != tilt_angles.shape[1]:
-            raise ValueError(
-                "opening_axes has to be a single value or be defined for each tilt."
-            )
-
-        plane = np.zeros(shape, dtype=np.float32)
-        slices = tuple(slice(a, a + 1) for a in np.divide(shape, 2).astype(int))
-        plane_rotated, wedge_volume = np.zeros_like(plane), np.zeros_like(plane)
-        for index in range(tilt_angles.shape[1]):
-            plane.fill(0)
-            plane_rotated.fill(0)
-
-            opening_axis = opening_axes[index]
-            rotation_matrix = euler_to_rotationmatrix(
-                np.roll(tilt_angles[:, index], opening_axis - 1)
-            )
-
-            subset = tuple(
-                slice(None) if i != opening_axis else slices[opening_axis]
-                for i in range(plane.ndim)
-            )
-            plane[subset] = 1
-            NumpyFFTWBackend().rigid_transform(
-                arr=plane,
-                rotation_matrix=rotation_matrix,
-                out=plane_rotated,
-                use_geometric_center=True,
-                order=1,
-            )
-            wedge_volume += plane_rotated
-
-        wedge_volume = self.gaussian_filter(template=wedge_volume, sigma=sigma)
-        wedge_volume = np.where(wedge_volume > np.exp(-2), 1, 0)
-        wedge_volume = np.fft.ifftshift(wedge_volume)
-
-        if omit_negative_frequencies:
-            stop = 1 + (wedge_volume.shape[-1] // 2)
-            wedge_volume = wedge_volume[..., :stop]
-
-        return wedge_volume
-
     def step_wedge_mask(
         self,
-        start_tilt: float,
-        stop_tilt: float,
-        tilt_step: float,
         shape: Tuple[int],
         tilt_angles: Tuple[float] = None,
         opening_axis: int = 0,
         tilt_axis: int = 2,
-        sigma: float = 0,
-        weights: float = 1,
+        weights: float = None,
+        infinite_plane: bool = False,
         omit_negative_frequencies: bool = True,
     ) -> NDArray:
         """
@@ -816,14 +694,8 @@ class Preprocessor:
 
         Parameters
         ----------
-        start_tilt : float
-            Starting tilt angle in degrees, e.g. a stage tilt of 70 degrees
-            would yield a start_tilt value of 70.
-        stop_tilt : float
-            Ending tilt angle in degrees, , e.g. a stage tilt of -70 degrees
-            would yield a stop_tilt value of 70.
-        tilt_step : float
-            Angle between the different tilt planes.
+        tilt_angles : tuple of float
+            Sequence of tilt angles.
         shape : Tuple of ints
             Shape of the output wedge array.
         tilt_axis : int, optional
@@ -849,70 +721,21 @@ class Preprocessor:
         NDArray
             A numpy array containing the wedge mask.
 
-        Notes
-        -----
-        This function is equivalent to :py:meth:`Preprocessor.wedge_mask`, but much faster
-        for large shapes because it only considers a single tilt angle rather than the rotation
-        of an N-1 dimensional hyperplane in N dimensions.
-
         See Also
         --------
-        :py:meth:`Preprocessor.wedge_mask`
         :py:meth:`Preprocessor.continuous_wedge_mask`
         """
-        if tilt_angles is None:
-            tilt_angles = np.arange(-start_tilt, stop_tilt + tilt_step, tilt_step)
+        from .preprocessing.tilt_series import WedgeReconstructed
 
-        shape = tuple(int(x) for x in shape)
-        opening_axis, tilt_axis = int(opening_axis), int(tilt_axis)
-
-        weights = np.asarray(weights)
-        weights = np.repeat(weights, tilt_angles.size // weights.size)
-        plane = np.zeros((shape[opening_axis], shape[tilt_axis]), dtype=np.float32)
-        subset = tuple(
-            slice(None) if i != 0 else slice(x // 2, x // 2 + 1)
-            for i, x in enumerate(plane.shape)
-        )
-        plane_rotated, wedge_volume = np.zeros_like(plane), np.zeros_like(plane)
-        for index in range(tilt_angles.shape[0]):
-            plane_rotated.fill(0)
-            plane[subset] = weights[index]
-            rotation_matrix = euler_to_rotationmatrix((tilt_angles[index], 0))
-            rotation_matrix = rotation_matrix[np.ix_((0, 1), (0, 1))]
-
-            NumpyFFTWBackend().rigid_transform(
-                arr=plane,
-                rotation_matrix=rotation_matrix,
-                out=plane_rotated,
-                use_geometric_center=True,
-                order=1,
-            )
-            wedge_volume += plane_rotated
-
-        # Ramp filtering would be more accurate
-        np.fmin(wedge_volume, np.max(weights), wedge_volume)
-
-        if sigma > 0:
-            wedge_volume = self.gaussian_filter(template=wedge_volume, sigma=sigma)
-
-        if opening_axis > tilt_axis:
-            wedge_volume = np.moveaxis(wedge_volume, 1, 0)
-
-        reshape_dimensions = tuple(
-            x if i in (opening_axis, tilt_axis) else 1 for i, x in enumerate(shape)
-        )
-
-        wedge_volume = wedge_volume.reshape(reshape_dimensions)
-        tile_dimensions = np.divide(shape, reshape_dimensions).astype(int)
-        wedge_volume = np.tile(wedge_volume, tile_dimensions)
-
-        wedge_volume = np.fft.ifftshift(wedge_volume)
-
-        if omit_negative_frequencies:
-            stop = 1 + (wedge_volume.shape[-1] // 2)
-            wedge_volume = wedge_volume[..., :stop]
-
-        return wedge_volume
+        return WedgeReconstructed(
+            angles=tilt_angles,
+            tilt_axis=tilt_axis,
+            opening_axis=opening_axis,
+            frequency_cutoff=None if infinite_plane else 0.5,
+            create_continuous_wedge=False,
+            weights=weights,
+            weight_wedge=weights is not None,
+        )(shape=shape, return_real_fourier=omit_negative_frequencies,)["data"]
 
     def continuous_wedge_mask(
         self,
@@ -921,8 +744,6 @@ class Preprocessor:
         shape: Tuple[int],
         opening_axis: int = 0,
         tilt_axis: int = 2,
-        sigma: float = 0,
-        extrude_plane: bool = True,
         infinite_plane: bool = True,
         omit_negative_frequencies: bool = True,
     ) -> NDArray:
@@ -950,13 +771,6 @@ class Preprocessor:
             - 2 for X-axis
         shape : Tuple of ints
             Shape of the output wedge array.
-        sigma : float, optional
-            Standard deviation for Gaussian kernel used for smoothing the wedge.
-        extrude_plane : bool, optional
-            Whether the tilted plane is extruded to 3D. By default, this represents
-            the effect of rotating a plane in 3D yielding a cylinder with wedge
-            insertion. If set to False, the returned mask has spherical shape,
-            analogous to rotating a line in 3D.
         omit_negative_frequencies : bool, optional
             Whether the wedge mask should omit negative frequencies, i.e. be
             applicable to symmetric Fourier transforms (see :obj:`numpy.fft.fftn`)
@@ -970,55 +784,19 @@ class Preprocessor:
             Array of the specified shape with the wedge created based on
             the tilt angles.
 
-        Examples
-        --------
-        >>> wedge = create_wedge(30, 60, 1, (64, 64, 64))
-
-        Notes
-        -----
-        The rotation plane is spanned by the tilt axis and the leftmost dimension
-        that is not the tilt axis.
-
         See Also
         --------
-        :py:meth:`Preprocessor.wedge_mask`
         :py:meth:`Preprocessor.step_wedge_mask`
         """
-        shape_center = np.divide(shape, 2).astype(int)
+        from .preprocessing.tilt_series import WedgeReconstructed
 
-        grid = (np.indices(shape).T - shape_center).T
-
-        start_radians = np.tan(np.radians(90 - start_tilt))
-        stop_radians = np.tan(np.radians(-1 * (90 - stop_tilt)))
-        max_tan_value = np.tan(np.radians(90)) + 1
-
-        with np.errstate(divide="ignore", invalid="ignore"):
-            ratios = np.where(
-                grid[opening_axis] == 0,
-                max_tan_value,
-                grid[tilt_axis] / grid[opening_axis],
-            )
-
-        wedge = np.logical_or(start_radians <= ratios, stop_radians >= ratios).astype(
-            np.float32
-        )
-
-        if extrude_plane:
-            distances = np.sqrt(grid[tilt_axis] ** 2 + grid[opening_axis] ** 2)
-        else:
-            distances = np.linalg.norm(grid, axis=0)
-
-        if not infinite_plane:
-            np.multiply(wedge, distances <= shape[tilt_axis] // 2, out=wedge)
-
-        wedge = self.gaussian_filter(template=wedge, sigma=sigma)
-        wedge = np.fft.ifftshift(wedge > np.exp(-2))
-
-        if omit_negative_frequencies:
-            stop = 1 + (wedge.shape[-1] // 2)
-            wedge = wedge[..., :stop]
-
-        return wedge
+        return WedgeReconstructed(
+            angles=(start_tilt, stop_tilt),
+            tilt_axis=tilt_axis,
+            opening_axis=opening_axis,
+            frequency_cutoff=None if infinite_plane else 0.5,
+            create_continuous_wedge=True,
+        )(shape=shape, return_real_fourier=omit_negative_frequencies)["data"]
 
 
 def window_kaiserb(width: int, beta: float = 3.2, order: int = 0) -> NDArray:

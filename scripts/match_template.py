@@ -186,8 +186,10 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
         ReconstructFromTilt,
     )
 
+    needs_reconstruction = False
     template_filter, target_filter = [], []
     if args.tilt_angles is not None:
+        needs_reconstruction = args.tilt_weighting is not None
         try:
             wedge = Wedge.from_file(args.tilt_angles)
             wedge.weight_type = args.tilt_weighting
@@ -232,11 +234,12 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
                     angles=tilt_angles,
                     weight_wedge=args.tilt_weighting == "angle",
                     create_continuous_wedge=create_continuous_wedge,
+                    reconstruction_filter=args.reconstruction_filter,
                 )
                 wedge_target = WedgeReconstructed(
-                    angles=tilt_angles,
+                    angles=(np.abs(np.min(tilt_angles)), np.abs(np.max(tilt_angles))),
                     weight_wedge=False,
-                    create_continuous_wedge=create_continuous_wedge,
+                    create_continuous_wedge=True,
                 )
                 target_filter.append(wedge_target)
 
@@ -330,9 +333,6 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
         template_filter.append(whitening_filter)
         target_filter.append(whitening_filter)
 
-    needs_reconstruction = any(
-        [isinstance(t, ReconstructFromTilt) for t in template_filter]
-    )
     if needs_reconstruction and args.reconstruction_filter is None:
         warnings.warn(
             "Consider using a --reconstruction_filter such as 'ramp' to avoid artifacts."

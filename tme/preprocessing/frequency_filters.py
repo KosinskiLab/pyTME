@@ -99,16 +99,15 @@ class BandPassFilter:
         grid = be.to_backend_array(grid)
         sampling_rate = be.to_backend_array(sampling_rate)
 
-        lowpass = 0 if lowpass is None else lowpass
-        highpass = 1e10 if highpass is None else highpass
-
         highcut = grid.max()
-        if lowpass > 0:
+        if lowpass is not None:
             highcut = be.max(2 * sampling_rate / lowpass)
-        lowcut = be.max(2 * sampling_rate / highpass)
+
+        lowcut = 0
+        if highpass is not None:
+            lowcut = be.max(2 * sampling_rate / highpass)
 
         bandpass_filter = ((grid <= highcut) & (grid >= lowcut)) * 1.0
-
         bandpass_filter = shift_fourier(
             data=bandpass_filter, shape_is_real_fourier=shape_is_real_fourier
         )

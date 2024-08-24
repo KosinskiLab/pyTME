@@ -147,9 +147,7 @@ def wedge(
     tilt_step: float = 0,
     opening_axis: int = 0,
     tilt_axis: int = 1,
-    gaussian_sigma: float = 0,
     omit_negative_frequencies: bool = True,
-    extrude_plane: bool = True,
     infinite_plane: bool = True,
 ) -> NDArray:
     template_ft = np.fft.rfftn(template)
@@ -161,9 +159,7 @@ def wedge(
             tilt_axis=tilt_axis,
             opening_axis=opening_axis,
             shape=template.shape,
-            sigma=gaussian_sigma,
             omit_negative_frequencies=omit_negative_frequencies,
-            extrude_plane=extrude_plane,
             infinite_plane=infinite_plane,
         )
         np.multiply(template_ft, wedge_mask, out=template_ft)
@@ -177,7 +173,6 @@ def wedge(
         tilt_step=tilt_step,
         opening_axis=opening_axis,
         shape=template.shape,
-        sigma=gaussian_sigma,
         omit_negative_frequencies=omit_negative_frequencies,
     )
     np.multiply(template_ft, wedge_mask, out=template_ft)
@@ -483,10 +478,9 @@ def wedge_mask(
     tilt_step: float = 0,
     opening_axis: int = 0,
     tilt_axis: int = 2,
-    gaussian_sigma: float = 0,
     omit_negative_frequencies: bool = False,
-    extrude_plane: bool = True,
-    infinite_plane: bool = True,
+    infinite_plane: bool = False,
+    weight_angle: bool = False,
     **kwargs,
 ) -> NDArray:
     if tilt_step <= 0:
@@ -496,22 +490,23 @@ def wedge_mask(
             tilt_axis=tilt_axis,
             opening_axis=opening_axis,
             shape=template.shape,
-            sigma=gaussian_sigma,
             omit_negative_frequencies=omit_negative_frequencies,
-            extrude_plane=extrude_plane,
             infinite_plane=infinite_plane,
         )
         wedge_mask = np.fft.fftshift(wedge_mask)
         return wedge_mask
 
+    weights = None
+    tilt_angles = np.arange(-tilt_start, tilt_stop + tilt_step, tilt_step)
+    if weight_angle:
+        weights = np.cos(np.radians(tilt_angles))
+
     wedge_mask = preprocessor.step_wedge_mask(
-        start_tilt=tilt_start,
-        stop_tilt=tilt_stop,
+        tilt_angles=tilt_angles,
         tilt_axis=tilt_axis,
-        tilt_step=tilt_step,
         opening_axis=opening_axis,
         shape=template.shape,
-        sigma=gaussian_sigma,
+        weights=weights,
         omit_negative_frequencies=omit_negative_frequencies,
     )
 

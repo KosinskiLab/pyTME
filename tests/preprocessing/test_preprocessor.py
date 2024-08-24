@@ -126,19 +126,11 @@ class TestPreprocessor:
             rank=rank,
         )
 
-    def test_wedge_mask(self):
-        angles = np.zeros((3, 10))
-        angles[0, :] = np.random.rand(angles.shape[1])
-        _ = self.preprocessor.wedge_mask(
-            shape=self.structure_density.data.shape,
-            tilt_angles=angles,
-        )
-
-    @pytest.mark.parametrize("extrude_plane", [False, True])
-    def test_continuous_wedge_mask(self, extrude_plane):
+    @pytest.mark.parametrize("infinite_plane", [False, True])
+    def test_continuous_wedge_mask(self, infinite_plane):
         _ = self.preprocessor.continuous_wedge_mask(
             start_tilt=50,
             stop_tilt=-40,
             shape=(50, 50, 50),
-            extrude_plane=extrude_plane,
+            infinite_plane=infinite_plane,
         )

@@ -79,6 +79,14 @@ def parse_args():
         action="store_true",
         help="Assumes the template is already centered and omits centering.",
     )
+    modulation_group.add_argument(
+        "--backend",
+        dest="backend",
+        type=str,
+        default=None,
+        choices=be.available_backends(),
+        help="Determines more suitable box size for the given compute backend.",
+    )
     args = parser.parse_args()
     return args
 
@@ -95,11 +103,18 @@ def main():
     if not args.no_centering:
         data, _ = data.centered(0)
 
-    recommended_box = be.compute_convolution_shapes([args.box_size], [1])[1][0]
-    if recommended_box != args.box_size:
-        warnings.warn(
-            f"Consider using --box_size {recommended_box} instead of {args.box_size}."
-        )
+    for name in be.available_backends():
+        be.change_backend(name, device="cpu")
+        box = be.compute_convolution_shapes([args.box_size], [1])[1][0]
+        if box != args.box_size and args.backend is None:
+            print(f"Consider --box_size {box} instead of {args.box_size} for {name}.")
+
+    if args.backend is not None:
+        be.change_backend(name, device="cpu")
+        box = be.compute_convolution_shapes([args.box_size], [1])[1][0]
+        if box != args.box_size:
+            print(f"Changed --box_size from {args.box_size} to {box}.")
+        args.box_size = box
 
     data.pad(
         np.multiply(args.box_size, np.divide(args.sampling_rate, data.sampling_rate)),

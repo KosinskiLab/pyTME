@@ -197,7 +197,7 @@ The high-pass and band-pass filtered images exhibit sharp pronounced peaks and a
 Spectral Whitening
 ^^^^^^^^^^^^^^^^^^
 
-Spectral whitening normalizes each frequency by dividing the amplitude of each frequency by its magnitude. This can bring out subtle features that might be overshadowed otherwise. Spectral Whitening is particulary useful when analyzing large heterogeneous datasets, because the assumptions made are fairly weak. Although neither new nor specific to cryogenic electron microscopy, spectral whitening is a fairly popular [2]_ [3]_ approach and graphically explained `here <https://github.com/ZauggGroup/DeePiCt/blob/main/spectrum_filter/tomo-matcher.svg>`_.
+Spectral whitening normalizes each frequency by dividing the amplitude of each frequency by its magnitude. This can bring out subtle features that might be overshadowed otherwise. Spectral Whitening is particulary useful when analyzing large heterogeneous datasets, because the assumptions made are fairly weak. Although not specific to cryogenic electron microscopy, spectral whitening is a fairly popular [2]_ [3]_ approach and graphically explained `here <https://github.com/ZauggGroup/DeePiCt/blob/main/spectrum_filter/tomo-matcher.svg>`_.
 
 
 .. plot::
@@ -306,14 +306,13 @@ Broadly speaking, |project| distinguishes between continuous, discrete and weigh
 	from tme import Density
 	from tme.preprocessing.tilt_series import WedgeReconstructed
 
-	target = Density.from_file("../../_static/examples/preprocessing_target.png")
-
 	wedge = WedgeReconstructed(
 	    angles = [60,60],
 	    opening_axis = 0,
 	    tilt_axis = 1,
 	    create_continuous_wedge = True,
-	    weight_wedge = False
+	    weight_wedge = False,
+	    reconstruction_filter = "cosine"
 	)
 
 	fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(10, 5), constrained_layout=True)
