@@ -70,3 +70,9 @@ global-exclude tme/package.py
 global-exclude tme/transforms.py
 global-exclude tme/tests/test_packaging.py
 global-exclude scripts/match_template_devel.py
+
+# Explicit package data include
+include tme/data/*.npy
+include tme/data/metadata.yaml
+include tme/data/scattering_factors.pickle
+recursive-include tests/data *

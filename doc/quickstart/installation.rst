@@ -69,7 +69,7 @@ Alternatively, you can install the development version with the latest changes
 
 .. note::
 
-   If using Docker, |project| will already be installed in the container, so these additional installation steps are not necessary.
+   When using Docker, |project| will already be installed in the container, so these installation steps are not necessary.
 
 
 CPU/GPU/TPU Support

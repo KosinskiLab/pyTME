@@ -109,7 +109,7 @@ Given our previously defined ``score_object``, we can find the optimal configura
    translation, rotation, refined_score = optimize_match(
       score_object=score_object,
       optimization_method="basinhopping",
-      maxiter=500
+      maxiter=50
    )
    translation
    # array([-7.04120465,  8.17709819,  0.07964882])
@@ -122,7 +122,7 @@ Given our previously defined ``score_object``, we can find the optimal configura
 
 .. note::
 
-   :py:meth:`optimize_match` will update ``score_object`` so using the __call__ afterwards will yield the values as ``refined_score``. Smaller values of `maxiter` might yield suboptimal results.
+   :py:meth:`optimize_match` will update ``score_object`` so using __call__ afterwards will return ``refined_score``. Smaller values of `maxiter` might yield suboptimal results.
 
 The computed ``translation`` and ``rotation`` can then be used to recover the configuration of the template with maximal similarity to the target. This is functionally similar to the operation performed using :py:meth:`Density.match_densities <tme.density.Density.match_densities>` and :py:meth:`Density.match_structure_to_density <tme.density.Density.match_structure_to_density>`.
 
@@ -139,5 +139,35 @@ The computed ``translation`` and ``rotation`` can then be used to recover the co
       use_geometric_center=True
    )
 
-:py:meth:`optimize_match` also supports a range of other optimization schemes that can lead more accurate results at a cost of runtime or find the optimal configuration faster if the initial configuration is close to the global optimum. Alternatively, developers can make use of the :py:meth:`CrossCorrelation.score` method that accepts a tuple of translations and Euler angles for use in custom optimizers.
+:py:meth:`optimize_match` offers various optimization schemes to balance accuracy and runtime efficiency. Here we used ``optimization_method="basinhopping"``, which yields a good balance between those factors. For performance-critical applications, ``optimization_method="minimize"`` in conjunction with :py:class:`CrossCorrelation.grad` can be used, which incorporates the analytical gradient of the scoring function into the optimization process. This approach can significantly speed up convergence, especially when the initial configuration is close to the global optimum.
 
+The example below highlights this key characteristic. The initial orientation is too far from the correct one to be recovered without better initial values or tighter bounds on translation and rotation. Consequently, the optimization scheme becomes trapped in a local optimum. In practice, multiple initial conditions and potentially bounds should be evaluated to identify the global optimum.
+
+.. code-block:: python
+
+   score_object = CrossCorrelation(
+      target=target,
+      template_coordinates=template_coordinates,
+      template_weights=template_weights,
+      negate_score=True,
+      return_gradient=True
+   )
+
+   translation, rotation, refined_score = optimize_match(
+      score_object=score_object,
+      optimization_method="minimize",
+      maxiter=500,
+      x0=[0,0,0,0,50,0]
+   )
+   translation
+   # array([-4.51057473,  9.10106869,  1.40713668])
+   rotation
+   # array([[ 0.09346937,  0.00730731,  0.99559534],
+   #       [-0.08880167,  0.9960488 ,  0.00102632],
+   #       [-0.99165404, -0.08850646,  0.09374895]],
+   #  dtype=float32)
+   refined_score #-2254.263671875
+
+.. tip::
+
+   For custom optimization strategies, developers can utilize the :py:meth:`CrossCorrelation.score` method, which accepts a tuple of translations and Euler angles as input.
