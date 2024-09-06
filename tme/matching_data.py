@@ -478,7 +478,8 @@ class MatchingData:
         shape_diff = np.multiply(
             np.subtract(target_shape, template_shape), 1 - batch_mask
         )
-        if np.sum(shape_diff < 0):
+        shape_mask = shape_diff < 0
+        if np.sum(shape_mask):
             shape_shift = np.divide(shape_diff, 2)
             offset = np.mod(shape_diff, 2)
             if pad_fourier:
@@ -491,8 +492,7 @@ class MatchingData:
                     "Template is larger than target and padding is turned off. Consider "
                     "swapping them or activate padding. Correcting the shift for now."
                 )
-
-            shape_shift = np.add(shape_shift, offset)
+            shape_shift = np.multiply(np.add(shape_shift, offset), shape_mask)
             fourier_shift = np.subtract(fourier_shift, shape_shift).astype(int)
 
         fourier_shift = tuple(fourier_shift.astype(int))

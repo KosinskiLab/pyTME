@@ -697,8 +697,7 @@ class Density:
         References
         ----------
         .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
-            of atomic models into electron density maps. AIMS Biophysics
-            2, 8–20.
+            of atomic models into electron density maps. AIMS Biophysics 2, 8–20.
 
         Examples
         --------
@@ -743,17 +742,16 @@ class Density:
         >>>    filter_by_residues = {"SER", "THR", "CYS", "ASN", "GLN", "TYR"}
         >>> )
 
-        :py:meth:`Density.from_structure` supports a variety of methods to convert
-        atoms into densities
+        In addtion, :py:meth:`Density.from_structure` supports a variety of methods
+        to convert atoms into densities, such as Gaussians
 
         >>> density = Density.from_structure(
         >>>    filename_or_structure = path_to_structure,
         >>>    weight_type = "gaussian",
-        >>>    weight_type_args={"resolution": "20"}
+        >>>    weight_type_args={"resolution": 20}
         >>> )
 
-        In addition its possible to use experimentally determined scattering factors
-        from various sources:
+        experimentally determined scattering factors
 
         >>> density = Density.from_structure(
         >>>    filename_or_structure = path_to_structure,
@@ -1688,11 +1686,10 @@ class Density:
             Resampling method to use, defaults to `spline`. Availabe options are:
 
             +---------+----------------------------------------------------------+
-            | spline  | Smooth spline interpolation via :obj:`scipy.ndimage.zoom`|
+            | spline  | Spline interpolation using :obj:`scipy.ndimage.zoom`     |
             +---------+----------------------------------------------------------+
-            | fourier | Frequency preserving Fourier cropping                    |
+            | fourier | Fourier cropping                                         |
             +---------+----------------------------------------------------------+
-
         order : int, optional
             Order of spline used for interpolation, by default 1. Ignored when
             ``method`` is `fourier`.

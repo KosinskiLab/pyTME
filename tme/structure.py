@@ -1117,16 +1117,16 @@ class Structure:
         ----------
         positions : NDArray
             Array containing atomic positions in z,y,x format (n,d).
-        weights : [float]
+        weights : tuple of float
             The weights to use for the entries in positions.
-        resolution : float
+        resolution : float, optional
             The product of resolution and sigma_factor gives the sigma used to
             compute the discretized Gaussian.
-        sigma_factor : float
+        sigma_factor : float, optional
             The factor used with resolution to compute sigma. Default is 1 / (π√2).
-        cutoff_value : float
+        cutoff_value : float, optional
             The cutoff value for the Gaussian kernel. Default is 4.0.
-        sampling_rate : float
+        sampling_rate : float, optional
             Sampling rate along each dimension. One third of resolution by default.
 
         References
@@ -1160,8 +1160,8 @@ class Structure:
         positions = positions[:, ::-1]
         origin = positions.min(axis=0) - pad * sampling_rate
         positions = np.rint(np.divide((positions - origin), sampling_rate)).astype(int)
-        shape = positions.max(axis=0).astype(int) + pad + 1
 
+        shape = positions.max(axis=0).astype(int) + pad + 1
         out = np.zeros(shape, dtype=np.float32)
         np.add.at(out, tuple(positions.T), weights)
 
@@ -1299,10 +1299,10 @@ class Structure:
             )
 
         temp = self.subset_by_chain(chain=chain)
-        positions, atoms, shape, sampling_rate, origin = temp._coordinate_to_position(
+        positions, atoms, _shape, sampling_rate, origin = temp._coordinate_to_position(
             shape=shape, sampling_rate=sampling_rate, origin=origin
         )
-        volume = np.zeros(shape, dtype=np.float32)
+        volume = np.zeros(_shape, dtype=np.float32)
         if weight_type in ("atomic_weight", "atomic_number"):
             weights = temp._get_atom_weights(atoms=atoms, weight_type=weight_type)
             np.add.at(volume, tuple(positions.T), weights)

@@ -91,9 +91,9 @@ def create_reconstruction_filter(
         if tilt_angles is False:
             raise ValueError("'ramp' filter requires specifying tilt angles.")
         size = filter_shape[0]
-        ret = fftfreqn((size,), sampling_rate = 1, compute_euclidean_norm = True)
+        ret = fftfreqn((size,), sampling_rate=1, compute_euclidean_norm=True)
         min_increment = np.radians(np.min(np.abs(np.diff(np.sort(tilt_angles)))))
-        ret *= (min_increment * size)
+        ret *= min_increment * size
         np.fmin(ret, 1, out=ret)
 
         ret = np.tile(ret[:, np.newaxis], (1, filter_shape[1]))
@@ -193,7 +193,7 @@ class ReconstructFromTilt:
         volume_temp_rotated = be.zeros(shape, dtype=be._float_dtype)
         volume = be.zeros(shape, dtype=be._float_dtype)
 
-        slices = tuple(slice(a//2, (a//2) + 1) for a in shape)
+        slices = tuple(slice(a // 2, (a // 2) + 1) for a in shape)
         subset = tuple(
             slice(None) if i != opening_axis else slices[opening_axis]
             for i in range(len(shape))
@@ -423,12 +423,9 @@ class Wedge:
 
         return wedges
 
-    def weight_relion(self,
-        shape: Tuple[int],
-        opening_axis: int,
-        tilt_axis: int,
-        **kwargs
-        ) -> NDArray:
+    def weight_relion(
+        self, shape: Tuple[int], opening_axis: int, tilt_axis: int, **kwargs
+    ) -> NDArray:
         """
         Generate weighted wedges based on the RELION 1.4 formalism, weighting each
         angle using the cosine of the angle and a Gaussian lowpass filter computed
@@ -545,7 +542,7 @@ class WedgeReconstructed:
         angles: Tuple[float] = None,
         opening_axis: int = 0,
         tilt_axis: int = 2,
-        weights : Tuple[float] = None,
+        weights: Tuple[float] = None,
         weight_wedge: bool = False,
         create_continuous_wedge: bool = False,
         frequency_cutoff: float = 0.5,
@@ -675,7 +672,7 @@ class WedgeReconstructed:
         opening_axis: int,
         tilt_axis: int,
         weights: Tuple[float] = None,
-        reconstruction_filter : str = None,
+        reconstruction_filter: str = None,
         **kwargs: Dict,
     ) -> NDArray:
         """
@@ -715,7 +712,7 @@ class WedgeReconstructed:
         weights = np.repeat(weights, angles.size // weights.size)
         plane = np.zeros(
             (shape[opening_axis], shape[tilt_axis] + (1 - shape[tilt_axis] % 2)),
-            dtype=np.float32
+            dtype=np.float32,
         )
 
         # plane = np.zeros((shape[opening_axis], int(2 * np.max(shape)) + 1), dtype=np.float32)
@@ -723,7 +720,7 @@ class WedgeReconstructed:
         rec_filter = 1
         if reconstruction_filter is not None:
             rec_filter = create_reconstruction_filter(
-                plane.shape[::-1], filter_type = reconstruction_filter, tilt_angles = angles
+                plane.shape[::-1], filter_type=reconstruction_filter, tilt_angles=angles
             ).T
 
         subset = tuple(

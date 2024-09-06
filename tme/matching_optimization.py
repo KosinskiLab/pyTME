@@ -1,17 +1,16 @@
-""" Implements various methods for non-exhaustive template matching
-    based on numerical optimization.
+""" Implements methods for non-exhaustive template matching.
 
     Copyright (c) 2023 European Molecular Biology Laboratory
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-
-from typing import Tuple, Dict
+import warnings
+from typing import Tuple, List, Dict
 from abc import ABC, abstractmethod
 
 import numpy as np
 from scipy.spatial import KDTree
-from scipy.ndimage import laplace, map_coordinates
+from scipy.ndimage import laplace, map_coordinates, sobel
 from scipy.optimize import (
     minimize,
     basinhopping,
@@ -157,15 +156,13 @@ class _MatchDensityToDensity(ABC):
         if out is None:
             out = np.zeros_like(arr)
 
-        map_coordinates(arr, self.grid_out, order=order, output=out.ravel())
+        self._interpolate(arr, self.grid_out, order=order, out=out.ravel())
 
         if out_mask is None and arr_mask is not None:
             out_mask = np.zeros_like(arr_mask)
 
         if arr_mask is not None:
-            map_coordinates(
-                arr_mask, self.grid_out, order=order, output=out_mask.ravel()
-            )
+            self._interpolate(arr_mask, self.grid_out, order=order, out=out.ravel())
 
         match return_type:
             case 0:
@@ -176,6 +173,12 @@ class _MatchDensityToDensity(ABC):
                 return out_mask
             case 3:
                 return out, out_mask
+
+    @staticmethod
+    def _interpolate(data, positions, order: int = 1, out=None):
+        return map_coordinates(
+            data, positions, order=order, mode="constant", output=out
+        )
 
     def score_translation(self, x: Tuple[float]) -> float:
         """
@@ -291,6 +294,8 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
         A d-dimensional mask to be applied to the target.
     negate_score : bool, optional
         Whether the final score should be multiplied by negative one. Default is True.
+    return_gradient : bool, optional
+        Invoking __call_ returns a tuple of score and parameter gradient. Default is False.
     **kwargs : Dict, optional
         Keyword arguments propagated to downstream functions.
     """
@@ -303,40 +308,43 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
         template_mask_coordinates: NDArray = None,
         target_mask: NDArray = None,
         negate_score: bool = True,
+        return_gradient: bool = False,
+        interpolation_order: int = 1,
         **kwargs: Dict,
     ):
-        self.eps = be.eps(target.dtype)
-        self.target_density = target
-        self.target_mask_density = target_mask
+        self.target = target.astype(np.float32)
+        self.target_mask = None
+        if target_mask is not None:
+            self.target_mask = target_mask.astype(np.float32)
 
-        self.template_weights = template_weights
-        self.template_coordinates = template_coordinates
-        self.template_coordinates_rotated = np.copy(self.template_coordinates).astype(
-            np.float32
+        self.eps = be.eps(self.target.dtype)
+
+        self.target_grad = np.stack(
+            [sobel(self.target, axis=i) for i in range(self.target.ndim)]
         )
-        if template_mask_coordinates is None:
-            template_mask_coordinates = template_coordinates.copy()
 
-        self.template_mask_coordinates = template_mask_coordinates
-        self.template_mask_coordinates_rotated = template_mask_coordinates
+        self.n_points = template_coordinates.shape[1]
+        self.template = template_coordinates.astype(np.float32)
+        self.template_rotated = np.zeros_like(self.template)
+        self.template_weights = template_weights.astype(np.float32)
+        self.template_center = np.mean(self.template, axis=1)[:, None]
+
+        self.template_mask, self.template_mask_rotated = None, None
         if template_mask_coordinates is not None:
-            self.template_mask_coordinates_rotated = np.copy(
-                self.template_mask_coordinates
-            ).astype(np.float32)
+            self.template_mask = template_mask_coordinates.astype(np.float32)
+            self.template_mask_rotated = np.empty_like(self.template_mask)
 
         self.denominator = 1
         self.score_sign = -1 if negate_score else 1
+        self.interpolation_order = interpolation_order
 
-        self.in_volume, self.in_volume_mask = self.map_coordinates_to_array(
-            coordinates=self.template_coordinates_rotated,
-            coordinates_mask=self.template_mask_coordinates_rotated,
-            array_origin=be.zeros(target.ndim),
-            array_shape=self.target_density.shape,
-            sampling_rate=be.full(target.ndim, fill_value=1),
+        self._target_values = self._interpolate(
+            self.target, self.template, order=self.interpolation_order
         )
 
-        if hasattr(self, "_post_init"):
-            self._post_init(**kwargs)
+        if return_gradient and not hasattr(self, "grad"):
+            raise NotImplementedError(f"{type(self)} does not have grad method.")
+        self.return_gradient = return_gradient
 
     def score(self, x: Tuple[float]):
         """
@@ -356,119 +364,39 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
         translation, rotation_matrix = _format_rigid_transform(x)
 
         rigid_transform(
-            coordinates=self.template_coordinates,
-            coordinates_mask=self.template_mask_coordinates,
+            coordinates=self.template,
+            coordinates_mask=self.template_mask,
             rotation_matrix=rotation_matrix,
             translation=translation,
-            out=self.template_coordinates_rotated,
-            out_mask=self.template_mask_coordinates_rotated,
+            out=self.template_rotated,
+            out_mask=self.template_mask_rotated,
             use_geometric_center=False,
         )
 
-        self.in_volume, self.in_volume_mask = self.map_coordinates_to_array(
-            coordinates=self.template_coordinates_rotated,
-            coordinates_mask=self.template_mask_coordinates_rotated,
-            array_origin=be.zeros(rotation_matrix.shape[0]),
-            array_shape=self.target_density.shape,
-            sampling_rate=be.full(rotation_matrix.shape[0], fill_value=1),
+        self._target_values = self._interpolate(
+            self.target, self.template_rotated, order=self.interpolation_order
         )
 
-        return self()
+        score = self()
+        if not self.return_gradient:
+            return score
 
-    @staticmethod
-    def array_from_coordinates(
-        coordinates: NDArray,
-        weights: NDArray,
-        sampling_rate: NDArray,
-        origin: NDArray = None,
-        shape: NDArray = None,
-    ) -> Tuple[NDArray, NDArray, NDArray]:
-        """
-        Create a volume from coordinates, using given weights and voxel size.
+        return score, self.grad()
 
-        Parameters
-        ----------
-        coordinates : NDArray
-            An array representing the coordinates [d x N].
-        weights : NDArray
-            An array representing the weights for each coordinate [N].
-        sampling_rate : NDArray
-            The size of a voxel in the volume.
-        origin : NDArray, optional
-            The origin of the volume.
-        shape : NDArray, optional
-            The shape of the volume.
+    def _interpolate_gradient(self, positions):
+        ret = be.zeros(positions.shape, dtype=positions.dtype)
 
-        Returns
-        -------
-        tuple
-            Returns the generated volume, positions of coordinates, and origin.
-        """
-        if origin is None:
-            origin = coordinates.min(axis=1)
-
-        positions = np.divide(coordinates - origin[:, None], sampling_rate[:, None])
-        positions = positions.astype(int)
-
-        if shape is None:
-            shape = positions.max(axis=1) + 1
-
-        arr = np.zeros(shape, dtype=np.float32)
-        np.add.at(arr, tuple(positions), weights)
-        return arr, positions, origin
-
-    @staticmethod
-    def map_coordinates_to_array(
-        coordinates: NDArray,
-        array_shape: NDArray,
-        array_origin: NDArray,
-        sampling_rate: NDArray,
-        coordinates_mask: NDArray = None,
-    ) -> Tuple[NDArray, NDArray]:
-        """
-        Map coordinates to a volume based on given voxel size and origin.
-
-        Parameters
-        ----------
-        coordinates : NDArray
-            An array representing the coordinates to be mapped [d x N].
-        array_shape : NDArray
-            The shape of the array to which the coordinates are mapped.
-        array_origin : NDArray
-            The origin of the array to which the coordinates are mapped.
-        sampling_rate : NDArray
-            The size of a voxel in the array.
-        coordinates_mask : NDArray, optional
-            An array representing the mask for the coordinates [d x T].
-
-        Returns
-        -------
-        tuple
-            Returns transformed coordinates, transformed coordinates mask,
-            mask for in_volume points, and mask for in_volume points in mask.
-        """
-        np.divide(
-            coordinates - array_origin[:, None], sampling_rate[:, None], out=coordinates
-        )
-
-        in_volume = np.logical_and(
-            coordinates < np.array(array_shape)[:, None],
-            coordinates >= 0,
-        ).min(axis=0)
-
-        in_volume_mask = None
-        if coordinates_mask is not None:
-            np.divide(
-                coordinates_mask - array_origin[:, None],
-                sampling_rate[:, None],
-                out=coordinates_mask,
+        for k in range(self.target_grad.shape[0]):
+            ret[k, :] = self._interpolate(
+                self.target_grad[k], positions, order=self.interpolation_order
             )
-            in_volume_mask = np.logical_and(
-                coordinates_mask < np.array(array_shape)[:, None],
-                coordinates_mask >= 0,
-            ).min(axis=0)
 
-        return in_volume, in_volume_mask
+        return ret
+
+    @staticmethod
+    def _torques(positions, center, gradients):
+        positions_center = (positions - center).T
+        return be.cross(positions_center, gradients.T).T
 
 
 class _MatchCoordinatesToCoordinates(_MatchDensityToDensity):
@@ -635,14 +563,43 @@ class CrossCorrelation(_MatchCoordinatesToDensity):
 
     def __call__(self) -> float:
         """Returns the score of the current configuration."""
-        score = np.dot(
-            self.target_density[
-                tuple(self.template_coordinates_rotated[:, self.in_volume].astype(int))
-            ],
-            self.template_weights[self.in_volume],
+        score = be.dot(self._target_values, self.template_weights)
+        score /= self.denominator * self.score_sign
+        return score
+
+    def grad(self):
+        """
+        Calculate the gradient of the cost function w.r.t. translation and rotation.
+
+        .. math::
+
+            \\nabla f = -\\frac{1}{N} \\begin{bmatrix}
+            \\sum_i w_i \\nabla v(x_i) \\\\
+            \\sum_i w_i (r_i \\times \\nabla v(x_i))
+            \\end{bmatrix}
+
+        where :math:`N` is the number of points, :math:`w_i` are weights,
+        :math:`x_i` are rotated template positions, and :math:`r_i` are
+        positions relative to the template center.
+
+        Returns
+        -------
+        np.ndarray
+            Negative gradient of the cost function: [dx, dy, dz, dRx, dRy, dRz].
+
+        """
+        grad = self._interpolate_gradient(positions=self.template_rotated)
+        torque = self._torques(
+            positions=self.template_rotated, gradients=grad, center=self.template_center
         )
-        score /= self.denominator
-        return score * self.score_sign
+
+        translation_grad = be.sum(grad * self.template_weights, axis=1)
+        torque_grad = be.sum(torque * self.template_weights, axis=1)
+
+        # <u, dv/dx> / <u, r x dv/dx>
+        total_grad = be.concatenate([translation_grad, torque_grad])
+        total_grad = be.divide(total_grad, self.n_points, out=total_grad)
+        return -total_grad
 
 
 class LaplaceCrossCorrelation(CrossCorrelation):
@@ -658,15 +615,18 @@ class LaplaceCrossCorrelation(CrossCorrelation):
 
     __doc__ += _MatchCoordinatesToDensity.__doc__
 
-    def _post_init(self, **kwargs):
-        self.target_density = laplace(self.target_density)
+    def __init__(self, **kwargs):
+        kwargs["target"] = laplace(kwargs["target"])
 
-        arr, positions, _ = self.array_from_coordinates(
-            self.template_coordinates,
-            self.template_weights,
-            np.ones(self.template_coordinates.shape[0]),
-        )
-        self.template_weights = laplace(arr)[tuple(positions)]
+        coordinates = kwargs["template_coordinates"]
+        origin = coordinates.min(axis=1)
+        positions = (coordinates - origin[:, None]).astype(int)
+        shape = positions.max(axis=1) + 1
+        arr = np.zeros(shape, dtype=np.float32)
+        np.add.at(arr, tuple(positions), kwargs["template_weights"])
+
+        kwargs["template_weights"] = laplace(arr)[tuple(positions)]
+        super().__init__(**kwargs)
 
 
 class NormalizedCrossCorrelation(CrossCorrelation):
@@ -696,23 +656,75 @@ class NormalizedCrossCorrelation(CrossCorrelation):
     __doc__ += _MatchCoordinatesToDensity.__doc__
 
     def __call__(self) -> float:
-        n_observations = be.sum(self.in_volume_mask)
-        target_coordinates = be.astype(
-            self.template_mask_coordinates_rotated[:, self.in_volume_mask], int
+        denominator = be.multiply(
+            np.linalg.norm(self.template_weights), np.linalg.norm(self._target_values)
         )
-        target_weight = self.target_density[tuple(target_coordinates)]
-        ex2 = be.divide(be.sum(be.square(target_weight)), n_observations)
-        e2x = be.square(be.divide(be.sum(target_weight), n_observations))
 
-        denominator = be.maximum(be.subtract(ex2, e2x), 0.0)
-        denominator = be.sqrt(denominator)
-        denominator = be.multiply(denominator, n_observations)
-
-        if denominator <= self.eps:
+        if denominator <= 0:
             return 0.0
 
         self.denominator = denominator
         return super().__call__()
+
+    def grad(self):
+        """
+        Calculate the normalized gradient of the cost function w.r.t. translation and rotation.
+
+        .. math::
+
+            \\nabla f = -\\frac{1}{N|w||v|^3} \\begin{bmatrix}
+            (\\sum_i w_i \\nabla v(x_i))|v|^2 - (\\sum_i v(x_i)
+                \\nabla v(x_i))(w \\cdot v) \\\\
+            (\\sum_i w_i (r_i \\times \\nabla v(x_i)))|v|^2 - (\\sum_i v(x_i)
+            (r_i \\times \\nabla v(x_i)))(w \\cdot v)
+            \\end{bmatrix}
+
+        where :math:`N` is the number of points, :math:`w` are weights,
+        :math:`v` are target values, :math:`x_i` are rotated template positions,
+        and :math:`r_i` are positions relative to the template center.
+
+        Returns
+        -------
+        np.ndarray
+            Negative normalized gradient: [dx, dy, dz, dRx, dRy, dRz].
+
+        """
+        grad = self._interpolate_gradient(positions=self.template_rotated)
+        torque = self._torques(
+            positions=self.template_rotated, gradients=grad, center=self.template_center
+        )
+
+        norm = be.multiply(
+            be.power(be.sqrt(be.sum(be.square(self._target_values))), 3),
+            be.sqrt(be.sum(be.square(self.template_weights))),
+        )
+
+        # (<u,dv/dx> * |v|**2 - <u,v> * <v,dv/dx>)/(|w|*|v|**3)
+        translation_grad = be.multiply(
+            be.sum(be.multiply(grad, self.template_weights), axis=1),
+            be.sum(be.square(self._target_values)),
+        )
+        translation_grad -= be.multiply(
+            be.sum(be.multiply(grad, self._target_values), axis=1),
+            be.sum(be.multiply(self._target_values, self.template_weights)),
+        )
+
+        # (<u,r x dv/dx> * |v|**2 - <u,v> * <v,r x dv/dx>)/(|w|*|v|**3)
+        torque_grad = be.multiply(
+            be.sum(be.multiply(torque, self.template_weights), axis=1),
+            be.sum(be.square(self._target_values)),
+        )
+        torque_grad -= be.multiply(
+            be.sum(be.multiply(torque, self._target_values), axis=1),
+            be.sum(be.multiply(self._target_values, self.template_weights)),
+        )
+
+        total_grad = be.concatenate([translation_grad, torque_grad])
+        if norm > 0:
+            total_grad = be.divide(total_grad, norm, out=total_grad)
+
+        total_grad = be.divide(total_grad, self.n_points, out=total_grad)
+        return -total_grad
 
 
 class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
@@ -802,33 +814,33 @@ class MaskedCrossCorrelation(_MatchCoordinatesToDensity):
 
     def __call__(self) -> float:
         """Returns the score of the current configuration."""
+
+        in_volume = np.logical_and(
+            self.template_rotated < np.array(self.target.shape)[:, None],
+            self.template_rotated >= 0,
+        ).min(axis=0)
+        in_volume_mask = np.logical_and(
+            self.template_mask_rotated < np.array(self.target.shape)[:, None],
+            self.template_mask_rotated >= 0,
+        ).min(axis=0)
+
         mask_overlap = np.sum(
-            self.target_mask_density[
-                tuple(
-                    self.template_mask_coordinates_rotated[
-                        :, self.in_volume_mask
-                    ].astype(int)
-                )
+            self.target_mask[
+                tuple(self.template_mask_rotated[:, in_volume_mask].astype(int))
             ],
         )
         mask_overlap = np.fmax(mask_overlap, np.finfo(float).eps)
 
-        mask_target = self.target_density[
-            tuple(
-                self.template_mask_coordinates_rotated[:, self.in_volume_mask].astype(
-                    int
-                )
-            )
+        mask_target = self.target[
+            tuple(self.template_mask_rotated[:, in_volume_mask].astype(int))
         ]
         denominator1 = np.subtract(
             np.sum(mask_target**2),
             np.divide(np.square(np.sum(mask_target)), mask_overlap),
         )
         mask_template = np.multiply(
-            self.template_weights[self.in_volume],
-            self.target_mask_density[
-                tuple(self.template_coordinates_rotated[:, self.in_volume].astype(int))
-            ],
+            self.template_weights[in_volume],
+            self.target_mask[tuple(self.template_rotated[:, in_volume].astype(int))],
         )
         denominator2 = np.subtract(
             np.sum(mask_template**2),
@@ -840,10 +852,8 @@ class MaskedCrossCorrelation(_MatchCoordinatesToDensity):
         denominator = np.sqrt(np.multiply(denominator1, denominator2))
 
         numerator = np.dot(
-            self.target_density[
-                tuple(self.template_coordinates_rotated[:, self.in_volume].astype(int))
-            ],
-            self.template_weights[self.in_volume],
+            self.target[tuple(self.template_rotated[:, in_volume].astype(int))],
+            self.template_weights[in_volume],
         )
 
         numerator -= np.divide(
@@ -877,21 +887,9 @@ class PartialLeastSquareDifference(_MatchCoordinatesToDensity):
 
     def __call__(self) -> float:
         """Returns the score of the current configuration."""
-        score = np.sum(
-            np.square(
-                np.subtract(
-                    self.target_density[
-                        tuple(
-                            self.template_coordinates_rotated[:, self.in_volume].astype(
-                                int
-                            )
-                        )
-                    ],
-                    self.template_weights[self.in_volume],
-                )
-            )
+        score = be.sum(
+            be.square(be.subtract(self._target_values, self.template_weights))
         )
-        score += np.sum(np.square(self.template_weights[np.invert(self.in_volume)]))
         return score * self.score_sign
 
 
@@ -917,10 +915,7 @@ class MutualInformation(_MatchCoordinatesToDensity):
     def __call__(self) -> float:
         """Returns the score of the current configuration."""
         p_xy, target, template = np.histogram2d(
-            self.target_density[
-                tuple(self.template_coordinates_rotated[:, self.in_volume].astype(int))
-            ],
-            self.template_weights[self.in_volume],
+            self._target_values, self.template_weights
         )
         p_x, p_y = np.sum(p_xy, axis=1), np.sum(p_xy, axis=0)
 
@@ -947,7 +942,7 @@ class Envelope(_MatchCoordinatesToDensity):
     References
     ----------
     .. [1]  Daven Vasishtan and Maya Topf, "Scoring functions for cryoEM density
-            fitting", Journal of Structural Biology, vol. 174, no. 2,
+            fitting", Journal of Structural Biology, vol. 1174, no. 2,
             pp. 333--343, 2011. DOI: https://doi.org/10.1016/j.jsb.2011.01.012
     """
 
@@ -956,22 +951,22 @@ class Envelope(_MatchCoordinatesToDensity):
     def __init__(self, target_threshold: float = None, **kwargs):
         super().__init__(**kwargs)
         if target_threshold is None:
-            target_threshold = np.mean(self.target_density)
-        self.target_density = np.where(self.target_density > target_threshold, -1, 1)
-        self.target_density_present = np.sum(self.target_density == -1)
-        self.target_density_absent = np.sum(self.target_density == 1)
+            target_threshold = np.mean(self.target)
+        self.target = np.where(self.target > target_threshold, -1, 1)
+        self.target_present = np.sum(self.target == -1)
+        self.target_absent = np.sum(self.target == 1)
         self.template_weights = np.ones_like(self.template_weights)
 
     def __call__(self) -> float:
         """Returns the score of the current configuration."""
-        score = self.target_density[
-            tuple(self.template_coordinates_rotated[:, self.in_volume].astype(int))
-        ]
-        unassigned_density = self.target_density_present - (score == -1).sum()
+        score = self._target_values
+        unassigned_density = self.target_present - (score == -1).sum()
 
-        score = score.sum() - unassigned_density - 2 * np.sum(np.invert(self.in_volume))
-        min_score = -self.target_density_present - 2 * self.target_density_absent
-        score = (score - 2 * min_score) / (2 * self.target_density_present - min_score)
+        # Out of volume values will be set to 0
+        score = score.sum() - unassigned_density
+        score -= 2 * np.sum(np.invert(np.abs(self._target_values) > 0))
+        min_score = -self.target_present - 2 * self.target_absent
+        score = (score - 2 * min_score) / (2 * self.target_present - min_score)
 
         return score * self.score_sign
 
@@ -1271,7 +1266,15 @@ def optimize_match(
 
     x0 = np.zeros(2 * ndim) if x0 is None else x0
 
+    return_gradient = getattr(score_object, "return_gradient", False)
+    if optimization_method != "minimize" and return_gradient:
+        warnings.warn("Gradient only considered for optimization_method='minimize'.")
+        score_object.return_gradient = False
+
     initial_score = score_object.score(x=x0)
+    if isinstance(initial_score, (List, Tuple)):
+        initial_score = initial_score[0]
+
     if optimization_method == "basinhopping":
         result = basinhopping(
             x0=x0,
@@ -1287,10 +1290,14 @@ def optimize_match(
             maxiter=maxiter,
         )
     elif optimization_method == "minimize":
-        print(maxiter)
+        if hasattr(score_object, "grad") and not return_gradient:
+            warnings.warn(
+                "Consider initializing score object with return_gradient=True."
+            )
         result = minimize(
             x0=x0,
             fun=score_object.score,
+            jac=return_gradient,
             bounds=bounds,
             constraints=linear_constraint,
             options={"maxiter": maxiter},

@@ -90,12 +90,12 @@ def _setup_template_filter_apply_target_filter(
         #     pad_fourier=False,
         # )
         fastt_shape = matching_data._template.shape
-        matching_data.template = be.reverse(
-            be.topleft_pad(matching_data.template, fastt_shape)
-        )
-        matching_data.template_mask = be.reverse(
-            be.topleft_pad(matching_data.template_mask, fastt_shape)
-        )
+        # matching_data.template = be.reverse(
+        #     be.topleft_pad(matching_data.template, fastt_shape)
+        # )
+        # matching_data.template_mask = be.reverse(
+        #     be.topleft_pad(matching_data.template_mask, fastt_shape)
+        # )
         matching_data._set_matching_dimension(
             target_dims=matching_data._target_dims,
             template_dims=matching_data._template_dims,
@@ -208,7 +208,7 @@ def scan(
 
     Examples
     --------
-    Schematically, using :py:meth:`scan` is similar to :py:meth:`scan_subsets`,
+    Schematically, :py:meth:`scan` is identical to :py:meth:`scan_subsets`,
     with the distinction that the objects contained in ``matching_data`` are not
     split and the search is only parallelized over angles.
     Assuming you have followed the example in :py:meth:`scan_subsets`, :py:meth:`scan`

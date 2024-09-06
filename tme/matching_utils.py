@@ -645,7 +645,7 @@ def get_rotation_matrices(
         dets = np.linalg.det(ret)
         neg_dets = dets < 0
         ret[neg_dets, :, -1] *= -1
-        ret[0] = np.eye(dim, dtype = ret.dtype)
+        ret[0] = np.eye(dim, dtype=ret.dtype)
     return ret
 
 

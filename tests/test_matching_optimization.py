@@ -101,56 +101,6 @@ class TestMatchDensityToCoordinates:
         score = instance()
         assert isinstance(score, float)
 
-    def test_map_coordinates_to_array(self):
-        ret = _MatchCoordinatesToDensity.map_coordinates_to_array(
-            coordinates=self.coordinates.astype(np.float32),
-            array_shape=self.target.shape,
-            array_origin=np.zeros(self.target.ndim),
-            sampling_rate=np.ones(self.target.ndim),
-        )
-        assert len(ret) == 2
-
-        in_vol, in_vol_mask = ret
-
-        assert in_vol_mask is None
-        assert np.allclose(in_vol.shape, self.coordinates.shape[1])
-
-    def test_map_coordinates_to_array_mask(self):
-        ret = _MatchCoordinatesToDensity.map_coordinates_to_array(
-            coordinates=self.coordinates.astype(np.float32),
-            array_shape=self.target.shape,
-            array_origin=self.origin,
-            sampling_rate=self.sampling_rate,
-            coordinates_mask=self.coordinates.astype(np.float32),
-        )
-        assert len(ret) == 2
-
-        in_vol, in_vol_mask = ret
-        assert np.allclose(in_vol, in_vol_mask)
-
-    def test_array_from_coordinates(self):
-        ret = _MatchCoordinatesToDensity.array_from_coordinates(
-            coordinates=self.coordinates,
-            weights=self.coordinates_weights,
-            sampling_rate=self.sampling_rate,
-        )
-        assert len(ret) == 3
-        arr, positions, origin = ret
-        assert arr.ndim == self.coordinates.shape[0]
-        assert positions.shape == self.coordinates.shape
-        assert origin.shape == (self.coordinates.shape[0],)
-
-        assert np.allclose(origin, self.coordinates.min(axis=1))
-
-        ret = _MatchCoordinatesToDensity.array_from_coordinates(
-            coordinates=self.coordinates,
-            weights=self.coordinates_weights,
-            sampling_rate=self.sampling_rate,
-            origin=self.origin,
-        )
-        arr, positions, origin = ret
-        assert np.allclose(origin, self.origin)
-
 
 class TestMatchCoordinateToCoordinates:
     def setup_method(self):
