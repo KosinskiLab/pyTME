@@ -12,10 +12,9 @@ jobs:
     container:
       image: python:3.11.5
       options: --shm-size=8gb
-
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Build Package
         run: |
@@ -24,7 +23,7 @@ jobs:
           python setup.py sdist bdist_wheel
 
       - name: Upload Distribution as Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/*
@@ -70,9 +69,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Install dependencies
