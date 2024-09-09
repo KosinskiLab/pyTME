@@ -1,0 +1,34 @@
+﻿PartialLeastSquareDifference
+============================
+
+.. currentmodule:: tme.matching_optimization
+
+.. autoclass:: PartialLeastSquareDifference
+
+   
+
+   
+   
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+      
+         
+         
+           PartialLeastSquareDifference.rotate_array
+         
+         
+           PartialLeastSquareDifference.score
+         
+         
+           PartialLeastSquareDifference.score_angles
+         
+         
+           PartialLeastSquareDifference.score_translation
+         
+   
+   
