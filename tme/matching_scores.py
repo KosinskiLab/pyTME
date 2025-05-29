@@ -6,7 +6,7 @@
 """
 
 import warnings
-from typing import Callable, Tuple, Dict, Optional
+from typing import Callable, Tuple, Dict
 
 import numpy as np
 from scipy.ndimage import laplace
@@ -40,155 +40,196 @@ def _shape_match(shape1: Tuple[int], shape2: Tuple[int]) -> bool:
     return shape1 == shape2
 
 
-def _setup_template_filtering(
-    forward_ft_shape: Tuple[int],
-    inverse_ft_shape: Tuple[int],
-    template_shape: Tuple[int],
-    template_filter: BackendArray,
+def _create_filter_func(
+    fwd_shape: Tuple[int],
+    inv_shape: Tuple[int],
+    arr_shape: Tuple[int],
+    arr_filter: BackendArray,
+    arr_ft_shape: Tuple[int],
+    inv_output_shape: Tuple[int],
+    real_dtype: type,
+    cmpl_dtype: type,
+    fwd_axes=None,
+    inv_axes=None,
     rfftn: Callable = None,
     irfftn: Callable = None,
 ) -> Callable:
     """
     Configure template filtering function for Fourier transforms.
 
+    Conceptually we distinguish between three cases. The base case
+    is that both template and the corresponding filter have the same
+    shape. Padding is used when the template filter is larger than
+    the template, for instance to better resolve Fourier filters. Finally
+    this function also handles the case when a filter is supposed to be
+    broadcasted over the template batch dimension.
+
     Parameters
     ----------
-    forward_ft_shape : tuple of ints
-        Shape for the forward Fourier transform.
-    inverse_ft_shape : tuple of ints
-        Shape for the inverse Fourier transform.
-    template_shape : tuple of ints
-        Shape of the template to be filtered.
-    template_filter : BackendArray
+    fwd_shape : tuple of ints
+        Input shape of rfftn.
+    inv_shape : tuple of ints
+        Input shape of irfftn.
+    arr_shape : tuple of ints
+        Shape of the array to be filtered.
+    arr_ft_shape : tuple of ints
+        Shape of the Fourier transform of the array.
+    arr_filter : BackendArray
         Precomputed filter to apply in the frequency domain.
     rfftn : Callable, optional
-        Real-to-complex FFT function.
+        Foward Fourier transform.
     irfftn : Callable, optional
-        Complex-to-real inverse FFT function.
+        Inverse Fourier transform.
 
     Returns
     -------
     Callable
         Filter function with parameters template, ft_temp and template_filter.
-
-    Notes
-    -----
-        If the shape of template_filter does not match inverse_ft_shape
-        the template is assumed to be padded and cropped back to template_shape
-        prior to filter application.
     """
-    if be.size(template_filter) == 1:
+    if be.size(arr_filter) == 1:
         return conditional_execute(identity, identity, False)
 
-    shape_mismatch = False
-    if not _shape_match(template_filter.shape, inverse_ft_shape):
-        shape_mismatch = True
-        forward_ft_shape = template_shape
-        inverse_ft_shape = template_filter.shape
+    filter_shape = tuple(int(x) for x in arr_filter.shape)
+    try:
+        product_ft_shape = np.broadcast_shapes(arr_ft_shape, filter_shape)
+    except ValueError:
+        product_ft_shape, inv_output_shape = filter_shape, arr_shape
 
-    if (rfftn is not None and irfftn is not None) or shape_mismatch:
+    rfft_valid = _shape_match(arr_shape, fwd_shape)
+    rfft_valid = rfft_valid and _shape_match(product_ft_shape, inv_shape)
+    rfft_valid = rfft_valid and rfftn is not None and irfftn is not None
+
+    # FTTs were not or built for the wrong shape
+    if not rfft_valid:
+        _fwd_shape = arr_shape
+        if all(x > y for x, y in zip(arr_shape, product_ft_shape)):
+            _fwd_shape = fwd_shape
+
         rfftn, irfftn = be.build_fft(
-            fast_shape=forward_ft_shape,
-            fast_ft_shape=inverse_ft_shape,
-            real_dtype=be._float_dtype,
-            complex_dtype=be._complex_dtype,
-            inverse_fast_shape=forward_ft_shape,
+            fwd_shape=_fwd_shape,
+            inv_shape=product_ft_shape,
+            real_dtype=real_dtype,
+            cmpl_dtype=cmpl_dtype,
+            inv_output_shape=inv_output_shape,
+            fwd_axes=fwd_axes,
+            inv_axes=inv_axes,
         )
 
     # Default case, all shapes are correctly matched
-    def _apply_template_filter(template, ft_temp, template_filter):
+    def _apply_filter(template, ft_temp, template_filter):
         ft_temp = rfftn(template, ft_temp)
         ft_temp = be.multiply(ft_temp, template_filter, out=ft_temp)
         return irfftn(ft_temp, template)
 
-    # Template is padded, filter is not. Crop and assign for continuous arrays
-    if shape_mismatch:
-        real_subset = tuple(slice(0, x) for x in forward_ft_shape)
-        _template = be.zeros(forward_ft_shape, be._float_dtype)
-        _ft_temp = be.zeros(inverse_ft_shape, be._complex_dtype)
+    if not _shape_match(arr_ft_shape, filter_shape):
+        real_subset = tuple(slice(0, x) for x in arr_shape)
+        _template = be.zeros(arr_shape, be._float_dtype)
+        _ft_temp = be.zeros(product_ft_shape, be._complex_dtype)
 
-        def _apply_filter_shape_mismatch(template, ft_temp, template_filter):
+        # Arr is padded, filter is not
+        def _apply_filter_subset(template, ft_temp, template_filter):
+            # TODO: Benchmark this
             _template[:] = template[real_subset]
-            template[real_subset] = _apply_template_filter(
-                _template, _ft_temp, template_filter
-            )
+            template[real_subset] = _apply_filter(_template, _ft_temp, template_filter)
             return template
 
-        return _apply_filter_shape_mismatch
+        # Filter application requires a broadcasting operation
+        def _apply_filter_broadcast(template, ft_temp, template_filter):
+            _ft_prod = rfftn(template, _ft_temp2)
+            _ft_res = be.multiply(_ft_prod, template_filter, out=_ft_temp)
+            return irfftn(_ft_res, _template)
 
-    return _apply_template_filter
+        if any(x > y and y == 1 for x, y in zip(filter_shape, arr_ft_shape)):
+            _template = be.zeros(inv_output_shape, be._float_dtype)
+            _ft_temp2 = be.zeros((1, *product_ft_shape[1:]), be._complex_dtype)
+            return _apply_filter_broadcast
+
+        return _apply_filter_subset
+
+    return _apply_filter
 
 
 def cc_setup(
-    rfftn: Callable,
-    irfftn: Callable,
-    template: BackendArray,
-    target: BackendArray,
+    matching_data: type,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    shared_memory_handler: type,
+    shm_handler: type,
     **kwargs,
 ) -> Dict:
     """
-    Setup function for comuting a unnormalized cross-correlation between
+    Setup function for computing the unnormalized cross-correlation between
     ``target`` (f) and ``template`` (g)
 
     .. math::
 
         \\mathcal{F}^{-1}(\\mathcal{F}(f) \\cdot \\mathcal{F}(g)^*).
 
-
     Notes
     -----
     To be used with :py:meth:`corr_scoring`.
     """
-    target_pad_ft = be.zeros(fast_ft_shape, be._complex_dtype)
-    target_pad_ft = rfftn(be.topleft_pad(target, fast_shape), target_pad_ft)
-    numerator = be.zeros(1, be._float_dtype)
-    inv_denominator = be.zeros(1, be._float_dtype) + 1
+    target_pad = be.topleft_pad(
+        matching_data.target,
+        matching_data._batch_shape(fast_shape, matching_data._template_batch),
+    )
+    axes = matching_data._batch_axis(matching_data._batch_mask)
 
     ret = {
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
-        "template": be.to_sharedarr(template, shared_memory_handler),
-        "ft_target": be.to_sharedarr(target_pad_ft, shared_memory_handler),
-        "inv_denominator": be.to_sharedarr(inv_denominator, shared_memory_handler),
-        "numerator": be.to_sharedarr(numerator, shared_memory_handler),
+        "template": be.to_sharedarr(matching_data.template, shm_handler),
+        "ft_target": be.to_sharedarr(be.rfftn(target_pad, axes=axes), shm_handler),
+        "inv_denominator": be.to_sharedarr(
+            be.zeros(1, be._float_dtype) + 1, shm_handler
+        ),
+        "numerator": be.to_sharedarr(be.zeros(1, be._float_dtype), shm_handler),
     }
 
     return ret
 
 
-def lcc_setup(target: BackendArray, template: BackendArray, **kwargs) -> Dict:
+def lcc_setup(matching_data, **kwargs) -> Dict:
     """
-    Setup function for computing a laplace cross-correlation between
+    Setup function for computing the laplace cross-correlation between
     ``target`` (f) and ``template`` (g)
 
     .. math::
 
         \\mathcal{F}^{-1}(\\mathcal{F}(\\nabla^{2}f) \\cdot \\mathcal{F}(\\nabla^{2} g)^*)
 
-
     Notes
     -----
     To be used with :py:meth:`corr_scoring`.
     """
-    target, template = be.to_numpy_array(target), be.to_numpy_array(template)
-    kwargs["target"] = be.to_backend_array(laplace(target, mode="wrap"))
-    kwargs["template"] = be.to_backend_array(laplace(template, mode="wrap"))
-    return cc_setup(**kwargs)
+    target = be.to_numpy_array(matching_data._target)
+    template = be.to_numpy_array(matching_data._template)
+
+    subsets = matching_data._batch_iter(
+        target.shape,
+        tuple(1 if i in matching_data._target_dim else 0 for i in range(target.ndim)),
+    )
+    for subset in subsets:
+        target[subset] = laplace(target[subset], mode="wrap")
+
+    subsets = matching_data._batch_iter(
+        template.shape,
+        tuple(1 if i in matching_data._template_dim else 0 for i in range(target.ndim)),
+    )
+    for subset in subsets:
+        template[subset] = laplace(template[subset], mode="wrap")
+
+    matching_data._target = target
+    matching_data._template = template
+
+    return cc_setup(matching_data=matching_data, **kwargs)
 
 
 def corr_setup(
-    rfftn: Callable,
-    irfftn: Callable,
-    template: BackendArray,
-    template_mask: BackendArray,
-    template_filter: BackendArray,
-    target: BackendArray,
+    matching_data,
+    template_filter,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    shared_memory_handler: type,
+    shm_handler: type,
     **kwargs,
 ) -> Dict:
     """
@@ -214,27 +255,25 @@ def corr_setup(
     ----------
     .. [1]  Lewis P. J. Fast Normalized Cross-Correlation, Industrial Light and Magic.
     """
-    target_pad = be.topleft_pad(target, fast_shape)
+    template, template_mask = matching_data.template, matching_data.template_mask
+    target_pad = be.topleft_pad(
+        matching_data.target,
+        matching_data._batch_shape(fast_shape, matching_data._template_batch),
+    )
+    data_axes = matching_data._batch_axis(matching_data._batch_mask)
+    data_shape = tuple(fast_shape[i] for i in data_axes)
 
-    # The exact composition of the denominator is debatable
-    # scikit-image match_template multiplies the running sum of the target
-    # with a scaling factor derived from the template. This is probably appropriate
-    # in pattern matching situations where the template exists in the target
-    ft_window = be.zeros(fast_ft_shape, be._complex_dtype)
-    ft_window = rfftn(be.topleft_pad(template_mask, fast_shape), ft_window)
-    ft_target = be.zeros(fast_ft_shape, be._complex_dtype)
-    ft_target2 = be.zeros(fast_ft_shape, be._complex_dtype)
-    denominator = be.zeros(fast_shape, be._float_dtype)
-    window_sum = be.zeros(fast_shape, be._float_dtype)
+    ft_window = be.rfftn(be.topleft_pad(template_mask, fast_shape), axes=data_axes)
 
-    ft_target = rfftn(target_pad, ft_target)
-    ft_target2 = rfftn(be.square(target_pad), ft_target2)
-    ft_target2 = be.multiply(ft_target2, ft_window, out=ft_target2)
-    denominator = irfftn(ft_target2, denominator)
-    ft_window = be.multiply(ft_target, ft_window, out=ft_window)
-    window_sum = irfftn(ft_window, window_sum)
+    ft_target = be.rfftn(be.square(target_pad), axes=data_axes)
+    ft_target = be.multiply(ft_target, ft_window)
+    denominator = be.irfftn(ft_target, s=data_shape, axes=data_axes)
 
-    target_pad, ft_target2, ft_window = None, None, None
+    ft_target = be.rfftn(target_pad, axes=data_axes)
+    ft_window = be.multiply(ft_target, ft_window)
+    window_sum = be.irfftn(ft_window, s=data_shape, axes=data_axes)
+
+    target_pad, ft_window = None, None
 
     # TODO: Factor in template_filter here
     if be.size(template_filter) != 1:
@@ -242,16 +281,23 @@ def corr_setup(
             "CORR scores obtained with template_filter are not correctly scaled. "
             "Please use a different score or consider only relative peak heights."
         )
-    n_obs, norm_func = be.sum(template_mask), normalize_template
-    if be.datatype_bytes(template_mask.dtype) == 2:
-        norm_func = _normalize_template_overflow_safe
-        n_obs = be.sum(be.astype(template_mask, be._overflow_safe_dtype))
-
-    template = norm_func(template, template_mask, n_obs)
-    template_mean = be.sum(be.multiply(template, template_mask))
+    axis = matching_data._batch_axis(matching_data._template_batch)
+    n_obs = be.sum(
+        be.astype(template_mask, be._overflow_safe_dtype), axis=axis, keepdims=True
+    )
+    template_mean = be.multiply(template, template_mask)
+    template_mean = be.sum(template_mean, axis=axis, keepdims=True)
     template_mean = be.divide(template_mean, n_obs)
-    template_ssd = be.sum(be.square(template - template_mean) * template_mask)
-    template_volume = np.prod(tuple(int(x) for x in template.shape))
+    template_ssd = be.square(template - template_mean) * template_mask
+    template_ssd = be.sum(template_ssd, axis=axis, keepdims=True)
+
+    template_volume = np.prod(
+        tuple(
+            int(x)
+            for i, x in enumerate(template.shape)
+            if matching_data._template_batch[i] == 0
+        )
+    )
     template = be.multiply(template, template_mask, out=template)
 
     numerator = be.multiply(window_sum, template_mean)
@@ -271,16 +317,16 @@ def corr_setup(
     ret = {
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
-        "template": be.to_sharedarr(template, shared_memory_handler),
-        "ft_target": be.to_sharedarr(ft_target, shared_memory_handler),
-        "inv_denominator": be.to_sharedarr(denominator, shared_memory_handler),
-        "numerator": be.to_sharedarr(numerator, shared_memory_handler),
+        "template": be.to_sharedarr(template, shm_handler),
+        "ft_target": be.to_sharedarr(ft_target, shm_handler),
+        "inv_denominator": be.to_sharedarr(denominator, shm_handler),
+        "numerator": be.to_sharedarr(numerator, shm_handler),
     }
 
     return ret
 
 
-def cam_setup(template: BackendArray, target: BackendArray, **kwargs) -> Dict:
+def cam_setup(matching_data, **kwargs) -> Dict:
     """
     Like :py:meth:`corr_setup` but with standardized ``target``, ``template``
 
@@ -292,149 +338,150 @@ def cam_setup(template: BackendArray, target: BackendArray, **kwargs) -> Dict:
     -----
     To be used with :py:meth:`corr_scoring`.
     """
-    template = (template - be.mean(template)) / be.std(template)
-    target = (target - be.mean(target)) / be.std(target)
-    return corr_setup(template=template, target=target, **kwargs)
+    template = matching_data._template
+    axis = matching_data._batch_axis(matching_data._target_batch)
+    matching_data._template = be.divide(
+        be.subtract(template, be.mean(template, axis=axis, keepdims=True)),
+        be.std(template, axis=axis, keepdims=True),
+    )
+    target = matching_data._target
+    axis = matching_data._batch_axis(matching_data._template_batch)
+    matching_data._target = be.divide(
+        be.subtract(target, be.mean(target, axis=axis, keepdims=True)),
+        be.std(target, axis=axis, keepdims=True),
+    )
+    return corr_setup(matching_data=matching_data, **kwargs)
 
 
 def flc_setup(
-    rfftn: Callable,
-    irfftn: Callable,
-    template: BackendArray,
-    template_mask: BackendArray,
-    target: BackendArray,
+    matching_data,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    shared_memory_handler: type,
+    shm_handler: type,
     **kwargs,
 ) -> Dict:
     """
     Setup function for :py:meth:`flc_scoring`.
     """
-    target_pad = be.topleft_pad(target, fast_shape)
-    ft_target = be.zeros(fast_ft_shape, be._complex_dtype)
-    ft_target2 = be.zeros(fast_ft_shape, be._complex_dtype)
+    target_pad = be.topleft_pad(
+        matching_data.target,
+        matching_data._batch_shape(fast_shape, matching_data._template_batch),
+    )
 
-    ft_target = rfftn(target_pad, ft_target)
+    data_axes = matching_data._batch_axis(matching_data._batch_mask)
+
+    ft_target = be.rfftn(target_pad, axes=data_axes)
     target_pad = be.square(target_pad, out=target_pad)
-    ft_target2 = rfftn(target_pad, ft_target2)
-    template = normalize_template(template, template_mask, be.sum(template_mask))
+    ft_target2 = be.rfftn(target_pad, axes=data_axes)
 
     ret = {
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
-        "template": be.to_sharedarr(template, shared_memory_handler),
-        "template_mask": be.to_sharedarr(template_mask, shared_memory_handler),
-        "ft_target": be.to_sharedarr(ft_target, shared_memory_handler),
-        "ft_target2": be.to_sharedarr(ft_target2, shared_memory_handler),
+        "template": be.to_sharedarr(matching_data.template, shm_handler),
+        "template_mask": be.to_sharedarr(matching_data.template_mask, shm_handler),
+        "ft_target": be.to_sharedarr(ft_target, shm_handler),
+        "ft_target2": be.to_sharedarr(ft_target2, shm_handler),
     }
 
     return ret
 
 
 def flcSphericalMask_setup(
-    rfftn: Callable,
-    irfftn: Callable,
-    template: BackendArray,
-    template_mask: BackendArray,
-    target: BackendArray,
+    matching_data,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    shared_memory_handler: type,
+    shm_handler: type,
     **kwargs,
 ) -> Dict:
     """
-    Setup for :py:meth:`corr_scoring`, like :py:meth:`flc_setup` but for rotation
-    invariant masks.
+    Like :py:meth:`flc_setup` for rotation invariant masks
+
+    Notes
+    -----
+    To be used with :py:meth:`corr_scoring`.
     """
-    n_obs, norm_func = be.sum(template_mask), normalize_template
-    if be.datatype_bytes(template_mask.dtype) == 2:
-        norm_func = _normalize_template_overflow_safe
-        n_obs = be.sum(be.astype(template_mask, be._overflow_safe_dtype))
-
-    target_pad = be.topleft_pad(target, fast_shape)
-    temp = be.zeros(fast_shape, be._float_dtype)
-    temp2 = be.zeros(fast_shape, be._float_dtype)
-    numerator = be.zeros(1, be._float_dtype)
-    ft_target = be.zeros(fast_ft_shape, be._complex_dtype)
-    ft_template_mask = be.zeros(fast_ft_shape, be._complex_dtype)
-    ft_temp = be.zeros(fast_ft_shape, be._complex_dtype)
-
-    template = norm_func(template, template_mask, n_obs)
-    ft_template_mask = rfftn(
-        be.topleft_pad(template_mask, fast_shape), ft_template_mask
+    template_mask = matching_data.template_mask
+    axis = matching_data._batch_axis(matching_data._template_batch)
+    n_obs = be.sum(
+        be.astype(template_mask, be._overflow_safe_dtype), axis=axis, keepdims=True
     )
 
-    # E(X^2) - E(X)^2
-    ft_target = rfftn(be.square(target_pad), ft_target)
+    target_pad = be.topleft_pad(
+        matching_data.target,
+        matching_data._batch_shape(fast_shape, matching_data._template_batch),
+    )
+
+    # Enable mask broadcasting
+    _out_shape = tuple(
+        y if i in axis else x
+        for i, (x, y) in enumerate(zip(template_mask.shape, fast_shape))
+    )
+    template_mask_pad = be.topleft_pad(
+        template_mask,
+        matching_data._batch_shape(_out_shape, matching_data._target_batch),
+    )
+
+    data_axes = matching_data._batch_axis(matching_data._batch_mask)
+    data_shape = tuple(fast_shape[i] for i in data_axes)
+
+    ft_temp = be.zeros(fast_ft_shape, be._complex_dtype)
+    ft_template_mask = be.rfftn(template_mask_pad, s=data_shape, axes=data_axes)
+
+    ft_target = be.rfftn(be.square(target_pad), axes=data_axes)
     ft_temp = be.multiply(ft_target, ft_template_mask, out=ft_temp)
-    temp2 = irfftn(ft_temp, temp2)
-    temp2 = be.divide(temp2, n_obs, out=temp2)
+    temp2 = be.irfftn(ft_temp, s=data_shape, axes=data_axes)
 
-    ft_target = rfftn(target_pad, ft_target)
+    ft_target = be.rfftn(target_pad, axes=data_axes)
     ft_temp = be.multiply(ft_target, ft_template_mask, out=ft_temp)
-    temp = irfftn(ft_temp, temp)
-    temp = be.divide(temp, n_obs, out=temp)
-    temp = be.square(temp, out=temp)
+    temp = be.irfftn(ft_temp, s=data_shape, axes=data_axes)
 
-    temp = be.subtract(temp2, temp, out=temp)
-    temp = be.maximum(temp, 0.0, out=temp)
-    temp = be.sqrt(temp, out=temp)
-
-    # Avoide divide by zero warnings
-    mask = temp > be.eps(be._float_dtype)
-    temp = be.multiply(temp, mask * n_obs, out=temp)
-    temp = be.add(temp, ~mask, out=temp)
-    temp2 = be.divide(1, temp, out=temp)
-    temp2 = be.multiply(temp2, mask, out=temp2)
-
+    temp2 = be.norm_scores(1, temp2, temp, n_obs, be.eps(be._float_dtype), temp2)
     ret = {
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
-        "template": be.to_sharedarr(template, shared_memory_handler),
-        "template_mask": be.to_sharedarr(template_mask, shared_memory_handler),
-        "ft_target": be.to_sharedarr(ft_target, shared_memory_handler),
-        "inv_denominator": be.to_sharedarr(temp2, shared_memory_handler),
-        "numerator": be.to_sharedarr(numerator, shared_memory_handler),
+        "template": be.to_sharedarr(matching_data.template, shm_handler),
+        "template_mask": be.to_sharedarr(template_mask, shm_handler),
+        "ft_target": be.to_sharedarr(ft_target, shm_handler),
+        "inv_denominator": be.to_sharedarr(temp2, shm_handler),
+        "numerator": be.to_sharedarr(be.zeros(1, be._float_dtype), shm_handler),
     }
 
     return ret
 
 
 def mcc_setup(
-    rfftn: Callable,
-    irfftn: Callable,
-    template: BackendArray,
-    template_mask: BackendArray,
-    target: BackendArray,
-    target_mask: BackendArray,
+    matching_data,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    shared_memory_handler: Callable,
+    shm_handler: Callable,
     **kwargs,
 ) -> Dict:
     """
     Setup function for :py:meth:`mcc_scoring`.
     """
+    target, target_mask = matching_data.target, matching_data.target_mask
     target = be.multiply(target, target_mask > 0, out=target)
-    target_pad = be.topleft_pad(target, fast_shape)
 
-    ft_target = be.zeros(fast_ft_shape, be._complex_dtype)
-    ft_target2 = be.zeros(fast_ft_shape, be._complex_dtype)
-    target_mask_ft = be.zeros(fast_ft_shape, be._complex_dtype)
-
-    ft_target = rfftn(target_pad, ft_target)
-    ft_target2 = rfftn(be.square(target_pad), ft_target2)
-    target_mask_ft = rfftn(be.topleft_pad(target_mask, fast_shape), target_mask_ft)
+    target = be.topleft_pad(
+        target,
+        matching_data._batch_shape(fast_shape, matching_data._template_batch),
+    )
+    target_mask = be.topleft_pad(
+        target_mask,
+        matching_data._batch_shape(fast_shape, matching_data._template_batch),
+    )
+    ax = matching_data._batch_axis(matching_data._batch_mask)
 
     ret = {
         "fast_shape": fast_shape,
         "fast_ft_shape": fast_ft_shape,
-        "template": be.to_sharedarr(template, shared_memory_handler),
-        "template_mask": be.to_sharedarr(template_mask, shared_memory_handler),
-        "ft_target": be.to_sharedarr(ft_target, shared_memory_handler),
-        "ft_target2": be.to_sharedarr(ft_target2, shared_memory_handler),
-        "ft_target_mask": be.to_sharedarr(target_mask_ft, shared_memory_handler),
+        "template": be.to_sharedarr(matching_data.template, shm_handler),
+        "template_mask": be.to_sharedarr(matching_data.template_mask, shm_handler),
+        "ft_target": be.to_sharedarr(be.rfftn(target, axes=ax), shm_handler),
+        "ft_target2": be.to_sharedarr(
+            be.rfftn(be.square(target), axes=ax), shm_handler
+        ),
+        "ft_target_mask": be.to_sharedarr(be.rfftn(target_mask, axes=ax), shm_handler),
     }
 
     return ret
@@ -452,7 +499,7 @@ def corr_scoring(
     callback: CallbackClass,
     interpolation_order: int,
     template_mask: shm_type = None,
-) -> Optional[CallbackClass]:
+) -> CallbackClass:
     """
     Calculates a normalized cross-correlation between a target f and a template g.
 
@@ -521,23 +568,30 @@ def corr_scoring(
 
     arr = be.zeros(fast_shape, be._float_dtype)
     ft_temp = be.zeros(fast_ft_shape, be._complex_dtype)
-    rfftn, irfftn = be.build_fft(
-        fast_shape=fast_shape,
-        fast_ft_shape=fast_ft_shape,
-        real_dtype=be._float_dtype,
-        complex_dtype=be._complex_dtype,
-        temp_real=arr,
-        temp_fft=ft_temp,
-    )
 
-    template_filter_func = _setup_template_filtering(
-        forward_ft_shape=fast_shape,
-        inverse_ft_shape=fast_ft_shape,
-        template_shape=template.shape,
-        template_filter=template_filter,
+    _fftargs = {
+        "real_dtype": be._float_dtype,
+        "cmpl_dtype": be._complex_dtype,
+        "inv_output_shape": fast_shape,
+        "fwd_axes": None,
+        "inv_axes": None,
+        "inv_shape": fast_ft_shape,
+        "temp_fwd": arr,
+    }
+
+    _fftargs["fwd_shape"] = _fftargs["temp_fwd"].shape
+    rfftn, irfftn = be.build_fft(temp_inv=ft_temp, **_fftargs)
+    _ = _fftargs.pop("temp_fwd", None)
+
+    template_filter_func = _create_filter_func(
+        arr_shape=template.shape,
+        arr_ft_shape=fast_ft_shape,
+        arr_filter=template_filter,
         rfftn=rfftn,
         irfftn=irfftn,
+        **_fftargs,
     )
+
     unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
@@ -548,7 +602,7 @@ def corr_scoring(
             out=arr,
             use_geometric_center=True,
             order=interpolation_order,
-            cache=True,
+            cache=False,
         )
         arr = template_filter_func(arr, ft_temp, template_filter)
         norm_template(arr[unpadded_slice], template_mask, mask_sum)
@@ -575,7 +629,7 @@ def flc_scoring(
     rotations: BackendArray,
     callback: CallbackClass,
     interpolation_order: int,
-) -> Optional[CallbackClass]:
+) -> CallbackClass:
     """
     Computes a normalized cross-correlation between ``target`` (f),
     ``template`` (g), and ``template_mask`` (m)
@@ -620,11 +674,6 @@ def flc_scoring(
     interpolation_order : int
         Spline order for template rotations.
 
-    Returns
-    -------
-    Optional[CallbackClass]
-        ``callback`` if provided otherwise None.
-
     References
     ----------
     .. [1]  Hrabe T. et al, J. Struct. Biol. 178, 177 (2012).
@@ -642,22 +691,27 @@ def flc_scoring(
     ft_temp = be.zeros(fast_ft_shape, complex_dtype)
     ft_denom = be.zeros(fast_ft_shape, complex_dtype)
 
-    rfftn, irfftn = be.build_fft(
-        fast_shape=fast_shape,
-        fast_ft_shape=fast_ft_shape,
-        real_dtype=float_dtype,
-        complex_dtype=complex_dtype,
-        temp_real=arr,
-        temp_fft=ft_temp,
-    )
+    _fftargs = {
+        "real_dtype": be._float_dtype,
+        "cmpl_dtype": be._complex_dtype,
+        "inv_output_shape": fast_shape,
+        "fwd_axes": None,
+        "inv_axes": None,
+        "inv_shape": fast_ft_shape,
+        "temp_fwd": arr,
+    }
 
-    template_filter_func = _setup_template_filtering(
-        forward_ft_shape=fast_shape,
-        inverse_ft_shape=fast_ft_shape,
-        template_shape=template.shape,
-        template_filter=template_filter,
+    _fftargs["fwd_shape"] = _fftargs["temp_fwd"].shape
+    rfftn, irfftn = be.build_fft(temp_inv=ft_temp, **_fftargs)
+    _ = _fftargs.pop("temp_fwd", None)
+
+    template_filter_func = _create_filter_func(
+        arr_shape=template.shape,
+        arr_ft_shape=fast_ft_shape,
+        arr_filter=template_filter,
         rfftn=rfftn,
         irfftn=irfftn,
+        **_fftargs,
     )
 
     eps = be.eps(float_dtype)
@@ -669,17 +723,17 @@ def flc_scoring(
         arr, temp = be.rigid_transform(
             arr=template,
             arr_mask=template_mask,
-            rotation_matrix=rotations[index],
+            rotation_matrix=rotation,
             out=arr,
             out_mask=temp,
             use_geometric_center=True,
             order=interpolation_order,
-            cache=True,
+            cache=False,
         )
 
         n_obs = be.sum(temp)
         arr = template_filter_func(arr, ft_temp, template_filter)
-        arr = normalize_template(arr, temp, n_obs)
+        arr = normalize_template(arr, temp, n_obs, axis=None)
 
         ft_temp = rfftn(temp, ft_temp)
         ft_denom = be.multiply(ft_target, ft_temp, out=ft_denom)
@@ -784,22 +838,27 @@ def mcc_scoring(
     temp3 = be.zeros(fast_shape, float_dtype)
     temp_ft = be.zeros(fast_ft_shape, complex_dtype)
 
-    rfftn, irfftn = be.build_fft(
-        fast_shape=fast_shape,
-        fast_ft_shape=fast_ft_shape,
-        real_dtype=float_dtype,
-        complex_dtype=complex_dtype,
-        temp_real=numerator,
-        temp_fft=temp_ft,
-    )
+    _fftargs = {
+        "real_dtype": be._float_dtype,
+        "cmpl_dtype": be._complex_dtype,
+        "inv_output_shape": fast_shape,
+        "fwd_axes": None,
+        "inv_axes": None,
+        "inv_shape": fast_ft_shape,
+        "temp_fwd": temp,
+    }
 
-    template_filter_func = _setup_template_filtering(
-        forward_ft_shape=fast_shape,
-        inverse_ft_shape=fast_ft_shape,
-        template_shape=template.shape,
-        template_filter=template_filter,
+    _fftargs["fwd_shape"] = _fftargs["temp_fwd"].shape
+    rfftn, irfftn = be.build_fft(temp_inv=temp_ft, **_fftargs)
+    _ = _fftargs.pop("temp_fwd", None)
+
+    template_filter_func = _create_filter_func(
+        arr_shape=template.shape,
+        arr_ft_shape=fast_ft_shape,
+        arr_filter=template_filter,
         rfftn=rfftn,
         irfftn=irfftn,
+        **_fftargs,
     )
 
     callback_func = conditional_execute(callback, callback is not None)
@@ -815,7 +874,7 @@ def mcc_scoring(
             out_mask=temp,
             use_geometric_center=True,
             order=interpolation_order,
-            cache=True,
+            cache=False,
         )
 
         template_filter_func(template_rot, temp_ft, template_filter)
@@ -876,6 +935,241 @@ def mcc_scoring(
     return callback
 
 
+def _format_slice(shape, squeeze_axis):
+    ret = tuple(
+        slice(None) if i not in squeeze_axis else 0 for i, _ in enumerate(shape)
+    )
+    return ret
+
+
+def _get_batch_dim(target, template):
+    target_batch, template_batch = [], []
+    for i in range(len(target.shape)):
+        if target.shape[i] == 1 and template.shape[i] != 1:
+            template_batch.append(i)
+        if target.shape[i] != 1 and template.shape[i] == 1:
+            target_batch.append(i)
+
+    return target_batch, template_batch
+
+
+def flc_scoring2(
+    template: shm_type,
+    template_mask: shm_type,
+    ft_target: shm_type,
+    ft_target2: shm_type,
+    template_filter: shm_type,
+    fast_shape: Tuple[int],
+    fast_ft_shape: Tuple[int],
+    rotations: BackendArray,
+    callback: CallbackClass,
+    interpolation_order: int,
+) -> CallbackClass:
+    callback_func = conditional_execute(callback, callback is not None)
+
+    # Retrieve objects from shared memory
+    template = be.from_sharedarr(template)
+    template_mask = be.from_sharedarr(template_mask)
+    ft_target = be.from_sharedarr(ft_target)
+    ft_target2 = be.from_sharedarr(ft_target2)
+    template_filter = be.from_sharedarr(template_filter)
+
+    data_axes = None
+    target_batch, template_batch = _get_batch_dim(ft_target, template)
+    sqz_cmpl = tuple(1 if i in target_batch else x for i, x in enumerate(fast_ft_shape))
+    sqz_slice = tuple(slice(0, 1) if x == 1 else slice(None) for x in sqz_cmpl)
+
+    data_shape = fast_shape
+    if len(target_batch) or len(template_batch):
+        batch = (*target_batch, *template_batch)
+        data_axes = tuple(i for i in range(len(fast_shape)) if i not in batch)
+        data_shape = tuple(fast_shape[i] for i in data_axes)
+
+    arr = be.zeros(fast_shape, be._float_dtype)
+    temp = be.zeros(fast_shape, be._float_dtype)
+    temp2 = be.zeros(fast_shape, be._float_dtype)
+    ft_denom = be.zeros(fast_ft_shape, be._complex_dtype)
+
+    tmp_sqz, arr_sqz, ft_temp = temp[sqz_slice], arr[sqz_slice], ft_denom[sqz_slice]
+    if be.size(template_filter) != 1:
+        ret_shape = np.broadcast_shapes(
+            sqz_cmpl, tuple(int(x) for x in template_filter.shape)
+        )
+        ft_temp = be.zeros(ret_shape, be._complex_dtype)
+
+    _fftargs = {
+        "real_dtype": be._float_dtype,
+        "cmpl_dtype": be._complex_dtype,
+        "inv_output_shape": fast_shape,
+        "fwd_axes": data_axes,
+        "inv_axes": data_axes,
+        "inv_shape": fast_ft_shape,
+        "temp_fwd": arr_sqz if _shape_match(ft_temp.shape, sqz_cmpl) else arr,
+    }
+
+    # build_fft ignores fwd_shape if temp_fwd is given and serves only for bookkeeping
+    _fftargs["fwd_shape"] = _fftargs["temp_fwd"].shape
+    rfftn, irfftn = be.build_fft(temp_inv=ft_denom, **_fftargs)
+    _ = _fftargs.pop("temp_fwd", None)
+
+    template_filter_func = _create_filter_func(
+        arr_shape=template.shape,
+        arr_ft_shape=sqz_cmpl,
+        arr_filter=template_filter,
+        rfftn=rfftn,
+        irfftn=irfftn,
+        **_fftargs,
+    )
+
+    eps = be.eps(be._float_dtype)
+    for index in range(rotations.shape[0]):
+        rotation = rotations[index]
+        be.fill(arr, 0)
+        be.fill(temp, 0)
+        arr_sqz, tmp_sqz = be.rigid_transform(
+            arr=template,
+            arr_mask=template_mask,
+            rotation_matrix=rotation,
+            out=arr_sqz,
+            out_mask=tmp_sqz,
+            use_geometric_center=True,
+            order=interpolation_order,
+            cache=False,
+        )
+        n_obs = be.sum(tmp_sqz, axis=data_axes, keepdims=True)
+        arr_norm = template_filter_func(arr_sqz, ft_temp, template_filter)
+        arr_norm = normalize_template(arr_norm, tmp_sqz, n_obs, axis=data_axes)
+
+        ft_temp = be.rfftn(tmp_sqz, ft_temp, axes=data_axes)
+        ft_denom = be.multiply(ft_target, ft_temp, out=ft_denom)
+        temp = be.irfftn(ft_denom, temp, axes=data_axes, s=data_shape)
+        ft_denom = be.multiply(ft_target2, ft_temp, out=ft_denom)
+        temp2 = be.irfftn(ft_denom, temp2, axes=data_axes, s=data_shape)
+
+        ft_temp = rfftn(arr_norm, ft_denom)
+        ft_denom = be.multiply(ft_target, ft_temp, out=ft_denom)
+        arr = irfftn(ft_denom, arr)
+
+        be.norm_scores(arr, temp2, temp, n_obs, eps, arr)
+        callback_func(arr, rotation_matrix=rotation)
+
+    return callback
+
+
+def corr_scoring2(
+    template: shm_type,
+    template_filter: shm_type,
+    ft_target: shm_type,
+    inv_denominator: shm_type,
+    numerator: shm_type,
+    fast_shape: Tuple[int],
+    fast_ft_shape: Tuple[int],
+    rotations: BackendArray,
+    callback: CallbackClass,
+    interpolation_order: int,
+    target_filter: shm_type = None,
+    template_mask: shm_type = None,
+) -> CallbackClass:
+    template = be.from_sharedarr(template)
+    ft_target = be.from_sharedarr(ft_target)
+    inv_denominator = be.from_sharedarr(inv_denominator)
+    numerator = be.from_sharedarr(numerator)
+    template_filter = be.from_sharedarr(template_filter)
+
+    data_axes = None
+    target_batch, template_batch = _get_batch_dim(ft_target, template)
+    sqz_cmpl = tuple(1 if i in target_batch else x for i, x in enumerate(fast_ft_shape))
+    sqz_slice = tuple(slice(0, 1) if x == 1 else slice(None) for x in sqz_cmpl)
+    unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
+    if len(target_batch) or len(template_batch):
+        batch = (*target_batch, *template_batch)
+        data_axes = tuple(i for i in range(len(fast_shape)) if i not in batch)
+        unpadded_slice = tuple(
+            slice(None) if i in batch else slice(0, x)
+            for i, x in enumerate(template.shape)
+        )
+
+    arr = be.zeros(fast_shape, be._float_dtype)
+    ft_temp = be.zeros(fast_ft_shape, be._complex_dtype)
+    arr_sqz, ft_sqz = arr[sqz_slice], ft_temp[sqz_slice]
+
+    if be.size(template_filter) != 1:
+        # The filter could be w.r.t the unpadded template
+        ret_shape = tuple(
+            int(x * y) if x == 1 or y == 1 else y
+            for x, y in zip(sqz_cmpl, template_filter.shape)
+        )
+        ft_sqz = be.zeros(ret_shape, be._complex_dtype)
+
+    norm_func, norm_template, mask_sum = normalize_template, False, 1
+    if template_mask is not None:
+        template_mask = be.from_sharedarr(template_mask)
+        norm_template, mask_sum = True, be.sum(
+            be.astype(template_mask, be._overflow_safe_dtype),
+            axis=data_axes,
+            keepdims=True,
+        )
+        if be.datatype_bytes(template_mask.dtype) == 2:
+            norm_func = _normalize_template_overflow_safe
+
+    callback_func = conditional_execute(callback, callback is not None)
+    norm_template = conditional_execute(norm_func, norm_template)
+    norm_numerator = conditional_execute(
+        be.subtract, identity, _shape_match(numerator.shape, fast_shape)
+    )
+    norm_denominator = conditional_execute(
+        be.multiply, identity, _shape_match(inv_denominator.shape, fast_shape)
+    )
+
+    _fftargs = {
+        "real_dtype": be._float_dtype,
+        "cmpl_dtype": be._complex_dtype,
+        "fwd_axes": data_axes,
+        "inv_axes": data_axes,
+        "inv_shape": fast_ft_shape,
+        "inv_output_shape": fast_shape,
+        "temp_fwd": arr_sqz if _shape_match(ft_sqz.shape, sqz_cmpl) else arr,
+    }
+
+    # build_fft ignores fwd_shape if temp_fwd is given and serves only for bookkeeping
+    _fftargs["fwd_shape"] = _fftargs["temp_fwd"].shape
+    rfftn, irfftn = be.build_fft(temp_inv=ft_temp, **_fftargs)
+    _ = _fftargs.pop("temp_fwd", None)
+
+    template_filter_func = _create_filter_func(
+        arr_shape=template.shape,
+        arr_ft_shape=sqz_cmpl,
+        arr_filter=template_filter,
+        rfftn=rfftn,
+        irfftn=irfftn,
+        **_fftargs,
+    )
+
+    for index in range(rotations.shape[0]):
+        be.fill(arr, 0)
+        rotation = rotations[index]
+        arr_sqz, _ = be.rigid_transform(
+            arr=template,
+            rotation_matrix=rotation,
+            out=arr_sqz,
+            use_geometric_center=True,
+            order=interpolation_order,
+            cache=False,
+        )
+        arr_norm = template_filter_func(arr_sqz, ft_sqz, template_filter)
+        norm_template(arr_norm[unpadded_slice], template_mask, mask_sum, axis=data_axes)
+
+        ft_sqz = rfftn(arr_norm, ft_sqz)
+        ft_temp = be.multiply(ft_target, ft_sqz, out=ft_temp)
+        arr = irfftn(ft_temp, arr)
+
+        arr = norm_numerator(arr, numerator, out=arr)
+        arr = norm_denominator(arr, inv_denominator, out=arr)
+        callback_func(arr, rotation_matrix=rotation)
+
+    return callback
+
+
 MATCHING_EXHAUSTIVE_REGISTER = {
     "CC": (cc_setup, corr_scoring),
     "LCC": (lcc_setup, corr_scoring),
@@ -884,4 +1178,6 @@ MATCHING_EXHAUSTIVE_REGISTER = {
     "FLCSphericalMask": (flcSphericalMask_setup, corr_scoring),
     "FLC": (flc_setup, flc_scoring),
     "MCC": (mcc_setup, mcc_scoring),
+    "batchFLCSpherical": (flcSphericalMask_setup, corr_scoring2),
+    "batchFLC": (flc_setup, flc_scoring2),
 }

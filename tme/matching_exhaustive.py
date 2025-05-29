@@ -4,9 +4,10 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+
 import sys
 import warnings
-import traceback
+from math import prod
 from functools import wraps
 from itertools import product
 from typing import Callable, Tuple, Dict, Optional
@@ -14,36 +15,12 @@ from typing import Callable, Tuple, Dict, Optional
 from joblib import Parallel, delayed
 from multiprocessing.managers import SharedMemoryManager
 
+from .filters import Compose
 from .backends import backend as be
-from .preprocessing import Compose
 from .matching_utils import split_shape
-from .matching_scores import MATCHING_EXHAUSTIVE_REGISTER
 from .types import CallbackClass, MatchingData
+from .matching_scores import MATCHING_EXHAUSTIVE_REGISTER
 from .memory import MatchingMemoryUsage, MATCHING_MEMORY_REGISTRY
-
-
-def _handle_traceback(last_type, last_value, last_traceback):
-    """
-    Handle sys.exc_info().
-
-    Parameters
-    ----------
-    last_type : type
-        The type of the last exception.
-    last_value :
-        The value of the last exception.
-    last_traceback : traceback
-        Traceback call stack at the point where the Exception occured.
-
-    Raises
-    ------
-    Exception
-        Re-raises the last exception.
-    """
-    if last_type is None:
-        return None
-    traceback.print_tb(last_traceback)
-    raise Exception(last_value)
 
 
 def _wrap_backend(func):
@@ -59,79 +36,85 @@ def _wrap_backend(func):
 
 def _setup_template_filter_apply_target_filter(
     matching_data: MatchingData,
-    rfftn: Callable,
-    irfftn: Callable,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
     pad_template_filter: bool = True,
 ):
+    target_filter = None
+    backend_arr = type(be.zeros((1), dtype=be._float_dtype))
+    template_filter = be.full(shape=(1,), fill_value=1, dtype=be._float_dtype)
+    if isinstance(matching_data.template_filter, backend_arr):
+        template_filter = matching_data.template_filter
+
+    if isinstance(matching_data.target_filter, backend_arr):
+        target_filter = matching_data.target_filter
+
     filter_template = isinstance(matching_data.template_filter, Compose)
     filter_target = isinstance(matching_data.target_filter, Compose)
 
-    template_filter = be.full(shape=(1,), fill_value=1, dtype=be._float_dtype)
-
-    if not filter_template and not filter_target:
+    # For now assume user-supplied template_filter is correctly padded
+    if filter_target is None and target_filter is None:
         return template_filter
 
-    inv_mask = be.subtract(1, be.to_backend_array(matching_data._batch_mask))
-    filter_shape = be.multiply(be.to_backend_array(fast_ft_shape), inv_mask)
-    filter_shape = tuple(int(x) if x != 0 else 1 for x in filter_shape)
-    fast_shape = be.multiply(be.to_backend_array(fast_shape), inv_mask)
-    fast_shape = tuple(int(x) for x in fast_shape if x != 0)
+    cmpl_template_shape_full, batch_mask = fast_ft_shape, matching_data._batch_mask
+    real_shape = matching_data._batch_shape(fast_shape, batch_mask, keepdims=False)
+    cmpl_shape = matching_data._batch_shape(fast_ft_shape, batch_mask, keepdims=True)
 
-    fastt_shape, fastt_ft_shape = fast_shape, filter_shape
+    real_template_shape, cmpl_template_shape = real_shape, cmpl_shape
+    cmpl_template_shape_full = matching_data._batch_shape(
+        fast_ft_shape, matching_data._target_batch, keepdims=True
+    )
+    cmpl_target_shape_full = matching_data._batch_shape(
+        fast_ft_shape, matching_data._template_batch, keepdims=True
+    )
     if filter_template and not pad_template_filter:
-        # FFT shape acrobatics for faster filter application
-        # _, fastt_shape, _, _ = matching_data._fourier_padding(
-        #     target_shape=be.to_numpy_array(matching_data._template.shape),
-        #     template_shape=be.to_numpy_array(
-        #         [1 for _ in matching_data._template.shape]
-        #     ),
-        #     pad_fourier=False,
-        # )
-        fastt_shape = matching_data._template.shape
-        # matching_data.template = be.reverse(
-        #     be.topleft_pad(matching_data.template, fastt_shape)
-        # )
-        # matching_data.template_mask = be.reverse(
-        #     be.topleft_pad(matching_data.template_mask, fastt_shape)
-        # )
-        matching_data._set_matching_dimension(
-            target_dims=matching_data._target_dims,
-            template_dims=matching_data._template_dims,
+        out_shape = matching_data._output_template_shape
+        real_template_shape = matching_data._batch_shape(
+            out_shape, batch_mask, keepdims=False
         )
-        fastt_ft_shape = [int(x) for x in matching_data._output_template_shape]
-        fastt_ft_shape[-1] = fastt_ft_shape[-1] // 2 + 1
+        cmpl_template_shape = list(
+            matching_data._batch_shape(out_shape, batch_mask, keepdims=True)
+        )
+        cmpl_template_shape_full = list(out_shape)
+        cmpl_template_shape[-1] = cmpl_template_shape[-1] // 2 + 1
+        cmpl_template_shape_full[-1] = cmpl_template_shape_full[-1] // 2 + 1
 
+    # Setup composable filters
     target_temp = be.topleft_pad(matching_data.target, fast_shape)
-    target_temp_ft = be.zeros(fast_ft_shape, be._complex_dtype)
-    target_temp_ft = rfftn(target_temp, target_temp_ft)
+    target_temp_ft = be.rfftn(target_temp)
+    filter_kwargs = {
+        "return_real_fourier": True,
+        "shape_is_real_fourier": False,
+        "data_rfft": target_temp_ft,
+        "batch_dimension": matching_data._target_dim,
+    }
+
     if filter_template:
         template_filter = matching_data.template_filter(
-            shape=fastt_shape,
-            return_real_fourier=True,
-            shape_is_real_fourier=False,
-            data_rfft=target_temp_ft,
-            batch_dimension=matching_data._target_dims,
+            shape=real_template_shape, **filter_kwargs
         )["data"]
-        template_filter = be.reshape(template_filter, fastt_ft_shape)
+        template_filter_size = int(be.size(template_filter))
+
+        if template_filter_size == prod(cmpl_template_shape_full):
+            cmpl_template_shape = cmpl_template_shape_full
+        elif template_filter_size == prod(cmpl_shape):
+            cmpl_template_shape = cmpl_shape
+        template_filter = be.reshape(template_filter, cmpl_template_shape)
 
     if filter_target:
         target_filter = matching_data.target_filter(
-            shape=fast_shape,
-            return_real_fourier=True,
-            shape_is_real_fourier=False,
-            data_rfft=target_temp_ft,
-            weight_type=None,
-            batch_dimension=matching_data._target_dims,
+            shape=real_shape, weight_type=None, **filter_kwargs
         )["data"]
-        target_filter = be.reshape(target_filter, filter_shape)
+        if int(be.size(target_filter)) == prod(cmpl_target_shape_full):
+            cmpl_shape = cmpl_target_shape_full
+
+        target_filter = be.reshape(target_filter, cmpl_shape)
         target_temp_ft = be.multiply(target_temp_ft, target_filter, out=target_temp_ft)
 
-        target_temp = irfftn(target_temp_ft, target_temp)
+        target_temp = be.irfftn(target_temp_ft, s=target_temp.shape)
         matching_data._target = be.topleft_pad(target_temp, matching_data.target.shape)
 
-    return template_filter
+    return be.astype(be.to_backend_array(template_filter), be._float_dtype)
 
 
 def device_memory_handler(func: Callable):
@@ -145,12 +128,12 @@ def device_memory_handler(func: Callable):
             with SharedMemoryManager() as smh:
                 gpu_index = kwargs.pop("gpu_index") if "gpu_index" in kwargs else 0
                 with be.set_device(gpu_index):
-                    return_value = func(shared_memory_handler=smh, *args, **kwargs)
-        except Exception as e:
-            print(e)
+                    return_value = func(shm_handler=smh, *args, **kwargs)
+        except Exception:
             last_type, last_value, last_traceback = sys.exc_info()
         finally:
-            _handle_traceback(last_type, last_value, last_traceback)
+            if last_type is not None:
+                raise last_value.with_traceback(last_traceback)
         return return_value
 
     return inner_function
@@ -168,7 +151,9 @@ def scan(
     pad_template_filter: bool = True,
     interpolation_order: int = 3,
     jobs_per_callback_class: int = 8,
-    shared_memory_handler=None,
+    shm_handler=None,
+    target_slice=None,
+    template_slice=None,
 ) -> Optional[Tuple]:
     """
     Run template matching.
@@ -196,9 +181,8 @@ def scan(
     interpolation_order : int, optional
         Order of spline interpolation for rotations.
     jobs_per_callback_class : int, optional
-        How many jobs should be processed by a single callback_class instance,
-        if one is provided.
-    shared_memory_handler : type, optional
+        Number of jobs a callback_class instance is shared between, 8 by default.
+    shm_handler : type, optional
         Manager for shared memory objects, None by default.
 
     Returns
@@ -216,89 +200,73 @@ def scan(
 
     >>> from tme.matching_exhaustive import scan
     >>> results = scan(
-    >>>    matching_data = matching_data,
-    >>>    matching_score = matching_score,
-    >>>    matching_setup = matching_setup,
-    >>>    callback_class = callback_class,
-    >>>    callback_class_args = callback_class_args,
+    >>>    matching_data=matching_data,
+    >>>    matching_score=matching_score,
+    >>>    matching_setup=matching_setup,
+    >>>    callback_class=callback_class,
+    >>>    callback_class_args=callback_class_args,
     >>> )
 
     """
-    matching_data.to_backend()
-    (
-        conv_shape,
-        fast_shape,
-        fast_ft_shape,
-        fourier_shift,
-    ) = matching_data.fourier_padding(pad_fourier=pad_fourier)
-    template_shape = matching_data.template.shape
-
-    rfftn, irfftn = be.build_fft(
-        fast_shape=fast_shape,
-        fast_ft_shape=fast_ft_shape,
-        real_dtype=be._float_dtype,
-        complex_dtype=be._complex_dtype,
+    matching_data = matching_data.subset_by_slice(
+        target_slice=target_slice,
+        template_slice=template_slice,
+        target_pad=matching_data.target_padding(pad_target=pad_fourier),
     )
+
+    matching_data.to_backend()
+    template_shape = matching_data._batch_shape(
+        matching_data.template.shape, matching_data._template_batch
+    )
+    conv, fwd, inv, shift = matching_data.fourier_padding(pad_fourier=False)
+
     template_filter = _setup_template_filter_apply_target_filter(
         matching_data=matching_data,
-        rfftn=rfftn,
-        irfftn=irfftn,
-        fast_shape=fast_shape,
-        fast_ft_shape=fast_ft_shape,
+        fast_shape=fwd,
+        fast_ft_shape=inv,
         pad_template_filter=pad_template_filter,
     )
-    template_filter = be.astype(be.to_backend_array(template_filter), be._float_dtype)
 
-    setup = matching_setup(
-        rfftn=rfftn,
-        irfftn=irfftn,
-        template=matching_data.template,
-        template_filter=template_filter,
-        template_mask=matching_data.template_mask,
-        target=matching_data.target,
-        target_mask=matching_data.target_mask,
-        fast_shape=fast_shape,
-        fast_ft_shape=fast_ft_shape,
-        shared_memory_handler=shared_memory_handler,
-    )
-    rfftn, irfftn = None, None
-    setup["interpolation_order"] = interpolation_order
-    setup["template_filter"] = be.to_sharedarr(template_filter, shared_memory_handler)
-
-    offset = be.to_backend_array(matching_data._translation_offset)
-    convmode = "valid" if getattr(matching_data, "_is_padded", False) else "same"
     default_callback_args = {
-        "offset": be.astype(offset, be._int_dtype),
-        "thread_safe": n_jobs > 1,
-        "fourier_shift": fourier_shift,
-        "convolution_mode": convmode,
-        "targetshape": matching_data.target.shape,
+        "shape": fwd,
+        "offset": matching_data._translation_offset,
+        "fourier_shift": shift,
+        "fast_shape": fwd,
+        "targetshape": matching_data._output_shape,
         "templateshape": template_shape,
-        "convolution_shape": conv_shape,
-        "fast_shape": fast_shape,
-        "indices": getattr(matching_data, "indices", None),
-        "shared_memory_handler": shared_memory_handler,
+        "convolution_shape": conv,
+        "thread_safe": n_jobs > 1,
+        "convolution_mode": "valid" if pad_fourier else "same",
+        "shm_handler": shm_handler,
         "only_unique_rotations": True,
+        "aggregate_axis": matching_data._batch_axis(matching_data._batch_mask),
+        "n_rotations": matching_data.rotations.shape[0],
     }
     default_callback_args.update(callback_class_args)
+
+    setup = matching_setup(
+        matching_data=matching_data,
+        template_filter=template_filter,
+        fast_shape=fwd,
+        fast_ft_shape=inv,
+        shm_handler=shm_handler,
+    )
+    setup["interpolation_order"] = interpolation_order
+    setup["template_filter"] = be.to_sharedarr(template_filter, shm_handler)
 
     matching_data._free_data()
     be.free_cache()
 
-    # For highly parallel jobs, blocking in certain analyzers becomes a bottleneck
-    if getattr(callback_class, "shared", True):
+    # Some analyzers cannot be shared across processes
+    if not getattr(callback_class, "is_shareable", False):
         jobs_per_callback_class = 1
+
     n_callback_classes = max(n_jobs // jobs_per_callback_class, 1)
     callback_classes = [
-        callback_class(
-            shape=fast_shape,
-            **default_callback_args,
-        )
-        if callback_class is not None
-        else None
+        callback_class(**default_callback_args) if callback_class else None
         for _ in range(n_callback_classes)
     ]
-    callbacks = Parallel(n_jobs=n_jobs)(
+    ret = Parallel(n_jobs=n_jobs)(
         delayed(_wrap_backend(matching_score))(
             backend_name=be._backend_name,
             backend_args=be._backend_args,
@@ -309,16 +277,20 @@ def scan(
         for index, rotation in enumerate(matching_data._split_rotations_on_jobs(n_jobs))
     )
 
+    # TODO: Make sure peak callers are thread safe to begin with
+    if not getattr(callback_class, "is_shareable", False):
+        callback_classes = ret
+
     callbacks = [
         tuple(callback._postprocess(**default_callback_args))
-        for callback in callbacks
-        if callback is not None
+        for callback in callback_classes
+        if callback
     ]
     be.free_cache()
 
-    if callback_class is not None:
-        return callback_class.merge(callbacks, **default_callback_args)
-    return None
+    if callback_class:
+        ret = callback_class.merge(callbacks, **default_callback_args)
+    return ret
 
 
 def scan_subsets(
@@ -331,12 +303,13 @@ def scan_subsets(
     target_splits: Dict = {},
     template_splits: Dict = {},
     pad_target_edges: bool = False,
-    pad_fourier: bool = True,
     pad_template_filter: bool = True,
     interpolation_order: int = 3,
     jobs_per_callback_class: int = 8,
     backend_name: str = None,
     backend_args: Dict = {},
+    verbose: bool = False,
+    **kwargs,
 ) -> Optional[Tuple]:
     """
     Wrapper around :py:meth:`scan` that supports matching on splits
@@ -365,10 +338,7 @@ def scan_subsets(
         Splits for template. Default is an empty dictionary, i.e. no splits.
         See :py:meth:`tme.matching_utils.compute_parallelization_schedule`.
     pad_target_edges : bool, optional
-        Whether to pad the target boundaries by half the template shape
-        along each axis.
-    pad_fourier: bool, optional
-        Whether to pad target and template to the full convolution shape.
+        Pad the target boundaries to avoid edge effects.
     pad_template_filter: bool, optional
         Whether to pad potential template filters to the full convolution shape.
     interpolation_order : int, optional
@@ -376,6 +346,8 @@ def scan_subsets(
     jobs_per_callback_class : int, optional
         How many jobs should be processed by a single callback_class instance,
         if ones is provided.
+    verbose : bool, optional
+        Indicate matching progress.
 
     Returns
     -------
@@ -394,7 +366,7 @@ def scan_subsets(
     >>> template = target[15:25, 10:20, 30:40]
     >>> matching_data = MatchingData(target, template)
     >>> matching_data.rotations = get_rotation_matrices(
-    >>>    angular_sampling = 60, dim = target.ndim
+    >>>    angular_sampling=60, dim=target.ndim
     >>> )
 
     The template matching procedure is determined by ``matching_setup`` and
@@ -427,12 +399,12 @@ def scan_subsets(
 
     >>> from tme.matching_exhaustive import scan_subsets
     >>> results = scan_subsets(
-    >>>    matching_data = matching_data,
-    >>>    matching_score = matching_score,
-    >>>    matching_setup = matching_setup,
-    >>>    callback_class = callback_class,
-    >>>    callback_class_args = callback_class_args,
-    >>>    target_splits = target_splits,
+    >>>    matching_data=matching_data,
+    >>>    matching_score=matching_score,
+    >>>    matching_setup=matching_setup,
+    >>>    callback_class=callback_class,
+    >>>    callback_class_args=callback_class_args,
+    >>>    target_splits=target_splits,
     >>> )
 
     The ``results`` tuple contains the output of the chosen analyzer.
@@ -451,7 +423,6 @@ def scan_subsets(
     splits = tuple(product(target_splits, template_splits))
 
     outer_jobs, inner_jobs = job_schedule
-    target_pad = matching_data.target_padding(pad_target=pad_target_edges)
     if hasattr(be, "scan"):
         corr_scoring = MATCHING_EXHAUSTIVE_REGISTER.get("CORR", (None, None))[1]
         results = be.scan(
@@ -462,26 +433,26 @@ def scan_subsets(
             callback_class=callback_class,
         )
     else:
-        results = Parallel(n_jobs=outer_jobs)(
-            delayed(_wrap_backend(scan))(
-                backend_name=be._backend_name,
-                backend_args=be._backend_args,
-                matching_data=matching_data.subset_by_slice(
+        results = Parallel(n_jobs=outer_jobs, verbose=verbose)(
+            [
+                delayed(_wrap_backend(scan))(
+                    backend_name=be._backend_name,
+                    backend_args=be._backend_args,
+                    matching_data=matching_data,
+                    matching_score=matching_score,
+                    matching_setup=matching_setup,
+                    n_jobs=inner_jobs,
+                    callback_class=callback_class,
+                    callback_class_args=callback_class_args,
+                    interpolation_order=interpolation_order,
+                    pad_fourier=pad_target_edges,
+                    gpu_index=index % outer_jobs,
+                    pad_template_filter=pad_template_filter,
                     target_slice=target_split,
-                    target_pad=target_pad,
                     template_slice=template_split,
-                ),
-                matching_score=matching_score,
-                matching_setup=matching_setup,
-                n_jobs=inner_jobs,
-                callback_class=callback_class,
-                callback_class_args=callback_class_args,
-                interpolation_order=interpolation_order,
-                pad_fourier=pad_fourier,
-                gpu_index=index % outer_jobs,
-                pad_template_filter=pad_template_filter,
-            )
-            for index, (target_split, template_split) in enumerate(splits)
+                )
+                for index, (target_split, template_split) in enumerate(splits)
+            ]
         )
 
     matching_data._free_data()

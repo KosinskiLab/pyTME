@@ -11,16 +11,16 @@ Analyzers are internal callbacks that are passed to :py:class:`scan_subsets <tme
 Score aggregation
 ~~~~~~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
-   MemmapHandler
    MaxScoreOverRotations
+   MaxScoreOverTranslations
 
 
 Peak calling
 ~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    PeakCaller
    PeakCallerSort

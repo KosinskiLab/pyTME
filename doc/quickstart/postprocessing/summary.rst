@@ -10,11 +10,27 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
 
     postprocess.py --help
 
+Top-scoring peaks can be identified using
+
+.. code-block:: bash
+
+    postprocess.py \
+        --input_file output.pickle \
+        --output_prefix output \
+        --output_format orientations \
+        --min_distance 30 \
+        --min_boundary_distance 20 \
+        --num_peaks 1000
+
+Identifying no more than 1,000 top-scoring peaks that are separated by at least 20 voxel from each other and 30 voxel from the boundaries. Different peak calling strategies can be chosen from using the ``--peak_caller`` argument.
+
+Depending on the subequent use case, different ``output_format`` options are available and outlined below.
+
 .. tab-set::
 
     .. tab-item:: Orientations
 
-        The following will call 1,000 top-scoring peaks that are separated by at least 20 voxel from each other and 30 voxel from the boundaries. A tab-separated file *output.tsv* will be created in the process containing eight columns. The z, y and x column correspond to the translation, the euler_z, euler_y and euler_x column to the rotation used to obtain the column score. The detail column contains peak caller specific information.
+        A tab-separated file *output.tsv* will be created in the process containing eight columns. The z, y and x column correspond to the translation, the euler_z, euler_y and euler_x column to the rotation used to obtain the column score. The detail column contains peak caller specific information.
 
         .. code-block:: bash
 
@@ -23,12 +39,22 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
                 --output_prefix output \
                 --output_format orientations \
                 --min_distance 30 \
-                --min_boundary_distance 20\
-                --number_of_peaks 1000
+                --min_boundary_distance 20 \
+                --num_peaks 1000
 
-        .. note::
+    .. tab-item:: Relion 4 / 5
 
-            |project| uses a zyx convention, following the CCP4/MRC format. In `IMOD <https://bio3d.colorado.edu/imod/>`_ terms, a file read by :py:meth:`Density.from_file <tme.density.Density.from_file>` with data shape 500, 928, 960, will contain 960 columns, 928 rows and 500 sections. Similarly, the reported Euler angles are in intrinsic zyx convention (see :py:meth:`euler_to_rotationmatrix <tme.matching_utils.euler_to_rotationmatrix>`).
+        These options generate `STAR <https://en.wikipedia.org/wiki/Self-defining_Text_Archive_and_Retrieval>`_ files compatible with `RELION <https://github.com/3dem/relion>`_ 4 and 5. Both formats contain particle coordinates, Euler angles, scores, and source file references in a format that RELION can directly import. The coordinates and angles are identical to output_format ``orientations``. The created files differ in version headers and in the coordinate system. Relion 4 uses voxel coordinates, Relion 5 centers coordinates and scales them by the voxel size.
+
+        .. code-block:: bash
+
+            postprocess.py \
+                --input_file output.pickle \
+                --output_prefix output \
+                --output_format relion4 \
+                --min_distance 20 \
+                --num_peaks 1000
+
 
     .. tab-item:: Alignments
 
@@ -40,7 +66,7 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
                 --input_file output.pickle \
                 --output_prefix output \
                 --output_format alignment \
-                --number_of_peaks 10
+                --num_peaks 10
 
     .. tab-item:: Extraction
 
@@ -53,28 +79,8 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
                 --output_prefix output \
                 --output_format extraction \
                 --min_distance 20 \
-                --number_of_peaks 500 \
+                --num_peaks 500 \
                 --peak_caller PeakCallerMaximumFilter
-
-    .. tab-item:: Relion
-
-        This option will generate a `STAR <https://en.wikipedia.org/wiki/Self-defining_Text_Archive_and_Retrieval>`_ file and extract subtomograms which can be directly used input for reconstruction, refinement and downstream classification with `RELION <https://github.com/3dem/relion>`_. In terms of peak calling and subtomogram extraction, this option performs identical to the output_format ``extraction``. The output STAR file consists of an optics group block which contains informations about the imaging conditions, pixel size, and another data group with tab separated columns containing x, y, z coordinates (in voxels), a file path to the generated cropped subtomogram file, the Euler angles, namely rotation, tilt and psi.
-
-        The output is compatible with RELION 4.0 and was tested with relion_reconstruct, and relion_refine_mpi.
-
-        .. code-block:: bash
-
-            postprocess.py \
-                --input_file output.pickle \
-                --output_prefix output \
-                --output_format relion \
-                --min_distance 20 \
-                --number_of_peaks 1000 \
-                -—wedge_mask mask.mrc
-
-        .. note::
-
-            Without a wedge mask or a fully fledged CTF, the averages computed by `RELION <https://github.com/3dem/relion>`_ might be overly distorted due to preferential alignment of subtomograms on the missing wedge (see :doc:`masking <../preprocessing/example>`).
 
     .. tab-item:: Average
 
@@ -87,5 +93,15 @@ The ``postprocess.py`` command-line tool can be used to analyze the results gene
                 --output_prefix average \
                 --output_format average \
                 --min_distance 20 \
-                --number_of_peaks 500 \
+                --num_peaks 500 \
                 --peak_caller PeakCallerMaximumFilter
+
+.. note::
+
+    Orientations are following the conventions outlined in [1]_. We use a right-handed coordinate system with orthogonal X, Y and Z axes. Euler angles are expressed using intrinsic ZYZ convention, with the first rotation around the Z-axis, the second around the new Y-axis and the third around the new Z-axis (see :py:meth:`euler_to_rotationmatrix <tme.rotations.euler_to_rotationmatrix>`). The default orientation the z-unit vector (0, 0, 1).
+
+
+References
+----------
+
+.. [1] Heymann, J.B.; Chagoyen, M.; Belnap, D.M. Common conventions for interchange and archiving of three-dimensional electron microscopy information in structural biology. J Struct Biol 2005, 151, 196-207.

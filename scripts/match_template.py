@@ -12,26 +12,33 @@ from sys import exit
 from time import time
 from typing import Tuple
 from copy import deepcopy
-from os.path import abspath, exists
+from os.path import exists
+from tempfile import gettempdir
 
 import numpy as np
 
+from tme.backends import backend as be
 from tme import Density, __version__
-from tme.matching_utils import (
-    get_rotation_matrices,
-    get_rotations_around_vector,
-    compute_parallelization_schedule,
-    scramble_phases,
-    write_pickle,
-)
+from tme.matching_utils import scramble_phases, write_pickle
 from tme.matching_exhaustive import scan_subsets, MATCHING_EXHAUSTIVE_REGISTER
+from tme.rotations import (
+    get_cone_rotations,
+    get_rotation_matrices,
+)
 from tme.matching_data import MatchingData
 from tme.analyzer import (
     MaxScoreOverRotations,
     PeakCallerMaximumFilter,
 )
-from tme.backends import backend as be
-from tme.preprocessing import Compose
+from tme.filters import (
+    CTF,
+    Wedge,
+    Compose,
+    BandPassFilter,
+    WedgeReconstructed,
+    ReconstructFromTilt,
+    LinearWhiteningFilter,
+)
 
 
 def get_func_fullname(func) -> str:
@@ -43,6 +50,8 @@ def print_block(name: str, data: dict, label_width=20) -> None:
     """Prints a formatted block of information."""
     print(f"\n> {name}")
     for key, value in data.items():
+        if isinstance(value, np.ndarray):
+            value = value.shape
         formatted_value = str(value)
         print(f"  - {key + ':':<{label_width}} {formatted_value}")
 
@@ -122,19 +131,20 @@ def parse_rotation_logic(args, ndim):
     if args.axis_sampling is None:
         args.axis_sampling = args.cone_sampling
 
-    rotations = get_rotations_around_vector(
+    rotations = get_cone_rotations(
         cone_angle=args.cone_angle,
         cone_sampling=args.cone_sampling,
         axis_angle=args.axis_angle,
         axis_sampling=args.axis_sampling,
         n_symmetry=args.axis_symmetry,
+        axis=[0 if i != args.cone_axis else 1 for i in range(ndim)],
+        reference=[0, 0, -1],
     )
     return rotations
 
 
 def compute_schedule(
     args,
-    target: Density,
     matching_data: MatchingData,
     callback_class,
     pad_edges: bool = False,
@@ -142,27 +152,15 @@ def compute_schedule(
     # User requested target padding
     if args.pad_edges is True:
         pad_edges = True
-    template_box = matching_data._output_template_shape
-    if not args.pad_fourier:
-        template_box = tuple(0 for _ in range(len(template_box)))
 
-    target_padding = tuple(0 for _ in range(len(template_box)))
-    if pad_edges:
-        target_padding = matching_data._output_template_shape
-
-    splits, schedule = compute_parallelization_schedule(
-        shape1=target.shape,
-        shape2=tuple(int(x) for x in template_box),
-        shape1_padding=tuple(int(x) for x in target_padding),
-        max_cores=args.cores,
-        max_ram=args.memory,
-        split_only_outer=args.use_gpu,
+    splits, schedule = matching_data.computation_schedule(
         matching_method=args.score,
         analyzer_method=callback_class.__name__,
-        backend=be._backend_name,
-        float_nbytes=be.datatype_bytes(be._float_dtype),
-        complex_nbytes=be.datatype_bytes(be._complex_dtype),
-        integer_nbytes=be.datatype_bytes(be._int_dtype),
+        use_gpu=args.use_gpu,
+        pad_fourier=False,
+        pad_target_edges=pad_edges,
+        available_memory=args.memory,
+        max_cores=args.cores,
     )
 
     if splits is None:
@@ -171,21 +169,15 @@ def compute_schedule(
             " available RAM or decreasing number of cores."
         )
         exit(-1)
+
     n_splits = np.prod(list(splits.values()))
-    if pad_edges is False and n_splits > 1:
+    if pad_edges is False and len(matching_data._target_dim) == 0 and n_splits > 1:
         args.pad_edges = True
-        return compute_schedule(args, target, matching_data, callback_class, True)
+        return compute_schedule(args, matching_data, callback_class, True)
     return splits, schedule
 
 
 def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Compose]:
-    from tme.preprocessing import LinearWhiteningFilter, BandPassFilter
-    from tme.preprocessing.tilt_series import (
-        Wedge,
-        WedgeReconstructed,
-        ReconstructFromTilt,
-    )
-
     needs_reconstruction = False
     template_filter, target_filter = [], []
     if args.tilt_angles is not None:
@@ -195,7 +187,10 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
             wedge.weight_type = args.tilt_weighting
             if args.tilt_weighting in ("angle", None) and args.ctf_file is None:
                 wedge = WedgeReconstructed(
-                    angles=wedge.angles, weight_wedge=args.tilt_weighting == "angle"
+                    angles=wedge.angles,
+                    weight_wedge=args.tilt_weighting == "angle",
+                    opening_axis=args.wedge_axes[0],
+                    tilt_axis=args.wedge_axes[1],
                 )
         except FileNotFoundError:
             tilt_step, create_continuous_wedge = None, True
@@ -235,16 +230,18 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
                     weight_wedge=args.tilt_weighting == "angle",
                     create_continuous_wedge=create_continuous_wedge,
                     reconstruction_filter=args.reconstruction_filter,
+                    opening_axis=args.wedge_axes[0],
+                    tilt_axis=args.wedge_axes[1],
                 )
                 wedge_target = WedgeReconstructed(
                     angles=(np.abs(np.min(tilt_angles)), np.abs(np.max(tilt_angles))),
                     weight_wedge=False,
                     create_continuous_wedge=True,
+                    opening_axis=args.wedge_axes[0],
+                    tilt_axis=args.wedge_axes[1],
                 )
                 target_filter.append(wedge_target)
 
-        wedge.opening_axis = args.wedge_axes[0]
-        wedge.tilt_axis = args.wedge_axes[1]
         wedge.sampling_rate = template.sampling_rate
         template_filter.append(wedge)
         if not isinstance(wedge, WedgeReconstructed):
@@ -255,8 +252,6 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
             template_filter.append(reconstruction_filter)
 
     if args.ctf_file is not None or args.defocus is not None:
-        from tme.preprocessing.tilt_series import CTF
-
         needs_reconstruction = True
         if args.ctf_file is not None:
             ctf = CTF.from_file(args.ctf_file)
@@ -268,6 +263,7 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
                     "per micrograph."
                 )
             ctf.angles = wedge.angles
+            ctf.no_reconstruction = False
             ctf.opening_axis, ctf.tilt_axis = args.wedge_axes
         else:
             needs_reconstruction = False
@@ -440,6 +436,19 @@ def parse_args():
         "narrow interval around a known orientation, e.g. for surface oversampling.",
     )
     angular_group.add_argument(
+        "--cone_axis",
+        dest="cone_axis",
+        type=check_positive,
+        default=2,
+        help="Principal axis to build cone around.",
+    )
+    angular_group.add_argument(
+        "--invert_cone",
+        dest="invert_cone",
+        action="store_true",
+        help="Invert cone handedness.",
+    )
+    angular_group.add_argument(
         "--cone_sampling",
         dest="cone_sampling",
         type=check_positive,
@@ -581,8 +590,8 @@ def parse_args():
         type=str,
         required=False,
         default=None,
-        help="Indices of wedge opening and tilt axis, e.g. 0,2 for a wedge that is open "
-        "in z-direction and tilted over the x axis.",
+        help="Indices of wedge opening and tilt axis, e.g. '2,0' for a wedge open "
+        "in z and tilted over the x-axis.",
     )
     filter_group.add_argument(
         "--tilt_angles",
@@ -716,14 +725,6 @@ def parse_args():
         "a well-defined bounding box. Defaults to True if splitting is required.",
     )
     performance_group.add_argument(
-        "--pad_fourier",
-        dest="pad_fourier",
-        action="store_true",
-        default=False,
-        help="Whether input arrays should not be zero-padded to full convolution shape "
-        "for numerical stability. Typically only useful when working with small data.",
-    )
-    performance_group.add_argument(
         "--pad_filter",
         dest="pad_filter",
         action="store_true",
@@ -785,13 +786,9 @@ def parse_args():
         args.interpolation_order = None
 
     if args.temp_directory is None:
-        default = abspath(".")
-        if os.environ.get("TMPDIR", None) is not None:
-            default = os.environ.get("TMPDIR")
-        args.temp_directory = default
+        args.temp_directory = gettempdir()
 
     os.environ["TMPDIR"] = args.temp_directory
-
     if args.score not in MATCHING_EXHAUSTIVE_REGISTER:
         raise ValueError(
             f"score has to be one of {', '.join(MATCHING_EXHAUSTIVE_REGISTER.keys())}"
@@ -1007,7 +1004,11 @@ def main():
         args, template, target
     )
 
-    splits, schedule = compute_schedule(args, target, matching_data, callback_class)
+    matching_data.set_matching_dimension(
+        target_dim=target.metadata.get("batch_dimension", None),
+        template_dim=template.metadata.get("batch_dimension", None),
+    )
+    splits, schedule = compute_schedule(args, matching_data, callback_class)
 
     n_splits = np.prod(list(splits.values()))
     target_split = ", ".join(
@@ -1020,7 +1021,6 @@ def main():
         "Center Template": not args.no_centering,
         "Scramble Template": args.scramble_phases,
         "Invert Contrast": args.invert_target_contrast,
-        "Extend Fourier Grid": args.pad_fourier,
         "Extend Target Edges": args.pad_edges,
         "Interpolation Order": args.interpolation_order,
         "Setup Function": f"{get_func_fullname(matching_setup)}",
@@ -1106,13 +1106,12 @@ def main():
         callback_class_args=analyzer_args,
         target_splits=splits,
         pad_target_edges=args.pad_edges,
-        pad_fourier=args.pad_fourier,
         pad_template_filter=args.pad_filter,
         interpolation_order=args.interpolation_order,
     )
 
     candidates = list(candidates) if candidates is not None else []
-    if callback_class == MaxScoreOverRotations:
+    if issubclass(callback_class, MaxScoreOverRotations):
         if target_mask is not None and args.score != "MCC":
             candidates[0] *= target_mask.data
         with warnings.catch_warnings():

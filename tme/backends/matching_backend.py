@@ -7,7 +7,7 @@
 
 from abc import ABC, abstractmethod
 from multiprocessing import shared_memory
-from typing import Tuple, Callable, List, Any, Union, Optional, Generator
+from typing import Tuple, Callable, List, Any, Union, Optional, Generator, Dict
 
 from ..types import BackendArray, NDArray, Scalar, shm_type
 
@@ -749,6 +749,27 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
+    def at(arr, idx, value) -> NDArray:
+        """
+        Assign value to arr at idx, for compatibility with immutable array structures
+        such as jax.
+
+        Parameters
+        ----------
+        arr : BackendArray
+            Input data.
+        idx : BackendArray
+            Indices to change.
+        value: BackendArray
+            Values to assign to arr at idx.
+
+        Returns
+        -------
+        BackendArray
+            Modified input data.
+        """
+
+    @abstractmethod
     def arange(
         self, stop: Scalar, start: Scalar = 0, step: Scalar = 1, *args, **kwargs
     ) -> BackendArray:
@@ -1067,11 +1088,16 @@ class MatchingBackend(ABC):
     @abstractmethod
     def build_fft(
         self,
-        fast_shape: Tuple[int],
-        fast_ft_shape: Tuple[int],
+        fwd_shape: Tuple[int],
+        inv_shape: Tuple[int],
         real_dtype: type,
-        complex_dtype: type,
-        **kwargs,
+        cmpl_dtype: type,
+        inv_output_shape: Tuple[int] = None,
+        temp_fwd: NDArray = None,
+        temp_inv: NDArray = None,
+        fwd_axes: Tuple[int] = None,
+        inv_axes: Tuple[int] = None,
+        fftargs: Dict = {},
     ) -> Tuple[Callable, Callable]:
         """
         Build forward and inverse real fourier transform functions. The returned
@@ -1082,24 +1108,29 @@ class MatchingBackend(ABC):
 
         Parameters
         ----------
-        fast_shape : tuple
-            Tuple of integers corresponding to fast convolution shape
+        fwd_shape : tuple
+            Input shape for the forward Fourier transform.
             (see `compute_convolution_shapes`).
-        fast_ft_shape : tuple
-            Tuple of integers corresponding to the shape of the fourier
-            transform array (see `compute_convolution_shapes`).
+        inv_shape : tuple
+            Input shape for the inverse Fourier transform.
         real_dtype : dtype
-            Numpy dtype of the inverse fourier transform.
+            Data type of the forward Fourier transform.
         complex_dtype : dtype
-            Numpy dtype of the fourier transform.
-        inverse_fast_shape : tuple, optional
+            Data type of the inverse Fourier transform.
+        inv_output_shape : tuple, optional
             Output shape of the inverse Fourier transform. By default fast_shape.
         fftargs : dict, optional
             Dictionary passed to pyFFTW builders.
-        temp_real : NDArray, optional
-            Temporary real numpy array, by default None.
-        temp_fft : NDArray, optional
-            Temporary fft numpy array, by default None.
+        temp_fwd : NDArray, optional
+            Temporary array to build the forward transform. Superseeds shape defined by
+            fwd_shape if provided.
+        temp_inv : NDArray, optional
+            Temporary array to build the inverse transform. Superseeds shape defined by
+            inv_shape if provided.
+        fwd_axes : tuple of int
+            Axes to perform the forward Fourier transform over.
+        inv_axes : tuple of int
+            Axes to perform the inverse Fourier transform over.
 
         Returns
         -------
@@ -1133,9 +1164,9 @@ class MatchingBackend(ABC):
 
         Parameters
         ----------
-        arr1_shape : tuple
+        arr1_shape : tuple of int
             Tuple of integers corresponding to array1 shape.
-        arr2_shape : tuple
+        arr2_shape : tuple of int
             Tuple of integers corresponding to array2 shape.
 
         Returns
@@ -1183,6 +1214,11 @@ class MatchingBackend(ABC):
             meaning depends on backend.
         kwargs : dict, optional
             Keyword arguments relevant to particular backend implementations.
+
+        Returns
+        -------
+        out, out_mask : BackendArray or None
+            The rotated arrays.
         """
 
     @abstractmethod
@@ -1200,12 +1236,14 @@ class MatchingBackend(ABC):
 
         Parameters
         ----------
-        arr : BackendArray
+        arr : NDArray
             Input array.
+        axis : tuple of int
+            Axis to reverse, all by default.
 
         Returns
         -------
-        BackendArray
+        NDArray
             Reversed array.
         """
 

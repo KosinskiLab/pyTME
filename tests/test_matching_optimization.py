@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from tme.matching_utils import euler_from_rotationmatrix
+from tme.rotations import euler_from_rotationmatrix
 from tme.matching_optimization import (
     MATCHING_OPTIMIZATION_REGISTER,
     register_matching_optimization,

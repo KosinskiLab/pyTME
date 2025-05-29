@@ -19,7 +19,7 @@ We will first simulate a translation and rotation of the map
 
     import numpy as np
     from tme import Density
-    from tme.matching_utils import get_rotation_matrices
+    from tme.rotations import get_rotation_matrices
 
     rotation_matrix = get_rotation_matrices(40)[32]
 
@@ -52,7 +52,7 @@ The orientation with highest score, which in our case is the initial correct ori
 
     postprocess.py \
         --input_file output.pickle \
-        --number_of_peaks 1 \
+        --num_peaks 1 \
         --output_format alignment \
         --output_prefix emd_15271_fit
 

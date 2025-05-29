@@ -241,7 +241,7 @@ Denoising approaches have recently found popularity, due to their ability to gen
 
 Instead, processing before tomogram reconstruction, such as tilt-series alignment and CTF correction should be prioritized. To demonstrate the utility of CTF correction, we use a tomogram from that was CTF corrected using IMOD's phase-flip (`source <https://dataverse.nl/dataset.xhtml?persistentId=doi:10.34894/TLGJCM>`_).
 
-Shown below is the raw data on the left, baseline scores in the middle, and sores using a CTF-corrected template on the right, which reproduces the results from Chaillet et al. [2]_.
+Shown below is the raw data on the left, baseline scores in the middle, and on the right using a CTF-corrected template on the right, which reproduces the results from Chaillet et al. [2]_.
 
 
 .. image:: ../../_static/quickstart/picking_ctf_tomogram.png
@@ -282,7 +282,7 @@ and a spherical mask
         sigma_decay=1,
         shape=(60,60,60)
     )
-    mask = Density(mask, sampling_rate = 13.79)
+    mask = Density(mask, sampling_rate=13.79)
     mask.to_file("emd_2938_resampled_mask.mrc")
 
 CTF parameters were omitted from the command below to compute baseline scores

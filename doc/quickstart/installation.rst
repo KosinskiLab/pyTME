@@ -11,7 +11,7 @@ This section provides instructions on how to install |project|. We recommend cre
 
    .. tab-item:: Conda
 
-      Conda is a powerful package manager that creates isolated environments with both Python and non-Python dependencies. Conda is a good choice for more complex setups and cross-platform compatibility.
+      Best for cross-platform compatibility and managing complex dependencies.
 
       .. code-block:: bash
 
@@ -20,25 +20,25 @@ This section provides instructions on how to install |project|. We recommend cre
             -c conda-forge \
             python=3.11 \
             pyfftw \
+            pyqt
+
             napari \
             magicgui \
-            pyqt
 
    .. tab-item:: Venv
 
-      Venv is Python's built-in virtual environment module. Venv is a good choice for simpler setups, but does not handle non-Python dependencies.
+      Python's built-in option, suitable for simpler setups.
 
       .. code-block:: bash
 
          python3 -m venv pytme
          source pytme/bin/activate
-         pip install pyfftw napari magicgui PyQt5
 
    .. tab-item:: Docker
 
-      Docker containerizes the entire application and its dependencies, ensuring consistency across different systems. Docker is a good choice for deployment scenarios and provides the highest degree of reproducibility.
+      Docker is a good choice for deployment scenarios and provides the highest degree of reproducibility across different systems..
 
-      To build the Docker image locally
+      To build the Docker image
 
       .. code-block:: bash
 
@@ -52,7 +52,7 @@ This section provides instructions on how to install |project|. We recommend cre
 
       .. tip::
 
-         Latest corresponds to the current version of the main branch. You can also use a release version by specifiying the corresponding tag.
+         When using Docker, |project| will already be installed in the container. Latest corresponds to the current version of the main branch. You can also use a release version by specifiying the corresponding tag.
 
 After setting up your environment, |project| can be installed from PyPi
 
@@ -65,11 +65,6 @@ Alternatively, you can install the development version with the latest changes
 .. code-block:: bash
 
    pip install git+https://github.com/KosinskiLab/pyTME.git
-
-
-.. note::
-
-   When using Docker, |project| will already be installed in the container, so these installation steps are not necessary.
 
 
 CPU/GPU/TPU Support
@@ -136,7 +131,7 @@ CPU/GPU/TPU Support
 
          pip install mlx
 
-      The MLX library is only available for Apple silicon chips.
+      The MLX library is only available for Apple silicone chips.
 
 .. _gui-installation:
 
@@ -144,17 +139,11 @@ CPU/GPU/TPU Support
 GUI Setup
 ---------
 
-If you would like to perform interactive preprocessing and analysis of your data using the GUI shipped with |project|, you need to install the following dependency
+If you would like to perform interactive preprocessing and analysis of your data, you need to install the following dependencies
 
 .. code-block:: bash
 
-   pip install git+https://github.com/maurerv/napari-density-io.git
-
-If you have installed |project| using Conda, thats it. Otherwise, you have to install the remaining dependencies
-
-.. code-block:: bash
-
-   pip install napari magicgui PyQt5
+   pip install "napari==0.4.19.post1" magicgui git+https://github.com/maurerv/napari-density-io.git
 
 
 Troubleshooting

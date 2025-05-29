@@ -6,8 +6,11 @@
 """
 
 from typing import Tuple, Dict
+from abc import ABC, abstractmethod
 
 from tme.backends import backend as be
+
+__all__ = ["Compose", "ComposableFilter"]
 
 
 class Compose:
@@ -47,9 +50,32 @@ class Compose:
 
             if ret.get("is_multiplicative_filter", False):
                 prev_data = meta.pop("data")
-                ret["data"] = be.multiply(ret["data"], prev_data, out=ret["data"])
+                ret["data"] = be.multiply(ret["data"], prev_data)
                 ret["merge"], prev_data = None, None
 
             meta = ret
 
         return meta
+
+
+class ComposableFilter(ABC):
+    """
+    Strategy class for composable filters.
+    """
+
+    @abstractmethod
+    def __call__(self, *args, **kwargs) -> Dict:
+        """
+
+        Parameters
+        ----------
+        *args : tuple
+            Variable length argument list.
+        **kwargs : dict
+            Arbitrary keyword arguments.
+
+        Returns
+        -------
+        Dict
+            A dictionary representing the result of the filtering operation.
+        """

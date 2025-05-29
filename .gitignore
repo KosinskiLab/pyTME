@@ -73,6 +73,7 @@ doc/reference/preprocessing/api
 doc/reference/template_matching/api
 tme/package.py
 tme/scoring.py
+tme/testing_utils.py
 tests/test_packaging.py
 scripts/match_template_devel.py
 scripts/match_template_filters.py
@@ -80,4 +81,5 @@ scripts/refine_matches.py
 scripts/extract_candidates.py
 scripts/eval.py
 update_github.sh
+update_batched.sh
 doc/quickstart/plot.py

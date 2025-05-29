@@ -10,15 +10,15 @@ Memory
 Memory usage helpers
 ~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
-   estimate_ram_usage
+   estimate_memory_usage
 
 
 Abstract Base
 ~~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    MatchingMemoryUsage
 
@@ -26,9 +26,8 @@ Abstract Base
 Memory usage classes
 ~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
-   MatchingMemoryUsage
    CCMemoryUsage
    LCCMemoryUsage
    CORRMemoryUsage

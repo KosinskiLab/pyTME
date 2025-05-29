@@ -4,6 +4,7 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+
 import warnings
 from copy import deepcopy
 from itertools import groupby
@@ -15,9 +16,12 @@ from os.path import splitext, basename
 import numpy as np
 
 from .types import NDArray
+from .rotations import align_to_axis
 from .preprocessor import atom_profile, Preprocessor
-from .parser import PDBParser, MMCIFParser
+from .parser import PDBParser, MMCIFParser, GROParser
 from .matching_utils import rigid_transform, minimum_enclosing_box
+
+__all__ = ["Structure"]
 
 
 @dataclass(repr=False)
@@ -156,7 +160,7 @@ class Structure:
                     f"Expected shape of {attribute}: {n_atoms}, got {value.shape[0]}."
                 )
 
-        self._elements = Elements()
+        self._elements = _Elements()
         self.metadata = self._populate_metadata(self.metadata)
 
     def __getitem__(self, indices: List[int]) -> "Structure":
@@ -323,6 +327,8 @@ class Structure:
             +------+-------------------------------------------------------------+
             | .cif | Reads an mmCIF file                                         |
             +------+-------------------------------------------------------------+
+            | .gro | Reads a Gromos87 formated file                              |
+            +------+-------------------------------------------------------------+
         keep_non_atom_records : bool, optional
             Wheter to keep residues that are not labelled ATOM.
         filter_by_elements: set, optional
@@ -332,7 +338,7 @@ class Structure:
 
         Raises
         ------
-        ValueError
+        NotImplementedError
             If the extension is not supported.
 
         Returns
@@ -360,34 +366,39 @@ class Structure:
         >>> )
         >>> structure
         Unique Chains: A,B, Atom Range: 96-1461 [N = 44], Residue Range: 154-228 [N = 44]
-
         """
-        _, file_extension = splitext(basename(filename.upper()))
-        if file_extension == ".PDB":
-            func = cls._load_pdb
-        elif file_extension == ".CIF":
-            func = cls._load_mmcif
-        else:
+        _, file_extension = splitext(basename(filename.lower()))
+        _formats = {
+            ".pdb": cls._load_pdb,
+            ".cif": cls._load_mmcif,
+            ".gro": cls._load_gro,
+        }
+        func = _formats.get(file_extension)
+        if func is None:
+            formats = ",".join([f"'{x}'" for x in _formats.keys()])
             raise NotImplementedError(
-                "Could not determine structure filetype from extension."
-                " Supported filetypes are mmcif (.cif) and pdb (.pdb)."
+                f"Files with extension {file_extension} are not supported. "
+                f"Supported filetypes are {formats}."
             )
-        data = func(filename)
 
+        data = func(cls, filename)
         keep = np.ones(data["element_symbol"].size, dtype=bool)
         if filter_by_elements:
             keep = np.logical_and(
                 keep,
-                np.in1d(data["element_symbol"], np.array(list(filter_by_elements))),
+                np.isin(data["element_symbol"], np.array(list(filter_by_elements))),
             )
         if filter_by_residues:
             keep = np.logical_and(
-                keep, np.in1d(data["residue_name"], np.array(list(filter_by_residues)))
+                keep, np.isin(data["residue_name"], np.array(list(filter_by_residues)))
             )
         if not keep_non_atom_records:
             keep = np.logical_and(keep, data["record_type"] == "ATOM")
 
         for key in data:
+            if keep.sum() == keep.size:
+                break
+
             if key == "metadata":
                 continue
             if isinstance(data[key], np.ndarray):
@@ -400,7 +411,71 @@ class Structure:
         return cls(**data)
 
     @staticmethod
-    def _load_mmcif(filename: str) -> Dict:
+    def _convert_dtypes(data: Dict[str, List], mapping: Dict):
+        """
+        Convert key values in data according to mapping.
+
+        Parameters
+        ----------
+        data : Dict
+            Mapping of keys to list of values
+        mapping : Dict
+            Mapping of key in return dict to (key, dtype) in data.
+
+        Returns
+        -------
+        dict
+            Key-value map using key-dtype pairs in mapping on data.
+        """
+        out = {}
+        max_len = max([len(t) for t in data.values() if hasattr(t, "__len__")])
+
+        missing_keys = set()
+        for out_key, (inner_key, dtype) in mapping.items():
+            default = "." if dtype is str else 0
+            if inner_key in data:
+                continue
+            missing_keys.add(inner_key)
+            out[out_key] = np.repeat(default, max_len).astype(dtype)
+
+        if len(missing_keys):
+            msg = ", ".join([f"'{x}'" for x in missing_keys])
+            warnings.warn(
+                f"Missing keys: ({msg}) in data - filling with default value."
+            )
+
+        for out_key, (inner_key, dtype) in mapping.items():
+            default = "." if dtype is str else 0
+
+            # Avoid modifying input dictionaries
+            if inner_key in missing_keys:
+                continue
+
+            out_data = data[inner_key]
+            if isinstance(data[inner_key][0], str):
+                out_data = [str(x).strip() for x in data[inner_key]]
+
+            out_data = np.asarray(out_data)
+            if dtype is int:
+                out_data = np.where(out_data == ".", "0", out_data)
+            elif dtype == "base-36":
+                dtype = int
+                base36_offset = int("A0000", 36) - 100000
+                out_data = np.where(
+                    np.char.isdigit(out_data),
+                    out_data,
+                    np.vectorize(lambda x: int(x, 36) - base36_offset)(out_data),
+                )
+            try:
+                out[out_key] = np.asarray(out_data, dtype=dtype)
+            except ValueError:
+                print(
+                    f"Converting {out_key} to {dtype} failed. Setting {out_key} to {default}."
+                )
+                out[out_key] = np.repeat(default, max_len).astype(dtype)
+        return out
+
+    def _load_mmcif(self, filename: str) -> Dict:
         """
         Parses a macromolecular Crystallographic Information File (mmCIF)
         and returns the data in a dictionary format.
@@ -432,25 +507,12 @@ class Structure:
             "code_for_residue_insertion": ("pdbx_PDB_ins_code", str),
             "occupancy": ("occupancy", float),
             "temperature_factor": ("B_iso_or_equiv", float),
-            "segment_identifier": ("pdbx_PDB_model_num", str),
+            "segment_identifier": ("label_entity_id", str),
             "element_symbol": ("type_symbol", str),
             "charge": ("pdbx_formal_charge", str),
         }
 
-        out = {}
-        for out_key, (atom_site_key, dtype) in atom_site_mapping.items():
-            out_data = [
-                x.strip() for x in result["atom_site"].get(atom_site_key, ["."])
-            ]
-            if dtype is int:
-                out_data = [0 if x == "." else int(x) for x in out_data]
-            try:
-                out[out_key] = np.asarray(out_data).astype(dtype)
-            except ValueError:
-                default = ["."] if dtype is str else 0
-                print(f"Converting {out_key} to {dtype} failed, set to {default}.")
-                out[out_key] = np.repeat(default, len(out_data)).astype(dtype)
-
+        out = self._convert_dtypes(result["atom_site"], atom_site_mapping)
         number_entries = len(max(out.values(), key=len))
         for key, value in out.items():
             if value.size != 1:
@@ -484,8 +546,7 @@ class Structure:
 
         return out
 
-    @staticmethod
-    def _load_pdb(filename: str) -> Dict:
+    def _load_pdb(self, filename: str) -> Dict:
         """
         Parses a Protein Data Bank (PDB) file and returns the data
         in a dictionary format.
@@ -507,7 +568,7 @@ class Structure:
 
         atom_site_mapping = {
             "record_type": ("record_type", str),
-            "atom_serial_number": ("atom_serial_number", int),
+            "atom_serial_number": ("atom_serial_number", "base-36"),
             "atom_name": ("atom_name", str),
             "alternate_location_indicator": ("alternate_location_indicator", str),
             "residue_name": ("residue_name", str),
@@ -521,22 +582,46 @@ class Structure:
             "charge": ("charge", str),
         }
 
-        out = {"metadata": result["details"]}
-        for out_key, (inner_key, dtype) in atom_site_mapping.items():
-            out_data = [x.strip() for x in result[inner_key]]
-            if dtype is int:
-                out_data = [0 if x == "." else int(x) for x in out_data]
-            try:
-                out[out_key] = np.asarray(out_data).astype(dtype)
-            except ValueError:
-                default = "." if dtype is str else 0
-                print(
-                    f"Converting {out_key} to {dtype} failed. Setting {out_key} to {default}."
-                )
-                out[out_key] = np.repeat(default, len(out_data)).astype(dtype)
+        out = self._convert_dtypes(result, atom_site_mapping)
 
+        out["metadata"] = result["details"]
         out["atom_coordinate"] = np.array(result["atom_coordinate"], dtype=np.float32)
 
+        return out
+
+    def _load_gro(self, filename):
+        result = GROParser(filename)
+
+        atom_site_mapping = {
+            "record_type": ("record_type", str),
+            "atom_serial_number": ("atom_number", int),
+            "atom_name": ("atom_name", str),
+            "alternate_location_indicator": ("label_alt_id", str),
+            "residue_name": ("residue_name", str),
+            "chain_identifier": ("segment_identifier", str),
+            "residue_sequence_number": ("residue_number", int),
+            "code_for_residue_insertion": ("pdbx_PDB_ins_code", str),
+            "occupancy": ("occupancy", float),
+            "temperature_factor": ("B_iso_or_equiv", float),
+            "segment_identifier": ("segment_identifier", str),
+            "element_symbol": ("type_symbol", str),
+            "charge": ("pdbx_formal_charge", str),
+        }
+
+        out = self._convert_dtypes(result, atom_site_mapping)
+
+        unique_chains = np.unique(out["segment_identifier"])
+        if len(unique_chains) > 1:
+            warnings.warn(
+                "Multiple GRO files detected - treating them as a single Structure. "
+                "GRO file number is given by segment_identifier according to the "
+                "input file. Note: You need to subset the Structure to operate on "
+                "individual GRO files."
+            )
+
+        mkeys = ("title", "time", "box_vectors")
+        out["metadata"] = {key: result.get(key) for key in mkeys}
+        out["atom_coordinate"] = np.asarray(result["atom_coordinate"], dtype=np.float32)
         return out
 
     def to_file(self, filename: str) -> None:
@@ -553,10 +638,11 @@ class Structure:
             +------+-------------------------------------------------------------+
             | .cif | Creates an mmCIF file                                       |
             +------+-------------------------------------------------------------+
-
+            | .gro | Creates an Gromos87 file                                    |
+            +------+-------------------------------------------------------------+
         Raises
         ------
-        ValueError
+        NotImplementedError
             If the extension is not supported.
 
         Examples
@@ -571,19 +657,22 @@ class Structure:
         >>> structure.to_file(f"{oname}.pdb") # Writes a PDB file to disk
 
         """
+        _, file_extension = splitext(basename(filename.lower()))
+        _formats = {
+            ".pdb": self._write_pdb,
+            ".cif": self._write_mmcif,
+            ".gro": self._write_gro,
+        }
+        func = _formats.get(file_extension)
+        if func is None:
+            formats = ",".join([f"'{x}'" for x in _formats.keys()])
+            raise NotImplementedError(
+                f"Files with extension {file_extension} are not supported. "
+                f"Supported filetypes are {formats}."
+            )
+
         if np.any(np.vectorize(len)(self.chain_identifier) > 2):
             warnings.warn("Chain identifiers longer than one will be shortened.")
-
-        _, file_extension = splitext(basename(filename.upper()))
-        if file_extension == ".PDB":
-            func = self._write_pdb
-        elif file_extension == ".CIF":
-            func = self._write_mmcif
-        else:
-            raise NotImplementedError(
-                "Could not determine structure filetype."
-                " Supported filetypes are mmcif (.cif) and pdb (.pdb)."
-            )
 
         if self.atom_coordinate.shape[0] > 10**5 and func == self._write_pdb:
             warnings.warn(
@@ -591,16 +680,16 @@ class Structure:
             )
 
         with open(filename, mode="w", encoding="utf-8") as ofile:
-            ofile.writelines(func())
+            ofile.write(func())
 
-    def _write_pdb(self) -> List[str]:
+    def _write_pdb(self) -> str:
         """
         Returns a PDB string representation of the structure instance.
 
         Returns
         -------
-        list
-            List containing PDB file coordine lines.
+        str
+            String containing PDB file coordine lines.
         """
         data_out = []
         for index in range(self.atom_coordinate.shape[0]):
@@ -627,14 +716,14 @@ class Structure:
         data_out = "\n".join(data_out)
         return data_out
 
-    def _write_mmcif(self) -> List[str]:
+    def _write_mmcif(self) -> str:
         """
         Returns a MMCIF string representation of the structure instance.
 
         Returns
         -------
-        list
-            List containing MMCIF file coordinate lines.
+        str
+            String containing MMCIF file coordinate lines.
         """
         model_num, entity_id = 1, 1
         data = {
@@ -734,6 +823,53 @@ class Structure:
 
         return ret
 
+    def _write_gro(self) -> str:
+        """
+        Generate a GRO format string representation of the structure.
+
+        Returns
+        -------
+        str
+            String representation of the structure in GRO format.
+        """
+        ret = ""
+        gro_files = np.unique(self.segment_identifier)
+        for index, gro_file in enumerate(gro_files):
+            subset = self[self.segment_identifier == gro_file]
+
+            title = self.metadata.get("title", "Missing title")
+            box_vectors = self.metadata.get("box_vectors")
+            try:
+                title = title[index]
+                box_vectors = box_vectors[index]
+            except Exception:
+                pass
+
+            if box_vectors is None:
+                box_vectors = [0.0, 0.0, 0.0]
+
+            num_atoms = subset.atom_coordinate.shape[0]
+            lines = [title, f"{num_atoms}"]
+            for i in range(num_atoms):
+                res_num = subset.residue_sequence_number[i]
+                res_name = subset.residue_name[i]
+                atom_name = subset.atom_name[i]
+                atom_num = subset.atom_serial_number[i]
+
+                x, y, z = subset.atom_coordinate[i]
+                coord = f"{atom_num % 100000:5d}{x:8.3f}{y:8.3f}{z:8.3f}"
+                line = f"{res_num % 100000:5d}{res_name:5s}{atom_name:5s}{coord}"
+
+                if "velocity" in subset.metadata:
+                    vx, vy, vz = subset.metadata["velocity"][i]
+                    line += f"{vx:8.4f}{vy:8.4f}{vz:8.4f}"
+
+                lines.append(line)
+
+            lines.append(" ".join(f"{v:.5f}" for v in box_vectors))
+            ret += "\n".join(lines) + "\n"
+        return ret
+
     def subset_by_chain(self, chain: str = None) -> "Structure":
         """
         Return a subset of the structure that contains only atoms belonging to
@@ -767,7 +903,7 @@ class Structure:
         >>> structure.subset_by_chain(chain="B,C") # Keep B, C does not exist
         """
         chain = np.unique(self.chain_identifier) if chain is None else chain.split(",")
-        keep = np.in1d(self.chain_identifier, chain)
+        keep = np.isin(self.chain_identifier, chain)
         return self[keep]
 
     def subset_by_range(
@@ -814,9 +950,16 @@ class Structure:
         )
         return ret[keep]
 
-    def center_of_mass(self) -> NDArray:
+    def center_of_mass(self, weight_type: str = "atomic_weight") -> NDArray:
         """
         Calculate the center of mass of the structure.
+
+        Parameters
+        ----------
+        weight_type : str, optional
+            The type of weights to return. This can either be 'atomic_weight',
+            'atomic_number', or 'euqual'. Defaults to 'atomic_weight'
+
 
         Returns
         -------
@@ -832,13 +975,24 @@ class Structure:
         >>> structure.center_of_mass()
         array([-0.89391639, 29.94908928, -2.64736741])
         """
-        weights = [self._elements[atype].atomic_weight for atype in self.element_symbol]
+        atoms = self.element_symbol
+        match weight_type:
+            case "atomic_weight":
+                weights = [self._elements[atom].atomic_weight for atom in atoms]
+            case "atomic_number":
+                weights = [self._elements[atom].atomic_number for atom in atoms]
+            case "equal":
+                weights = np.ones((len(atoms)))
+            case _:
+                raise NotImplementedError(
+                    "weight_type can be 'atomic_weight', 'atomic_number' or 'equal."
+                )
         return np.dot(self.atom_coordinate.T, weights) / np.sum(weights)
 
     def rigid_transform(
         self,
-        rotation_matrix: NDArray,
-        translation: NDArray,
+        rotation_matrix: NDArray = None,
+        translation: NDArray = None,
         use_geometric_center: bool = False,
     ) -> "Structure":
         """
@@ -846,10 +1000,10 @@ class Structure:
 
         Parameters
         ----------
-        rotation_matrix : NDArray
-            The rotation matrix to apply to the coordinates.
-        translation : NDArray
-            The vector to translate the coordinates by.
+        rotation_matrix : NDArray, optional
+            The rotation matrix to apply to the coordinates, defaults to identity.
+        translation : NDArray, optional
+            The vector to translate the coordinates by, defaults to 0.
         use_geometric_center : bool, optional
             Whether to use geometric or coordinate center.
 
@@ -871,6 +1025,11 @@ class Structure:
         >>> )
         """
         out = np.empty_like(self.atom_coordinate.T)
+        if translation is None:
+            translation = np.zeros((self.atom_coordinate.shape[1]))
+        if rotation_matrix is None:
+            rotation_matrix = np.eye(self.atom_coordinate.shape[1])
+
         rigid_transform(
             coordinates=self.atom_coordinate.T,
             rotation_matrix=rotation_matrix,
@@ -944,9 +1103,7 @@ class Structure:
         coordinates = self.atom_coordinate.copy()
         atom_types = self.element_symbol.copy()
 
-        # positions are in x, y, z map is z, y, x
-        coordinates = coordinates[:, ::-1]
-
+        coordinates = coordinates
         sampling_rate = 1 if sampling_rate is None else sampling_rate
         adjust_origin = origin is not None and shape is None
         origin = coordinates.min(axis=0) if origin is None else origin
@@ -1116,7 +1273,7 @@ class Structure:
         Parameters
         ----------
         positions : NDArray
-            Array containing atomic positions in z,y,x format (n,d).
+            Array containing atomic positions in x,y,z format (n,d).
         weights : tuple of float
             The weights to use for the entries in positions.
         resolution : float, optional
@@ -1157,7 +1314,7 @@ class Structure:
         if arr.size != 0:
             pad = int(pad_cutoff) + 1
 
-        positions = positions[:, ::-1]
+        positions = positions
         origin = positions.min(axis=0) - pad * sampling_rate
         positions = np.rint(np.divide((positions - origin), sampling_rate)).astype(int)
 
@@ -1218,12 +1375,12 @@ class Structure:
         Parameters
         ----------
         shape : tuple of ints, optional
-            Output array shape in (z,y,x) form.
+            Output array shape in (x,y,z) form.
         sampling_rate : tuple of float, optional
             Sampling rate of the output array in units of
             :py:attr:`Structure.atom_coordinate`
         origin : tuple of floats, optional
-            Origin of the coordinate system in (z,y,x) form.
+            Origin of the coordinate system in (x,y,z) form.
         chain : str, optional
             Chains to be included. Either single or comma separated string of chains.
             Defaults to None which returns all chains.
@@ -1521,9 +1678,17 @@ class Structure:
 
         return ret, final_rmsd
 
+    def align_to_axis(
+        self, coordinates: NDArray = None, axis: int = 2, flip: bool = False, **kwargs
+    ):
+        if coordinates is None:
+            coordinates = self.atom_coordinate
+
+        return align_to_axis(coordinates, axis=axis, flip=flip, **kwargs)
+
 
 @dataclass(frozen=True, repr=True)
-class Elements:
+class _Elements:
     """Lookup table for chemical elements."""
 
     Atom = namedtuple(

@@ -97,7 +97,6 @@ The following will perform template matching using 2 NVIDIA RTX3090 GPUs. If N i
     module load Anaconda3
     source activate pytme
 
-
     match_template.py \
         -m ${TOMOGRAM_PATH} \
         -i ${TEMPLATE_PATH} \

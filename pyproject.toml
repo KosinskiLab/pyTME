@@ -7,23 +7,24 @@ name="pytme"
 authors = [
   { name = "Valentin Maurer", email = "valentin.maurer@embl-hamburg.de" },
 ]
-version="0.2.5"
+version="0.2.9"
 description="Python Template Matching Engine"
 readme="README.md"
 requires-python = ">=3.11"
 dependencies=[
     "mrcfile>=1.4.3",
     "numpy>=1.22.2,<2.0",
+    "scipy>=1.9.1",
     "pyfftw>=0.13.1",
     "pytest>=6.2.5",
     "PyYAML>=6.0",
     "scikit-image>=0.19.0",
     "scikit_learn>=1.2.1",
-    "scipy>=1.9.1",
     "pybind11",
     "psutil",
-    "tifffile",
     "h5py",
+    "importlib_resources",
+    "joblib"
 ]
 license = {text = "Proprietary"}
 classifiers = [
@@ -40,7 +41,8 @@ all = [
     "voltools==0.6.0",
     "torch",
     "jax",
-    "jaxlib"
+    "jaxlib",
+    "tifffile"
 ]
 
 [project.scripts]

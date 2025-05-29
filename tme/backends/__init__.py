@@ -4,6 +4,7 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+
 from typing import Dict, List
 from importlib.util import find_spec
 
@@ -24,17 +25,6 @@ class BackendManager:
     implementations while preserving the consistency and functionality of the API.
     Direct attribute and method calls to the manager are delegated to the current
     active backend.
-
-    Attributes
-    ----------
-    _BACKEND_REGISTRY : dict
-        A dictionary mapping backend names to their respective classes or instances.
-    _backend : instance of MatchingBackend
-        An instance of the currently active backend.
-    _backend_name : str
-        Name of the current backend.
-    _backend_args : Dict
-        Arguments passed to create current backend.
 
     Examples
     --------
@@ -99,6 +89,12 @@ class BackendManager:
         backend_class : :py:class:`MatchingBackend`
             An instance of the backend to be added.
 
+        Examples
+        --------
+        >>> from tme.backends import backend as be
+        >>> from tme.backends import NumpyFFTWBackend
+        >>> be.add_backend("numpy2", NumpyFFTWBackend)
+
         Raises
         ------
         ValueError
@@ -111,14 +107,19 @@ class BackendManager:
 
     def change_backend(self, backend_name: str, **backend_kwargs: Dict) -> None:
         """
-        Change the backend.
+        Change the current computation backend.
 
         Parameters
         ----------
         backend_name : str
             Name of the new backend that should be used.
-        **backend_kwargs : Dict, optional
+        **backend_kwargs : dict, optional
             Parameters passed to __init__ method of backend.
+
+        Examples
+        --------
+        >>> from tme.backends import backend as be
+        >>> be.change_backend("cupy")
 
         Raises
         ------
@@ -136,12 +137,17 @@ class BackendManager:
 
     def available_backends(self) -> List[str]:
         """
-        Determines importable backends.
+        Returns available computation backends.
 
         Returns
         -------
         list of str
-            Backends that are available for template matching.
+            Available computation backends.
+
+        Examples
+        --------
+        >>> from tme.backends import backend as be
+        >>> be.available_backends()
         """
         # This is an approximation but avoids runtime polution
         _dependencies = {

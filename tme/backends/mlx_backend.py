@@ -4,6 +4,7 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+
 from typing import Tuple, List, Callable
 
 import numpy as np
@@ -143,42 +144,36 @@ class MLXBackend(NumpyFFTWBackend):
         return arr[box]
 
     def build_fft(
-        self, fast_shape: Tuple[int], fast_ft_shape: Tuple[int], **kwargs
+        self,
+        fwd_shape: Tuple[int],
+        inv_shape: Tuple[int] = None,
+        inv_output_shape: Tuple[int] = None,
+        fwd_axes: Tuple[int] = None,
+        inv_axes: Tuple[int] = None,
+        **kwargs,
     ) -> Tuple[Callable, Callable]:
-        """
-        Build fft builder functions.
-
-        Parameters
-        ----------
-        fast_shape : tuple
-            Tuple of integers corresponding to fast convolution shape
-            (see `compute_convolution_shapes`).
-        fast_ft_shape : tuple
-            Tuple of integers corresponding to the shape of the fourier
-            transform array (see `compute_convolution_shapes`).
-        **kwargs : dict, optional
-            Additional parameters that are not used for now.
-
-        Returns
-        -------
-        tuple
-            Tupple containing callable rfft and irfft object.
-        """
-
         # Runs on mlx.core.cpu until Metal support is available
-        def rfftn(arr: MlxArray, out: MlxArray, shape: Tuple[int] = fast_shape) -> None:
+        rfft_shape = self._format_fft_shape(fwd_shape, fwd_axes)
+        irfft_shape = fwd_shape if inv_output_shape is None else inv_output_shape
+        irfft_shape = self._format_fft_shape(irfft_shape, inv_axes)
+
+        def rfftn(arr: MlxArray, out: MlxArray = None, s=rfft_shape, axes=fwd_axes):
             out[:] = self._array_backend.fft.rfftn(
-                arr, s=shape, stream=self._array_backend.cpu
+                arr, s=s, axes=axes, stream=self._array_backend.cpu
             )
 
-        def irfftn(
-            arr: MlxArray, out: MlxArray, shape: Tuple[int] = fast_shape
-        ) -> None:
+        def irfftn(arr: MlxArray, out: MlxArray = None, s=irfft_shape, axes=inv_axes):
             out[:] = self._array_backend.fft.irfftn(
-                arr, s=shape, stream=self._array_backend.cpu
+                arr, s=s, axes=axes, stream=self._array_backend.cpu
             )
 
         return rfftn, irfftn
+
+    def rfftn(self, arr, *args, **kwargs):
+        return self.fft.rfftn(arr, stream=self._array_backend.cpu, **kwargs)
+
+    def irfftn(self, arr, *args, **kwargs):
+        return self.fft.irfftn(arr, stream=self._array_backend.cpu, **kwargs)
 
     def from_sharedarr(self, arr: MlxArray) -> MlxArray:
         return arr

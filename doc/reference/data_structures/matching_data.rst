@@ -9,21 +9,21 @@ The `matching_data` module serves as data container for exhaustive template matc
 Constructor
 ~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    MatchingData
 
 Conversion
 ~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    MatchingData.to_backend
 
 Attributes and underlying data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    MatchingData.target
    MatchingData.template
@@ -34,7 +34,8 @@ Attributes and underlying data
 Utilities
 ~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    MatchingData.subset_array
    MatchingData.subset_by_slice
+   MatchingData.set_matching_dimension

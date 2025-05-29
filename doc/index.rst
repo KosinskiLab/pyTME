@@ -30,7 +30,7 @@
        User Guide
        ^^^^^^^^^^
 
-       Here you can find tutorials on key data structures and the command line interface.
+       Learn how to use |project|.
 
        +++
 
@@ -47,7 +47,7 @@
        API reference
        ^^^^^^^^^^^^^
 
-       The reference contains a detailed description of |project|'s API.
+       Detailed documentation of the API.
 
        +++
 
@@ -56,7 +56,7 @@
              :color: secondary
              :click-parent:
 
-             To the api reference
+             To the reference
 
 .. toctree::
    :maxdepth: 1

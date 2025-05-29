@@ -7,7 +7,7 @@ Constructor
 ~~~~~~~~~~~
 
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
    :nosignatures:
 
    Preprocessor
@@ -15,7 +15,7 @@ Constructor
 Filters
 ~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Preprocessor.continuous_wedge_mask
    Preprocessor.step_wedge_mask
@@ -35,6 +35,6 @@ Filters
 Utilities
 ~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Preprocessor.interpolate_box

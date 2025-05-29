@@ -28,6 +28,7 @@ from scipy.ndimage import (
 from scipy.spatial import ConvexHull
 
 from .types import NDArray
+from .rotations import align_to_axis
 from .backends import NumpyFFTWBackend
 from .structure import Structure
 from .matching_utils import (
@@ -35,6 +36,8 @@ from .matching_utils import (
     memmap_to_array,
     minimum_enclosing_box,
 )
+
+__all__ = ["Density"]
 
 
 class Density:
@@ -198,14 +201,17 @@ class Density:
 
         """
         try:
-            func = cls._load_mrc
-            if filename.endswith("em") or filename.endswith("em.gz"):
-                func = cls._load_em
-            elif filename.endswith("h5") or filename.endswith("h5.gz"):
-                func = cls._load_hdf5
-            data, origin, sampling_rate, meta = func(
-                filename=filename, subset=subset, use_memmap=use_memmap
-            )
+            with warnings.catch_warnings():
+                if filename.endswith("em") or filename.endswith("em.gz"):
+                    func = cls._load_em
+                elif filename.endswith("h5") or filename.endswith("h5.gz"):
+                    func = cls._load_hdf5
+                else:
+                    func = cls._load_mrc
+                    warnings.filterwarnings("ignore", category=RuntimeWarning)
+                data, origin, sampling_rate, meta = func(
+                    filename=filename, subset=subset, use_memmap=use_memmap
+                )
         except ValueError:
             data, origin, sampling_rate, meta = cls._load_skio(filename=filename)
             if subset is not None:
@@ -241,19 +247,12 @@ class Density:
             CCP-EM software suite. Acta Cryst. D73:469–477.
             doi: 10.1107/S2059798317007859
 
-        Raises
-        ------
-        ValueError
-            If the mrcfile is malformatted.
-            If the subset starts below zero, exceeds the data dimension or does not
-            have the same length as the data dimensions.
-
         See Also
         --------
         :py:meth:`Density.from_file`
 
         """
-        with mrcfile.open(filename, header_only=True) as mrc:
+        with mrcfile.open(filename, header_only=True, permissive=True) as mrc:
             data_shape = mrc.header.nz, mrc.header.ny, mrc.header.nx
             data_type = mrcfile.utils.data_dtype_from_header(mrc.header)
 
@@ -266,26 +265,9 @@ class Density:
             origin = origin[::-1]
 
             # nx := column; ny := row; nz := section
-            start = np.array(
-                [
-                    mrc.header["nzstart"],
-                    mrc.header["nystart"],
-                    mrc.header["nxstart"],
-                ]
-            )
-
-            crs_index = (
-                np.array(
-                    [
-                        int(mrc.header["mapc"]),
-                        int(mrc.header["mapr"]),
-                        int(mrc.header["maps"]),
-                    ]
-                )
-                - 1
-            )
-
+            start = np.array([mrc.header[x] for x in ("nzstart", "nystart", "nxstart")])
             # mapc := column; mapr := row; maps := section;
+            crs_index = tuple(int(mrc.header[x]) - 1 for x in ("mapc", "mapr", "maps"))
             if not (0 in crs_index and 1 in crs_index and 2 in crs_index):
                 raise ValueError(f"Malformatted CRS array in {filename}")
 
@@ -318,10 +300,12 @@ class Density:
                 )
             use_memmap = False
 
+        kwargs = {"header_only": False, "permissive": True}
         if subset is not None:
+            # Format is zyx, but subsets are xyz
             subset = tuple(
                 subset[i] if i < len(subset) else slice(0, data_shape[i])
-                for i in crs_index
+                for i in crs_index[::-1]
             )
             subset_shape = tuple(x.stop - x.start for x in subset)
             if np.allclose(subset_shape, data_shape):
@@ -337,17 +321,17 @@ class Density:
                 header_size=1024 + extended_header,
             )
         elif subset is None and not use_memmap:
-            with mrcfile.open(filename, header_only=False) as mrc:
-                data = mrc.data.astype(np.float32, copy=False)
+            with mrcfile.open(filename, **kwargs) as mrc:
+                data = mrc.data
         else:
-            with mrcfile.mrcmemmap.MrcMemmap(filename, header_only=False) as mrc:
+            with mrcfile.mrcmemmap.MrcMemmap(filename, **kwargs) as mrc:
                 data = mrc.data
 
         if non_standard_crs:
             data = np.transpose(data, crs_index)
             origin = np.take(origin, crs_index)
 
-        return data, origin, sampling_rate, metadata
+        return data.T, origin[::-1], sampling_rate[::-1], metadata
 
     @classmethod
     def _load_em(
@@ -376,7 +360,7 @@ class Density:
 
         Warns
         -----
-            If the sampling rate is zero.
+        If the sampling rate is zero.
 
         Notes
         -----
@@ -879,16 +863,23 @@ class Density:
         .. [1] Burnley T et al., Acta Cryst. D, 2017
         """
         compression = "gzip" if gzip else None
+        data = np.swapaxes(self.data, 0, 2)
+        try:
+            _ = mrcfile.utils.mode_from_dtype(data.dtype)
+        except ValueError:
+            warnings.warn(
+                "Current data type not supported by MRC format. Defaulting to float32."
+            )
+            data = data.astype(np.float32)
+
         with mrcfile.new(filename, overwrite=True, compression=compression) as mrc:
-            mrc.set_data(self.data.astype("float32"))
-            mrc.header.nzstart, mrc.header.nystart, mrc.header.nxstart = np.rint(
+            mrc.set_data(data)
+            mrc.header.nxstart, mrc.header.nystart, mrc.header.nzstart = np.rint(
                 np.divide(self.origin, self.sampling_rate)
             )
-            mrc.header.origin = tuple(x for x in self.origin)
-            # mrcfile library expects origin to be in xyz format
             mrc.header.mapc, mrc.header.mapr, mrc.header.maps = (1, 2, 3)
-            mrc.header["origin"] = tuple(self.origin[::-1])
-            mrc.voxel_size = tuple(self.sampling_rate[::-1])
+            mrc.header["origin"] = tuple(self.origin)
+            mrc.voxel_size = tuple(self.sampling_rate)
 
     def _save_em(self, filename: str, gzip: bool = False) -> None:
         """
@@ -1077,12 +1068,7 @@ class Density:
         """
         if isinstance(self.data, np.memmap):
             return None
-
-        filename = array_to_memmap(arr=self.data)
-
-        self.data = np.memmap(
-            filename, mode="r", dtype=self.data.dtype, shape=self.data.shape
-        )
+        self.data = array_to_memmap(arr=self.data)
 
     def to_numpy(self) -> None:
         """
@@ -1659,8 +1645,13 @@ class Density:
         :py:meth:`Density.centered`, :py:meth:`Density.minimum_enclosing_box`
         """
         ret = self.empty
+        data = self.data
+        if not isinstance(data.dtype, np.floating):
+            data = data.astype(np.float32)
+
+        ret.data = ret.data.astype(data.dtype)
         NumpyFFTWBackend().rigid_transform(
-            arr=self.data,
+            arr=data,
             rotation_matrix=rotation_matrix,
             translation=translation,
             use_geometric_center=use_geometric_center,
@@ -2057,7 +2048,7 @@ class Density:
         NDArray
             Center of mass with shape (arr.ndim).
         """
-        return NumpyFFTWBackend().center_of_mass(arr, cutoff)
+        return NumpyFFTWBackend().center_of_mass(arr**2, cutoff)
 
     @classmethod
     def match_densities(
@@ -2248,9 +2239,8 @@ class Density:
         out = template.copy()
         final_translation = np.subtract(ret.origin, template_density.origin)
 
-        # Atom coordinates are in xyz
-        final_translation = final_translation[::-1]
-        rotation_matrix = rotation_matrix[::-1, ::-1]
+        final_translation = final_translation
+        rotation_matrix = rotation_matrix
 
         out = out.rigid_transform(
             translation=final_translation, rotation_matrix=rotation_matrix
@@ -2258,62 +2248,13 @@ class Density:
 
         return out, final_translation, rotation_matrix
 
-    @staticmethod
-    def fourier_shell_correlation(density1: "Density", density2: "Density") -> NDArray:
-        """
-        Computes the Fourier Shell Correlation (FSC) between two instances of `Density`.
+    def align_to_axis(self, data: NDArray = None, axis: int = 2, flip: bool = False):
+        if data is None:
+            data = self.data
 
-        The Fourier transforms of the input maps are divided into shells
-        based on their spatial frequency. The correlation between corresponding shells
-        in the two maps is computed to give the FSC.
-
-        Parameters
-        ----------
-        density1 : Density
-            An instance of `Density` class for the first map for comparison.
-        density2 : Density
-            An instance of `Density` class for the second map for comparison.
-
-        Returns
-        -------
-        NDArray
-            An array of shape (N, 2), where N is the number of shells,
-            the first column represents the spatial frequency for each shell
-            and the second column represents the corresponding FSC.
-
-        References
-        ----------
-        .. [1] https://github.com/tdgrant1/denss/blob/master/saxstats/saxstats.py
-        """
-        side = density1.data.shape[0]
-        df = 1.0 / side
-
-        qx_ = np.fft.fftfreq(side) * side * df
-        qx, qy, qz = np.meshgrid(qx_, qx_, qx_, indexing="ij")
-        qr = np.sqrt(qx**2 + qy**2 + qz**2)
-
-        qmax = np.max(qr)
-        qstep = np.min(qr[qr > 0])
-        nbins = int(qmax / qstep)
-        qbins = np.linspace(0, nbins * qstep, nbins + 1)
-        qbin_labels = np.searchsorted(qbins, qr, "right") - 1
-
-        F1 = np.fft.fftn(density1.data)
-        F2 = np.fft.fftn(density2.data)
-
-        qbin_labels = qbin_labels.reshape(-1)
-        numerator = np.bincount(
-            qbin_labels, weights=np.real(F1 * np.conj(F2)).reshape(-1)
-        )
-        term1 = np.bincount(qbin_labels, weights=np.abs(F1).reshape(-1) ** 2)
-        term2 = np.bincount(qbin_labels, weights=np.abs(F2).reshape(-1) ** 2)
-        np.multiply(term1, term2, out=term1)
-        denominator = np.sqrt(term1)
-        FSC = np.divide(numerator, denominator)
-
-        qidx = np.where(qbins < qx.max())
-
-        return np.vstack((qbins[qidx], FSC[qidx])).T
+        coordinates = np.array(np.where(data > 0))
+        weights = self.data[tuple(coordinates)]
+        return align_to_axis(coordinates.T, weights=weights, axis=axis, flip=flip)
 
 
 def is_gzipped(filename: str) -> bool:

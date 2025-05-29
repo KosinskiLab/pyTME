@@ -2,7 +2,7 @@ import pytest
 from importlib_resources import files
 
 from tme import Density
-from tme.memory import MATCHING_MEMORY_REGISTRY, estimate_ram_usage
+from tme.memory import MATCHING_MEMORY_REGISTRY, estimate_memory_usage
 
 BASEPATH = files("tests.data")
 
@@ -21,7 +21,7 @@ class TestMatchingMemory:
     @pytest.mark.parametrize("matching_method", list(MATCHING_MEMORY_REGISTRY.keys()))
     @pytest.mark.parametrize("ncores", range(1, 10, 3))
     def test_estimate_ram_usage(self, matching_method, ncores, analyzer_method):
-        estimate_ram_usage(
+        estimate_memory_usage(
             shape1=self.density.shape,
             shape2=self.structure_density.shape,
             matching_method=matching_method,

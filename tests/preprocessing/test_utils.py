@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from tme.preprocessing._utils import (
+from tme.filters._utils import (
     fftfreqn,
     centered_grid,
     shift_fourier,

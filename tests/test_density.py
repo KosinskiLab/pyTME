@@ -7,7 +7,8 @@ import pytest
 import numpy as np
 
 from tme import Density, Structure, Preprocessor
-from tme.matching_utils import create_mask, euler_to_rotationmatrix
+from tme.rotations import euler_to_rotationmatrix
+from tme.matching_utils import create_mask
 
 DEFAULT_DATA = create_mask(
     mask_type="ellipse",
@@ -102,7 +103,7 @@ class TestDensity:
     def test_from_file_baseline(self):
         self.test_to_file(gzip=False)
         density = Density.from_file(str(BASEPATH.joinpath("Maps/emd_8621.mrc.gz")))
-        assert np.allclose(density.origin, (-1.45, 2.90, 4.35), rtol=0.1)
+        assert np.allclose(density.origin, (4.35, 2.90, -1.45), rtol=0.1)
         assert np.allclose(density.sampling_rate, (1.45), rtol=0.3)
 
     @pytest.mark.parametrize("extension", ("mrc", "em", "tiff", "h5"))
@@ -500,9 +501,3 @@ class TestDensity:
         )
         assert np.allclose(-translation, initial_translation, atol=2)
         assert np.allclose(np.linalg.inv(rotation_matrix), initial_rotation, atol=0.2)
-
-    def test_fourier_shell_correlation(self):
-        fsc = Density.fourier_shell_correlation(
-            self.density.copy(), self.density.copy()
-        )
-        assert fsc.shape[1] == 2

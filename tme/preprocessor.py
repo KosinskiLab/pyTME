@@ -4,6 +4,7 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+
 import os
 import pickle
 import inspect
@@ -668,7 +669,7 @@ class Preprocessor:
         NDArray
             Bandpass filtered.
         """
-        from .preprocessing import BandPassFilter
+        from .filters import BandPassFilter
 
         return BandPassFilter(
             sampling_rate=sampling_rate,
@@ -725,7 +726,7 @@ class Preprocessor:
         --------
         :py:meth:`Preprocessor.continuous_wedge_mask`
         """
-        from .preprocessing.tilt_series import WedgeReconstructed
+        from .filters import WedgeReconstructed
 
         return WedgeReconstructed(
             angles=tilt_angles,
@@ -788,7 +789,7 @@ class Preprocessor:
         --------
         :py:meth:`Preprocessor.step_wedge_mask`
         """
-        from .preprocessing.tilt_series import WedgeReconstructed
+        from .filters import WedgeReconstructed
 
         return WedgeReconstructed(
             angles=(start_tilt, stop_tilt),

@@ -5,14 +5,14 @@
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 import numpy as np
 
 from ..backends import backend as be
 from ..backends import NumpyFFTWBackend
 from ..types import BackendArray, NDArray
-from ..matching_utils import euler_to_rotationmatrix
+from ..rotations import euler_to_rotationmatrix
 
 
 def compute_tilt_shape(shape: Tuple[int], opening_axis: int, reduce_dim: bool = False):
@@ -96,13 +96,19 @@ def frequency_grid_at_angle(
     )
 
     if angle == 0:
+        sampling_rate = compute_tilt_shape(
+            shape=sampling_rate, opening_axis=opening_axis, reduce_dim=True
+        )
         index_grid = fftfreqn(
             tuple(x for x in tilt_shape if x != 1),
-            sampling_rate=1,
+            sampling_rate=sampling_rate,
             compute_euclidean_norm=True,
         )
 
     if angle != 0:
+        aspect_ratio = shape[opening_axis] / shape[tilt_axis]
+        angle = np.degrees(np.arctan(np.tan(np.radians(angle)) * aspect_ratio))
+
         angles = np.zeros(len(shape))
         angles[tilt_axis] = angle
         rotation_matrix = euler_to_rotationmatrix(np.roll(angles, opening_axis - 1))
@@ -145,11 +151,11 @@ def fftfreqn(
         The sample frequencies.
     """
     # There is no real need to have these operations on GPU right now
-    temp_backend = NumpyFFTWBackend()
-    norm = temp_backend.full(len(shape), fill_value=1)
-    center = temp_backend.astype(temp_backend.divide(shape, 2), temp_backend._int_dtype)
+    np_be = NumpyFFTWBackend()
+    norm = np_be.full(len(shape), fill_value=1, dtype=np_be._float_dtype)
+    center = np_be.astype(np_be.divide(shape, 2), np_be._int_dtype)
     if sampling_rate is not None:
-        norm = temp_backend.astype(temp_backend.multiply(shape, sampling_rate), int)
+        norm = np_be.astype(np_be.multiply(shape, sampling_rate), int)
 
     if shape_is_real_fourier:
         center[-1], norm[-1] = 0, 1
@@ -159,19 +165,20 @@ def fftfreqn(
     grids = []
     for i, x in enumerate(shape):
         baseline_dims = tuple(1 if i != t else x for t in range(len(shape)))
-        grid = (temp_backend.arange(x) - center[i]) / norm[i]
-        grids.append(temp_backend.reshape(grid, baseline_dims))
+        grid = (np_be.arange(x, dtype=np_be._int_dtype) - center[i]) / norm[i]
+        grid = np_be.astype(grid, np_be._float_dtype)
+        grids.append(np_be.reshape(grid, baseline_dims))
 
     if compute_euclidean_norm:
-        grids = sum(temp_backend.square(x) for x in grids)
-        grids = temp_backend.sqrt(grids, out=grids)
+        grids = sum(np_be.square(x) for x in grids)
+        grids = np_be.sqrt(grids, out=grids)
         return grids
 
     if return_sparse_grid:
         return grids
 
-    grid_flesh = temp_backend.full(shape, fill_value=1)
-    grids = temp_backend.stack(tuple(grid * grid_flesh for grid in grids))
+    grid_flesh = np_be.full(shape, fill_value=1, dtype=np_be._float_dtype)
+    grids = np_be.stack(tuple(grid * grid_flesh for grid in grids))
 
     return grids
 
@@ -207,11 +214,98 @@ def compute_fourier_shape(
 def shift_fourier(
     data: BackendArray, shape_is_real_fourier: bool = False
 ) -> BackendArray:
-    shape = be.to_backend_array(data.shape)
-    shift = be.add(be.divide(shape, 2), be.mod(shape, 2))
+    comp = be
+    if isinstance(data, np.ndarray):
+        comp = NumpyFFTWBackend()
+    shape = comp.to_backend_array(data.shape)
+    shift = comp.add(comp.divide(shape, 2), comp.mod(shape, 2))
     shift = [int(x) for x in shift]
     if shape_is_real_fourier:
         shift[-1] = 0
 
-    data = be.roll(data, shift, tuple(i for i in range(len(shift))))
+    data = comp.roll(data, shift, tuple(i for i in range(len(shift))))
     return data
+
+
+def create_reconstruction_filter(
+    filter_shape: Tuple[int], filter_type: str, **kwargs: Dict
+):
+    """Create a reconstruction filter of given filter_type.
+
+    Parameters
+    ----------
+    filter_shape : tuple of int
+        Shape of the returned filter.
+    filter_type: str
+        The type of created filter, available options are:
+
+        +---------------+----------------------------------------------------+
+        | ram-lak       | Returns |w|                                        |
+        +---------------+----------------------------------------------------+
+        | ramp-cont     | Principles of Computerized Tomographic Imaging Avin|
+        |               | ash C. Kak and Malcolm Slaney Chap 3 Eq. 61 [1]_   |
+        +---------------+----------------------------------------------------+
+        | ramp          | Like ramp-cont but considering tilt angles         |
+        +---------------+----------------------------------------------------+
+        | shepp-logan   | |w| * sinc(|w| / 2) [2]_                           |
+        +---------------+----------------------------------------------------+
+        | cosine        | |w| * cos(|w| * pi / 2) [2]_                       |
+        +---------------+----------------------------------------------------+
+        | hamming       | |w| * (.54 + .46 ( cos(|w| * pi))) [2]_            |
+        +---------------+----------------------------------------------------+
+    kwargs: Dict
+        Keyword arguments for particular filter_types.
+
+    Returns
+    -------
+    NDArray
+        Reconstruction filter
+
+    References
+    ----------
+    .. [1]  Principles of Computerized Tomographic Imaging Avinash C. Kak and Malcolm Slaney Chap 3 Eq. 61
+    .. [2]  https://odlgroup.github.io/odl/index.html
+    """
+    filter_type = str(filter_type).lower()
+    freq = fftfreqn(filter_shape, sampling_rate=0.5, compute_euclidean_norm=True)
+
+    if filter_type == "ram-lak":
+        ret = np.copy(freq)
+    elif filter_type == "ramp-cont":
+        ret, ndim = None, len(filter_shape)
+        for dim, size in enumerate(filter_shape):
+            n = np.concatenate(
+                (
+                    np.arange(1, size / 2 + 1, 2, dtype=int),
+                    np.arange(size / 2 - 1, 0, -2, dtype=int),
+                )
+            )
+            ret1d = np.zeros(size)
+            ret1d[0] = 0.25
+            ret1d[1::2] = -1 / (np.pi * n) ** 2
+            ret1d_shape = tuple(size if i == dim else 1 for i in range(ndim))
+            ret1d = ret1d.reshape(ret1d_shape)
+            if ret is None:
+                ret = ret1d
+            else:
+                ret = ret * ret1d
+        ret = 2 * np.fft.fftshift(np.real(np.fft.fftn(ret)))
+    elif filter_type == "ramp":
+        tilt_angles = kwargs.get("tilt_angles", False)
+        if tilt_angles is False:
+            raise ValueError("'ramp' filter requires specifying tilt angles.")
+        size = filter_shape[0]
+        ret = fftfreqn((size,), sampling_rate=1, compute_euclidean_norm=True)
+        min_increment = np.radians(np.min(np.abs(np.diff(np.sort(tilt_angles)))))
+        ret *= min_increment * size
+        np.fmin(ret, 1, out=ret)
+    elif filter_type == "shepp-logan":
+        ret = freq * np.sinc(freq / 2)
+    elif filter_type == "cosine":
+        ret = freq * np.cos(freq * np.pi / 2)
+    elif filter_type == "hamming":
+        ret = freq * (0.54 + 0.46 * np.cos(freq * np.pi))
+    else:
+        raise ValueError("Unsupported filter type")
+
+    return ret

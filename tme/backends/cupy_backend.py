@@ -4,6 +4,7 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+
 import warnings
 from importlib.util import find_spec
 from contextlib import contextmanager
@@ -32,9 +33,9 @@ class CupyBackend(NumpyFFTWBackend):
         **kwargs,
     ):
         import cupy as cp
-        from cupyx.scipy.fft import get_fft_plan
-        from cupyx.scipy.ndimage import affine_transform
-        from cupyx.scipy.ndimage import maximum_filter
+        import cupyx.scipy.fft as cufft
+        from cupyx.scipy.ndimage import affine_transform, maximum_filter
+        from ._cupy_utils import affine_transform_batch
 
         float_dtype = cp.float32 if float_dtype is None else float_dtype
         complex_dtype = cp.complex64 if complex_dtype is None else complex_dtype
@@ -49,9 +50,10 @@ class CupyBackend(NumpyFFTWBackend):
             int_dtype=int_dtype,
             overflow_safe_dtype=overflow_safe_dtype,
         )
-        self.get_fft_plan = get_fft_plan
-        self.affine_transform = affine_transform
+        self._cufft = cufft
         self.maximum_filter = maximum_filter
+        self.affine_transform = affine_transform
+        self.affine_transform_batch = affine_transform_batch
 
         itype = f"int{self.datatype_bytes(int_dtype) * 8}"
         ftype = f"float{self.datatype_bytes(float_dtype) * 8}"
@@ -123,40 +125,52 @@ class CupyBackend(NumpyFFTWBackend):
 
     def build_fft(
         self,
-        fast_shape: Tuple[int],
-        fast_ft_shape: Tuple[int],
-        real_dtype: type,
-        complex_dtype: type,
-        inverse_fast_shape: Tuple[int] = None,
+        fwd_shape: Tuple[int],
+        inv_shape: Tuple[int],
+        inv_output_shape: Tuple[int] = None,
+        fwd_axes: Tuple[int] = None,
+        inv_axes: Tuple[int] = None,
         **kwargs,
     ) -> Tuple[Callable, Callable]:
-        import cupyx.scipy.fft as cufft
-
         cache = self._array_backend.fft.config.get_plan_cache()
         current_device = self._array_backend.cuda.device.get_device_id()
 
-        previous_transform = [fast_shape, fast_ft_shape]
+        previous_transform = [fwd_shape, inv_shape]
         if current_device in PLAN_CACHE:
             previous_transform = PLAN_CACHE[current_device]
 
         real_diff, cmplx_diff = True, True
-        if len(fast_shape) == len(previous_transform[0]):
-            real_diff = fast_shape == previous_transform[0]
-        if len(fast_ft_shape) == len(previous_transform[1]):
-            cmplx_diff = fast_ft_shape == previous_transform[1]
+        if len(fwd_shape) == len(previous_transform[0]):
+            real_diff = fwd_shape == previous_transform[0]
+        if len(inv_shape) == len(previous_transform[1]):
+            cmplx_diff = inv_shape == previous_transform[1]
 
         if real_diff or cmplx_diff:
             cache.clear()
 
-        def rfftn(arr: CupyArray, out: CupyArray) -> CupyArray:
-            return cufft.rfftn(arr, s=fast_shape)
+        rfft_shape = self._format_fft_shape(fwd_shape, fwd_axes)
+        irfft_shape = fwd_shape if inv_output_shape is None else inv_output_shape
+        irfft_shape = self._format_fft_shape(irfft_shape, inv_axes)
 
-        def irfftn(arr: CupyArray, out: CupyArray) -> CupyArray:
-            return cufft.irfftn(arr, s=fast_shape)
+        def rfftn(
+            arr: CupyArray, out: CupyArray = None, s=rfft_shape, axes=fwd_axes
+        ) -> CupyArray:
+            return self.rfftn(arr, s=s, axes=fwd_axes)
 
-        PLAN_CACHE[current_device] = [fast_shape, fast_ft_shape]
+        def irfftn(
+            arr: CupyArray, out: CupyArray = None, s=irfft_shape, axes=inv_axes
+        ) -> CupyArray:
+            return self.irfftn(arr, s=s, axes=inv_axes)
+
+        PLAN_CACHE[current_device] = [fwd_shape, inv_shape]
 
         return rfftn, irfftn
+
+    def rfftn(self, arr: CupyArray, out: CupyArray = None, **kwargs) -> CupyArray:
+        return self._cufft.rfftn(arr, **kwargs)
+
+    def irfftn(self, arr: CupyArray, out: CupyArray = None, **kwargs) -> CupyArray:
+        return self._cufft.irfftn(arr, **kwargs)
 
     def compute_convolution_shapes(
         self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
@@ -220,15 +234,27 @@ class CupyBackend(NumpyFFTWBackend):
         prefilter: bool,
         order: int,
         cache: bool = False,
+        batched: bool = False,
     ) -> None:
         out_slice = tuple(slice(0, stop) for stop in data.shape)
-        if data.ndim == 3 and cache and self.texture_available:
-            # Device memory pool (should) come to rescue performance
-            temp = self.empty(data.shape, data.dtype)
-            texture = self._get_texture(data, order=order, prefilter=prefilter)
-            texture.affine(transform_m=matrix, profile=False, output=temp)
-            output[out_slice] = temp
+        if batched:
+            self.affine_transform_batch(
+                input=data,
+                matrix=matrix,
+                mode="constant",
+                output=output[out_slice],
+                order=order,
+                prefilter=prefilter,
+            )
             return None
+
+        # if data.ndim == 3 and cache and self.texture_available:
+        #     # Device memory pool (should) come to rescue performance
+        #     temp = self.zeros(data.shape, data.dtype)
+        #     texture = self._get_texture(data, order=order, prefilter=prefilter)
+        #     texture.affine(transform_m=matrix, profile=False, output=temp)
+        #     output[out_slice] = temp
+        #     return None
 
         self.affine_transform(
             input=data,

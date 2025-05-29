@@ -4,24 +4,23 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+
 import os
-import yaml
 import pickle
 from shutil import move
+from joblib import Parallel
 from tempfile import mkstemp
 from itertools import product
-from typing import Tuple, Dict, Callable
 from concurrent.futures import ThreadPoolExecutor
+from typing import Tuple, Dict, Callable, Optional
 
 import numpy as np
 from scipy.spatial import ConvexHull
 from scipy.ndimage import gaussian_filter
-from scipy.spatial.transform import Rotation
 
 from .backends import backend as be
-from .memory import estimate_ram_usage
+from .memory import estimate_memory_usage
 from .types import NDArray, BackendArray
-from .extensions import max_euclidean_distance
 
 
 def noop(*args, **kwargs):
@@ -59,7 +58,7 @@ def conditional_execute(
 
 
 def normalize_template(
-    template: BackendArray, mask: BackendArray, n_observations: float
+    template: BackendArray, mask: BackendArray, n_observations: float, axis=None
 ) -> BackendArray:
     """
     Standardizes ``template`` to zero mean and unit standard deviation in ``mask``.
@@ -74,6 +73,8 @@ def normalize_template(
         Mask of the same shape as ``template``.
     n_observations : float
         Sum of mask elements.
+    axis : tuple of floats, optional
+        Axis to normalize over, all axis by default.
 
     Returns
     -------
@@ -84,8 +85,11 @@ def normalize_template(
     ----------
     .. [1]  Hrabe T. et al, J. Struct. Biol. 178, 177 (2012).
     """
-    masked_mean = be.sum(be.multiply(template, mask)) / n_observations
-    masked_std = be.sum(be.multiply(be.square(template), mask))
+    masked_mean = be.sum(be.multiply(template, mask), axis=axis, keepdims=True)
+    masked_mean = be.divide(masked_mean, n_observations)
+    masked_std = be.sum(
+        be.multiply(be.square(template), mask), axis=axis, keepdims=True
+    )
     masked_std = be.subtract(masked_std / n_observations, be.square(masked_mean))
     masked_std = be.sqrt(be.maximum(masked_std, 0))
 
@@ -95,11 +99,13 @@ def normalize_template(
 
 
 def _normalize_template_overflow_safe(
-    template: BackendArray, mask: BackendArray, n_observations: float
+    template: BackendArray, mask: BackendArray, n_observations: float, axis=None
 ) -> BackendArray:
     _template = be.astype(template, be._overflow_safe_dtype)
     _mask = be.astype(mask, be._overflow_safe_dtype)
-    normalize_template(template=_template, mask=_mask, n_observations=n_observations)
+    normalize_template(
+        template=_template, mask=_mask, n_observations=n_observations, axis=axis
+    )
     template[:] = be.astype(_template, template.dtype)
     return template
 
@@ -119,12 +125,10 @@ def generate_tempfile_name(suffix: str = None) -> str:
     str
         The generated filename
     """
-    tmp_dir = os.environ.get("TMPDIR", None)
-    _, filename = mkstemp(suffix=suffix, dir=tmp_dir)
-    return filename
+    return mkstemp(suffix=suffix)[1]
 
 
-def array_to_memmap(arr: NDArray, filename: str = None) -> str:
+def array_to_memmap(arr: NDArray, filename: str = None, mode: str = "r") -> np.memmap:
     """
     Converts a obj:`numpy.ndarray` to a obj:`numpy.memmap`.
 
@@ -134,22 +138,19 @@ def array_to_memmap(arr: NDArray, filename: str = None) -> str:
         Input data.
     filename : str, optional
         Path to new memmap, :py:meth:`generate_tempfile_name` is used by default.
+    mode : str, optional
+        Mode to open the returned memmap object in, defautls to 'r'.
 
     Returns
     -------
-    str
-        Path to the memmap.
+    obj:`numpy.memmap`
+        Memmaped array in reading mode.
     """
     if filename is None:
         filename = generate_tempfile_name()
 
-    shape, dtype = arr.shape, arr.dtype
-    arr_memmap = np.memmap(filename, mode="w+", dtype=dtype, shape=shape)
-
-    arr_memmap[:] = arr[:]
-    arr_memmap.flush()
-
-    return filename
+    arr.tofile(filename)
+    return np.memmap(filename, mode=mode, dtype=arr.dtype, shape=arr.shape)
 
 
 def memmap_to_array(arr: NDArray) -> NDArray:
@@ -276,11 +277,11 @@ def compute_parallelization_schedule(
     Parameters
     ----------
     shape1 : NDArray
-        The shape of the first input tensor.
+        The shape of the first input array.
     shape1_padding : NDArray, optional
-        Padding for shape1 used for each split. None by defauly
+        Padding for shape1, None by default.
     shape2 : NDArray
-        The shape of the second input tensor.
+        The shape of the second input array.
     max_cores : int
         The maximum number of cores that can be used.
     max_ram : int
@@ -320,7 +321,9 @@ def compute_parallelization_schedule(
     int
         The number of inner jobs per outer job.
     """
-    shape1, shape2 = np.array(shape1), np.array(shape2)
+    shape1 = tuple(int(x) for x in shape1)
+    shape2 = tuple(int(x) for x in shape2)
+
     if shape1_padding is None:
         shape1_padding = np.zeros_like(shape1)
     core_assignments = []
@@ -353,8 +356,8 @@ def compute_parallelization_schedule(
             if outer_cores > n_splits:
                 continue
             ram_usage = [
-                estimate_ram_usage(
-                    shape1=np.add(shp, shape1_padding),
+                estimate_memory_usage(
+                    shape1=tuple(sum(x) for x in zip(shp, shape1_padding)),
                     shape2=shape2,
                     matching_method=matching_method,
                     analyzer_method=analyzer_method,
@@ -396,10 +399,10 @@ def compute_parallelization_schedule(
     possible_params = possible_params[
         np.lexsort((possible_params[:, init], possible_params[:, (init - 1)]))
     ]
-    splits = {k: possible_params[0, k] for k in range(shape1.size)}
+    splits = {k: possible_params[0, k] for k in range(len(shape1))}
     core_assignment = (
-        possible_params[0, shape1.size],
-        possible_params[0, (shape1.size + 1)],
+        possible_params[0, len(shape1)],
+        possible_params[0, (len(shape1) + 1)],
     )
 
     return splits, core_assignment
@@ -595,11 +598,15 @@ def split_shape(
 
     slice_list = [
         tuple(
-            (slice((n_splits * length), (n_splits + 1) * length))
-            if n_splits < splits.get(axis, 1) - 1
-            else (slice(shape[axis] - length, shape[axis]))
-            if equal_shape
-            else (slice((n_splits * length), shape[axis]))
+            (
+                (slice((n_splits * length), (n_splits + 1) * length))
+                if n_splits < splits.get(axis, 1) - 1
+                else (
+                    (slice(shape[axis] - length, shape[axis]))
+                    if equal_shape
+                    else (slice((n_splits * length), shape[axis]))
+                )
+            )
             for n_splits in range(splits.get(axis, 1))
         )
         for length, axis in zip(ret_shape, splits.keys())
@@ -608,300 +615,6 @@ def split_shape(
     splits = tuple(product(*slice_list))
 
     return splits
-
-
-def get_rotation_matrices(
-    angular_sampling: float, dim: int = 3, use_optimized_set: bool = True
-) -> NDArray:
-    """
-    Returns rotation matrices with desired ``angular_sampling`` rate.
-
-    Parameters
-    ----------
-    angular_sampling : float
-        The desired angular sampling in degrees.
-    dim : int, optional
-        Dimension of the rotation matrices.
-    use_optimized_set : bool, optional
-        Use optimized rotational sets, True by default and available for dim=3.
-
-    Notes
-    -----
-        For dim = 3 optimized sets are used, otherwise QR-decomposition.
-
-    Returns
-    -------
-    NDArray
-        Array of shape (n, d, d) containing n rotation matrices.
-    """
-    if dim == 3 and use_optimized_set:
-        quaternions, *_ = load_quaternions_by_angle(angular_sampling)
-        ret = quaternion_to_rotation_matrix(quaternions)
-    else:
-        num_rotations = dim * (dim - 1) // 2
-        k = int((360 / angular_sampling) ** num_rotations)
-        As = np.random.randn(k, dim, dim)
-        ret, _ = np.linalg.qr(As)
-        dets = np.linalg.det(ret)
-        neg_dets = dets < 0
-        ret[neg_dets, :, -1] *= -1
-        ret[0] = np.eye(dim, dtype=ret.dtype)
-    return ret
-
-
-def get_rotations_around_vector(
-    cone_angle: float,
-    cone_sampling: float,
-    axis_angle: float = 360.0,
-    axis_sampling: float = None,
-    vector: Tuple[float] = (1, 0, 0),
-    n_symmetry: int = 1,
-    convention: str = None,
-) -> NDArray:
-    """
-    Generate rotations describing the possible placements of a vector in a cone.
-
-    Parameters
-    ----------
-    cone_angle : float
-        The half-angle of the cone in degrees.
-    cone_sampling : float
-        Angular increment used for sampling points on the cone in degrees.
-    axis_angle : float, optional
-        The total angle of rotation around the vector axis in degrees (default is 360.0).
-    axis_sampling : float, optional
-        Angular increment used for sampling points around the vector axis in degrees.
-        If None, it takes the value of `cone_sampling`.
-    vector : Tuple[float], optional
-        Cartesian coordinates in zyx convention.
-    n_symmetry : int, optional
-        Number of symmetry axis around the vector axis.
-    convention : str, optional
-        Convention for angles. By default returns rotation matrices.
-
-    Returns
-    -------
-    NDArray
-        An array of rotation angles represented as Euler angles (phi, theta, psi) in degrees.
-        The shape of the array is (n, 3), where `n` is the total number of rotation angles.
-        Each row represents a set of rotation angles.
-
-    References
-    ----------
-    .. [1] https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
-
-    """
-    if axis_sampling is None:
-        axis_sampling = cone_sampling
-
-    # Heuristic to estimate necessary number of points on sphere
-    theta = np.linspace(0, cone_angle, round(cone_angle / cone_sampling) + 1)
-    number_of_points = np.ceil(
-        360 * np.divide(np.sin(np.radians(theta)), cone_sampling),
-    )
-    number_of_points = int(np.sum(number_of_points + 1) + 2)
-
-    # Golden Spiral
-    indices = np.arange(0, number_of_points, dtype=float) + 0.5
-    radius = cone_angle * np.sqrt(indices / number_of_points)
-    theta = np.pi * (1 + np.sqrt(5)) * indices
-
-    angles_vector = Rotation.from_euler(
-        angles=rotation_aligning_vectors([1, 0, 0], vector, convention="zyx"),
-        seq="zyx",
-        degrees=True,
-    )
-
-    # phi, theta, psi
-    axis_angle /= n_symmetry
-    phi_steps = np.maximum(np.round(axis_angle / axis_sampling), 1).astype(int)
-    phi = np.linspace(0, axis_angle, phi_steps + 1)[:-1]
-    np.add(phi, angles_vector.as_euler("zyx", degrees=True)[0], out=phi)
-    angles = np.stack(
-        [radius * np.cos(theta), radius * np.sin(theta), np.zeros_like(radius)], axis=1
-    )
-    angles = np.repeat(angles, phi_steps, axis=0)
-    angles[:, 2] = np.tile(phi, radius.size)
-
-    angles = Rotation.from_euler(angles=angles, seq="zyx", degrees=True)
-    angles = angles_vector * angles
-
-    if convention is None:
-        rotation_angles = angles.as_matrix()
-    else:
-        rotation_angles = angles.as_euler(seq=convention, degrees=True)
-
-    return rotation_angles
-
-
-def load_quaternions_by_angle(
-    angular_sampling: float,
-) -> Tuple[NDArray, NDArray, float]:
-    """
-    Get orientations and weights proportional to the given angular_sampling.
-
-    Parameters
-    ----------
-    angular_sampling : float
-        Requested angular sampling.
-
-    Returns
-    -------
-    Tuple[NDArray, NDArray, float]
-        Quaternion representations of orientations, weights associated with each
-        quaternion and closest angular sampling to the requested sampling.
-    """
-    # Metadata contains (N orientations, rotational sampling, coverage as values)
-    with open(
-        os.path.join(os.path.dirname(__file__), "data", "metadata.yaml"), "r"
-    ) as infile:
-        metadata = yaml.full_load(infile)
-
-    set_diffs = {
-        setname: abs(angular_sampling - set_angle)
-        for setname, (_, set_angle, _) in metadata.items()
-    }
-    fname = min(set_diffs, key=set_diffs.get)
-
-    infile = os.path.join(os.path.dirname(__file__), "data", fname)
-    quat_weights = np.load(infile)
-
-    quat = quat_weights[:, :4]
-    weights = quat_weights[:, -1]
-    angle = metadata[fname][0]
-
-    return quat, weights, angle
-
-
-def quaternion_to_rotation_matrix(quaternions: NDArray) -> NDArray:
-    """
-    Convert quaternions to rotation matrices.
-
-    Parameters
-    ----------
-    quaternions : NDArray
-        Quaternion data of shape (n, 4).
-
-    Returns
-    -------
-    NDArray
-        Rotation matrices corresponding to the given quaternions.
-    """
-    q0 = quaternions[:, 0]
-    q1 = quaternions[:, 1]
-    q2 = quaternions[:, 2]
-    q3 = quaternions[:, 3]
-
-    s = np.linalg.norm(quaternions, axis=1) * 2
-    rotmat = np.zeros((quaternions.shape[0], 3, 3), dtype=np.float64)
-
-    rotmat[:, 0, 0] = 1.0 - s * ((q2 * q2) + (q3 * q3))
-    rotmat[:, 0, 1] = s * ((q1 * q2) - (q0 * q3))
-    rotmat[:, 0, 2] = s * ((q1 * q3) + (q0 * q2))
-
-    rotmat[:, 1, 0] = s * ((q2 * q1) + (q0 * q3))
-    rotmat[:, 1, 1] = 1.0 - s * ((q3 * q3) + (q1 * q1))
-    rotmat[:, 1, 2] = s * ((q2 * q3) - (q0 * q1))
-
-    rotmat[:, 2, 0] = s * ((q3 * q1) - (q0 * q2))
-    rotmat[:, 2, 1] = s * ((q3 * q2) + (q0 * q1))
-    rotmat[:, 2, 2] = 1.0 - s * ((q1 * q1) + (q2 * q2))
-
-    np.around(rotmat, decimals=8, out=rotmat)
-
-    return rotmat
-
-
-def euler_to_rotationmatrix(angles: Tuple[float], convention: str = "zyx") -> NDArray:
-    """
-    Convert Euler angles to a rotation matrix.
-
-    Parameters
-    ----------
-    angles : tuple
-        A tuple representing the Euler angles in degrees.
-    convention : str, optional
-        Euler angle convention.
-
-    Returns
-    -------
-    NDArray
-        The generated rotation matrix.
-    """
-    n_angles = len(angles)
-    angle_convention = convention[:n_angles]
-    if n_angles == 1:
-        angles = (angles, 0, 0)
-    rotation_matrix = Rotation.from_euler(angle_convention, angles, degrees=True)
-    return rotation_matrix.as_matrix().astype(np.float32)
-
-
-def euler_from_rotationmatrix(
-    rotation_matrix: NDArray, convention: str = "zyx"
-) -> Tuple:
-    """
-    Convert a rotation matrix to euler angles.
-
-    Parameters
-    ----------
-    rotation_matrix : NDArray
-        A 2 x 2 or 3 x 3 rotation matrix in zyx form.
-    convention : str, optional
-        Euler angle convention, zyx by default.
-
-    Returns
-    -------
-    Tuple
-        The generate euler angles in degrees
-    """
-    if rotation_matrix.shape[0] == 2:
-        temp_matrix = np.eye(3)
-        temp_matrix[:2, :2] = rotation_matrix
-        rotation_matrix = temp_matrix
-    rotation = Rotation.from_matrix(rotation_matrix)
-    return rotation.as_euler(convention, degrees=True).astype(np.float32)
-
-
-def rotation_aligning_vectors(
-    initial_vector: NDArray, target_vector: NDArray = [1, 0, 0], convention: str = None
-):
-    """
-    Compute the rotation matrix or Euler angles required to align an initial vector with a target vector.
-
-    Parameters
-    ----------
-    initial_vector : NDArray
-        The initial vector to be rotated.
-    target_vector : NDArray, optional
-        The target vector to align the initial vector with. Default is [1, 0, 0].
-    convention : str, optional
-        The generate euler angles in degrees. If None returns a rotation matrix instead.
-
-    Returns
-    -------
-    rotation_matrix_or_angles : NDArray or tuple
-        Rotation matrix if convention is None else tuple of euler angles.
-    """
-    initial_vector = np.asarray(initial_vector, dtype=np.float32)
-    target_vector = np.asarray(target_vector, dtype=np.float32)
-    initial_vector /= np.linalg.norm(initial_vector)
-    target_vector /= np.linalg.norm(target_vector)
-
-    rotation_matrix = np.eye(len(initial_vector))
-    if not np.allclose(initial_vector, target_vector):
-        rotation_axis = np.cross(initial_vector, target_vector)
-        rotation_angle = np.arccos(np.dot(initial_vector, target_vector))
-        k = rotation_axis / np.linalg.norm(rotation_axis)
-        K = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
-        rotation_matrix = np.eye(3)
-        rotation_matrix += np.sin(rotation_angle) * K
-        rotation_matrix += (1 - np.cos(rotation_angle)) * np.dot(K, K)
-
-    if convention is None:
-        return rotation_matrix
-
-    angles = euler_from_rotationmatrix(rotation_matrix, convention=convention)
-    return angles
 
 
 def rigid_transform(
@@ -979,6 +692,8 @@ def minimum_enclosing_box(
     tuple of ints
         Minimum enclosing box shape.
     """
+    from .extensions import max_euclidean_distance
+
     point_cloud = np.asarray(coordinates)
     dim = point_cloud.shape[0]
     point_cloud = point_cloud - point_cloud.min(axis=1)[:, None]
@@ -1045,7 +760,10 @@ def create_mask(mask_type: str, sigma_decay: float = 0, **kwargs) -> NDArray:
 
 
 def elliptical_mask(
-    shape: Tuple[int], radius: Tuple[float], center: Tuple[int]
+    shape: Tuple[int],
+    radius: Tuple[float],
+    center: Optional[Tuple[float]] = None,
+    orientation: Optional[NDArray] = None,
 ) -> NDArray:
     """
     Creates an ellipsoidal mask.
@@ -1055,9 +773,11 @@ def elliptical_mask(
     shape : tuple of ints
         Shape of the mask to be created.
     radius : tuple of floats
-        Radius of the ellipse.
-    center : tuple of ints
-        Center of the ellipse.
+        Radius of the mask.
+    center : tuple of floats, optional
+        Center of the mask, default to shape // 2.
+    orientation : NDArray, optional.
+        Orientation of the mask as rotation matrix with shape (d,d).
 
     Returns
     -------
@@ -1072,13 +792,17 @@ def elliptical_mask(
     Examples
     --------
     >>> from tme.matching_utils import elliptical_mask
-    >>> mask = elliptical_mask(shape = (20,20), radius = (5,5), center = (10,10))
+    >>> mask = elliptical_mask(shape=(20,20), radius=(5,5), center=(10,10))
     """
-    center, shape, radius = np.asarray(center), np.asarray(shape), np.asarray(radius)
+    shape, radius = np.asarray(shape), np.asarray(radius)
 
+    shape = shape.astype(int)
+    if center is None:
+        center = np.divide(shape, 2).astype(int)
+
+    center = np.asarray(center, dtype=np.float32)
     radius = np.repeat(radius, shape.size // radius.size)
     center = np.repeat(center, shape.size // center.size)
-
     if radius.size != shape.size:
         raise ValueError("Length of radius has to be either one or match shape.")
     if center.size != shape.size:
@@ -1088,9 +812,116 @@ def elliptical_mask(
     center = center.reshape((-1,) + (1,) * n)
     radius = radius.reshape((-1,) + (1,) * n)
 
-    mask = np.linalg.norm((np.indices(shape) - center) / radius, axis=0)
+    indices = np.indices(shape, dtype=np.float32) - center
+    if orientation is not None:
+        return_shape = indices.shape
+        indices = indices.reshape(n, -1)
+        rigid_transform(
+            coordinates=indices,
+            rotation_matrix=np.asarray(orientation),
+            out=indices,
+            translation=np.zeros(n),
+            use_geometric_center=False,
+        )
+        indices = indices.reshape(*return_shape)
+
+    mask = np.linalg.norm(indices / radius, axis=0)
     mask = (mask <= 1).astype(int)
 
+    return mask
+
+
+def tube_mask2(
+    shape: Tuple[int],
+    inner_radius: float,
+    outer_radius: float,
+    height: int,
+    symmetry_axis: Optional[int] = 2,
+    center: Optional[Tuple[float]] = None,
+    orientation: Optional[NDArray] = None,
+    epsilon: float = 0.5,
+) -> NDArray:
+    """
+    Creates a tube mask.
+
+    Parameters
+    ----------
+    shape : tuple
+        Shape of the mask to be created.
+    inner_radius : float
+        Inner radius of the tube.
+    outer_radius : float
+        Outer radius of the tube.
+    height : int
+        Height of the tube.
+    symmetry_axis : int, optional
+        The axis of symmetry for the tube, defaults to 2.
+    center : tuple of float, optional.
+        Center of the mask, defaults to shape // 2.
+    orientation : NDArray, optional.
+        Orientation of the mask as rotation matrix with shape (d,d).
+    epsilon : float, optional
+        Tolerance to handle discretization errors, defaults to 0.5.
+
+    Returns
+    -------
+    NDArray
+        The created tube mask.
+
+    Raises
+    ------
+    ValueError
+        If ``inner_radius`` is larger than ``outer_radius``.
+        If ``center`` and ``shape`` do not have the same length.
+    """
+    shape = np.asarray(shape, dtype=int)
+
+    if center is None:
+        center = np.divide(shape, 2).astype(int)
+
+    center = np.asarray(center, dtype=np.float32)
+    center = np.repeat(center, shape.size // center.size)
+    if inner_radius > outer_radius:
+        raise ValueError("inner_radius should be smaller than outer_radius.")
+    if symmetry_axis > len(shape):
+        raise ValueError(f"symmetry_axis can be not larger than {len(shape)}.")
+    if center.size != shape.size:
+        raise ValueError("Length of center has to be either one or match shape.")
+
+    n = shape.size
+    center = center.reshape((-1,) + (1,) * n)
+    indices = np.indices(shape, dtype=np.float32) - center
+    if orientation is not None:
+        return_shape = indices.shape
+        indices = indices.reshape(n, -1)
+        rigid_transform(
+            coordinates=indices,
+            rotation_matrix=np.asarray(orientation),
+            out=indices,
+            translation=np.zeros(n),
+            use_geometric_center=False,
+        )
+        indices = indices.reshape(*return_shape)
+
+    mask = np.zeros(shape, dtype=bool)
+    sq_dist = np.zeros(shape)
+    for i in range(len(shape)):
+        if i == symmetry_axis:
+            continue
+        sq_dist += indices[i] ** 2
+
+    sym_coord = indices[symmetry_axis]
+    half_height = height / 2
+    height_mask = np.abs(sym_coord) <= half_height
+
+    inner_mask = 1
+    if inner_radius > epsilon:
+        inner_mask = sq_dist >= ((inner_radius) ** 2 - epsilon)
+
+    height_mask = np.abs(sym_coord) <= (half_height + epsilon)
+    outer_mask = sq_dist <= ((outer_radius) ** 2 + epsilon)
+
+    mask = height_mask & inner_mask & outer_mask
     return mask
 
 
@@ -1121,7 +952,7 @@ def box_mask(shape: Tuple[int], center: Tuple[int], height: Tuple[int]) -> np.nd
     if len(shape) != len(center) or len(center) != len(height):
         raise ValueError("The length of shape, center, and height must be consistent.")
 
-    # Calculate min and max coordinates for the box using the center and half-heights
+    shape = tuple(int(x) for x in shape)
     center, height = np.array(center, dtype=int), np.array(height, dtype=int)
 
     half_heights = height // 2
@@ -1184,6 +1015,7 @@ def tube_mask(
     if len(base_center) != len(shape):
         raise ValueError("shape and base_center need to have the same length.")
 
+    shape = tuple(int(x) for x in shape)
     circle_shape = tuple(b for ix, b in enumerate(shape) if ix != symmetry_axis)
     circle_center = tuple(b for ix, b in enumerate(base_center) if ix != symmetry_axis)
 
@@ -1265,3 +1097,56 @@ def scramble_phases(
         np.multiply(ret, scaling, out=ret)
 
     return ret
+
+
+def compute_extraction_box(
+    centers: BackendArray, extraction_shape: Tuple[int], original_shape: Tuple[int]
+):
+    """Compute coordinates for extracting fixed-size regions around points.
+
+    Parameters
+    ----------
+    centers : BackendArray
+        Array of shape (n, d) containing n center coordinates in d dimensions.
+    extraction_shape : tuple of int
+        Desired shape of the extraction box.
+    original_shape : tuple of int
+        Shape of the original array from which extractions will be made.
+
+    Returns
+    -------
+    obs_beg : BackendArray
+        Starting coordinates for extraction, shape (n, d).
+    obs_end : BackendArray
+        Ending coordinates for extraction, shape (n, d).
+    cand_beg : BackendArray
+        Starting coordinates in output array, shape (n, d).
+    cand_end : BackendArray
+        Ending coordinates in output array, shape (n, d).
+    keep : BackendArray
+        Boolean mask of valid extraction boxes, shape (n,).
+    """
+    target_shape = be.to_backend_array(original_shape)
+    extraction_shape = be.to_backend_array(extraction_shape)
+
+    left_pad = be.astype(be.divide(extraction_shape, 2), int)
+    right_pad = be.astype(be.add(left_pad, be.mod(extraction_shape, 2)), int)
+
+    obs_beg = be.subtract(centers, left_pad)
+    obs_end = be.add(centers, right_pad)
+
+    obs_beg_clamp = be.maximum(obs_beg, 0)
+    obs_end_clamp = be.minimum(obs_end, target_shape)
+
+    clamp_change = be.sum(
+        be.add(obs_beg != obs_beg_clamp, obs_end != obs_end_clamp), axis=1
+    )
+
+    cand_beg = left_pad - be.subtract(centers, obs_beg_clamp)
+    cand_end = left_pad + be.subtract(obs_end_clamp, centers)
+
+    stops = be.subtract(cand_end, extraction_shape)
+    keep = be.sum(be.multiply(cand_beg == 0, stops == 0), axis=1) == centers.shape[1]
+    keep = be.multiply(keep, clamp_change == 0)
+
+    return obs_beg_clamp, obs_end_clamp, cand_beg, cand_end, keep

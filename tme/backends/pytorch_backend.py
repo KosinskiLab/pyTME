@@ -49,9 +49,9 @@ class PytorchBackend(NumpyFFTWBackend):
         self.device = device
         self.F = F
 
-    def to_backend_array(self, arr: NDArray) -> TorchTensor:
+    def to_backend_array(self, arr: NDArray, check_device: bool = True) -> TorchTensor:
         if isinstance(arr, self._array_backend.Tensor):
-            if arr.device == self.device:
+            if arr.device == self.device or not check_device:
                 return arr
             return arr.to(self.device)
         return self.tensor(arr, device=self.device)
@@ -92,8 +92,8 @@ class PytorchBackend(NumpyFFTWBackend):
         return ret[0]
 
     def maximum(self, x1, x2, *args, **kwargs) -> NDArray:
-        x1 = self.to_backend_array(x1)
-        x2 = self.to_backend_array(x2)
+        x1 = self.to_backend_array(x1, check_device=False)
+        x2 = self.to_backend_array(x2, check_device=False).to(x1.device)
         return self._array_backend.maximum(input=x1, other=x2, *args, **kwargs)
 
     def minimum(self, x1, x2, *args, **kwargs) -> NDArray:
@@ -110,7 +110,12 @@ class PytorchBackend(NumpyFFTWBackend):
     def zeros(self, shape, dtype=None):
         return self._array_backend.zeros(shape, dtype=dtype, device=self.device)
 
+    def copy(self, arr: TorchTensor) -> TorchTensor:
+        return self._array_backend.clone(arr)
+
     def full(self, shape, fill_value, dtype=None):
+        if isinstance(shape, int):
+            shape = (shape,)
         return self._array_backend.full(
             size=shape, dtype=dtype, fill_value=fill_value, device=self.device
         )
@@ -138,8 +143,8 @@ class PytorchBackend(NumpyFFTWBackend):
         indices = self.unravel_index(indices=indices, shape=arr.shape)
         return indices
 
-    def indices(self, shape: Tuple[int]) -> TorchTensor:
-        grids = [self.arange(x) for x in shape]
+    def indices(self, shape: Tuple[int], dtype: type = int) -> TorchTensor:
+        grids = [self.arange(x, dtype=dtype) for x in shape]
         mesh = self._array_backend.meshgrid(*grids, indexing="ij")
         return self._array_backend.stack(mesh)
 
@@ -245,11 +250,51 @@ class PytorchBackend(NumpyFFTWBackend):
         shm.buf[:nbytes] = arr.numpy().tobytes()
         return shm, arr.shape, arr.dtype
 
-    def transpose(self, arr):
-        return arr.permute(*self._array_backend.arange(arr.ndim - 1, -1, -1))
+    def transpose(self, arr, axes=None):
+        if axes is None:
+            axes = tuple(range(arr.ndim - 1, -1, -1))
+        return arr.permute(axes)
 
     def power(self, *args, **kwargs):
         return self._array_backend.pow(*args, **kwargs)
+
+    def eye(self, *args, **kwargs):
+        if "device" not in kwargs:
+            kwargs["device"] = self.device
+        return self._array_backend.eye(*args, **kwargs)
+
+    def build_fft(
+        self,
+        fwd_shape: Tuple[int],
+        inv_shape: Tuple[int],
+        inv_output_shape: Tuple[int] = None,
+        fwd_axes: Tuple[int] = None,
+        inv_axes: Tuple[int] = None,
+        **kwargs,
+    ) -> Tuple[Callable, Callable]:
+        rfft_shape = self._format_fft_shape(fwd_shape, fwd_axes)
+        irfft_shape = fwd_shape if inv_output_shape is None else inv_output_shape
+        irfft_shape = self._format_fft_shape(irfft_shape, inv_axes)
+
+        def rfftn(
+            arr: TorchTensor, out: TorchTensor, s=rfft_shape, axes=fwd_axes
+        ) -> TorchTensor:
+            return self._array_backend.fft.rfftn(arr, s=s, out=out, dim=axes)
+
+        def irfftn(
+            arr: TorchTensor, out: TorchTensor = None, s=irfft_shape, axes=inv_axes
+        ) -> TorchTensor:
+            return self._array_backend.fft.irfftn(arr, s=s, out=out, dim=axes)
+
+        return rfftn, irfftn
+
+    def rfftn(self, arr: NDArray, *args, **kwargs) -> NDArray:
+        kwargs["dim"] = kwargs.pop("axes", None)
+        return self._array_backend.fft.rfftn(arr, **kwargs)
+
+    def irfftn(self, arr: NDArray, *args, **kwargs) -> NDArray:
+        kwargs["dim"] = kwargs.pop("axes", None)
+        return self._array_backend.fft.irfftn(arr, **kwargs)
 
     def rigid_transform(
         self,
@@ -263,79 +308,37 @@ class PytorchBackend(NumpyFFTWBackend):
         order: int = 1,
         cache: bool = False,
     ):
-        """
-        Rotates the given tensor `arr` based on the provided `rotation_matrix`.
-
-        This function optionally allows for rotating an accompanying mask
-        tensor (`arr_mask`) alongside the main tensor. The rotation is defined
-        by the `rotation_matrix` and the optional `translation`.
-
-        Parameters
-        ----------
-        arr : TorchTensor
-            The input tensor to be rotated.
-        rotation_matrix : TorchTensor
-            The rotation matrix to apply. Must be square and of shape [d x d].
-        arr_mask : TorchTensor, optional
-            The mask of `arr` to be equivalently rotated.
-        translation : TorchTensor, optional
-            The translation to apply after rotation. Shape should
-            match tensor dimensions [d].
-        out : TorchTensor, optional
-            The output tensor to hold the rotated `arr`. If not provided, a new
-            tensor will be created.
-        out_mask : TorchTensor, optional
-            The output tensor to hold the rotated `arr_mask`. If not provided and
-            `arr_mask` is given, a new tensor will be created.
-        order : int, optional
-            Spline interpolation order. Supports orders:
-
-            +-------+---------------------------------------------------------------+
-            |   0   | Use 'nearest' neighbor interpolation.                         |
-            +-------+---------------------------------------------------------------+
-            |   1   | Use 'bilinear' interpolation for smoother results.            |
-            +-------+---------------------------------------------------------------+
-            |   3   | Use 'bicubic' interpolation for higher order smoothness.      |
-            +-------+---------------------------------------------------------------+
-
-        Returns
-        -------
-        out, out_mask : TorchTensor or Tuple[TorchTensor, TorchTensor] or None
-            Returns the rotated tensor(s). If `out` and `out_mask` are provided, the
-            function will return `None`.
-            If only `arr` is provided without `out`, it returns rotated `arr`.
-            If both `arr` and `arr_mask` are given without `out` and `out_mask`, it
-            returns a tuple of rotated tensors.
-
-        Notes
-        -----
-        Only a region of the size of `arr` and `arr_mask` is considered for
-        interpolation in `out` and `out_mask` respectively.
-
-        Currently bicubic interpolation is not supported for 3D inputs.
-        """
-        device = arr.device
-        mode_mapping = {0: "nearest", 1: "bilinear", 3: "bicubic"}
-        mode = mode_mapping.get(order, None)
+        _mode_mapping = {0: "nearest", 1: "bilinear", 3: "bicubic"}
+        mode = _mode_mapping.get(order, None)
         if mode is None:
-            modes = ", ".join([str(x) for x in mode_mapping.keys()])
+            modes = ", ".join([str(x) for x in _mode_mapping.keys()])
             raise ValueError(
                 f"Got {order} but supported interpolation orders are: {modes}."
             )
 
         out = self.zeros_like(arr) if out is None else out
+
         if translation is None:
-            translation = self._array_backend.zeros(arr.ndim, device=device)
+            translation = self._array_backend.zeros(arr.ndim, device=arr.device)
 
         normalized_translation = self.divide(
             -2.0 * translation, self.tensor(arr.shape, device=arr.device)
         )
-
         rotation_matrix_pull = self.linalg.inv(self.flip(rotation_matrix, [0, 1]))
 
         out_slice = tuple(slice(0, x) for x in arr.shape)
+        subset = tuple(slice(None) for _ in range(arr.ndim))
+        offset = max(int(arr.ndim - rotation_matrix.shape[0]) - 1, 0)
+        if offset > 0:
+            normalized_translation = normalized_translation[offset:]
+            subset = tuple(0 if i < offset else slice(None) for i in range(arr.ndim))
+            out_slice = tuple(
+                slice(0, 1) if i < offset else slice(0, x)
+                for i, x in enumerate(arr.shape)
+            )
+
         out[out_slice] = self._affine_transform(
-            arr=arr,
+            arr=arr[subset],
             rotation_matrix=rotation_matrix_pull,
             translation=normalized_translation,
             mode=mode,
@@ -346,35 +349,13 @@ class PytorchBackend(NumpyFFTWBackend):
             if out_mask is None:
                 out_mask = self._array_backend.zeros_like(arr_mask)
             out_mask[out_mask_slice] = self._affine_transform(
-                arr=arr_mask,
+                arr=arr_mask[subset],
                 rotation_matrix=rotation_matrix_pull,
                 translation=normalized_translation,
                 mode=mode,
             )
 
         return out, out_mask
-
-    def build_fft(
-        self,
-        fast_shape: Tuple[int],
-        fast_ft_shape: Tuple[int],
-        inverse_fast_shape: Tuple[int] = None,
-        **kwargs,
-    ) -> Tuple[Callable, Callable]:
-        if inverse_fast_shape is None:
-            inverse_fast_shape = fast_shape
-
-        def rfftn(
-            arr: TorchTensor, out: TorchTensor, shape: Tuple[int] = fast_shape
-        ) -> TorchTensor:
-            return self._array_backend.fft.rfftn(arr, s=shape, out=out)
-
-        def irfftn(
-            arr: TorchTensor, out: TorchTensor, shape: Tuple[int] = inverse_fast_shape
-        ) -> TorchTensor:
-            return self._array_backend.fft.irfftn(arr, s=shape, out=out)
-
-        return rfftn, irfftn
 
     def _affine_transform(
         self,
@@ -383,24 +364,42 @@ class PytorchBackend(NumpyFFTWBackend):
         translation: TorchTensor,
         mode,
     ) -> TorchTensor:
-        transformation_matrix = self._array_backend.zeros(
-            arr.ndim, arr.ndim + 1, device=arr.device, dtype=arr.dtype
-        )
-        transformation_matrix[:, : arr.ndim] = rotation_matrix
-        transformation_matrix[:, arr.ndim] = translation
+        batched = arr.ndim != rotation_matrix.shape[0]
 
-        size = self.Size([1, 1, *arr.shape])
+        batch_size, spatial_dims = 1, arr.shape
+        if batched:
+            translation = translation[1:]
+            batch_size, *spatial_dims = arr.shape
+
+        n_dims = len(spatial_dims)
+        transformation_matrix = self._array_backend.zeros(
+            n_dims, n_dims + 1, device=arr.device, dtype=arr.dtype
+        )
+
+        transformation_matrix[:, :n_dims] = rotation_matrix
+        transformation_matrix[:, n_dims] = translation
+        transformation_matrix = transformation_matrix.unsqueeze(0).expand(
+            batch_size, -1, -1
+        )
+
+        if not batched:
+            arr = arr.unsqueeze(0)
+
+        size = self.Size([batch_size, 1, *spatial_dims])
         grid = self.F.affine_grid(
-            theta=transformation_matrix.unsqueeze(0), size=size, align_corners=False
+            theta=transformation_matrix, size=size, align_corners=False
         )
         output = self.F.grid_sample(
-            input=arr.unsqueeze(0).unsqueeze(0),
+            input=arr.unsqueeze(1),
             grid=grid,
             mode=mode,
             align_corners=False,
         )
 
-        return output.squeeze()
+        if not batched:
+            output = output.squeeze(0)
+
+        return output.squeeze(1)
 
     def get_available_memory(self) -> int:
         if self.device == "cpu":
@@ -420,5 +419,12 @@ class PytorchBackend(NumpyFFTWBackend):
             return 1
         return self._array_backend.cuda.device_count()
 
-    def reverse(self, arr: TorchTensor) -> TorchTensor:
-        return self._array_backend.flip(arr, [i for i in range(arr.ndim)])
+    def reverse(self, arr: TorchTensor, axis: Tuple[int] = None) -> TorchTensor:
+        if axis is None:
+            axis = tuple(range(arr.ndim))
+        return self._array_backend.flip(arr, [i for i in range(arr.ndim) if i in axis])
+
+    def triu_indices(self, n: int, k: int = 0, m: int = None) -> TorchTensor:
+        if m is None:
+            m = n
+        return self._array_backend.triu_indices(n, m, k)

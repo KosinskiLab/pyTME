@@ -14,9 +14,7 @@ Code Style and Guidelines
 
 2. **Docstrings**: All functions, classes, and methods should have numpydoc-compliant docstrings. This ensures that our documentation remains consistent and readable. See the `numpydoc guide <https://numpydoc.readthedocs.io/en/latest/format.html>`_ for reference.
 
-3. **Minimize Line Count**: While it's important to write clear code, also aim for brevity. Don't use five lines of code when one will do. But remember, clarity should not be sacrificed for brevity.
-
-4. **Testing**: Write tests for any new features or bug fixes. Ensure that all tests pass before submitting a pull request.
+3. **Testing**: Write tests for any new features or bug fixes. Ensure that all tests pass before submitting a pull request.
 
 
 Feedback and Review

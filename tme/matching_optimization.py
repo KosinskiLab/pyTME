@@ -4,12 +4,12 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+
 import warnings
 from typing import Tuple, List, Dict
 from abc import ABC, abstractmethod
 
 import numpy as np
-from scipy.spatial import KDTree
 from scipy.ndimage import laplace, map_coordinates, sobel
 from scipy.optimize import (
     minimize,
@@ -21,11 +21,8 @@ from scipy.optimize import (
 from .backends import backend as be
 from .types import ArrayLike, NDArray
 from .matching_data import MatchingData
-from .matching_utils import (
-    rigid_transform,
-    euler_to_rotationmatrix,
-    normalize_template,
-)
+from .rotations import euler_to_rotationmatrix
+from .matching_utils import rigid_transform, normalize_template
 
 
 def _format_rigid_transform(x: Tuple[float]) -> Tuple[ArrayLike, ArrayLike]:
@@ -36,7 +33,7 @@ def _format_rigid_transform(x: Tuple[float]) -> Tuple[ArrayLike, ArrayLike]:
     ----------
     x : tuple of float
         Even-length tuple where the first half represents translations and the
-        second half Euler angles in zyx convention for each dimension.
+        second half Euler angles in zyz convention for each dimension.
 
     Returns
     -------
@@ -203,7 +200,7 @@ class _MatchDensityToDensity(ABC):
         Parameters
         ----------
         x : tuple of float
-            Tuple of Euler angles in zyx convention for each dimension.
+            Tuple of Euler angles in zyz convention for each dimension.
 
         Returns
         -------
@@ -220,7 +217,7 @@ class _MatchDensityToDensity(ABC):
         ----------
         x : tuple of float
             Even-length tuple where the first half represents translations and the
-            second half Euler angles in zyx convention for each dimension.
+            second half Euler angles in zyz convention for each dimension.
 
         Returns
         -------
@@ -354,7 +351,7 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
         ----------
         x : tuple of float
             Even-length tuple where the first half represents translations and the
-            second half Euler angles in zyx convention for each dimension.
+            second half Euler angles in zyz convention for each dimension.
 
         Returns
         -------
@@ -462,7 +459,7 @@ class _MatchCoordinatesToCoordinates(_MatchDensityToDensity):
         ----------
         x : tuple of float
             Even-length tuple where the first half represents translations and the
-            second half Euler angles in zyx convention for each dimension.
+            second half Euler angles in zyz convention for each dimension.
 
         Returns
         -------
@@ -991,6 +988,8 @@ class Chamfer(_MatchCoordinatesToCoordinates):
     __doc__ += _MatchCoordinatesToDensity.__doc__
 
     def _post_init(self, **kwargs):
+        from scipy.spatial import KDTree
+
         self.target_tree = KDTree(self.target_coordinates.T)
 
     def __call__(self) -> float:
@@ -1163,7 +1162,7 @@ def optimize_match(
         Bounds on the evaluated translations. Has to be specified per dimension
         as tuple of (min, max). Default is None.
     bounds_rotation : tuple of tuple float, optional
-        Bounds on the evaluated zyx Euler angles. Has to be specified per dimension
+        Bounds on the evaluated zyz Euler angles. Has to be specified per dimension
         as tuple of (min, max). Default is None.
     optimization_method : str, optional
         Optimizer that will be used, basinhopping by default. For further

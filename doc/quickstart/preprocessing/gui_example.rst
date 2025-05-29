@@ -49,15 +49,15 @@ The mask widget is operated anologously. In the following, we consider an averag
  :width: 100 %
  :align: center
 
-The dropdown menu allows users to choose from a variety of masks with a given set of parameter. The `Adapy to layer` button will determine initial mask parameters based on the data of the currently selected layer. `Align to axis` will rotate the axis of largest variation in the selected layer onto the z-Axis, which can simplify mask creation for cases whose initial positioning is suboptimal. `Create mask` will create a specified mask for the currently selected layer.
+The dropdown menu allows users to choose from a variety of masks with a given set of parameter. The `Adapt to layer` button will determine initial mask parameters based on the data of the currently selected layer. `Align to axis` will rotate the axis of largest variation in the selected layer onto the z-Axis, which can simplify mask creation for cases whose initial positioning is suboptimal. `Create mask` will create a specified mask for the currently selected layer.
 
-When clicking `Adapy to layer` followed by `Create mask`, we observe that the resulting sphere is excessively large. This is because EMD-3228 contains a fair amount of noisy unstructed density around the center structure. This can be assessed by reducing the lower bound on the contrast limit slider.
+When clicking `Adapt to layer` followed by `Create mask`, we observe that the resulting sphere is excessively large. This is because EMD-3228 contains a fair amount of noisy unstructed density around the center structure. This can be assessed by reducing the lower bound on the contrast limit slider.
 
 .. figure:: ../../_static/examples/napari_mask_widget_map.png
  :width: 100 %
  :align: center
 
-We can either adapt the mask manually, or make use of the Data Quantile feature. The Data Quantile allows us to only consider a given top percentage of the data for mask generation. In this case, 94.80 appeared to be a reasonable cutoff. Make sure to select the non-mask layer before clicking on `Adapy to layer`. The output is displayed below.
+We can either adapt the mask manually, or make use of the Data Quantile feature. The Data Quantile allows us to only consider a given top percentage of the data for mask generation. In this case, 94.80 appeared to be a reasonable cutoff. Make sure to select the non-mask layer before clicking on `Adapt to layer`. The output is displayed below.
 
 .. figure:: ../../_static/examples/napari_mask_widget_map2.png
  :width: 100 %

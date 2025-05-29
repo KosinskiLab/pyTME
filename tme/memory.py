@@ -9,7 +9,8 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 
 import numpy as np
-from pyfftw import next_fast_len
+
+from .backends import backend as be
 
 
 class MatchingMemoryUsage(ABC):
@@ -41,13 +42,6 @@ class MatchingMemoryUsage(ABC):
         Number of bytes of the used complex, e.g. 8 for complex64.
     integer_nbytes : int
         Number of bytes of the used integer, e.g. 4 for int32.
-
-    Methods
-    -------
-    base_usage():
-        Returns the base memory usage in bytes.
-    per_fork():
-        Returns the memory usage in bytes per fork.
     """
 
     def __init__(
@@ -79,7 +73,7 @@ class CCMemoryUsage(MatchingMemoryUsage):
 
     See Also
     --------
-    :py:meth:`tme.matching_exhaustive.cc_setup`.
+    :py:meth:`tme.matching_scores.cc_setup`.
     """
 
     def base_usage(self) -> int:
@@ -96,9 +90,10 @@ class CCMemoryUsage(MatchingMemoryUsage):
 class LCCMemoryUsage(CCMemoryUsage):
     """
     Memory usage estimation for LCC scoring.
+
     See Also
     --------
-    :py:meth:`tme.matching_exhaustive.lcc_setup`.
+    :py:meth:`tme.matching_scores.lcc_setup`.
     """
 
 
@@ -108,7 +103,7 @@ class CORRMemoryUsage(MatchingMemoryUsage):
 
     See Also
     --------
-    :py:meth:`tme.matching_exhaustive.corr_setup`.
+    :py:meth:`tme.matching_scores.corr_setup`.
     """
 
     def base_usage(self) -> int:
@@ -128,7 +123,7 @@ class CAMMemoryUsage(CORRMemoryUsage):
 
     See Also
     --------
-    :py:meth:`tme.matching_exhaustive.cam_setup`.
+    :py:meth:`tme.matching_scores.cam_setup`.
     """
 
 
@@ -138,7 +133,7 @@ class FLCSphericalMaskMemoryUsage(CORRMemoryUsage):
 
     See Also
     --------
-    :py:meth:`tme.matching_exhaustive.flcSphericalMask_setup`.
+    :py:meth:`tme.matching_scores.flcSphericalMask_setup`.
     """
 
 
@@ -148,7 +143,7 @@ class FLCMemoryUsage(MatchingMemoryUsage):
 
     See Also
     --------
-    :py:meth:`tme.matching_exhaustive.flc_setup`.
+    :py:meth:`tme.matching_scores.flc_setup`.
     """
 
     def base_usage(self) -> int:
@@ -168,7 +163,7 @@ class MCCMemoryUsage(MatchingMemoryUsage):
 
     See Also
     --------
-    :py:meth:`tme.matching_exhaustive.mcc_setup`.
+    :py:meth:`tme.matching_scores.mcc_setup`.
     """
 
     def base_usage(self) -> int:
@@ -236,33 +231,6 @@ class CupyBackendMemoryUsage(MatchingMemoryUsage):
         return 0
 
 
-def _compute_convolution_shapes(
-    arr1_shape: Tuple[int], arr2_shape: Tuple[int]
-) -> Tuple[Tuple[int], Tuple[int], Tuple[int]]:
-    """
-    Computes regular, optimized and fourier convolution shape.
-
-    Parameters
-    ----------
-    arr1_shape : tuple
-        Tuple of integers corresponding to array1 shape.
-    arr2_shape : tuple
-        Tuple of integers corresponding to array2 shape.
-
-    Returns
-    -------
-    tuple
-        Tuple with regular convolution shape, convolution shape optimized for faster
-        fourier transform, shape of the forward fourier transform
-        (see :py:meth:`build_fft`).
-    """
-    convolution_shape = np.add(arr1_shape, arr2_shape) - 1
-    fast_shape = [next_fast_len(x) for x in convolution_shape]
-    fast_ft_shape = list(fast_shape[:-1]) + [fast_shape[-1] // 2 + 1]
-
-    return convolution_shape, fast_shape, fast_ft_shape
-
-
 MATCHING_MEMORY_REGISTRY = {
     "CC": CCMemoryUsage,
     "LCC": LCCMemoryUsage,
@@ -275,10 +243,12 @@ MATCHING_MEMORY_REGISTRY = {
     "PeakCallerMaximumFilter": PeakCallerMaximumFilterMemoryUsage,
     "cupy": CupyBackendMemoryUsage,
     "pytorch": CupyBackendMemoryUsage,
+    "batchFLCSpherical": FLCSphericalMaskMemoryUsage,
+    "batchFLC": FLCMemoryUsage,
 }
 
 
-def estimate_ram_usage(
+def estimate_memory_usage(
     shape1: Tuple[int],
     shape2: Tuple[int],
     matching_method: str,
@@ -290,20 +260,16 @@ def estimate_ram_usage(
     integer_nbytes: int = 4,
 ) -> int:
     """
-    Estimate the RAM usage for a given convolution operation based on input shapes,
-    matching_method, and number of cores.
+    Estimate the memory usage for a given template matching operation.
 
     Parameters
     ----------
     shape1 : tuple
-        The shape of the input target.
+        Shape of the target array.
     shape2 : tuple
-        The shape of the input template.
+        Shape of the template array.
     matching_method : str
-        The method used for the operation.
-    is_gpu : bool, optional
-        Whether the computation is performed on GPU. This factors in FFT
-        plan caching.
+        Matching method to estimate memory usage for.
     analyzer_method : str, optional
         The method used for score analysis.
     backend : str, optional
@@ -311,34 +277,28 @@ def estimate_ram_usage(
     ncores : int
         The number of CPU cores used for the operation.
     float_nbytes : int
-        Number of bytes of the used float, e.g. 4 for float32.
+        Number of bytes of the used float, defaults to 4 (float32).
     complex_nbytes : int
-        Number of bytes of the used complex, e.g. 8 for complex64.
+        Number of bytes of the used complex, defaults to 8 (complex64).
     integer_nbytes : int
-        Number of bytes of the used integer, e.g. 4 for int32.
+        Number of bytes of the used integer, defaults to 4 (int32).
 
     Returns
     -------
     int
-        The estimated RAM usage for the operation in bytes.
-
-    Notes
-    -----
-        Residual memory from other objects that may remain allocated during
-        template matching, e.g. the full sized target when using splitting,
-        are not considered by this function.
+        The estimated memory usage for the operation in bytes.
 
     Raises
     ------
     ValueError
-        If an unsupported matching_methode is provided.
+        If an unsupported matching_method is provided.
     """
     if matching_method not in MATCHING_MEMORY_REGISTRY:
         raise ValueError(
             f"Supported options are {','.join(MATCHING_MEMORY_REGISTRY.keys())}"
         )
 
-    convolution_shape, fast_shape, ft_shape = _compute_convolution_shapes(
+    convolution_shape, fast_shape, ft_shape = be.compute_convolution_shapes(
         shape1, shape2
     )
 

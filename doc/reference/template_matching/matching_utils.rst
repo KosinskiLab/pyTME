@@ -10,32 +10,17 @@ Functions that are used in exhaustive and non-exhaustive template matching or ar
 Masks
 ~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    box_mask
    create_mask
    tube_mask
    elliptical_mask
 
-
-Rotations
-~~~~~~~~~
-.. autosummary::
-   :toctree: api/
-
-   get_rotation_matrices
-   euler_to_rotationmatrix
-   rotation_aligning_vectors
-   euler_from_rotationmatrix
-   load_quaternions_by_angle
-   get_rotations_around_vector
-   quaternion_to_rotation_matrix
-
-
 Subsetting
 ~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    centered
    split_shape
@@ -48,7 +33,7 @@ Subsetting
 Serialization
 ~~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    load_pickle
    write_pickle
@@ -57,7 +42,7 @@ Serialization
 Utilities
 ~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    scramble_phases
    rigid_transform
@@ -68,3 +53,17 @@ Utilities
    minimum_enclosing_box
    generate_tempfile_name
 
+
+.. currentmodule:: tme.rotations
+
+Rotations
+~~~~~~~~~
+.. autosummary::
+   :toctree: ../api/
+
+   align_to_axis
+   align_vectors
+   euler_to_rotationmatrix
+   euler_from_rotationmatrix
+   get_cone_rotations
+   get_rotation_matrices

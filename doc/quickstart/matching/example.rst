@@ -41,9 +41,7 @@ Performance
 
 - **cutoff_target/cutoff_template**: By defining a minimal enclosing box containing all significant density values, the execution time can be significantly improved.
 
-- **pad_edges**: Pad each dimension of the target by the template shape. This helps to avoid erroneous scores at the boundaries. |project| will automatically set this flag if the target has to be split to fit into memory, as otherwise grid-like artifacts will be present in the scores. Setting this option will typically yield a longer runtime.
-
-- **pad_fourier**: Zero pad the target to the full convolution shape, which is defined as cumulative box size of template and target minus one. Setting this option improves numerical stability, but yields a longer runtime. When working with large data such as tomograms this flag does not need to be set.
+- **pad_target_edges**: Pad each dimension of the target by the template shape. This helps to avoid erroneous scores at the boundaries. |project| will automatically set this flag if the target has to be split to fit into memory, as otherwise grid-like artifacts will be present in the scores. Setting this option will typically yield a longer runtime.
 
 - **no_centering**: Omit moving the template's center of mass to the center of a new box that is sufficiently sized to represent all rotations.
 

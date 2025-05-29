@@ -49,7 +49,6 @@ By default, |project| uses the entire area under the template as mask. However, 
             callback_class=MaxScoreOverRotations,
             callback_class_args={"score_threshold": -1},
             pad_target_edges=True,
-            pad_fourier=False,
             job_schedule=(1,1),
         )
         return candidates[0]
@@ -156,7 +155,6 @@ Albeit difficult to see in this representation, smoothing the mask with a sigma 
             callback_class=MaxScoreOverRotations,
             callback_class_args={"score_threshold": -1},
             pad_target_edges=True,
-            pad_fourier=False,
             job_schedule=(1,1),
         )
         return candidates[0]

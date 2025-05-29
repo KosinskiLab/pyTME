@@ -89,8 +89,11 @@ class TestDensity:
         self.orientations.to_file(output_file)
         orientations_new = Orientations.from_file(output_file)
 
-        assert np.array_equal(
+        assert np.allclose(
             self.orientations.translations, orientations_new.translations
+        )
+        assert np.allclose(
+            self.orientations.rotations, orientations_new.rotations, atol=1e-3
         )
 
     @pytest.mark.parametrize("input_format", ("text", "star", "tbl"))
@@ -141,8 +144,7 @@ class TestDensity:
 
         # Check whether extraction slices are pasted in center
         out = np.zeros(extraction_shape, dtype=data.dtype)
-        center = np.divide(extraction_shape, 2) + np.mod(extraction_shape, 2)
-        center = center.astype(int)
+        center = np.divide(extraction_shape, 2).astype(int)
         for index, (cand_slice, obs_slice) in enumerate(zip(cand_slices, obs_slices)):
             out[cand_slice] = data[obs_slice]
             assert np.allclose(
@@ -167,7 +169,7 @@ class TestDensity:
 
         out_order = zip(order, range(len(order)))
         out_order = tuple(
-            x[1] for x in sorted(out_order, key=lambda x: x[0], reverse=True)
+            x[1] for x in sorted(out_order, key=lambda x: x[0], reverse=False)
         )
 
         assert np.array_equal(translations[..., out_order], orientations.translations)

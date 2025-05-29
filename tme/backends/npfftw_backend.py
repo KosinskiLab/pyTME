@@ -4,17 +4,17 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-import os
-from typing import Tuple, Dict, List
-from contextlib import contextmanager
-from multiprocessing import shared_memory
-from multiprocessing.managers import SharedMemoryManager
 
-import numpy as np
+import os
 from psutil import virtual_memory
+from contextlib import contextmanager
+from typing import Tuple, Dict, List, Type
+
+import scipy
+import numpy as np
 from scipy.ndimage import maximum_filter, affine_transform
-from pyfftw import zeros_aligned, simd_alignment, FFTW, next_fast_len
 from pyfftw.builders import rfftn as rfftn_builder, irfftn as irfftn_builder
+from pyfftw import zeros_aligned, simd_alignment, FFTW, next_fast_len, interfaces
 
 from ..types import NDArray, BackendArray, shm_type
 from .matching_backend import MatchingBackend, _create_metafunction
@@ -59,6 +59,7 @@ def create_ufuncs(obj):
         "reshape",
         "identity",
         "dot",
+        "copy",
     ]
     for ufunc in ufuncs:
         setattr(obj, ufunc, _create_metafunction(ufunc))
@@ -97,6 +98,23 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         )
         self.affine_transform = affine_transform
 
+        self.cholesky = self._linalg_cholesky
+        self.solve_triangular = self._solve_triangular
+        self.linalg.solve_triangular = scipy.linalg.solve_triangular
+
+    def _linalg_cholesky(self, arr, lower=False, *args, **kwargs):
+        # Upper argument is not supported until numpy 2.0
+        ret = self._array_backend.linalg.cholesky(arr, *args, **kwargs)
+        if not lower:
+            axes = list(range(ret.ndim))
+            axes[-2:] = (ret.ndim - 1, ret.ndim - 2)
+            ret = self._array_backend.transpose(ret, axes)
+        return ret
+
+    def _solve_triangular(self, a, b, lower=True, *args, **kwargs):
+        mask = self._array_backend.tril if lower else self._array_backend.triu
+        return self._array_backend.linalg.solve(mask(a), b, *args, **kwargs)
+
     def to_backend_array(self, arr: NDArray) -> NDArray:
         if isinstance(arr, self._array_backend.ndarray):
             return arr
@@ -108,7 +126,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
     def to_cpu_array(self, arr: NDArray) -> NDArray:
         return arr
 
-    def get_fundamental_dtype(self, arr):
+    def get_fundamental_dtype(self, arr: NDArray) -> Type:
         dt = arr.dtype
         if self._array_backend.issubdtype(dt, self._array_backend.integer):
             return int
@@ -121,13 +139,13 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
     def free_cache(self):
         pass
 
-    def transpose(self, arr):
-        return arr.T
+    def transpose(self, arr: NDArray, *args, **kwargs) -> NDArray:
+        return self._array_backend.transpose(arr, *args, **kwargs)
 
-    def tobytes(self, arr):
+    def tobytes(self, arr: NDArray) -> str:
         return arr.tobytes()
 
-    def size(self, arr):
+    def size(self, arr: NDArray) -> int:
         return arr.size
 
     def fill(self, arr: NDArray, value: float) -> NDArray:
@@ -142,8 +160,17 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         return temp.nbytes
 
     @staticmethod
-    def astype(arr, dtype):
+    def astype(arr, dtype: Type) -> NDArray:
         return arr.astype(dtype)
+
+    @staticmethod
+    def at(arr, idx, value) -> NDArray:
+        arr[idx] = value
+        return arr
+
+    def addat(self, arr, indices, *args, **kwargs) -> NDArray:
+        self._array_backend.add.at(arr, indices, *args, **kwargs)
+        return arr
 
     def topk_indices(self, arr: NDArray, k: int):
         temp = arr.reshape(-1)
@@ -155,7 +182,9 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
     def indices(self, *args, **kwargs) -> NDArray:
         return self._array_backend.indices(*args, **kwargs)
 
-    def roll(self, a, shift, axis, **kwargs):
+    def roll(
+        self, a: NDArray, shift: Tuple[int], axis: Tuple[int], **kwargs
+    ) -> NDArray:
         return self._array_backend.roll(
             a,
             shift=shift,
@@ -163,10 +192,10 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
             **kwargs,
         )
 
-    def unravel_index(self, indices, shape):
+    def unravel_index(self, indices: NDArray, shape: Tuple[int]) -> NDArray:
         return self._array_backend.unravel_index(indices=indices, shape=shape)
 
-    def max_filter_coordinates(self, score_space, min_distance: Tuple[int]):
+    def max_filter_coordinates(self, score_space: NDArray, min_distance: Tuple[int]):
         score_box = tuple(min_distance for _ in range(score_space.ndim))
         max_filter = maximum_filter(score_space, size=score_box, mode="constant")
         max_filter = max_filter == score_space
@@ -180,16 +209,18 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         return arr
 
     def from_sharedarr(self, args) -> NDArray:
+        if len(args) == 1:
+            return args[0]
         shm, shape, dtype = args
         return self.ndarray(shape, dtype, shm.buf)
 
     def to_sharedarr(
         self, arr: NDArray, shared_memory_handler: type = None
     ) -> shm_type:
-        if isinstance(shared_memory_handler, SharedMemoryManager):
-            shm = shared_memory_handler.SharedMemory(size=arr.nbytes)
-        else:
-            shm = shared_memory.SharedMemory(create=True, size=arr.nbytes)
+        if shared_memory_handler is None:
+            return (arr,)
+
+        shm = shared_memory_handler.SharedMemory(size=arr.nbytes)
         np_array = self.ndarray(arr.shape, dtype=arr.dtype, buffer=shm.buf)
         np_array[:] = arr[:].copy()
         return shm, arr.shape, arr.dtype
@@ -209,21 +240,25 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
 
     def build_fft(
         self,
-        fast_shape: Tuple[int],
-        fast_ft_shape: Tuple[int],
+        fwd_shape: Tuple[int],
+        inv_shape: Tuple[int],
         real_dtype: type,
-        complex_dtype: type,
+        cmpl_dtype: type,
         fftargs: Dict = {},
-        inverse_fast_shape: Tuple[int] = None,
-        temp_real: NDArray = None,
-        temp_fft: NDArray = None,
+        inv_output_shape: Tuple[int] = None,
+        temp_fwd: NDArray = None,
+        temp_inv: NDArray = None,
+        fwd_axes: Tuple[int] = None,
+        inv_axes: Tuple[int] = None,
     ) -> Tuple[FFTW, FFTW]:
-        if temp_real is None:
-            temp_real = self.zeros(fast_shape, real_dtype)
-        if temp_fft is None:
-            temp_fft = self.zeros(fast_ft_shape, complex_dtype)
-        if inverse_fast_shape is None:
-            inverse_fast_shape = fast_shape
+        if temp_fwd is None:
+            temp_fwd = (
+                self.zeros(fwd_shape, real_dtype) if temp_fwd is None else temp_fwd
+            )
+        if temp_inv is None:
+            temp_inv = (
+                self.zeros(inv_shape, cmpl_dtype) if temp_inv is None else temp_inv
+            )
 
         default_values = {
             "planner_effort": "FFTW_MEASURE",
@@ -238,16 +273,35 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
                 continue
             fftargs[key] = default_values[key]
 
-        rfftn = rfftn_builder(temp_real, s=fast_shape, **fftargs)
+        rfft_shape = self._format_fft_shape(temp_fwd.shape, fwd_axes)
+        _rfftn = rfftn_builder(temp_fwd, s=rfft_shape, axes=fwd_axes, **fftargs)
+        overwrite_input = fftargs.pop("overwrite_input", None)
 
-        overwrite_input = None
-        if "overwrite_input" in fftargs:
-            overwrite_input = fftargs.pop("overwrite_input")
-        irfftn = irfftn_builder(temp_fft, s=inverse_fast_shape, **fftargs)
+        irfft_shape = fwd_shape if inv_output_shape is None else inv_output_shape
+        irfft_shape = self._format_fft_shape(irfft_shape, inv_axes)
+        _irfftn = irfftn_builder(temp_inv, s=irfft_shape, axes=inv_axes, **fftargs)
 
-        if overwrite_input is not None:
-            fftargs["overwrite_input"] = overwrite_input
-        return rfftn, irfftn
+        def _rfftn_wrapper(arr, out, *args, **kwargs):
+            return _rfftn(arr, out)
+
+        def _irfftn_wrapper(arr, out, *args, **kwargs):
+            return _irfftn(arr, out)
+
+        fftargs["overwrite_input"] = overwrite_input
+        return _rfftn_wrapper, _irfftn_wrapper
+
+    @staticmethod
+    def _format_fft_shape(shape: Tuple[int], axes: Tuple[int] = None):
+        if axes is None:
+            return shape
+        axes = tuple(sorted(range(len(shape))[i] for i in axes))
+        return tuple(shape[i] for i in axes)
+
+    def rfftn(self, arr: NDArray, *args, **kwargs) -> NDArray:
+        return interfaces.numpy_fft.rfftn(arr, **kwargs)
+
+    def irfftn(self, arr: NDArray, *args, **kwargs) -> NDArray:
+        return interfaces.numpy_fft.irfftn(arr, **kwargs)
 
     def extract_center(self, arr: NDArray, newshape: Tuple[int]) -> NDArray:
         new_shape = self.to_backend_array(newshape)
@@ -261,23 +315,6 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
     def compute_convolution_shapes(
         self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
     ) -> Tuple[List[int], List[int], List[int]]:
-        """
-        Computes regular, optimized and fourier convolution shape.
-
-        Parameters
-        ----------
-        arr1_shape : tuple
-            Tuple of integers corresponding to array1 shape.
-        arr2_shape : tuple
-            Tuple of integers corresponding to array2 shape.
-
-        Returns
-        -------
-        tuple
-            Tuple with regular convolution shape, convolution shape optimized for faster
-            fourier transform, shape of the forward fourier transform
-            (see :py:meth:`build_fft`).
-        """
         convolution_shape = [int(x + y - 1) for x, y in zip(arr1_shape, arr2_shape)]
         fast_shape = [next_fast_len(x) for x in convolution_shape]
         fast_ft_shape = list(fast_shape[:-1]) + [fast_shape[-1] // 2 + 1]
@@ -286,7 +323,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
 
     def _rigid_transform_matrix(
         self,
-        rotation_matrix: NDArray = None,
+        rotation_matrix: NDArray,
         translation: NDArray = None,
         center: NDArray = None,
     ) -> NDArray:
@@ -323,7 +360,21 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         prefilter: bool,
         order: int,
         cache: bool = False,
+        batched=False,
     ) -> None:
+        if batched:
+            for i in range(data.shape[0]):
+                self._rigid_transform(
+                    data=data[i],
+                    matrix=matrix,
+                    output=output[i],
+                    prefilter=prefilter,
+                    order=order,
+                    cache=cache,
+                    batched=False,
+                )
+            return None
+
         out_slice = tuple(slice(0, stop) for stop in data.shape)
         self.affine_transform(
             input=data,
@@ -346,38 +397,49 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         order: int = 3,
         cache: bool = False,
     ) -> Tuple[NDArray, NDArray]:
-        translation = self.zeros(arr.ndim) if translation is None else translation
+        out = self.zeros_like(arr) if out is None else out
+        batched = arr.ndim != rotation_matrix.shape[0]
 
         center = self.divide(self.to_backend_array(arr.shape) - 1, 2)
         if not use_geometric_center:
             center = self.center_of_mass(arr, cutoff=0)
 
+        offset = int(arr.ndim - rotation_matrix.shape[0])
+        center = center[offset:]
+        translation = self.zeros(center.size) if translation is None else translation
         matrix = self._rigid_transform_matrix(
             rotation_matrix=rotation_matrix,
             translation=translation,
             center=center,
         )
-        out = self.zeros_like(arr) if out is None else out
+
+        subset = tuple(slice(None) for _ in range(arr.ndim))
+        if offset > 1:
+            subset = tuple(
+                0 if i < (offset - 1) else slice(None) for i in range(arr.ndim)
+            )
 
         self._rigid_transform(
-            data=arr,
+            data=arr[subset],
             matrix=matrix,
-            output=out,
+            output=out[subset],
             order=order,
             prefilter=True,
             cache=cache,
+            batched=batched,
         )
 
         # Applying the prefilter leads to artifacts in the mask.
         if arr_mask is not None:
             out_mask = self.zeros_like(arr_mask) if out_mask is None else out_mask
             self._rigid_transform(
-                data=arr_mask,
+                data=arr_mask[subset],
                 matrix=matrix,
-                output=out_mask,
+                output=out_mask[subset],
                 order=order,
                 prefilter=False,
                 cache=cache,
+                batched=batched,
             )
 
         return out, out_mask
@@ -425,25 +487,14 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         yield None
 
     def device_count(self) -> int:
-        """Returns the number of available GPU devices."""
         return 1
 
     @staticmethod
-    def reverse(arr: NDArray) -> NDArray:
-        """
-        Reverse the order of elements in an array along all its axes.
-
-        Parameters
-        ----------
-        arr : NDArray
-            Input array.
-
-        Returns
-        -------
-        NDArray
-            Reversed array.
-        """
-        return arr[(slice(None, None, -1),) * arr.ndim]
+    def reverse(arr: NDArray, axis: Tuple[int] = None) -> NDArray:
+        if axis is None:
+            axis = tuple(range(arr.ndim))
+        keep, rev = slice(None, None), slice(None, None, -1)
+        return arr[tuple(rev if i in axis else keep for i in range(arr.ndim))]
 
     def max_score_over_rotations(
         self,

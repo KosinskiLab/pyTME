@@ -18,7 +18,7 @@ Since 6HMS is already in the correct orientation, we will first simulate a trans
 .. code-block:: python
 
     from tme import Structure
-    from tme.matching_utils import get_rotation_matrices
+    from tme.rotations import get_rotation_matrices
 
     rotation_matrix = get_rotation_matrices(40)[32]
 
@@ -29,7 +29,7 @@ Since 6HMS is already in the correct orientation, we will first simulate a trans
     )
     structure_mod.to_file("6HMS_mod.pdb")
 
-The following will fit the newly created structure `6HMS_mod.pdb` into the original density map to recover the correct orientation
+The following will fit the newly created structure `6HMS_mod.pdb` into the density map to recover the correct orientation
 
 .. code-block:: bash
 
@@ -59,7 +59,7 @@ The orientation with highest score, which in our case is the initial correct ori
 
     postprocess.py \
         --input_file output.pickle \
-        --number_of_peaks 1 \
+        --num_peaks 1 \
         --output_format alignment \
         --output_prefix 6HMS_fit
 

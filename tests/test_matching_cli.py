@@ -207,7 +207,7 @@ class TestPostprocessing(TestMatchTemplate):
             "--output_format": "orientations",
             "--output_prefix": f"{self.tempdir}/temp",
             "--peak_oversampling": peak_oversampling,
-            "--number_of_peaks": 3,
+            "--num_peaks": 3,
         }
 
         if score_cutoff is not None:
@@ -233,7 +233,7 @@ class TestPostprocessing(TestMatchTemplate):
     @pytest.mark.parametrize("input_format", ("score", "peaks"))
     @pytest.mark.parametrize(
         "output_format",
-        ("orientations", "alignment", "backmapping", "average", "relion"),
+        ("orientations", "alignment", "average", "relion4", "relion5"),
     )
     def test_postproces_score_formats(self, input_format, output_format):
         self.try_delete(self.tempdir)
@@ -247,22 +247,23 @@ class TestPostprocessing(TestMatchTemplate):
             "--input_file": input_file,
             "--output_format": output_format,
             "--output_prefix": f"{self.tempdir}/temp",
-            "--number_of_peaks": 3,
+            "--num_peaks": 3,
             "--peak_caller": "PeakCallerMaximumFilter",
         }
         cmd = argdict_to_command(argdict, executable="postprocess.py")
         ret = subprocess.run(cmd, capture_output=True, shell=True)
+        print(ret.stdout, ret.stderr)
 
         match output_format:
             case "orientations":
                 assert exists(f"{self.tempdir}/temp.tsv")
             case "alignment":
                 assert exists(f"{self.tempdir}/temp_0.mrc")
-            case "backmapping":
-                assert exists(f"{self.tempdir}/temp_backmapped.mrc")
             case "average":
-                assert exists(f"{self.tempdir}/temp_average.mrc")
-            case "relion":
+                assert exists(f"{self.tempdir}/temp.mrc")
+            case "relion4":
+                assert exists(f"{self.tempdir}/temp.star")
+            case "relion5":
                 assert exists(f"{self.tempdir}/temp.star")
 
         assert ret.returncode == 0
@@ -275,7 +276,7 @@ class TestPostprocessing(TestMatchTemplate):
             "--input_file": self.score_pickle,
             "--output_format": "orientations",
             "--output_prefix": f"{self.tempdir}/temp",
-            "--number_of_peaks": 1,
+            "--num_peaks": 1,
             "--local_optimization": True,
         }
         cmd = argdict_to_command(argdict, executable="postprocess.py")

@@ -4,8 +4,6 @@
 
 .. autoclass:: {{ objname }}
 
-   {% block methods %}
-
    {% block attributes %}
    {% if attributes %}
    .. rubric:: {{ _('Attributes') }}
@@ -14,21 +12,29 @@
       :toctree:
       {% for item in attributes %}
          {% if not item.startswith('_') %}
-           {{ name }}.{{ item }}
+            {{ name }}.{{ item }}
          {% endif %}
       {%- endfor %}
    {% endif %}
    {% endblock %}
+
+   {% block methods %}
 
    {% if methods %}
    .. rubric:: {{ _('Methods') }}
 
    .. autosummary::
       :toctree:
+
+      {% if '__call__' in members %}
+            {{ name }}.__call__
+      {% endif %}
+
       {% for item in methods %}
-         {% if item in members and (not item.startswith('_') or item in ['__call__']) %}
-           {{ name }}.{{ item }}
+         {% if not item.startswith('_') %}
+            {{ name }}.{{ item }}
          {% endif %}
       {%- endfor %}
+
    {% endif %}
    {% endblock %}

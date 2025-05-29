@@ -4,6 +4,7 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+
 from functools import wraps
 from typing import Tuple, List, Callable
 
@@ -63,6 +64,11 @@ class JaxBackend(NumpyFFTWBackend):
     def to_sharedarr(arr: BackendArray, shared_memory_handler: type = None) -> shm_type:
         return arr
 
+    @staticmethod
+    def at(arr, idx, value) -> BackendArray:
+        arr = arr.at[idx].set(value)
+        return arr
+
     def topleft_pad(
         self, arr: BackendArray, shape: Tuple[int], padval: int = 0
     ) -> BackendArray:
@@ -86,6 +92,7 @@ class JaxBackend(NumpyFFTWBackend):
             "square",
             "sqrt",
             "maximum",
+            "exp",
         ]
         for ufunc in ufuncs:
             backend_method = emulate_out(getattr(self._array_backend, ufunc))
@@ -103,21 +110,30 @@ class JaxBackend(NumpyFFTWBackend):
 
     def build_fft(
         self,
-        fast_shape: Tuple[int],
-        fast_ft_shape: Tuple[int],
-        inverse_fast_shape: Tuple[int] = None,
+        fwd_shape: Tuple[int],
+        inv_shape: Tuple[int] = None,
+        inv_output_shape: Tuple[int] = None,
+        fwd_axes: Tuple[int] = None,
+        inv_axes: Tuple[int] = None,
         **kwargs,
     ) -> Tuple[Callable, Callable]:
-        if inverse_fast_shape is None:
-            inverse_fast_shape = fast_shape
+        rfft_shape = self._format_fft_shape(fwd_shape, fwd_axes)
+        irfft_shape = fwd_shape if inv_output_shape is None else inv_output_shape
+        irfft_shape = self._format_fft_shape(irfft_shape, inv_axes)
 
-        def rfftn(arr, out, shape=fast_shape):
-            return self._array_backend.fft.rfftn(arr, s=shape)
+        def rfftn(arr, out=None, s=rfft_shape, axes=fwd_axes):
+            return self._array_backend.fft.rfftn(arr, s=s, axes=axes)
 
-        def irfftn(arr, out, shape=fast_shape):
-            return self._array_backend.fft.irfftn(arr, s=shape)
+        def irfftn(arr, out=None, s=irfft_shape, axes=inv_axes):
+            return self._array_backend.fft.irfftn(arr, s=s, axes=axes)
 
         return rfftn, irfftn
+
+    def rfftn(self, arr: BackendArray, *args, **kwargs) -> BackendArray:
+        return self._array_backend.fft.rfftn(arr, **kwargs)
+
+    def irfftn(self, arr: BackendArray, *args, **kwargs) -> BackendArray:
+        return self._array_backend.fft.irfftn(arr, **kwargs)
 
     def rigid_transform(
         self,
@@ -131,6 +147,13 @@ class JaxBackend(NumpyFFTWBackend):
         **kwargs,
     ) -> Tuple[BackendArray, BackendArray]:
         rotate_mask = arr_mask is not None
+
+        # This approach is only valid for order <= 1
+        if arr.ndim != rotation_matrix.shape[0]:
+            matrix = self._array_backend.zeros((arr.ndim, arr.ndim))
+            matrix = matrix.at[0, 0].set(1)
+            matrix = matrix.at[1:, 1:].add(rotation_matrix)
+            rotation_matrix = matrix
 
         center = self.divide(self.to_backend_array(arr.shape) - 1, 2)[:, None]
         indices = self._array_backend.indices(arr.shape, dtype=self._float_dtype)
@@ -252,7 +275,7 @@ class JaxBackend(NumpyFFTWBackend):
             create_filter, create_template_filter, create_target_filter = (False,) * 3
             base, targets = None, self._array_backend.stack(targets)
             scores, rotations = scan_inner(
-                targets,
+                self.astype(targets, self._float_dtype),
                 matching_data.template,
                 matching_data.template_mask,
                 matching_data.rotations,
@@ -264,6 +287,7 @@ class JaxBackend(NumpyFFTWBackend):
 
             for index in range(scores.shape[0]):
                 temp = callback_class(
+                    shape=scores.shape,
                     scores=scores[index],
                     rotations=rotations[index],
                     thread_safe=False,

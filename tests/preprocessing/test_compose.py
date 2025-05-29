@@ -1,6 +1,6 @@
 import pytest
 
-from tme.preprocessing import Compose
+from tme.filters import Compose
 from tme.backends import backend as be
 
 

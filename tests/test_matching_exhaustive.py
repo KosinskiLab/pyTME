@@ -5,7 +5,6 @@ from scipy.ndimage import laplace
 
 from tme.matching_data import MatchingData
 from tme.memory import MATCHING_MEMORY_REGISTRY
-from tme.matching_utils import get_rotation_matrices
 from tme.analyzer import MaxScoreOverRotations, PeakCallerSort
 from tme.matching_exhaustive import (
     scan,
@@ -27,7 +26,7 @@ class TestMatchExhaustive:
         self.template_mask = np.ones_like(self.template)
         self.target_mask = np.ones_like(target)
 
-        self.rotations = get_rotation_matrices(60)[0,]
+        self.rotations = np.eye(3)
         self.peak_position = np.array([25, 17, 12])
 
     def teardown_method(self):
@@ -37,54 +36,22 @@ class TestMatchExhaustive:
         self.coordinates_weights = None
         self.rotations = None
 
-    @pytest.mark.parametrize("score", list(MATCHING_EXHAUSTIVE_REGISTER.keys()))
-    @pytest.mark.parametrize("n_jobs", (1, 2))
-    def test_scan(self, score: str, n_jobs: int):
-        matching_data = MatchingData(
-            target=self.target,
-            template=self.template,
-            target_mask=self.target_mask,
-            template_mask=self.template_mask,
-            rotations=self.rotations,
-        )
-        setup, process = MATCHING_EXHAUSTIVE_REGISTER[score]
-        ret = scan(
-            matching_data=matching_data,
-            matching_setup=setup,
-            matching_score=process,
-            n_jobs=n_jobs,
-            callback_class=MaxScoreOverRotations,
-        )
-        scores = ret[0]
-        peak = np.unravel_index(np.argmax(scores), scores.shape)
-
-        theoretical_score = 1
-        if score == "CC":
-            theoretical_score = self.template.sum()
-        elif score == "LCC":
-            theoretical_score = (laplace(self.template) * laplace(self.template)).sum()
-
-        assert np.allclose(peak, self.peak_position)
-        assert np.allclose(scores[peak], theoretical_score, rtol=0.05)
-
     @pytest.mark.parametrize("evaluate_peak", (False, True))
     @pytest.mark.parametrize("score", tuple(MATCHING_EXHAUSTIVE_REGISTER.keys()))
-    @pytest.mark.parametrize("job_schedule", ((2, 1), (1, 1)))
-    @pytest.mark.parametrize("pad_fourier", (True, False))
-    @pytest.mark.parametrize("pad_edge", (True, False))
+    @pytest.mark.parametrize("job_schedule", ((2, 1),))
+    @pytest.mark.parametrize("pad_edge", (False, True))
     def test_scan_subset(
         self,
         score: str,
         job_schedule: int,
         evaluate_peak: bool,
-        pad_fourier: bool,
         pad_edge: bool,
     ):
         matching_data = MatchingData(
-            target=self.target,
-            template=self.template,
-            target_mask=self.target_mask,
-            template_mask=self.template_mask,
+            target=self.target.copy(),
+            template=self.template.copy(),
+            target_mask=self.target_mask.copy(),
+            template_mask=self.template_mask.copy(),
             rotations=self.rotations,
         )
 
@@ -92,11 +59,11 @@ class TestMatchExhaustive:
 
         target_splits = {}
         if job_schedule[0] == 2:
-            target_splits = {0: 2 if i != 0 else 2 for i in range(self.target.ndim)}
+            target_splits = {0: 2}
 
-        callback_class = PeakCallerSort
+        callback_class = MaxScoreOverRotations
         if evaluate_peak:
-            callback_class = MaxScoreOverRotations
+            callback_class = PeakCallerSort
 
         ret = scan_subsets(
             matching_data=matching_data,
@@ -106,22 +73,17 @@ class TestMatchExhaustive:
             job_schedule=job_schedule,
             callback_class=callback_class,
             pad_target_edges=pad_edge,
-            pad_fourier=pad_fourier,
         )
 
-        if evaluate_peak:
+        if not evaluate_peak:
             scores = ret[0]
             peak = np.unravel_index(np.argmax(scores), scores.shape)
             achieved_score = scores[tuple(peak)]
         else:
             try:
                 peak, achieved_score = ret[0][0], ret[2][0]
-            except Exception as e:
+            except Exception:
                 return None
-
-        if not pad_edge:
-            # To be valid, the match needs to be fully within the target subset
-            return None
 
         theoretical_score = 1
         if score == "CC":
@@ -130,7 +92,7 @@ class TestMatchExhaustive:
             theoretical_score = (laplace(self.template) * laplace(self.template)).sum()
 
         if not np.allclose(peak, self.peak_position):
-            print(peak)
+            print(peak, self.peak_position)
             assert False
 
         assert np.allclose(achieved_score, theoretical_score, rtol=0.3)

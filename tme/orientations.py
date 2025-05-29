@@ -5,15 +5,17 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
-import re
-import warnings
-from collections import deque
+from typing import List, Tuple
 from dataclasses import dataclass
-from string import ascii_lowercase
-from typing import List, Tuple, Dict
+from string import ascii_lowercase, ascii_uppercase
 
 import numpy as np
-from scipy.spatial.transform import Rotation
+
+from .parser import StarParser
+from .matching_utils import compute_extraction_box
+
+# Exceeds available numpy dimensions for default installations.
+NAMES = ["x", "y", "z", *ascii_lowercase[:-3], *ascii_uppercase]
 
 
 @dataclass
@@ -66,7 +68,7 @@ class Orientations:
     #: Array with translations of each orientation (n, d).
     translations: np.ndarray
 
-    #: Array with zyx euler angles of each orientation (n, d).
+    #: Array with zyz euler angles of each orientation (n, d).
     rotations: np.ndarray
 
     #: Array with scores of each orientation (n, ).
@@ -161,7 +163,7 @@ class Orientations:
             +---------------+----------------------------------------------------+
             | text          | pytme's standard tab-separated orientations file   |
             +---------------+----------------------------------------------------+
-            | relion        | Creates a STAR file of orientations                |
+            | star          | Creates a STAR file of orientations                |
             +---------------+----------------------------------------------------+
             | dynamo        | Creates a dynamo table                             |
             +---------------+----------------------------------------------------+
@@ -176,13 +178,13 @@ class Orientations:
         """
         mapping = {
             "text": self._to_text,
-            "relion": self._to_relion_star,
+            "star": self._to_star,
             "dynamo": self._to_dynamo_tbl,
         }
         if file_format is None:
             file_format = "text"
             if filename.lower().endswith(".star"):
-                file_format = "relion"
+                file_format = "star"
             elif filename.lower().endswith(".tbl"):
                 file_format = "dynamo"
 
@@ -194,7 +196,7 @@ class Orientations:
 
         return func(filename=filename, **kwargs)
 
-    def _to_text(self, filename: str) -> None:
+    def _to_text(self, filename: str, **kwargs) -> None:
         """
         Save orientations in a text file format.
 
@@ -205,14 +207,13 @@ class Orientations:
 
         Notes
         -----
-        The file is saved with a header specifying each column: z, y, x, euler_z,
-        euler_y, euler_x, score, detail. Each row in the file corresponds to an orientation.
+        The file is saved with a header specifying each column: x, y, z, euler_x,
+        euler_y, euler_z, score, detail. Each row in the file corresponds to an orientation.
         """
-        naming = ascii_lowercase[::-1]
         header = "\t".join(
             [
-                *list(naming[: self.translations.shape[1]]),
-                *[f"euler_{x}" for x in naming[: self.rotations.shape[1]]],
+                *list(NAMES[: self.translations.shape[1]]),
+                *[f"euler_{x}" for x in NAMES[: self.rotations.shape[1]]],
                 "score",
                 "detail",
             ]
@@ -233,6 +234,7 @@ class Orientations:
         name_prefix: str = None,
         sampling_rate: float = 1.0,
         subtomogram_size: int = 0,
+        **kwargs,
     ) -> None:
         """
         Save orientations in Dynamo's tbl file format.
@@ -255,8 +257,6 @@ class Orientations:
         """
         with open(filename, mode="w", encoding="utf-8") as ofile:
             for index, (translation, rotation, score, detail) in enumerate(self):
-                rotation = Rotation.from_euler("zyx", rotation, degrees=True)
-                rotation = rotation.as_euler(seq="xyx", degrees=True)
                 out = [
                     index,
                     1,
@@ -281,7 +281,7 @@ class Orientations:
                     0,
                     0,
                     # Coordinate in original volume
-                    *translation[::-1],
+                    *translation,
                     0,
                     0,
                     0,
@@ -299,76 +299,21 @@ class Orientations:
 
         return None
 
-    def _to_relion_star(
-        self,
-        filename: str,
-        name: str = None,
-        ctf_image: str = None,
-        sampling_rate: float = 1.0,
-        subtomogram_size: int = 0,
+    def _to_star(
+        self, filename: str, source_path: str = None, version: str = None, **kwargs
     ) -> None:
         """
-        Save orientations in RELION's STAR file format.
+        Save orientations in STAR file format.
 
         Parameters
         ----------
         filename : str
             The name of the file to save the orientations.
-        name : str or list of str, optional
-            Path to image file the orientation is in reference to. If name is a list
-            its assumed to correspond to _rlnImageName, otherwise _rlnMicrographName.
-        ctf_image : str, optional
-            Path to CTF or wedge mask RELION.
-        sampling_rate : float, optional
-            Subtomogram sampling rate in angstrom per voxel
-        subtomogram_size : int, optional
-            Size of the square shaped subtomogram.
-
-        Notes
-        -----
-        The file is saved with a standard header used in RELION STAR files.
-        Each row in the file corresponds to an orientation.
+        source_path : str
+            Path to image file the orientation is in reference to.
+        version : str
+            Version indicator.
         """
-        optics_header = [
-            "# version 30001",
-            "data_optics",
-            "",
-            "loop_",
-            "_rlnOpticsGroup",
-            "_rlnOpticsGroupName",
-            "_rlnSphericalAberration",
-            "_rlnVoltage",
-            "_rlnImageSize",
-            "_rlnImageDimensionality",
-            "_rlnImagePixelSize",
-        ]
-        optics_data = [
-            "1",
-            "opticsGroup1",
-            "2.700000",
-            "300.000000",
-            str(int(subtomogram_size)),
-            "3",
-            str(float(sampling_rate)),
-        ]
-        optics_header = "\n".join(optics_header)
-        optics_data = "\t".join(optics_data)
-
-        if name is None:
-            name = ""
-            warnings.warn(
-                "Consider specifying the name argument. A single string will be "
-                "interpreted as path to the original micrograph, a list of strings "
-                "as path to individual subsets."
-            )
-
-        name_reference = "_rlnImageName"
-        if isinstance(name, str):
-            name = [
-                name,
-            ] * self.translations.shape[0]
-            name_reference = "_rlnMicrographName"
-
         header = [
             "data_particles",
             "",
@@ -376,35 +321,30 @@ class Orientations:
             "_rlnCoordinateX",
             "_rlnCoordinateY",
             "_rlnCoordinateZ",
-            name_reference,
             "_rlnAngleRot",
             "_rlnAngleTilt",
             "_rlnAnglePsi",
-            "_rlnOpticsGroup",
         ]
-        if ctf_image is not None:
-            header.append("_rlnCtfImage")
+        if source_path is not None:
+            header.append("_rlnMicrographName")
 
-        ctf_image = "" if ctf_image is None else f"\t{ctf_image}"
+        header.append("_pytmeScore")
 
         header = "\n".join(header)
         with open(filename, mode="w", encoding="utf-8") as ofile:
-            _ = ofile.write(f"{optics_header}\n")
-            _ = ofile.write(f"{optics_data}\n")
+            if version is not None:
+                _ = ofile.write(f"{version.strip()}\n\n")
 
-            _ = ofile.write("\n# version 30001\n")
             _ = ofile.write(f"{header}\n")
-
-            # pyTME uses a zyx data layout
             for index, (translation, rotation, score, detail) in enumerate(self):
-                rotation = Rotation.from_euler("zyx", rotation, degrees=True)
-                rotation = rotation.as_euler(seq="xyx", degrees=True)
+                line = [str(x) for x in translation]
+                line.extend([str(x) for x in rotation])
 
-                translation_string = "\t".join([str(x) for x in translation][::-1])
-                angle_string = "\t".join([str(x) for x in rotation])
-                _ = ofile.write(
-                    f"{translation_string}\t{name[index]}\t{angle_string}\t1{ctf_image}\n"
-                )
+                if source_path is not None:
+                    line.append(source_path)
+                line.append(score)
+
+                _ = ofile.write("\t".join([str(x) for x in line]) + "\n")
 
         return None
 
@@ -426,7 +366,7 @@ class Orientations:
             +---------------+----------------------------------------------------+
             | text          | pyTME's standard tab-separated orientations file   |
             +---------------+----------------------------------------------------+
-            | relion        | Creates a STAR file of orientations                |
+            | star          | Creates a STAR file of orientations                |
             +---------------+----------------------------------------------------+
             | dynamo        | Creates a dynamo table                             |
             +---------------+----------------------------------------------------+
@@ -446,14 +386,14 @@ class Orientations:
         """
         mapping = {
             "text": cls._from_text,
-            "relion": cls._from_relion_star,
+            "star": cls._from_star,
             "tbl": cls._from_tbl,
         }
         if file_format is None:
             file_format = "text"
 
             if filename.lower().endswith(".star"):
-                file_format = "relion"
+                file_format = "star"
             elif filename.lower().endswith(".tbl"):
                 file_format = "tbl"
 
@@ -506,9 +446,7 @@ class Orientations:
                 continue
 
             translation.append(
-                tuple(
-                    candidate[i] for i, x in enumerate(header) if x in ascii_lowercase
-                )
+                tuple(candidate[i] for i, x in enumerate(header) if x in NAMES)
             )
             rotation.append(
                 tuple(candidate[i] for i, x in enumerate(header) if "euler" in x)
@@ -529,82 +467,36 @@ class Orientations:
         if rotation.size == 0 and translation.shape[0] != 0:
             rotation = np.zeros(translation.shape, dtype=np.float32)
 
-        header_order = tuple(x for x in header if x in ascii_lowercase)
+        header_order = tuple(x for x in header if x in NAMES)
         header_order = zip(header_order, range(len(header_order)))
         sort_order = tuple(
-            x[1] for x in sorted(header_order, key=lambda x: x[0], reverse=True)
+            x[1] for x in sorted(header_order, key=lambda x: x[0], reverse=False)
         )
         translation = translation[..., sort_order]
 
         header_order = tuple(
-            x
-            for x in header
-            if "euler" in x and x.replace("euler_", "") in ascii_lowercase
+            x for x in header if "euler" in x and x.replace("euler_", "") in NAMES
         )
         header_order = zip(header_order, range(len(header_order)))
         sort_order = tuple(
-            x[1] for x in sorted(header_order, key=lambda x: x[0], reverse=True)
+            x[1] for x in sorted(header_order, key=lambda x: x[0], reverse=False)
         )
         rotation = rotation[..., sort_order]
 
         return translation, rotation, score, detail
 
-    @staticmethod
-    def _parse_star(filename: str, delimiter: str = None) -> Dict:
-        pattern = re.compile(r"\s*#.*")
-        with open(filename, mode="r", encoding="utf-8") as infile:
-            data = infile.read()
-
-        data = deque(filter(lambda line: line and line[0] != "#", data.split("\n")))
-
-        ret, category, block = {}, None, []
-        while data:
-            line = data.popleft()
-
-            if line.startswith("data") and not line.startswith("_"):
-                if category != line and category is not None:
-                    headers = list(ret[category].keys())
-                    headers = [pattern.sub("", x) for x in headers]
-                    ret[category] = {
-                        header: list(column)
-                        for header, column in zip(headers, zip(*block))
-                    }
-                    block.clear()
-                category = line
-                if category not in ret:
-                    ret[category] = {}
-                continue
-
-            if line.startswith("_"):
-                ret[category][line] = []
-                continue
-
-            if line.startswith("loop"):
-                continue
-
-            line_split = line.split(delimiter)
-            if len(line_split):
-                block.append(line_split)
-
-        headers = list(ret[category].keys())
-        headers = [pattern.sub("", x) for x in headers]
-        ret[category] = {
-            header: list(column) for header, column in zip(headers, zip(*block))
-        }
-        return ret
-
     @classmethod
-    def _from_relion_star(
-        cls, filename: str, delimiter: str = None
+    def _from_star(
+        cls, filename: str, delimiter: str = "\t"
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        ret = cls._parse_star(filename=filename, delimiter=delimiter)
+        ret = StarParser(filename, delimiter=delimiter)
 
         ret = ret.get("data_particles", None)
         if ret is None:
             raise ValueError(f"No data_particles section found in {filename}.")
 
         translation = np.vstack(
-            (ret["_rlnCoordinateZ"], ret["_rlnCoordinateY"], ret["_rlnCoordinateX"])
+            (ret["_rlnCoordinateX"], ret["_rlnCoordinateY"], ret["_rlnCoordinateZ"])
         )
         translation = translation.astype(np.float32).T
 
@@ -613,12 +505,8 @@ class Orientations:
         )
         rotation = rotation.astype(np.float32).T
 
-        rotation = Rotation.from_euler("xyx", rotation, degrees=True)
-        rotation = rotation.as_euler(seq="zyx", degrees=True)
-        score = np.ones(translation.shape[0])
-        detail = np.ones(translation.shape[0]) * 1
-
-        return translation, rotation, score, detail
+        default = np.zeros(translation.shape[0])
+        return translation, rotation, default, default
 
     @staticmethod
     def _from_tbl(
@@ -635,13 +523,10 @@ class Orientations:
 
         translations, rotations, scores, details = [], [], [], []
         for peak in data:
-            rotation = Rotation.from_euler(
-                "xyx", (peak[6], peak[7], peak[8]), degrees=True
-            )
-            rotations.append(rotation.as_euler(seq="zyx", degrees=True))
+            rotations.append((peak[6], peak[7], peak[8]))
             scores.append(peak[9])
             details.append(-1)
-            translations.append((peak[25], peak[24], peak[23]))
+            translations.append((peak[23], peak[24], peak[25]))
 
         translations, rotations = np.array(translations), np.array(rotations)
         scores, details = np.array(scores), np.array(details)
@@ -681,47 +566,23 @@ class Orientations:
         SystemExit
             If no peak remains after filtering, indicating an error.
         """
-        right_pad = np.divide(extraction_shape, 2).astype(int)
-        left_pad = np.add(right_pad, np.mod(extraction_shape, 2)).astype(int)
-
-        peaks = self.translations.astype(int)
-        obs_beg = np.subtract(peaks, left_pad)
-        obs_end = np.add(peaks, right_pad)
-
-        obs_beg = np.maximum(obs_beg, 0)
-        obs_end = np.minimum(obs_end, target_shape)
-
-        cand_beg = left_pad - np.subtract(peaks, obs_beg)
-        cand_end = left_pad + np.subtract(obs_end, peaks)
+        obs_beg, obs_end, cand_beg, cand_end, keep = compute_extraction_box(
+            self.translations.astype(int),
+            extraction_shape=extraction_shape,
+            original_shape=target_shape,
+        )
 
         subset = self
         if drop_out_of_box:
-            stops = np.subtract(cand_end, extraction_shape)
-            keep_peaks = (
-                np.sum(
-                    np.multiply(cand_beg == 0, stops == 0),
-                    axis=1,
-                )
-                == peaks.shape[1]
-            )
-            n_remaining = keep_peaks.sum()
+            n_remaining = keep.sum()
             if n_remaining == 0:
-                print(
-                    "No peak remaining after filtering. Started with"
-                    f" {peaks.shape[0]} filtered to {n_remaining}."
-                    " Consider reducing min_distance, increase num_peaks or use"
-                    " a different peak caller."
-                )
-
-            cand_beg = cand_beg[keep_peaks,]
-            cand_end = cand_end[keep_peaks,]
-            obs_beg = obs_beg[keep_peaks,]
-            obs_end = obs_end[keep_peaks,]
-            subset = self[keep_peaks]
+                print("No peak remaining after filtering")
+            subset = self[keep]
+            cand_beg, cand_end = cand_beg[keep,], cand_end[keep,]
+            obs_beg, obs_end = obs_beg[keep,], obs_end[keep,]
 
         cand_beg, cand_end = cand_beg.astype(int), cand_end.astype(int)
         obs_beg, obs_end = obs_beg.astype(int), obs_end.astype(int)
-
         candidate_slices = [
             tuple(slice(s, e) for s, e in zip(start_row, stop_row))
             for start_row, stop_row in zip(cand_beg, cand_end)
@@ -734,5 +595,4 @@ class Orientations:
 
         if return_orientations:
             return subset, candidate_slices, observation_slices
-
         return candidate_slices, observation_slices

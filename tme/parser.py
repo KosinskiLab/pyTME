@@ -4,24 +4,30 @@
 
     Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+
 import re
+import xml.etree.ElementTree as ET
+
 from collections import deque
-from typing import List, Dict
 from abc import ABC, abstractmethod
+from typing import List, Dict, Union
+
 
 import numpy as np
+
+__all__ = ["PDBParser", "MMCIFParser", "GROParser", "StarParser", "XMLParser"]
 
 
 class Parser(ABC):
     """
     Base class for structure file parsers.
 
-    Classes inheriting from :py:class:`Parser` need to define
-    a ``parse_input`` method that accepts a list of lines and returns a
-    dictionary representation of the data.
+    Classes inheriting from :py:class:`Parser` need to define a function
+    :py:meth:`Parser.parse_input` that creates a dictionary representation
+    of the given file. The input is a deque of all lines in the file.
     """
 
-    def __init__(self, filename: str, mode: str = "r") -> None:
+    def __init__(self, filename: str, mode: str = "r", **kwargs) -> None:
         """
         Initialize a Parser object.
 
@@ -29,15 +35,21 @@ class Parser(ABC):
         ----------
         filename : str
             File name to parse data from.
-
         mode : str, optional
             Mode to open the file. Default is 'r' for read.
+        kwargs : Dict, optional
+            Optional keyword arguments passed to the child's parse_input method.
+
         """
-        with open(filename, "r") as infile:
-            data = infile.read()
+        try:
+            with open(filename, mode) as infile:
+                data = infile.read()
+        except UnicodeDecodeError:
+            with open(filename, mode, encoding="utf-16") as infile:
+                data = infile.read()
 
         data = deque(filter(lambda line: line and line[0] != "#", data.split("\n")))
-        self._data = self.parse_input(data)
+        self._data = self.parse_input(data, **kwargs)
 
     def __getitem__(self, key: str):
         """
@@ -72,7 +84,7 @@ class Parser(ABC):
         """
         return key in self._data
 
-    def get(self, key, default):
+    def get(self, key, default=None):
         """
         Retrieve a value from the internal data using a given key. If the
         key does not exist, return a default value.
@@ -82,9 +94,9 @@ class Parser(ABC):
         key : str
             The key to use for retrieving the corresponding value from
              the internal data.
-
         default : Any
-            The value to return if the key does not exist in the internal data.
+            The value to return if the key does not exist in the
+            internal data, defaults to None.
 
         Returns
         -------
@@ -92,9 +104,7 @@ class Parser(ABC):
             The value associated with the provided key in the internal data,
             or the default value if the key does not exist.
         """
-        if key in self._data:
-            return self[key]
-        return default
+        return self._data.get(key, default)
 
     def keys(self):
         """
@@ -144,13 +154,13 @@ class PDBParser(Parser):
     .. [1]  https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/tutorials/pdbintro.html
     """
 
-    def parse_input(self, lines: List[str]) -> Dict:
+    def parse_input(self, lines: deque) -> Dict:
         """
         Parse a list of lines from a PDB file and convert the data into a dictionary.
 
         Parameters
         ----------
-        lines : list of str
+        lines : deque of str
             The lines of a PDB file to parse.
 
         Returns
@@ -236,13 +246,13 @@ class MMCIFParser(Parser):
             [Computer software]. https://doi.org/10.1093/bioinformatics/btaa072
     """
 
-    def parse_input(self, lines: List[str]) -> Dict:
+    def parse_input(self, lines: deque) -> Dict:
         """
         Parse a list of lines from an MMCIF file and convert the data into a dictionary.
 
         Parameters
         ----------
-        lines : list of str
+        lines : deque of str
             The lines of an MMCIF file to parse.
 
         Returns
@@ -426,3 +436,250 @@ class MMCIFParser(Parser):
 
         values.append(value)
         return ["".join(v) for v in values if v]
+
+
+class GROParser(Parser):
+    """
+    Convert GRO file in Gromos87 format into a dictionary representation [1]_.
+
+    References
+    ----------
+    .. [1] https://manual.gromacs.org/archive/5.0.4/online/gro.html
+    """
+
+    def parse_input(self, lines, **kwargs) -> Dict:
+        """
+        Parse a list of lines from a GRO file and convert the data into a dictionary.
+
+        Parameters
+        ----------
+        lines : deque of str
+            The lines of a GRO file to parse.
+        kwargs : Dict, optional
+            Optional keyword arguments.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the parsed data from the GRO file.
+        """
+        data = {
+            "title": [],
+            "num_atoms": [],
+            "record_type": [],
+            "residue_number": [],
+            "residue_name": [],
+            "atom_name": [],
+            "atom_number": [],
+            "atom_coordinate": [],
+            "segment_identifier": [],
+            "velocity": [],
+            "box_vectors": [],
+            "time": [],
+        }
+
+        if not lines:
+            return data
+
+        time_pattern = re.compile(r"t=\s*(\d+\.?\d*)")
+        file_index = -1
+
+        # GRO files can be concatenated. Parse one per invocation
+        while lines:
+            file_index += 1
+            str_file_index = str(file_index)
+
+            title = lines.popleft()
+            data["title"].append(title)
+
+            time_match = time_pattern.search(title)
+            if time_match:
+                data["time"].append(float(time_match.group(1)))
+
+            try:
+                num_atoms = int(lines.popleft())
+                data["num_atoms"].append(num_atoms)
+            except (ValueError, IndexError):
+                return data
+
+            if num_atoms <= 0:
+                continue
+
+            valid_atoms = 0
+            for _ in range(num_atoms):
+                if not lines:
+                    break
+
+                line = lines.popleft()
+
+                try:
+                    res_num = int(line[:5])
+                    res_name = line[5:10].strip()
+                    atom_name = line[10:15].strip()
+                    atom_num = int(line[15:20])
+
+                    coord = (float(line[20:28]), float(line[28:36]), float(line[36:44]))
+
+                    vel = None
+                    if len(line) >= 68:
+                        vel = (
+                            float(line[44:52]),
+                            float(line[52:60]),
+                            float(line[60:68]),
+                        )
+                except (ValueError, IndexError):
+                    continue
+
+                valid_atoms += 1
+                data["residue_number"].append(res_num)
+                data["residue_name"].append(res_name)
+                data["atom_name"].append(atom_name)
+                data["atom_number"].append(atom_num)
+                data["atom_coordinate"].append(coord)
+                data["velocity"].append(vel)
+
+            data["segment_identifier"].extend([str_file_index] * valid_atoms)
+            data["record_type"].extend(["ATOM"] * valid_atoms)
+
+            if lines:
+                box_line = lines.popleft()
+                try:
+                    data["box_vectors"].append([float(val) for val in box_line.split()])
+                except ValueError:
+                    pass
+
+        return data
+
+
+class StarParser(MMCIFParser):
+    """
+    Convert STAR file data into a dictionary representation [1]_.
+
+    References
+    ----------
+    .. [1]  https://www.iucr.org/__data/assets/file/0013/11416/star.5.html
+    """
+
+    def parse_input(self, lines: List[str], delimiter: str = "\t") -> Dict:
+        pattern = re.compile(r"\s*#.*")
+
+        ret, category, block = {}, None, []
+        while lines:
+            line = lines.popleft()
+
+            if line.startswith("data") and not line.startswith("_"):
+                if category != line and category is not None:
+                    headers = list(ret[category].keys())
+                    headers = [pattern.sub("", x) for x in headers]
+                    ret[category] = {
+                        header: list(column)
+                        for header, column in zip(headers, zip(*block))
+                    }
+                    block.clear()
+                category = line
+                if category not in ret:
+                    ret[category] = {}
+                continue
+
+            if line.startswith("_"):
+                ret[category][line] = []
+                continue
+
+            if line.startswith("loop"):
+                continue
+
+            line_split = line.split(delimiter)
+            if len(line_split):
+                block.append(line_split)
+
+        headers = list(ret[category].keys())
+        headers = [pattern.sub("", x) for x in headers]
+        ret[category] = {
+            header: list(column) for header, column in zip(headers, zip(*block))
+        }
+        return ret
+
+
+class XMLParser(Parser):
+    """
+    Parser for XML files.
+    """
+
+    def parse_input(self, lines: deque, **kwargs) -> Dict:
+        root = ET.fromstring("\n".join(lines))
+        return self._element_to_dict(root)
+
+    def _element_to_dict(self, element) -> Dict:
+        """
+        Convert an XML element and its children to a dictionary.
+
+        Parameters
+        ----------
+        element : xml.etree.ElementTree.Element
+            The XML element to convert.
+
+        Returns
+        -------
+        Dict
+            Dictionary representation of the element.
+        """
+        result = {}
+
+        if element.attrib:
+            result["@attributes"] = {
+                k: self._convert_value(v) for k, v in element.attrib.items()
+            }
+
+        children = list(element)
+        if not children:
+            if element.text and element.text.strip():
+                text = element.text.strip()
+                if "\n" in text:
+                    result = [
+                        self._convert_value(line.strip())
+                        for line in text.split("\n")
+                        if line.strip()
+                    ]
+                else:
+                    result = self._convert_value(text)
+        else:
+            for child in children:
+                child_dict = self._element_to_dict(child)
+
+                if child.tag not in result:
+                    result[child.tag] = child_dict
+                else:
+                    if not isinstance(result[child.tag], list):
+                        result[child.tag] = [result[child.tag]]
+                    result[child.tag].append(child_dict)
+
+        return result
+
+    def _convert_value(self, value_str: str) -> Union[int, float, bool, str]:
+        """
+        Convert a string value to an appropriate data type.
+
+        Parameters
+        ----------
+        value_str : str
+            String value to convert.
+
+        Returns
+        -------
+        Union[int, float, bool, str]
+            Converted value in appropriate data type.
+        """
+        if value_str.lower() in ("true", "false"):
+            return value_str.lower() == "true"
+
+        try:
+            return int(value_str)
+        except ValueError:
+            pass
+
+        try:
+            return float(value_str)
+        except ValueError:
+            pass
+
+        return value_str

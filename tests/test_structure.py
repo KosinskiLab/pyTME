@@ -6,7 +6,8 @@ import pytest
 import numpy as np
 
 from tme import Structure
-from tme.matching_utils import euler_to_rotationmatrix, minimum_enclosing_box
+from tme.matching_utils import minimum_enclosing_box
+from tme.rotations import euler_to_rotationmatrix
 
 
 STRUCTURE_ATTRIBUTES = [
@@ -155,7 +156,7 @@ class TestStructure:
         with pytest.raises(NotImplementedError):
             _ = Structure.from_file("madeup.extension")
 
-    @pytest.mark.parametrize("file_format", [("cif"), ("pdb")])
+    @pytest.mark.parametrize("file_format", ["cif", "pdb", "gro"])
     def test_to_file(self, file_format):
         _, path = mkstemp()
         path = f"{path}.{file_format}"
@@ -163,7 +164,10 @@ class TestStructure:
         read = self.structure.from_file(path)
         comparison = self.structure.copy()
 
-        self.compare_structures(comparison, read, exclude_attributes=["metadata"])
+        if file_format != "gro":
+            self.compare_structures(comparison, read, exclude_attributes=["metadata"])
+        else:
+            assert np.allclose(comparison.atom_coordinate, read.atom_coordinate)
 
     def test_to_file_error(self):
         _, path = mkstemp()

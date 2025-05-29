@@ -9,7 +9,7 @@ Constructor
 ~~~~~~~~~~~
 
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
    :nosignatures:
 
    Structure
@@ -17,7 +17,7 @@ Constructor
 Attributes and underlying data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Structure.record_type
    Structure.atom_serial_number
@@ -38,7 +38,7 @@ Attributes and underlying data
 Serialization
 ~~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Structure.to_file
    Structure.from_file
@@ -46,14 +46,14 @@ Serialization
 Conversion
 ~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Structure.to_volume
 
 Subsetting
 ~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Structure.copy
    Structure.subset_by_chain
@@ -62,7 +62,7 @@ Subsetting
 Computations
 ~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Structure.rigid_transform
    Structure.align_structures

@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 import numpy as np
 
@@ -104,7 +106,7 @@ class TestBackends:
         base = getattr(self.backend, method_name)(self.x1)
         other = getattr(backend, method_name)(backend.to_backend_array(self.x1))
 
-        if type(base) == np.ndarray:
+        if isinstance(base, np.ndarray):
             assert np.allclose(base, backend.to_numpy_array(other), rtol=0.01)
         else:
             assert base == other
@@ -171,13 +173,15 @@ class TestBackends:
         "dtype_target", (("_int_dtype", "_complex_dtype", "_float_dtype"))
     )
     def test_astype(self, dtype, backend, dtype_target):
-        dtype_base = getattr(backend, dtype)
-        dtype_target = getattr(backend, dtype_target)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            dtype_base = getattr(backend, dtype)
+            dtype_target = getattr(backend, dtype_target)
 
-        base = backend.zeros((20, 20, 20), dtype=dtype_base)
-        arr = backend.astype(base, dtype_target)
+            base = backend.zeros((20, 20, 20), dtype=dtype_base)
+            arr = backend.astype(base, dtype_target)
 
-        assert arr.dtype == dtype_target
+            assert arr.dtype == dtype_target
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     @pytest.mark.parametrize("N", (0, 15, 30))
@@ -288,15 +292,15 @@ class TestBackends:
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     @pytest.mark.parametrize("fast_shape", ((10, 15, 100), (55, 23, 17)))
-    def test_fft(self, backend, fast_shape):
+    def test_build_fft(self, backend, fast_shape):
         _, fast_shape, fast_ft_shape = backend.compute_convolution_shapes(
             fast_shape, (1 for _ in range(len(fast_shape)))
         )
         rfftn, irfftn = backend.build_fft(
-            fast_shape=fast_shape,
-            fast_ft_shape=fast_ft_shape,
+            fwd_shape=fast_shape,
+            inv_shape=fast_ft_shape,
             real_dtype=backend._float_dtype,
-            complex_dtype=backend._complex_dtype,
+            cmpl_dtype=backend._complex_dtype,
         )
         arr = np.random.rand(*fast_shape)
         out = np.zeros(fast_ft_shape)
@@ -311,6 +315,26 @@ class TestBackends:
             complex_arr,
         )
         irfftn(complex_arr, real_arr)
+        assert np.allclose(arr, backend.to_numpy_array(real_arr), rtol=0.3)
+
+    @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
+    @pytest.mark.parametrize("fast_shape", ((10, 15, 100), (55, 23, 17)))
+    def test_fftn(self, backend, fast_shape):
+        _, fast_shape, fast_ft_shape = backend.compute_convolution_shapes(
+            fast_shape, (1 for _ in range(len(fast_shape)))
+        )
+        arr = np.random.rand(*fast_shape)
+        out = np.zeros(fast_ft_shape)
+
+        real_arr = backend.astype(backend.to_backend_array(arr), backend._float_dtype)
+        complex_arr = backend.astype(
+            backend.to_backend_array(out), backend._complex_dtype
+        )
+
+        complex_arr = backend.rfftn(
+            backend.astype(backend.to_backend_array(arr), backend._float_dtype),
+        )
+        real_arr = backend.irfftn(complex_arr)
         assert np.allclose(arr, backend.to_numpy_array(real_arr), rtol=0.3)
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
@@ -367,6 +391,53 @@ class TestBackends:
         )
 
         assert np.round(arr.sum(), 3) == np.round(out.sum(), 3)
+
+    @pytest.mark.parametrize("dim", (2, 3))
+    @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
+    @pytest.mark.parametrize("create_mask", (False, True))
+    def test_rigid_transform_batch(self, backend, dim, create_mask):
+        shape = tuple(30 for _ in range(dim))
+        arr = np.random.rand(5, *shape)
+        out = np.zeros_like(arr)
+
+        arr_b = arr.copy()
+        out_b = np.zeros_like(arr)
+
+        rotation_matrix = np.eye(dim)
+        rotation_matrix[0, 0] = -1
+
+        arr_mask, out_mask = None, None
+        if create_mask:
+            arr_mask = np.multiply(np.random.rand(*arr.shape) > 0.5, 1.0)
+            out_mask = np.zeros_like(arr_mask)
+            arr_mask = backend.to_backend_array(arr_mask)
+            out_mask = backend.to_backend_array(out_mask)
+
+        arr = backend.to_backend_array(arr)
+        out = backend.to_backend_array(out)
+
+        rotation_matrix = backend.to_backend_array(rotation_matrix)
+        backend.rigid_transform(
+            arr=arr,
+            arr_mask=arr_mask,
+            rotation_matrix=rotation_matrix,
+            out=out,
+            out_mask=out_mask,
+        )
+
+        arr_b = backend.to_backend_array(arr_b)
+        out_b = backend.to_backend_array(out_b)
+
+        for i in range(arr_b.shape[0]):
+            backend.rigid_transform(
+                arr=arr[i],
+                arr_mask=arr_mask if arr_mask is None else arr_mask[i],
+                rotation_matrix=rotation_matrix,
+                out=out_b[i],
+                out_mask=out_mask if out_mask is None else out_mask[i],
+            )
+
+        assert np.allclose(arr, arr_b)
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     def test_datatype_bytes(self, backend):

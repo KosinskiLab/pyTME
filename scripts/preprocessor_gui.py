@@ -7,23 +7,24 @@
 """
 import inspect
 import argparse
-from typing import Tuple, Callable, List
+from os.path import basename
 from typing_extensions import Annotated
+from typing import Tuple, Callable, List
 
 import napari
 import numpy as np
 import pandas as pd
-from scipy.fft import next_fast_len
-from napari.layers import Image
-from napari.utils.events import EventedList
 from magicgui import widgets
-from qtpy.QtWidgets import QFileDialog
 from numpy.typing import NDArray
+from napari.layers import Image
+from scipy.fft import next_fast_len
+from qtpy.QtWidgets import QFileDialog
+from napari.utils.events import EventedList
 
 from tme.backends import backend
-from tme import Preprocessor, Density
-from tme.preprocessing import BandPassFilter
-from tme.preprocessing.tilt_series import CTF
+from tme.rotations import align_vectors
+from tme.filters import BandPassFilter, CTF
+from tme import Preprocessor, Density, Orientations
 from tme.matching_utils import create_mask, load_pickle
 
 preprocessor = Preprocessor()
@@ -142,15 +143,17 @@ def mean(
 
 def wedge(
     template: NDArray,
-    tilt_start: float,
-    tilt_stop: float,
+    tilt_start: float = 40.0,
+    tilt_stop: float = 40.0,
     tilt_step: float = 0,
-    opening_axis: int = 0,
-    tilt_axis: int = 1,
-    omit_negative_frequencies: bool = True,
-    infinite_plane: bool = True,
+    opening_axis: int = 2,
+    tilt_axis: int = 0,
+    omit_negative_frequencies: bool = False,
+    infinite_plane: bool = False,
+    weight_angle: bool = False,
+    **kwargs,
 ) -> NDArray:
-    template_ft = np.fft.rfftn(template)
+    template_ft = np.fft.fftn(template)
 
     if tilt_step <= 0:
         wedge_mask = preprocessor.continuous_wedge_mask(
@@ -162,21 +165,23 @@ def wedge(
             omit_negative_frequencies=omit_negative_frequencies,
             infinite_plane=infinite_plane,
         )
-        np.multiply(template_ft, wedge_mask, out=template_ft)
-        template = np.real(np.fft.irfftn(template_ft))
-        return template
+    else:
+        weights = None
+        tilt_angles = np.arange(-tilt_start, tilt_stop + tilt_step, tilt_step)
+        if weight_angle:
+            weights = np.cos(np.radians(tilt_angles))
 
-    wedge_mask = preprocessor.step_wedge_mask(
-        start_tilt=tilt_start,
-        stop_tilt=tilt_stop,
-        tilt_axis=tilt_axis,
-        tilt_step=tilt_step,
-        opening_axis=opening_axis,
-        shape=template.shape,
-        omit_negative_frequencies=omit_negative_frequencies,
-    )
+        wedge_mask = preprocessor.step_wedge_mask(
+            tilt_angles=tilt_angles,
+            tilt_axis=tilt_axis,
+            opening_axis=opening_axis,
+            shape=template.shape,
+            weights=weights,
+            omit_negative_frequencies=omit_negative_frequencies,
+        )
+
     np.multiply(template_ft, wedge_mask, out=template_ft)
-    template = np.real(np.fft.irfftn(template_ft))
+    template = np.real(np.fft.ifftn(template_ft))
     return template
 
 
@@ -207,9 +212,11 @@ def widgets_from_function(function: Callable, exclude_params: List = ["self"]):
         elif param.annotation == Tuple[float, float]:
             widget = widgets.FloatRangeSlider(
                 name=param.name,
-                value=param.default
-                if param.default != inspect._empty
-                else (0.0, SLIDER_MAX / 2),
+                value=(
+                    param.default
+                    if param.default != inspect._empty
+                    else (0.0, SLIDER_MAX / 2)
+                ),
                 min=SLIDER_MIN,
                 max=SLIDER_MAX,
             )
@@ -229,9 +236,11 @@ def widgets_from_function(function: Callable, exclude_params: List = ["self"]):
                 widget = widgets.ComboBox(
                     name=param.name,
                     choices=metadata["choices"],
-                    value=param.default
-                    if param.default != inspect._empty
-                    else metadata["choices"][0],
+                    value=(
+                        param.default
+                        if param.default != inspect._empty
+                        else metadata["choices"][0]
+                    ),
                 )
         else:
             continue
@@ -476,8 +485,8 @@ def wedge_mask(
     tilt_start: float = 40.0,
     tilt_stop: float = 40.0,
     tilt_step: float = 0,
-    opening_axis: int = 0,
-    tilt_axis: int = 2,
+    opening_axis: int = 2,
+    tilt_axis: int = 0,
     omit_negative_frequencies: bool = False,
     infinite_plane: bool = False,
     weight_angle: bool = False,
@@ -805,19 +814,11 @@ class AlignmentWidget(widgets.Container):
         coords = np.array(np.where(active_layer.data > 0)).T
         centered_coords = coords - np.mean(coords, axis=0)
         cov_matrix = np.cov(centered_coords, rowvar=False)
-
         eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
         principal_eigenvector = eigenvectors[:, np.argmax(eigenvalues)]
 
-        rotation_axis = np.cross(principal_eigenvector, alignment_axis)
-        rotation_angle = np.arccos(np.dot(principal_eigenvector, alignment_axis))
-        k = rotation_axis / np.linalg.norm(rotation_axis)
-        K = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
-        rotation_matrix = np.eye(3)
-        rotation_matrix += np.sin(rotation_angle) * K
-        rotation_matrix += (1 - np.cos(rotation_angle)) * np.dot(K, K)
-
-        rotated_data = Density.rotate_array(
+        rotation_matrix = align_vectors(principal_eigenvector, alignment_axis)
+        rotated_data, _ = backend.rigid_transform(
             arr=active_layer.data,
             rotation_matrix=rotation_matrix,
             use_geometric_center=False,
@@ -854,13 +855,11 @@ class ExportWidget(widgets.Container):
         )
 
     def _get_save_path(self, event):
-        options = QFileDialog.Options()
-        path, _ = QFileDialog.getSaveFileName(
+        path, _ = QFileDialog().getSaveFileName(
             self.native,
             "Save As...",
             "",
             "MRC Files (*.mrc)",
-            options=options,
         )
         if path:
             self.selected_filename = path
@@ -896,6 +895,19 @@ class PointCloudWidget(widgets.Container):
         self.export_button.clicked.connect(self._export_point_cloud)
         self.export_button.enabled = False
 
+        self.score_filter_container = widgets.Container(
+            name="Score Filter", layout="vertical"
+        )
+        self.score_range_slider = widgets.FloatRangeSlider(
+            min=0,
+            max=100,
+            step=0.1,
+            value=(0, 100),
+            readout=False,
+        )
+        self.score_range_slider.changed.connect(self._update_point_visibility)
+        self.score_filter_container.append(self.score_range_slider)
+
         self.annotation_container = widgets.Container(name="Label", layout="horizontal")
         self.positive_button = widgets.PushButton(name="Positive", text="Positive")
         self.negative_button = widgets.PushButton(name="Negative", text="Negative")
@@ -911,12 +923,31 @@ class PointCloudWidget(widgets.Container):
 
         self.append(self.import_button)
         self.append(self.export_button)
+        self.append(self.score_filter_container)
         self.append(self.annotation_container)
         self.append(self.face_color_select)
 
         self.viewer.layers.selection.events.changed.connect(self._update_buttons)
 
         self.viewer.layers.events.inserted.connect(self._initialize_points_layer)
+
+    def _update_point_visibility(self, event=None):
+        min_percentile, max_percentile = self.score_range_slider.value
+
+        for layer in self.viewer.layers:
+            if not isinstance(layer, napari.layers.Points):
+                continue
+
+            if "score" not in layer.properties:
+                continue
+
+            scores = layer.properties["score"]
+            layer.selected_data = set()
+
+            min_score = np.percentile(scores, min_percentile)
+            max_score = np.percentile(scores, max_percentile)
+            visible_mask = (scores >= min_score) & (scores <= max_score)
+            layer.shown = visible_mask
 
     def _update_face_color_mode(self, event: str = None):
         for layer in self.viewer.layers:
@@ -998,13 +1029,11 @@ class PointCloudWidget(widgets.Container):
             self.export_button.enabled = False
 
     def _export_point_cloud(self, event):
-        options = QFileDialog.Options()
-        filename, _ = QFileDialog.getSaveFileName(
+        filename, _ = QFileDialog().getSaveFileName(
             self.native,
             "Save Point Cloud File...",
             "",
-            "TSV Files (*.tsv);;All Files (*)",
-            options=options,
+            "Orientations (*.tsv *.star);; All Files (*)",
         )
 
         if not filename:
@@ -1013,12 +1042,12 @@ class PointCloudWidget(widgets.Container):
         layer = self.viewer.layers.selection.active
         if layer and isinstance(layer, napari.layers.Points):
             original_dataframe = self.dataframes.get(
-                layer.name, pd.DataFrame(columns=["z", "y", "x"])
+                layer.name,
+                pd.DataFrame(columns=["x", "y", "z", "euler_x", "euler_y", "euler_z"]),
             )
-
-            export_data = pd.DataFrame(layer.data, columns=["z", "y", "x"])
+            export_data = pd.DataFrame(layer.data, columns=["x", "y", "z"])
             merged_data = pd.merge(
-                export_data, original_dataframe, on=["z", "y", "x"], how="left"
+                export_data, original_dataframe, on=["x", "y", "z"], how="left"
             )
 
             merged_data["z"] = merged_data["z"].astype(int)
@@ -1034,23 +1063,52 @@ class PointCloudWidget(widgets.Container):
             if "score" in merged_data.columns:
                 merged_data["score"] = merged_data["score"].fillna(1)
             merged_data["detail"] = layer.properties["detail"]
-            merged_data.to_csv(filename, sep="\t", index=False)
+            merged_data = merged_data[layer.shown]
+
+            translations = np.stack(
+                (merged_data["x"], merged_data["y"], merged_data["z"]), axis=1
+            )
+            rotations = np.stack(
+                (
+                    merged_data["euler_x"],
+                    merged_data["euler_y"],
+                    merged_data["euler_z"],
+                ),
+                axis=1,
+            )
+            orientations = Orientations(
+                translations=translations,
+                rotations=rotations,
+                scores=merged_data["score"],
+                details=merged_data["detail"],
+            )
+            orientations.to_file(filename)
 
     def _get_load_path(self, event):
-        options = QFileDialog.Options()
-        filename, _ = QFileDialog.getOpenFileName(
+        filename, _ = QFileDialog().getOpenFileName(
             self.native,
             "Open Point Cloud File...",
             "",
-            "TSV Files (*.tsv);;All Files (*)",
-            options=options,
+            "Orientations (*.tsv *.star);; All Files (*)",
         )
         if filename:
             self._load_point_cloud(filename)
 
     def _load_point_cloud(self, filename):
-        dataframe = pd.read_csv(filename, sep="\t")
-        points = dataframe[["z", "y", "x"]].values
+        orientations = Orientations.from_file(filename)
+
+        data = {
+            "x": orientations.translations[:, 0],
+            "y": orientations.translations[:, 1],
+            "z": orientations.translations[:, 2],
+            "euler_x": orientations.rotations[:, 0],
+            "euler_y": orientations.rotations[:, 1],
+            "euler_z": orientations.rotations[:, 2],
+            "score": orientations.scores,
+            "detail": orientations.details,
+        }
+
+        dataframe = pd.DataFrame.from_dict(data)
         layer_name = filename.split("/")[-1]
 
         if "score" not in dataframe.columns:
@@ -1066,9 +1124,9 @@ class PointCloudWidget(widgets.Container):
         point_properties["score_scaled"] = np.log1p(
             point_properties["score"] - point_properties["score"].min()
         )
-
+        self.score_range_slider.value = (0, 100)
         self.viewer.add_points(
-            points,
+            dataframe[["x", "y", "z"]].values,
             size=10,
             properties=point_properties,
             name=layer_name,
@@ -1089,13 +1147,11 @@ class MatchingWidget(widgets.Container):
         self.append(self.import_button)
 
     def _get_load_path(self, event):
-        options = QFileDialog.Options()
         filename, _ = QFileDialog.getOpenFileName(
             self.native,
             "Open Pickle File...",
             "",
             "Pickle Files (*.pickle);;All Files (*)",
-            options=options,
         )
         if filename:
             self._load_data(filename)
@@ -1103,13 +1159,36 @@ class MatchingWidget(widgets.Container):
     def _load_data(self, filename):
         data = load_pickle(filename)
 
-        metadata = {"origin": data[-1][1], "sampling_rate": data[-1][2]}
-        _ = self.viewer.add_image(
-            data=data[2], name="Rotations", colormap="orange", metadata=metadata
-        )
+        fname = basename(filename).replace(".pickle", "")
+        if data[0].ndim == data[2].ndim:
+            metadata = {"origin": data[-1][1], "sampling_rate": data[-1][2]}
+            _ = self.viewer.add_image(
+                data=data[2],
+                name=f"{fname}_rotations",
+                colormap="orange",
+                metadata=metadata,
+            )
+            _ = self.viewer.add_image(
+                data=data[0],
+                name=f"{fname}_scores",
+                colormap="turbo",
+                metadata=metadata,
+            )
+            return None
+            detail = np.zeros_like(data[2])
+        else:
+            detail = data[3]
 
-        _ = self.viewer.add_image(
-            data=data[0], name="Scores", colormap="turbo", metadata=metadata
+        point_properties = {"score": data[2], "detail": detail}
+        point_properties["score_scaled"] = np.log1p(
+            point_properties["score"] - point_properties["score"].min()
+        )
+        layer_name = f"{fname}_candidates"
+        self.viewer.add_points(
+            data[0],
+            size=10,
+            properties=point_properties,
+            name=layer_name,
         )
 
 

@@ -4,7 +4,7 @@
 Non-exhaustive
 ==============
 
-Non-exhaustive template aims to identify a global optimum without evaluating all possible configurations, e.g. via gradient-descent. However, whether non-exhaustive template matching is able to find a global optimum is highly dependent on the topology of the score space and available constraints. Typically, non-exhaustive template matching is useful when the rough orientation is known.
+Non-exhaustive template matching aims to identify a global optimum without evaluating all possible configurations. Whether non-exhaustive template matching identifies a global optimum is highly dependent on the topology of the score space and available constraints. Typically, non-exhaustive template matching is useful when the rough orientation is known.
 
 Within |project|, non-exhaustive template matching problems are distinguished based on whether they operate on :obj:`numpy.ndarray` objects or coordinates. Therefore, we categorize them into three different classes of matching problems:
 
@@ -16,7 +16,7 @@ Within |project|, non-exhaustive template matching problems are distinguished ba
       between two densities.
 
       .. autosummary::
-         :toctree: api/
+         :toctree: ../api/
 
          FLC
 
@@ -26,7 +26,7 @@ Within |project|, non-exhaustive template matching problems are distinguished ba
       The classes below maximize the similarity between a coordinate set with associated weights and a density. This case is commonly found when matching atomic structures to electron density maps.
 
       .. autosummary::
-         :toctree: api/
+         :toctree: ../api/
 
          CrossCorrelation
          LaplaceCrossCorrelation
@@ -45,7 +45,7 @@ Within |project|, non-exhaustive template matching problems are distinguished ba
       The classes below maximize the similarity between two coordinate sets and associated weights. This could be special points within densities, regular coordinate sets, or vectors between template and target that should be aligned.
 
       .. autosummary::
-         :toctree: api/
+         :toctree: ../api/
 
          Chamfer
          NormalVectorScore
@@ -88,15 +88,15 @@ In order to perform non-exhaustive template matching, we have to initialize one 
 Alternatively, ``score_object`` could have been instantiated using the wrapper function :py:meth:`create_score_object`.
 
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    create_score_object
 
 
-|project| defines :py:meth:`optimize_match`, which provides routines for non-exhaustive template matching given a ``score_object`` and bounds on possible translations and rotations.
+:py:meth:`optimize_match` provides routines for non-exhaustive template matching given a ``score_object`` and bounds on possible translations and rotations.
 
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    optimize_match
 
@@ -133,9 +133,9 @@ The computed ``translation`` and ``rotation`` can then be used to recover the co
 
    template_density = Density(template.astype(np.float32))
    template_density = template_density.rigid_transform(
-      translation = translation,
-      rotation_matrix = rotation,
-      order = 3,
+      translation=translation,
+      rotation_matrix=rotation,
+      order=3,
       use_geometric_center=True
    )
 

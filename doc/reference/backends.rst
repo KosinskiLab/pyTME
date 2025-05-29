@@ -16,12 +16,27 @@ Backends allows users to effortlessly switch between different array and FFT imp
 Backend Manager
 ~~~~~~~~~~~~~~~
 
-Modules that support flexible backends import a global instance of :py:class:`BackendManager <tme.backends.BackendManager>` like so: :code:`from tme.backends import backend`. The import is quasi-equivalent to :code:`import numpy as np`, with the exception being the naming difference. Notably, backend agnostic code is written without instance specific methods such as the ones defined by ``np.ndarray``. Instance-specific functions are wrapped instead, e.g. :py:meth:`NumpyFFTWBackend.fill`. For additional information please refer to the class documentation below.
+Modules that support flexible backends import a global instance of :py:class:`BackendManager <tme.backends.BackendManager>` like so: :code:`from tme.backends import backend`. The import is quasi-equivalent to :code:`import numpy as np`, apart from the difference in naming. Notably, backend agnostic code is written without instance specific methods such as the ones defined by ``np.ndarray``. Instance-specific functions are wrapped instead, e.g. :py:meth:`NumpyFFTWBackend.fill`. For additional information please refer to the class documentation below.
 
 .. autosummary::
    :toctree: api/
 
    BackendManager
+
+
+Supported Backends
+~~~~~~~~~~~~~~~~~~
+
+|project| implements the following backends, each offering unique advantages for different computational environments. Users can easily switch between these backends to optimize performance based on their available hardware and specific use cases. For information on implementing custom backends to suit specialized needs, refer to section below.
+
+.. autosummary::
+   :toctree: api/
+
+   NumpyFFTWBackend
+   PytorchBackend
+   CupyBackend
+   MLXBackend
+   JaxBackend
 
 
 Abstract Base Backend
@@ -127,16 +142,3 @@ Auxiliary
 .. note::
 
    Notably, `autoray <https://github.com/jcmgray/autoray>`_ provides a framework that allows for writing backend agnostic python code, similar to the approach taken here. In the future, ``tme.backends`` might be deprecated in favor of ``autoray``.
-
-
-Supported Backends
-~~~~~~~~~~~~~~~~~~
-
-.. autosummary::
-   :toctree: api/
-
-   NumpyFFTWBackend
-   PytorchBackend
-   CupyBackend
-   MLXBackend
-   JaxBackend

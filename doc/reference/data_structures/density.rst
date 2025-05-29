@@ -10,7 +10,7 @@ Constructor
 ~~~~~~~~~~~
 
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
    :nosignatures:
 
    Density
@@ -18,7 +18,7 @@ Constructor
 Attributes and underlying data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Density.data
    Density.origin
@@ -30,7 +30,7 @@ Attributes and underlying data
 Serialization
 ~~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Density.to_file
    Density.from_file
@@ -39,7 +39,7 @@ Serialization
 Conversion
 ~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Density.copy
    Density.to_numpy
@@ -48,7 +48,7 @@ Conversion
 Subsetting
 ~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Density.pad
    Density.trim_box
@@ -59,7 +59,7 @@ Subsetting
 Computations
 ~~~~~~~~~~~~
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    Density.rigid_transform
    Density.to_pointcloud
@@ -71,4 +71,3 @@ Computations
    Density.center_of_mass
    Density.match_densities
    Density.match_structure_to_density
-   Density.fourier_shell_correlation

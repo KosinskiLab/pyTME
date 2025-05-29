@@ -33,7 +33,6 @@ Real-world data often contains noise from various sources, including sensor impe
 	    template_mask=None,
 	    score="FLC",
 	    pad_target_edges: bool = True,
-	    pad_fourier: bool = False,
 	):
 	    if template_mask is None:
 	        template_mask = np.ones_like(template)
@@ -51,7 +50,6 @@ Real-world data often contains noise from various sources, including sensor impe
 	        callback_class=MaxScoreOverRotations,
 	        callback_class_args={"score_threshold": -1},
 	        pad_target_edges=pad_target_edges,
-	        pad_fourier=pad_fourier,
 	        job_schedule=(1, 1),
 	    )
 	    score = candidates[0]
@@ -137,7 +135,7 @@ Low-pass, high-pass and band-pass filters serve as prototypical modulators of an
    from skimage.feature import match_template
 
    from tme import Density, Preprocessor
-   from tme.preprocessing import BandPassFilter
+   from tme.filters import BandPassFilter
 
    target = Density.from_file("../../_static/examples/preprocessing_target.png").data
    target_ft = np.fft.fftshift(np.fft.fft2(target))
@@ -207,7 +205,7 @@ Spectral whitening normalizes each frequency by dividing the amplitude of each f
    from skimage.feature import match_template
 
    from tme import Density
-   from tme.preprocessing import LinearWhiteningFilter
+   from tme.filters import LinearWhiteningFilter
 
    target = Density.from_file("../../_static/examples/preprocessing_target.png").data
    template = Density.from_file(
@@ -253,7 +251,7 @@ Shown below is how we can use the CTF to inspect an object at different defocus 
 	from skimage.feature import match_template
 
 	from tme import Density
-	from tme.preprocessing.tilt_series import CTF
+	from tme.filters import CTF
 
 	target = Density.from_file("../../_static/examples/preprocessing_target.png")
 
@@ -304,7 +302,7 @@ Broadly speaking, |project| distinguishes between continuous, discrete and weigh
    	:caption: Application of Wedge Masks.
 
 	from tme import Density
-	from tme.preprocessing.tilt_series import WedgeReconstructed
+	from tme.filters import WedgeReconstructed
 
 	wedge = WedgeReconstructed(
 	    angles = [60,60],

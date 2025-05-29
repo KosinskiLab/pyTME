@@ -1,21 +1,22 @@
 .. include:: ../../substitutions.rst
-.. currentmodule:: tme.matching_exhaustive
 
 Exhaustive
 ==========
+
+.. currentmodule:: tme.matching_exhaustive
 
 Exhaustive template matching evaluates similarity along a provided set of rotations and all possible translations are sampled using Fast Fourier Transform (FFT) operations. Therefore, the algorithm is guaranteed to evaluate a provided set of configurations and to find a global optimum with a sufficiently high angular sampling rate.
 
 Within |project|, exhaustive template matching is modularized into three primary stages: setup, scoring, and callback.
 
-1. **Setup**
-    - The first step is to prepare the data and set the stage for the matching operation. This step typically involves configuring FFT operations, selecting the appropriate backend for the computations, and defining parameters for the matching. The outcome of this step is a context where template matching is poised to be carried out efficiently. See the :ref:`setup-functions` section for available setup methods.
+1. **Setup:**
+   Creates a context where template matching is poised to be carried out efficiently. :ref:`Setup functions <setup-functions>` involve data preparation, configuring FFT operations and pre-computing shared parameters.
 
-2. **Scoring**
-    - Once the environment is set, the actual template matching is done using the scoring method. This method essentially computes how well the template fits at every possible location within the target. Depending on the application, various scoring methods might be employed (e.g., correlation, convolution). See the :ref:`scoring-functions` section for available scoring methods.
+2. **Scoring:**
+   Sample :ref:`scoring function <scoring-functions>` across translational and rotational degrees of freedom.
 
-3. **Callback**
-    - After scoring, it's often essential to post-process the results, extract valuable metrics, or make decisions based on the scores. The callback is a mechanism that allows for such post-scoring operations. It could be visualizing the results, finding the maximum score, etc. Further details and callback options can be found in :doc:`analyzer`.
+3. **Callback:**
+   Custom on the fly processing of template matching results using :doc:`analyzers <analyzer>`.
 
 This concept is embodied in the :py:class:`scan <tme.matching_exhaustive.scan>` and :py:class:`scan_subsets <tme.matching_exhaustive.scan_subsets>` methods below.
 
@@ -28,7 +29,7 @@ Methods
 :py:class:`scan_subsets <tme.matching_exhaustive.scan_subsets>` orchestrates the matching process, supporting parallel processing and post-scoring operations. :py:class:`scan_subsets <tme.matching_exhaustive.scan_subsets>` is a wrapper around :py:class:`scan <tme.matching_exhaustive.scan>` that enables template matching on data subsets, making it particularly useful for handling large datasets or targeting specific regions.
 
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    scan
    scan_subsets
@@ -40,8 +41,9 @@ Methods
 
 Setup functions
 ~~~~~~~~~~~~~~~
+
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    cc_setup
    lcc_setup
@@ -56,8 +58,9 @@ Setup functions
 
 Scoring functions
 ~~~~~~~~~~~~~~~~~
+
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    corr_scoring
    flc_scoring
@@ -81,6 +84,6 @@ Adding a new template matching methods requires defining the following parameter
 - ``memory_class``: A custom memory estimation class, which inherits from :py:class:`MatchingMemoryUsage <tme.memory.MatchingMemoryUsage>`
 
 .. autosummary::
-   :toctree: api/
+   :toctree: ../api/
 
    register_matching_exhaustive

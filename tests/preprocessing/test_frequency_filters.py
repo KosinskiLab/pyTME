@@ -3,8 +3,8 @@ import numpy as np
 from typing import Tuple
 
 from tme.backends import backend as be
-from tme.preprocessing._utils import compute_fourier_shape
-from tme.preprocessing.frequency_filters import BandPassFilter, LinearWhiteningFilter
+from tme.filters._utils import compute_fourier_shape
+from tme.filters import BandPassFilter, LinearWhiteningFilter
 
 
 class TestBandPassFilter:
