@@ -1,0 +1,6 @@
+Density.align\_to\_axis
+=================================
+
+.. currentmodule:: tme.density
+
+.. automethod:: Density.align_to_axis

@@ -1,0 +1,227 @@
+﻿MLXBackend
+==========
+
+.. currentmodule:: tme.backends
+
+.. autoclass:: MLXBackend
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            MLXBackend.abs
+         
+         
+            MLXBackend.add
+         
+         
+            MLXBackend.addat
+         
+         
+            MLXBackend.arange
+         
+         
+            MLXBackend.argsort
+         
+         
+            MLXBackend.astype
+         
+         
+            MLXBackend.at
+         
+         
+            MLXBackend.build_fft
+         
+         
+            MLXBackend.center_of_mass
+         
+         
+            MLXBackend.clip
+         
+         
+            MLXBackend.compute_convolution_shapes
+         
+         
+            MLXBackend.concatenate
+         
+         
+            MLXBackend.copy
+         
+         
+            MLXBackend.datatype_bytes
+         
+         
+            MLXBackend.device_count
+         
+         
+            MLXBackend.divide
+         
+         
+            MLXBackend.dot
+         
+         
+            MLXBackend.einsum
+         
+         
+            MLXBackend.eps
+         
+         
+            MLXBackend.extract_center
+         
+         
+            MLXBackend.fill
+         
+         
+            MLXBackend.free_cache
+         
+         
+            MLXBackend.from_sharedarr
+         
+         
+            MLXBackend.full
+         
+         
+            MLXBackend.get_available_memory
+         
+         
+            MLXBackend.get_fundamental_dtype
+         
+         
+            MLXBackend.identity
+         
+         
+            MLXBackend.indices
+         
+         
+            MLXBackend.irfftn
+         
+         
+            MLXBackend.max
+         
+         
+            MLXBackend.max_filter_coordinates
+         
+         
+            MLXBackend.max_score_over_rotations
+         
+         
+            MLXBackend.maximum
+         
+         
+            MLXBackend.mean
+         
+         
+            MLXBackend.min
+         
+         
+            MLXBackend.minimum
+         
+         
+            MLXBackend.mod
+         
+         
+            MLXBackend.multiply
+         
+         
+            MLXBackend.norm_scores
+         
+         
+            MLXBackend.power
+         
+         
+            MLXBackend.repeat
+         
+         
+            MLXBackend.reshape
+         
+         
+            MLXBackend.reverse
+         
+         
+            MLXBackend.rfftn
+         
+         
+            MLXBackend.rigid_transform
+         
+         
+            MLXBackend.roll
+         
+         
+            MLXBackend.set_device
+         
+         
+            MLXBackend.size
+         
+         
+            MLXBackend.sqrt
+         
+         
+            MLXBackend.square
+         
+         
+            MLXBackend.stack
+         
+         
+            MLXBackend.std
+         
+         
+            MLXBackend.subtract
+         
+         
+            MLXBackend.sum
+         
+         
+            MLXBackend.to_backend_array
+         
+         
+            MLXBackend.to_cpu_array
+         
+         
+            MLXBackend.to_numpy_array
+         
+         
+            MLXBackend.to_sharedarr
+         
+         
+            MLXBackend.tobytes
+         
+         
+            MLXBackend.topk_indices
+         
+         
+            MLXBackend.topleft_pad
+         
+         
+            MLXBackend.transpose
+         
+         
+            MLXBackend.tril_indices
+         
+         
+            MLXBackend.unique
+         
+         
+            MLXBackend.unravel_index
+         
+         
+            MLXBackend.where
+         
+         
+            MLXBackend.zeros
+         
+
+   
+   

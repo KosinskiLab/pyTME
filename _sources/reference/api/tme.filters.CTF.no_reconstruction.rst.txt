@@ -1,0 +1,6 @@
+CTF.no\_reconstruction
+=================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.no_reconstruction

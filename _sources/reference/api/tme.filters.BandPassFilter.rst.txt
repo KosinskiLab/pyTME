@@ -1,0 +1,34 @@
+﻿BandPassFilter
+==============
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: BandPassFilter
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            BandPassFilter.__call__
+      
+
+      
+         
+         
+            BandPassFilter.discrete_bandpass
+         
+         
+            BandPassFilter.gaussian_bandpass
+         
+
+   
+   

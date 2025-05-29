@@ -1,0 +1,230 @@
+﻿CupyBackend
+===========
+
+.. currentmodule:: tme.backends
+
+.. autoclass:: CupyBackend
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            CupyBackend.abs
+         
+         
+            CupyBackend.add
+         
+         
+            CupyBackend.addat
+         
+         
+            CupyBackend.arange
+         
+         
+            CupyBackend.argsort
+         
+         
+            CupyBackend.astype
+         
+         
+            CupyBackend.at
+         
+         
+            CupyBackend.build_fft
+         
+         
+            CupyBackend.center_of_mass
+         
+         
+            CupyBackend.clip
+         
+         
+            CupyBackend.compute_convolution_shapes
+         
+         
+            CupyBackend.concatenate
+         
+         
+            CupyBackend.copy
+         
+         
+            CupyBackend.datatype_bytes
+         
+         
+            CupyBackend.device_count
+         
+         
+            CupyBackend.divide
+         
+         
+            CupyBackend.dot
+         
+         
+            CupyBackend.einsum
+         
+         
+            CupyBackend.eps
+         
+         
+            CupyBackend.extract_center
+         
+         
+            CupyBackend.fill
+         
+         
+            CupyBackend.free_cache
+         
+         
+            CupyBackend.from_sharedarr
+         
+         
+            CupyBackend.full
+         
+         
+            CupyBackend.get_available_memory
+         
+         
+            CupyBackend.get_fundamental_dtype
+         
+         
+            CupyBackend.identity
+         
+         
+            CupyBackend.indices
+         
+         
+            CupyBackend.irfftn
+         
+         
+            CupyBackend.max
+         
+         
+            CupyBackend.max_filter_coordinates
+         
+         
+            CupyBackend.max_score_over_rotations
+         
+         
+            CupyBackend.maximum
+         
+         
+            CupyBackend.mean
+         
+         
+            CupyBackend.min
+         
+         
+            CupyBackend.minimum
+         
+         
+            CupyBackend.mod
+         
+         
+            CupyBackend.multiply
+         
+         
+            CupyBackend.norm_scores
+         
+         
+            CupyBackend.power
+         
+         
+            CupyBackend.repeat
+         
+         
+            CupyBackend.reshape
+         
+         
+            CupyBackend.reverse
+         
+         
+            CupyBackend.rfftn
+         
+         
+            CupyBackend.rigid_transform
+         
+         
+            CupyBackend.roll
+         
+         
+            CupyBackend.set_device
+         
+         
+            CupyBackend.size
+         
+         
+            CupyBackend.sqrt
+         
+         
+            CupyBackend.square
+         
+         
+            CupyBackend.stack
+         
+         
+            CupyBackend.std
+         
+         
+            CupyBackend.subtract
+         
+         
+            CupyBackend.sum
+         
+         
+            CupyBackend.to_backend_array
+         
+         
+            CupyBackend.to_cpu_array
+         
+         
+            CupyBackend.to_numpy_array
+         
+         
+            CupyBackend.to_sharedarr
+         
+         
+            CupyBackend.tobytes
+         
+         
+            CupyBackend.topk_indices
+         
+         
+            CupyBackend.topleft_pad
+         
+         
+            CupyBackend.transpose
+         
+         
+            CupyBackend.tril_indices
+         
+         
+            CupyBackend.unique
+         
+         
+            CupyBackend.unravel_index
+         
+         
+            CupyBackend.var
+         
+         
+            CupyBackend.where
+         
+         
+            CupyBackend.zeros
+         
+
+   
+   

@@ -1,0 +1,1021 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tme.analyzer.aggregation &#8212; pytme 0.2.9 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/general.css?v=63b7f29f" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=14672bda"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/tme/analyzer/aggregation';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme 0.2.9 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">tme.analyzer.aggregation</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for tme.analyzer.aggregation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Implements classes to analyze outputs from exhaustive template matching.</span>
+
+<span class="sd">    Copyright (c) 2023 European Molecular Biology Laboratory</span>
+
+<span class="sd">    Author: Valentin Maurer &lt;valentin.maurer@embl-hamburg.de&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">nullcontext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Manager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..types</span><span class="w"> </span><span class="kn">import</span> <span class="n">BackendArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">cart_to_score</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span> <span class="k">as</span> <span class="n">be</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..matching_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">create_mask</span><span class="p">,</span>
+    <span class="n">array_to_memmap</span><span class="p">,</span>
+    <span class="n">generate_tempfile_name</span><span class="p">,</span>
+    <span class="n">apply_convolution_mode</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;MaxScoreOverRotations&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MaxScoreOverTranslations&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="MaxScoreOverRotations">
+<a class="viewcode-back" href="../../../reference/api/tme.analyzer.MaxScoreOverRotations.html#tme.analyzer.MaxScoreOverRotations">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MaxScoreOverRotations</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the rotation maximizing the score over all possible translations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape : tuple of int</span>
+<span class="sd">        Shape of array passed to :py:meth:`MaxScoreOverRotations.__call__`.</span>
+<span class="sd">    scores : BackendArray, optional</span>
+<span class="sd">        Array mapping translations to scores.</span>
+<span class="sd">    rotations : BackendArray, optional</span>
+<span class="sd">        Array mapping translations to rotation indices.</span>
+<span class="sd">    offset : BackendArray, optional</span>
+<span class="sd">        Coordinate origin considered during merging, zero by default.</span>
+<span class="sd">    score_threshold : float, optional</span>
+<span class="sd">        Minimum score to be considered, zero by default.</span>
+<span class="sd">    shm_handler : :class:`multiprocessing.managers.SharedMemoryManager`, optional</span>
+<span class="sd">        Shared memory manager, defaults to memory not being shared.</span>
+<span class="sd">    use_memmap : bool, optional</span>
+<span class="sd">        Memmap internal arrays, False by default.</span>
+<span class="sd">    thread_safe: bool, optional</span>
+<span class="sd">        Allow class to be modified by multiple processes, True by default.</span>
+<span class="sd">    only_unique_rotations : bool, optional</span>
+<span class="sd">        Whether each rotation will be shown only once, False by default.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    scores : BackendArray</span>
+<span class="sd">        Mapping of translations to scores.</span>
+<span class="sd">    rotations : BackendArray</span>
+<span class="sd">        Mmapping of translations to rotation indices.</span>
+<span class="sd">    rotation_mapping : Dict</span>
+<span class="sd">        Mapping of rotations to rotation indices.</span>
+<span class="sd">    offset : BackendArray, optional</span>
+<span class="sd">        Coordinate origin considered during merging, zero by default</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The following achieves the minimal definition of a :py:class:`MaxScoreOverRotations`</span>
+<span class="sd">    instance</span>
+
+<span class="sd">    &gt;&gt;&gt; from tme.analyzer import MaxScoreOverRotations</span>
+<span class="sd">    &gt;&gt;&gt; analyzer = MaxScoreOverRotations(shape = (50, 50))</span>
+
+<span class="sd">    The following simulates a template matching run by creating random data for a range</span>
+<span class="sd">    of rotations and sending it to ``analyzer`` via its __call__ method</span>
+
+<span class="sd">    &gt;&gt;&gt; for rotation_number in range(10):</span>
+<span class="sd">    &gt;&gt;&gt;     scores = np.random.rand(50,50)</span>
+<span class="sd">    &gt;&gt;&gt;     rotation = np.random.rand(scores.ndim, scores.ndim)</span>
+<span class="sd">    &gt;&gt;&gt;     analyzer(scores = scores, rotation_matrix = rotation)</span>
+
+<span class="sd">    The aggregated scores can be extracted by invoking the __iter__ method of</span>
+<span class="sd">    ``analyzer``</span>
+
+<span class="sd">    &gt;&gt;&gt; results = tuple(analyzer)</span>
+
+<span class="sd">    The ``results`` tuple contains (1) the maximum scores for each translation,</span>
+<span class="sd">    (2) an offset which is relevant when merging results from split template matching</span>
+<span class="sd">    using :py:meth:`MaxScoreOverRotations.merge`, (3) the rotation used to obtain a</span>
+<span class="sd">    score for a given translation, (4) a dictionary mapping rotation matrices to the</span>
+<span class="sd">    indices used in (2).</span>
+
+<span class="sd">    We can extract the ``optimal_score``, ``optimal_translation`` and ``optimal_rotation``</span>
+<span class="sd">    as follows</span>
+
+<span class="sd">    &gt;&gt;&gt; optimal_score = results[0].max()</span>
+<span class="sd">    &gt;&gt;&gt; optimal_translation = np.where(results[0] == results[0].max())</span>
+<span class="sd">    &gt;&gt;&gt; optimal_rotation_index = results[2][optimal_translation]</span>
+<span class="sd">    &gt;&gt;&gt; for key, value in results[3].items():</span>
+<span class="sd">    &gt;&gt;&gt;     if value != optimal_rotation_index:</span>
+<span class="sd">    &gt;&gt;&gt;         continue</span>
+<span class="sd">    &gt;&gt;&gt;     optimal_rotation = np.frombuffer(key, rotation.dtype)</span>
+<span class="sd">    &gt;&gt;&gt;     optimal_rotation = optimal_rotation.reshape(scores.ndim, scores.ndim)</span>
+
+<span class="sd">    The outlined procedure is a trivial method to identify high scoring peaks.</span>
+<span class="sd">    Alternatively, :py:class:`PeakCaller` offers a range of more elaborate approaches</span>
+<span class="sd">    that can be used.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">scores</span><span class="p">:</span> <span class="n">BackendArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rotations</span><span class="p">:</span> <span class="n">BackendArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="n">BackendArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">score_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">shm_handler</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_memmap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">thread_safe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">only_unique_rotations</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+                <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="n">score_threshold</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">rotations</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">_int_dtype</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_sharedarr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span> <span class="n">shm_handler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_sharedarr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span> <span class="n">shm_handler</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">),</span> <span class="n">be</span><span class="o">.</span><span class="n">_int_dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">offset</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_memmap</span> <span class="o">=</span> <span class="n">use_memmap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span> <span class="k">if</span> <span class="n">thread_safe</span> <span class="k">else</span> <span class="n">nullcontext</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock_is_nullcontext</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">))))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inversion_mapping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock_is_nullcontext</span> <span class="ow">and</span> <span class="n">only_unique_rotations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span> <span class="k">if</span> <span class="n">thread_safe</span> <span class="k">else</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_postprocess</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">targetshape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">templateshape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">convolution_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">fourier_shift</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">convolution_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">shm_handler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;MaxScoreOverRotations&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Correct padding to Fourier shape and convolution mode.&quot;&quot;&quot;</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">from_sharedarr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span>
+        <span class="n">rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">from_sharedarr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fourier_shift</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axis</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fourier_shift</span><span class="p">)))</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+            <span class="n">rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">rotations</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">fourier_shift</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+
+        <span class="n">convargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;s1&quot;</span><span class="p">:</span> <span class="n">targetshape</span><span class="p">,</span>
+            <span class="s2">&quot;s2&quot;</span><span class="p">:</span> <span class="n">templateshape</span><span class="p">,</span>
+            <span class="s2">&quot;convolution_mode&quot;</span><span class="p">:</span> <span class="n">convolution_mode</span><span class="p">,</span>
+            <span class="s2">&quot;convolution_shape&quot;</span><span class="p">:</span> <span class="n">convolution_shape</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">convolution_mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">apply_convolution_mode</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="o">**</span><span class="n">convargs</span><span class="p">)</span>
+            <span class="n">rotations</span> <span class="o">=</span> <span class="n">apply_convolution_mode</span><span class="p">(</span><span class="n">rotations</span><span class="p">,</span> <span class="o">**</span><span class="n">convargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">rotations</span>
+        <span class="k">if</span> <span class="n">shm_handler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_sharedarr</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">shm_handler</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_sharedarr</span><span class="p">(</span><span class="n">rotations</span><span class="p">,</span> <span class="n">shm_handler</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">:</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">from_sharedarr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span>
+        <span class="n">rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">from_sharedarr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">)</span>
+
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+        <span class="n">rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">rotations</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_memmap</span><span class="p">:</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">array_to_memmap</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+            <span class="n">rotations</span> <span class="o">=</span> <span class="n">array_to_memmap</span><span class="p">(</span><span class="n">rotations</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">scores</span><span class="p">):</span>
+                <span class="c1"># Copy to avoid invalidation by shared memory handler</span>
+                <span class="n">scores</span><span class="p">,</span> <span class="n">rotations</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">rotations</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inversion_mapping</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">be</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="n">v</span><span class="p">):</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+
+        <span class="n">param_store</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">scores</span><span class="p">,</span>
+            <span class="n">be</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">),</span>
+            <span class="n">rotations</span><span class="p">,</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">param_store</span>
+
+<div class="viewcode-block" id="MaxScoreOverRotations.__call__">
+<a class="viewcode-back" href="../../../reference/api/tme.analyzer.MaxScoreOverRotations.__call__.html#tme.analyzer.MaxScoreOverRotations.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scores</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the parameter store.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        scores : BackendArray</span>
+<span class="sd">            Array of scores.</span>
+<span class="sd">        rotation_matrix : BackendArray</span>
+<span class="sd">            Square matrix describing the current rotation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># be.tobytes behaviour caused overhead for certain GPU/CUDA combinations</span>
+        <span class="c1"># If the analyzer is not shared and each rotation is unique, we can</span>
+        <span class="c1"># use index to rotation mapping and invert prior to merging.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock_is_nullcontext</span><span class="p">:</span>
+            <span class="n">rotation_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inversion_mapping</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="p">[</span><span class="n">rotation_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotation_matrix</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rotation</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
+                <span class="n">rotation_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                    <span class="n">rotation</span><span class="p">,</span> <span class="n">rotation_index</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">max_score_over_rotations</span><span class="p">(</span>
+                <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
+                <span class="n">max_scores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span>
+                <span class="n">rotations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span>
+                <span class="n">rotation_index</span><span class="o">=</span><span class="n">rotation_index</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">rotation</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="n">rotation_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="n">rotation</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">from_sharedarr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span>
+            <span class="n">internal_rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">from_sharedarr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">)</span>
+            <span class="n">internal_sores</span><span class="p">,</span> <span class="n">internal_rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">max_score_over_rotations</span><span class="p">(</span>
+                <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
+                <span class="n">max_scores</span><span class="o">=</span><span class="n">internal_scores</span><span class="p">,</span>
+                <span class="n">rotations</span><span class="o">=</span><span class="n">internal_rotations</span><span class="p">,</span>
+                <span class="n">rotation_index</span><span class="o">=</span><span class="n">rotation_index</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MaxScoreOverRotations.merge">
+<a class="viewcode-back" href="../../../reference/api/tme.analyzer.MaxScoreOverRotations.merge.html#tme.analyzer.MaxScoreOverRotations.merge">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">param_stores</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Merge multiple instances of the current class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        param_stores : list of tuple</span>
+<span class="sd">            List of instance&#39;s internal state created by applying `tuple(instance)`.</span>
+<span class="sd">        **kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Maximum score of each translation over all observed rotations.</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Translation offset, zero by default.</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Mapping between translations and rotation indices.</span>
+<span class="sd">        Dict</span>
+<span class="sd">            Mapping between rotations and rotation indices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">use_memmap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use_memmap&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_stores</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">param_stores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+                <span class="n">scores</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">rotation_mapping</span> <span class="o">=</span> <span class="n">ret</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">array_to_memmap</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+                <span class="n">rotations</span> <span class="o">=</span> <span class="n">array_to_memmap</span><span class="p">(</span><span class="n">rotations</span><span class="p">)</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">rotation_mapping</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">ret</span>
+
+        <span class="c1"># Determine output array shape and create consistent rotation map</span>
+        <span class="n">new_rotation_mapping</span><span class="p">,</span> <span class="n">out_shape</span> <span class="o">=</span> <span class="p">{},</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_stores</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">scores</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">rotation_mapping</span> <span class="o">=</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">out_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">out_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+                <span class="n">scores_dtype</span><span class="p">,</span> <span class="n">rotations_dtype</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">rotations</span><span class="o">.</span><span class="n">dtype</span>
+            <span class="n">out_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">rotation_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_rotation_mapping</span><span class="p">:</span>
+                    <span class="n">new_rotation_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_rotation_mapping</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">out_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">out_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">out_shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+            <span class="n">scores_out_filename</span> <span class="o">=</span> <span class="n">generate_tempfile_name</span><span class="p">()</span>
+            <span class="n">rotations_out_filename</span> <span class="o">=</span> <span class="n">generate_tempfile_name</span><span class="p">()</span>
+
+            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">scores_out_filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">scores_dtype</span>
+            <span class="p">)</span>
+            <span class="n">scores_out</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;score_threshold&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">scores_out</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">rotations_out_filename</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_dtype</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">rotations_out</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">rotations_out</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+                <span class="n">out_shape</span><span class="p">,</span>
+                <span class="n">fill_value</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;score_threshold&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">scores_dtype</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_dtype</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_stores</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+                <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                    <span class="n">scores_out_filename</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r+&quot;</span><span class="p">,</span>
+                    <span class="n">shape</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="n">scores_dtype</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                    <span class="n">rotations_out_filename</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r+&quot;</span><span class="p">,</span>
+                    <span class="n">shape</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_dtype</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="n">scores</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">rotation_mapping</span> <span class="o">=</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">stops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="o">*</span><span class="n">pos</span><span class="p">)</span> <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">stops</span><span class="p">))</span>
+
+            <span class="n">indices_update</span> <span class="o">=</span> <span class="n">scores</span> <span class="o">&gt;</span> <span class="n">scores_out</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+            <span class="n">scores_out</span><span class="p">[</span><span class="n">indices</span><span class="p">][</span><span class="n">indices_update</span><span class="p">]</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">indices_update</span><span class="p">]</span>
+
+            <span class="n">lookup_table</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">rotation_mapping</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_out</span><span class="o">.</span><span class="n">dtype</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">rotation_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">lookup_table</span><span class="p">[</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_rotation_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+            <span class="n">updated_rotations</span> <span class="o">=</span> <span class="n">rotations</span><span class="p">[</span><span class="n">indices_update</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">updated_rotations</span><span class="p">):</span>
+                <span class="n">rotations_out</span><span class="p">[</span><span class="n">indices</span><span class="p">][</span><span class="n">indices_update</span><span class="p">]</span> <span class="o">=</span> <span class="n">lookup_table</span><span class="p">[</span><span class="n">updated_rotations</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+                <span class="n">scores</span><span class="o">.</span><span class="n">_mmap</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">rotations</span><span class="o">.</span><span class="n">_mmap</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">scores_out</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="n">rotations_out</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="n">scores_out</span><span class="p">,</span> <span class="n">rotations_out</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+            <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">scores</span><span class="p">,</span> <span class="n">rotations</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">scores_out_filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">scores_dtype</span>
+            <span class="p">)</span>
+            <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">rotations_out_filename</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">rotations_dtype</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">scores_out</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">scores_out</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+            <span class="n">rotations_out</span><span class="p">,</span>
+            <span class="n">new_rotation_mapping</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_shareable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Boolean indicating whether class instance can be shared across processes.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="MaxScoreOverTranslations">
+<a class="viewcode-back" href="../../../reference/api/tme.analyzer.MaxScoreOverTranslations.html#tme.analyzer.MaxScoreOverTranslations">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MaxScoreOverTranslations</span><span class="p">(</span><span class="n">MaxScoreOverRotations</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the translation maximizing the score over all possible rotations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape : tuple of int</span>
+<span class="sd">        Shape of array passed to :py:meth:`MaxScoreOverTranslations.__call__`.</span>
+<span class="sd">    n_rotations : int</span>
+<span class="sd">        Number of rotations to aggregate over.</span>
+<span class="sd">    aggregate_axis : tuple of int, optional</span>
+<span class="sd">        Array axis to aggregate over, None by default.</span>
+<span class="sd">    shm_handler : :class:`multiprocessing.managers.SharedMemoryManager`, optional</span>
+<span class="sd">        Shared memory manager, defaults to memory not being shared.</span>
+<span class="sd">    **kwargs: dict, optional</span>
+<span class="sd">        Keyword arguments passed to the constructor of the parent class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">n_rotations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">aggregate_axis</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">shm_handler</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">shape_reduced</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">aggregate_axis</span><span class="p">]</span>
+        <span class="n">shape_reduced</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_rotations</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span> <span class="n">be</span><span class="o">.</span><span class="n">_int_dtype</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">aggregate_axis</span><span class="p">]</span>
+        <span class="n">offset</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape_reduced</span><span class="p">,</span> <span class="n">shm_handler</span><span class="o">=</span><span class="n">shm_handler</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">_int_dtype</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotations</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_sharedarr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotations</span><span class="p">,</span> <span class="n">shm_handler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aggregate_axis</span> <span class="o">=</span> <span class="n">aggregate_axis</span>
+
+<div class="viewcode-block" id="MaxScoreOverTranslations.__call__">
+<a class="viewcode-back" href="../../../reference/api/tme.analyzer.MaxScoreOverTranslations.__call__.html#tme.analyzer.MaxScoreOverTranslations.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scores</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock_is_nullcontext</span><span class="p">:</span>
+            <span class="n">rotation_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inversion_mapping</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="p">[</span><span class="n">rotation_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotation_matrix</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rotation</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
+                <span class="n">rotation_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                    <span class="n">rotation</span><span class="p">,</span> <span class="n">rotation_index</span>
+                <span class="p">)</span>
+            <span class="n">max_score</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_aggregate_axis</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">[</span><span class="n">rotation_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_score</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">rotation</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="n">rotation_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="n">rotation</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_mapping</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">internal_scores</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">from_sharedarr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span>
+            <span class="n">max_score</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_aggregate_axis</span><span class="p">)</span>
+            <span class="n">internal_scores</span><span class="p">[</span><span class="n">rotation_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_score</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MaxScoreOverTranslations.merge">
+<a class="viewcode-back" href="../../../reference/api/tme.analyzer.MaxScoreOverTranslations.merge.html#tme.analyzer.MaxScoreOverTranslations.merge">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">param_stores</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Merge multiple instances of the current class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        param_stores : list of tuple</span>
+<span class="sd">            List of instance&#39;s internal state created by applying `tuple(instance)`.</span>
+<span class="sd">        **kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Maximum score of each rotation over all observed translations.</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Translation offset, zero by default.</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Mapping between translations and rotation indices.</span>
+<span class="sd">        Dict</span>
+<span class="sd">            Mapping between rotations and rotation indices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_stores</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">param_stores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Determine output array shape and create consistent rotation map</span>
+        <span class="n">new_rotation_mapping</span><span class="p">,</span> <span class="n">out_shape</span> <span class="o">=</span> <span class="p">{},</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_stores</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">scores</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">rotation_mapping</span> <span class="o">=</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">out_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">out_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+                <span class="n">scores_dtype</span><span class="p">,</span> <span class="n">rotations_out</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">rotations</span>
+            <span class="n">out_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">rotation_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_rotation_mapping</span><span class="p">:</span>
+                    <span class="n">new_rotation_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_rotation_mapping</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">out_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">out_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_rotation_mapping</span><span class="p">)</span>
+        <span class="n">out_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">out_shape</span><span class="p">)</span>
+
+        <span class="n">use_memmap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use_memmap&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+            <span class="n">scores_out_filename</span> <span class="o">=</span> <span class="n">generate_tempfile_name</span><span class="p">()</span>
+            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">scores_out_filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">scores_dtype</span>
+            <span class="p">)</span>
+            <span class="n">scores_out</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;score_threshold&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">scores_out</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+                <span class="n">out_shape</span><span class="p">,</span>
+                <span class="n">fill_value</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;score_threshold&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">scores_dtype</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_stores</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+                <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                    <span class="n">scores_out_filename</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r+&quot;</span><span class="p">,</span>
+                    <span class="n">shape</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="n">scores_dtype</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="n">scores</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">rotations</span><span class="p">,</span> <span class="n">rotation_mapping</span> <span class="o">=</span> <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="n">outer_table</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rotation_mapping</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">lookup_table</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">new_rotation_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">rotation_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">()],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">stops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="o">*</span><span class="n">pos</span><span class="p">)</span> <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">stops</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
+            <span class="n">indices</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">lookup_table</span><span class="p">)</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+
+            <span class="n">scores_out</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">scores_out</span><span class="p">[</span><span class="n">indices</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">outer_table</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+                <span class="n">scores</span><span class="o">.</span><span class="n">_mmap</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">scores_out</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="n">scores_out</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">param_stores</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">scores</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">use_memmap</span><span class="p">:</span>
+            <span class="n">scores_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="n">scores_out_filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">scores_dtype</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">scores_out</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">scores_out</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+            <span class="n">rotations_out</span><span class="p">,</span>
+            <span class="n">new_rotation_mapping</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_postprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2024, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+Wedge.weight\_relion
+===============================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: Wedge.weight_relion

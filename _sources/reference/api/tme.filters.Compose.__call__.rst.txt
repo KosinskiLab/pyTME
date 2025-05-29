@@ -1,0 +1,6 @@
+Compose.\_\_call\_\_
+============================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: Compose.__call__
