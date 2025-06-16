@@ -1,8 +1,9 @@
-""" Class representation of template matching data.
+"""
+Class representation of template matching data.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import warnings

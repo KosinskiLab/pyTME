@@ -1,11 +1,13 @@
-""" Implements class Wedge and WedgeReconstructed to create Fourier
-    filter representations.
+"""
+Implements class Wedge and WedgeReconstructed to create Fourier
+filter representations.
 
-    Copyright (c) 2024 European Molecular Biology Laboratory
+Copyright (c) 2024 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
+import warnings
 from typing import Tuple, Dict
 
 import numpy as np
@@ -14,6 +16,7 @@ from ..types import NDArray
 from ..backends import backend as be
 from .compose import ComposableFilter
 from ..matching_utils import centered
+from ..parser import XMLParser, StarParser
 from ..rotations import euler_to_rotationmatrix
 from ._utils import (
     centered_grid,
@@ -37,9 +40,9 @@ class Wedge(ComposableFilter):
     shape : tuple of int
         The shape of the reconstruction volume.
     tilt_axis : int
-        Axis the plane is tilted over.
+        Axis the plane is tilted over, defaults to 0 (x).
     opening_axis : int
-        The axis around which the volume is opened.
+        The projection axis, defaults to 2 (z).
     angles : tuple of float
         The tilt angles.
     weights : tuple of float
@@ -51,17 +54,24 @@ class Wedge(ComposableFilter):
 
     Returns
     -------
-    Dict
-        A dictionary containing weighted wedges and related information.
+    dict
+        data: BackendArray
+            The filter mask.
+        shape: tuple of ints
+            The requested filter shape
+        return_real_fourier: bool
+            Whether data is compliant with rfftn.
+        is_multiplicative_filter: bool
+            Whether the filter is multiplicative in Fourier space.
     """
 
     def __init__(
         self,
         shape: Tuple[int],
-        tilt_axis: int,
-        opening_axis: int,
         angles: Tuple[float],
         weights: Tuple[float],
+        tilt_axis: int = 0,
+        opening_axis: int = 2,
         weight_type: str = None,
         frequency_cutoff: float = 0.5,
     ):
@@ -75,8 +85,16 @@ class Wedge(ComposableFilter):
     @classmethod
     def from_file(cls, filename: str) -> "Wedge":
         """
-        Generate a :py:class:`Wedge` instance by reading tilt angles and weights
-        from a tab-separated text file.
+        Generate a :py:class:`Wedge` instance by reading tilt angles and weights.
+        Supported extensions are:
+
+            +-------+---------------------------------------------------------+
+            | .star | Tomostar STAR file                                      |
+            +-------+---------------------------------------------------------+
+            | .xml  | WARP/M XML file                                         |
+            +-------+---------------------------------------------------------+
+            | .*    | Tab-separated file with optional column names           |
+            +-------+---------------------------------------------------------+
 
         Parameters
         ----------
@@ -88,8 +106,13 @@ class Wedge(ComposableFilter):
         :py:class:`Wedge`
            Class instance instance initialized with angles and weights from the file.
         """
-        data = cls._from_text(filename)
+        func = _from_text
+        if filename.lower().endswith("xml"):
+            func = _from_xml
+        elif filename.lower().endswith("star"):
+            func = _from_star
 
+        data = func(filename)
         angles, weights = data.get("angles", None), data.get("weights", None)
         if angles is None:
             raise ValueError(f"Could not find colum angles in {filename}")
@@ -107,32 +130,6 @@ class Wedge(ComposableFilter):
             angles=np.array(angles, dtype=np.float32),
             weights=np.array(weights, dtype=np.float32),
         )
-
-    @staticmethod
-    def _from_text(filename: str, delimiter="\t") -> Dict:
-        """
-        Read column data from a text file.
-
-        Parameters
-        ----------
-        filename : str
-            The path to the text file.
-        delimiter : str, optional
-            The delimiter used in the file, defaults to '\t'.
-
-        Returns
-        -------
-        Dict
-            A dictionary with one key for each column.
-        """
-        with open(filename, mode="r", encoding="utf-8") as infile:
-            data = [x.strip() for x in infile.read().split("\n")]
-            data = [x.split("\t") for x in data if len(x)]
-
-        headers = data.pop(0)
-        ret = {header: list(column) for header, column in zip(headers, zip(*data))}
-
-        return ret
 
     def __call__(self, **kwargs: Dict) -> NDArray:
         func_args = vars(self).copy()
@@ -172,10 +169,7 @@ class Wedge(ComposableFilter):
 
         return {
             "data": ret,
-            "angles": func_args["angles"],
-            "tilt_axis": func_args["tilt_axis"],
-            "opening_axis": func_args["opening_axis"],
-            "sampling_rate": func_args.get("sampling_rate", 1),
+            "shape": func_args["shape"],
             "is_multiplicative_filter": True,
         }
 
@@ -297,10 +291,10 @@ class WedgeReconstructed:
     ----------
     angles :tuple of float, optional
         The tilt angles, defaults to None.
-    opening_axis : int, optional
-        The axis around which the wedge is opened.
-    tilt_axis : int, optional
-        The axis along which the tilt is applied.
+    tilt_axis : int
+        Axis the plane is tilted over, defaults to 0 (x).
+    opening_axis : int
+        The projection axis, defaults to 2 (z).
     weights : tuple of float, optional
         Weights to assign to individual wedge components.
     weight_wedge : bool, optional
@@ -317,8 +311,8 @@ class WedgeReconstructed:
 
     def __init__(
         self,
-        opening_axis: int,
-        tilt_axis: int,
+        opening_axis: int = 2,
+        tilt_axis: int = 0,
         angles: Tuple[float] = None,
         weights: Tuple[float] = None,
         weight_wedge: bool = False,
@@ -336,7 +330,9 @@ class WedgeReconstructed:
         self.create_continuous_wedge = create_continuous_wedge
         self.frequency_cutoff = frequency_cutoff
 
-    def __call__(self, shape: Tuple[int], **kwargs: Dict) -> Dict:
+    def __call__(
+        self, shape: Tuple[int], return_real_fourier: bool = False, **kwargs: Dict
+    ) -> Dict:
         """
         Generate the reconstructed wedge.
 
@@ -344,19 +340,27 @@ class WedgeReconstructed:
         ----------
         shape : tuple of int
             The shape of the reconstruction volume.
+        return_real_fourier : tuple of int
+            Return a shape compliant with rfft, i.e., omit the negative frequencies
+            terms resulting in a return shape (*shape[:-1], shape[-1]//2+1). Defaults
+            to False.
         **kwargs : Dict
             Additional keyword arguments.
 
         Returns
         -------
-        Dict
-            A dictionary containing the reconstructed wedge and related information.
+        dict
+            data: BackendArray
+                The filter mask.
+            shape: tuple of ints
+                The requested filter shape
+            return_real_fourier: bool
+                Whether data is compliant with rfftn.
+            is_multiplicative_filter: bool
+                Whether the filter is multiplicative in Fourier space.
         """
         func_args = vars(self).copy()
         func_args.update(kwargs)
-
-        if kwargs.get("is_fourier_shape", False):
-            print("Cannot create continuous wedge mask based on real fourier shape.")
 
         func = self.step_wedge
         if func_args.get("create_continuous_wedge", False):
@@ -386,17 +390,15 @@ class WedgeReconstructed:
         ret = be.astype(be.to_backend_array(ret), be._float_dtype)
 
         ret = shift_fourier(data=ret, shape_is_real_fourier=False)
-        if func_args.get("return_real_fourier", False):
+
+        if return_real_fourier:
             ret = crop_real_fourier(ret)
 
         return {
             "data": ret,
-            "shape_is_real_fourier": func_args["return_real_fourier"],
-            "shape": ret.shape,
-            "tilt_axis": func_args["tilt_axis"],
-            "opening_axis": func_args["opening_axis"],
+            "shape": shape,
+            "return_real_fourier": return_real_fourier,
             "is_multiplicative_filter": True,
-            "angles": func_args["angles"],
         }
 
     @staticmethod
@@ -426,6 +428,7 @@ class WedgeReconstructed:
         NDArray
             Wedge mask.
         """
+        angles = np.abs(np.asarray(angles))
         aspect_ratio = shape[opening_axis] / shape[tilt_axis]
         angles = np.degrees(np.arctan(np.tan(np.radians(angles)) * aspect_ratio))
 
@@ -540,3 +543,78 @@ class WedgeReconstructed:
         wedge_volume = np.tile(wedge_volume, tile_dimensions)
 
         return wedge_volume
+
+
+def _from_xml(filename: str, **kwargs) -> Dict:
+    """
+    Read tilt data from a WARP/M XML file.
+
+    Parameters
+    ----------
+    filename : str
+        The path to the text file.
+
+    Returns
+    -------
+    Dict
+        A dictionary with one key for each column.
+    """
+    data = XMLParser(filename)
+    return {"angles": data["Angles"], "weights": data["Dose"]}
+
+
+def _from_star(filename: str, **kwargs) -> Dict:
+    """
+    Read tilt data from a tomostar STAR file.
+
+    Parameters
+    ----------
+    filename : str
+        The path to the text file.
+
+    Returns
+    -------
+    Dict
+        A dictionary with one key for each column.
+    """
+    data = StarParser(filename, delimiter=None)["data_"]
+    return {"angles": data["_wrpAxisAngle"], "weights": data["_wrpDose"]}
+
+
+def _from_text(filename: str, **kwargs) -> Dict:
+    """
+    Read column data from a text file.
+
+    Parameters
+    ----------
+    filename : str
+        The path to the text file.
+    delimiter : str, optional
+        The delimiter used in the file, defaults to '\t'.
+
+    Returns
+    -------
+    Dict
+        A dictionary with one key for each column.
+    """
+    with open(filename, mode="r", encoding="utf-8") as infile:
+        data = [x.strip() for x in infile.read().split("\n")]
+        data = [x.split("\t") for x in data if len(x)]
+
+    if "angles" in data[0]:
+        headers = data.pop(0)
+    else:
+        warnings.warn(
+            f"Did not find a column named 'angles' in {filename}. Assuming "
+            "first column specifies angles."
+        )
+        if len(data[0]) != 1:
+            raise ValueError(
+                "Found more than one column without column names. Please add "
+                "column names to your file. If you only want to specify tilt "
+                "angles without column names, use a single column file."
+            )
+        headers = ("angles",)
+    ret = {header: list(column) for header, column in zip(headers, zip(*data))}
+
+    return ret

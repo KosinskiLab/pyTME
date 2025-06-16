@@ -33,7 +33,6 @@ User Guide
    postprocessing/motivation
    postprocessing/example
    postprocessing/summary
-   integrations
 
 
 .. toctree::

@@ -61,11 +61,9 @@ html_context = {
 }
 
 html_theme_options = {
-    # "logo": {
-    #     "text": "pytme",
-    #     "image_light": "_static/index_api.svg",
-    #     "image_dark": "_static/index_api.svg",
-    # },
+    "logo": {
+        "text": "pytme",
+    },
     "header_links_before_dropdown": 4,
     "icon_links": [
         {

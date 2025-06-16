@@ -1,8 +1,9 @@
-""" Implements class BandPassFilter to create Fourier filter representations.
+"""
+Implements class BandPassFilter to create Fourier filter representations.
 
-    Copyright (c) 2024 European Molecular Biology Laboratory
+Copyright (c) 2024 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from typing import Tuple, Dict
@@ -14,7 +15,7 @@ from scipy.ndimage import map_coordinates
 from ..types import BackendArray
 from ..backends import backend as be
 from .compose import ComposableFilter
-from ._utils import fftfreqn, compute_fourier_shape
+from ._utils import fftfreqn, compute_fourier_shape, shift_fourier
 
 __all__ = ["LinearWhiteningFilter"]
 
@@ -103,13 +104,6 @@ class LinearWhiteningFilter(ComposableFilter):
         shape_is_real_fourier: bool = True,
         order: int = 1,
     ) -> BackendArray:
-        """
-        References
-        ----------
-        .. [1]  M. L. Chaillet, G. van der Schot, I. Gubins, S. Roet,
-            R. C. Veltkamp, and F. Förster, Int. J. Mol. Sci. 24,
-            13375 (2023)
-        """
         grid = fftfreqn(
             shape=shape,
             sampling_rate=0.5,
@@ -123,11 +117,13 @@ class LinearWhiteningFilter(ComposableFilter):
 
     def __call__(
         self,
+        shape: Tuple[int],
         data: BackendArray = None,
         data_rfft: BackendArray = None,
         n_bins: int = None,
         batch_dimension: int = None,
         order: int = 1,
+        return_real_fourier: bool = True,
         **kwargs: Dict,
     ) -> Dict:
         """
@@ -135,6 +131,8 @@ class LinearWhiteningFilter(ComposableFilter):
 
         Parameters
         ----------
+        shape : tuple of ints
+            Shape of the returned whitening filter.
         data : BackendArray, optional
             The input data, defaults to None.
         data_rfft : BackendArray, optional
@@ -143,49 +141,51 @@ class LinearWhiteningFilter(ComposableFilter):
             The number of bins for computing the spectrum, defaults to None.
         batch_dimension : int, optional
             Batch dimension to average over.
-        order : int, optional
-            Interpolation order to use.
+        return_real_fourier : tuple of int
+            Return a shape compliant with rfft, i.e., omit the negative frequencies
+            terms resulting in a return shape (*shape[:-1], shape[-1]//2+1)
         **kwargs : Dict
             Additional keyword arguments.
 
         Returns
         -------
-        Dict
-           Filter data and associated parameters.
+        dict
+            data: BackendArray
+                The filter mask.
+            shape: tuple of ints
+                The requested filter shape
+            return_real_fourier: bool
+                Whether data is compliant with rfftn.
+            is_multiplicative_filter: bool
+                Whether the filter is multiplicative in Fourier space.
         """
         if data_rfft is None:
-            data_rfft = np.fft.rfftn(be.to_numpy_array(data))
+            data_rfft = be.rfftn(data)
 
         data_rfft = be.to_numpy_array(data_rfft)
-
         bins, radial_averages = self._compute_spectrum(
             data_rfft, n_bins, batch_dimension
         )
+        shape = tuple(int(x) for i, x in enumerate(shape) if i != batch_dimension)
 
-        if order is None:
-            cutoff = bins < radial_averages.size
-            filter_mask = np.zeros(bins.shape, radial_averages.dtype)
-            filter_mask[cutoff] = radial_averages[bins[cutoff]]
-        else:
-            shape = bins.shape
-            if kwargs.get("shape", False):
-                shape = compute_fourier_shape(
-                    shape=kwargs.get("shape"),
-                    shape_is_real_fourier=kwargs.get("shape_is_real_fourier", False),
-                )
-
-            filter_mask = self._interpolate_spectrum(
-                spectrum=radial_averages,
+        shape_filter = shape
+        if return_real_fourier:
+            shape_filter = compute_fourier_shape(
                 shape=shape,
-                shape_is_real_fourier=True,
+                shape_is_real_fourier=False,
             )
 
-        filter_mask = np.fft.ifftshift(
-            filter_mask,
-            axes=tuple(i for i in range(data_rfft.ndim - 1) if i != batch_dimension),
+        ret = self._interpolate_spectrum(
+            spectrum=radial_averages,
+            shape=shape_filter,
+            shape_is_real_fourier=return_real_fourier,
         )
 
+        ret = shift_fourier(data=ret, shape_is_real_fourier=return_real_fourier)
+
         return {
-            "data": be.to_backend_array(filter_mask),
+            "data": be.to_backend_array(ret),
+            "shape": shape,
+            "return_real_fourier": return_real_fourier,
             "is_multiplicative_filter": True,
         }

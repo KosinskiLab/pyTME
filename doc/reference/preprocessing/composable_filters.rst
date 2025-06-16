@@ -24,8 +24,8 @@ To demonstrate the use of composable filters, let's walk through a basic example
 
    # Setup WedgeReconstructed
    wedge = WedgeReconstructed(
-       angles=[60, 60],              # Start, stop tilt angle
-       opening_axis=0,               # Wedge is open in z-axis
+       angles=[-60, 60],              # Start, stop tilt angle
+       opening_axis=2,               # Wedge is open in z-axis
        tilt_axis=1,                  # Sample is tilted over y-axis
        create_continuous_wedge=True, # Include all angles from -60 to 60
        sampling_rate=sampling_rate,
@@ -87,6 +87,7 @@ Cryo-EM Filters
    :nosignatures:
 
    CTF
+   CTFReconstructed
    Wedge
    WedgeReconstructed
 

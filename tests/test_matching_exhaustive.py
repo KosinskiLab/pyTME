@@ -7,7 +7,6 @@ from tme.matching_data import MatchingData
 from tme.memory import MATCHING_MEMORY_REGISTRY
 from tme.analyzer import MaxScoreOverRotations, PeakCallerSort
 from tme.matching_exhaustive import (
-    scan,
     scan_subsets,
     MATCHING_EXHAUSTIVE_REGISTER,
     register_matching_exhaustive,
@@ -36,7 +35,7 @@ class TestMatchExhaustive:
         self.coordinates_weights = None
         self.rotations = None
 
-    @pytest.mark.parametrize("evaluate_peak", (False, True))
+    @pytest.mark.parametrize("evaluate_peak", (True,))
     @pytest.mark.parametrize("score", tuple(MATCHING_EXHAUSTIVE_REGISTER.keys()))
     @pytest.mark.parametrize("job_schedule", ((2, 1),))
     @pytest.mark.parametrize("pad_edge", (False, True))

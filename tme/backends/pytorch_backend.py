@@ -1,9 +1,10 @@
-""" Backend using pytorch and optionally GPU acceleration for
-    template matching.
+"""
+Backend using pytorch and optionally GPU acceleration for
+template matching.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from typing import Tuple, Callable
@@ -133,6 +134,15 @@ class PytorchBackend(NumpyFFTWBackend):
 
     def astype(self, arr: TorchTensor, dtype: type) -> TorchTensor:
         return arr.to(dtype)
+
+    @staticmethod
+    def at(arr, idx, value) -> NDArray:
+        arr[idx] = value
+        return arr
+
+    @staticmethod
+    def addat(arr, indices, *args, **kwargs) -> NDArray:
+        return arr.index_put_(indices, *args, accumulate=True, **kwargs)
 
     def flip(self, a, axis, **kwargs):
         return self._array_backend.flip(input=a, dims=axis, **kwargs)

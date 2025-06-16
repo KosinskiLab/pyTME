@@ -1,18 +1,20 @@
-""" Implements classes to analyze outputs from exhaustive template matching.
+"""
+Implements classes to analyze outputs from exhaustive template matching.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from functools import wraps
-from abc import ABC, abstractmethod
-from typing import Tuple, List, Dict, Generator
+from abc import abstractmethod
+from typing import Tuple, List, Dict
 
 import numpy as np
 from skimage.feature import peak_local_max
 from skimage.registration._phase_cross_correlation import _upsampled_dft
 
+from .base import AbstractAnalyzer
 from ._utils import score_to_cart
 from ..backends import backend as be
 from ..matching_utils import split_shape
@@ -141,7 +143,7 @@ def batchify(shape: Tuple[int], batch_dims: Tuple[int] = None) -> List:
     yield from _generate_slices_recursive(0, ())
 
 
-class PeakCaller(ABC):
+class PeakCaller(AbstractAnalyzer):
     """
     Base class for peak calling algorithms.
 
@@ -190,19 +192,7 @@ class PeakCaller(ABC):
         if min_boundary_distance < 0:
             raise ValueError("min_boundary_distance has to be non-negative.")
 
-        ndim = len(shape)
-        self.translations = be.full(
-            (num_peaks, ndim), fill_value=-1, dtype=be._int_dtype
-        )
-        self.rotations = be.full(
-            (num_peaks, ndim, ndim), fill_value=0, dtype=be._float_dtype
-        )
-        for i in range(ndim):
-            self.rotations[:, i, i] = 1.0
-
-        self.scores = be.full((num_peaks,), fill_value=0, dtype=be._float_dtype)
-        self.details = be.full((num_peaks,), fill_value=0, dtype=be._float_dtype)
-
+        self.shape = shape
         self.num_peaks = int(num_peaks)
         self.min_distance = int(min_distance)
         self.min_boundary_distance = int(min_boundary_distance)
@@ -213,31 +203,47 @@ class PeakCaller(ABC):
 
         self.min_score, self.max_score = min_score, max_score
 
-        # Postprocessing arguments
-        self.fourier_shift = kwargs.get("fourier_shift", None)
-        self.convolution_mode = kwargs.get("convolution_mode", None)
-        self.targetshape = kwargs.get("targetshape", None)
-        self.templateshape = kwargs.get("templateshape", None)
+    @abstractmethod
+    def call_peaks(self, scores: BackendArray, **kwargs) -> PeakType:
+        """
+        Call peaks in the score space.
 
-    def __iter__(self) -> Generator:
+        Parameters
+        ----------
+        scores : BackendArray
+            Score array to update analyzer with.
+        **kwargs : dict
+            Optional keyword arguments passed to underlying implementations.
+
+        Returns
+        -------
+        BackendArray
+            Peak positions (n, d).
+        BackendArray
+            Peak details (n, d).
         """
-        Returns a generator to list objects containing translation,
-        rotation, score and details of a given candidate.
-        """
-        self.peak_list = [
-            be.to_cpu_array(self.translations),
-            be.to_cpu_array(self.rotations),
-            be.to_cpu_array(self.scores),
-            be.to_cpu_array(self.details),
-        ]
-        yield from self.peak_list
+
+    def init_state(self):
+        ndim = len(self.shape)
+        translations = be.full(
+            (self.num_peaks, ndim), fill_value=-1, dtype=be._int_dtype
+        )
+        rotations = be.full(
+            (self.num_peaks, ndim, ndim), fill_value=0, dtype=be._float_dtype
+        )
+        for i in range(ndim):
+            rotations[:, i, i] = 1.0
+
+        scores = be.full((self.num_peaks,), fill_value=-1, dtype=be._float_dtype)
+        details = be.full((self.num_peaks,), fill_value=-1, dtype=be._float_dtype)
+        return translations, rotations, scores, details
 
     def _get_peak_mask(self, peaks: BackendArray, scores: BackendArray) -> BackendArray:
         if not len(peaks):
             return None
 
         valid_peaks = be.full((peaks.shape[0],), fill_value=1) == 1
-        if self.min_boundary_distance > 0:
+        if self.min_boundary_distance >= 0:
             upper_limit = be.subtract(
                 be.to_backend_array(scores.shape), self.min_boundary_distance
             )
@@ -318,20 +324,34 @@ class PeakCaller(ABC):
         peak_positions = be.astype(peak_positions, int)
         return peak_positions, peak_details
 
-    def __call__(self, scores: BackendArray, rotation_matrix: BackendArray, **kwargs):
+    def __call__(
+        self,
+        state: Tuple,
+        scores: BackendArray,
+        rotation_matrix: BackendArray,
+        **kwargs,
+    ) -> Tuple:
         """
         Update the internal parameter store based on input array.
 
         Parameters
         ----------
+        state : tuple
+            Current state tuple where:
+            - positions : BackendArray, (n, d) of peak positions
+            - rotations : BackendArray, (n, d, d) of correponding rotations
+            - scores : BackendArray, (n, ) of peak scores
+            - details : BackendArray, (n, ) of peak details
         scores : BackendArray
-            Score space data.
+            Array of new scores to update analyzer with.
         rotation_matrix : BackendArray
             Rotation matrix used to obtain the score array.
         **kwargs
             Optional keyword aguments passed to :py:meth:`PeakCaller.call_peaks`.
         """
-        for ret in self._call_peaks(scores=scores, rotation_matrix=rotation_matrix):
+        for ret in self._call_peaks(
+            scores=scores, rotation_matrix=rotation_matrix, **kwargs
+        ):
             peak_positions, peak_details = ret
             if peak_positions is None:
                 continue
@@ -344,7 +364,6 @@ class PeakCaller(ABC):
             peak_scores = scores[tuple(peak_positions.T)]
             if peak_details is not None:
                 peak_details = peak_details[valid_peaks]
-                # peak_details, peak_scores = peak_scores, -peak_details
             else:
                 peak_details = be.full(peak_scores.shape, fill_value=-1)
 
@@ -354,66 +373,57 @@ class PeakCaller(ABC):
                 axis=0,
             )
 
-            self._update(
+            state = self._update(
+                state,
                 peak_positions=peak_positions,
                 peak_details=peak_details,
                 peak_scores=peak_scores,
-                rotations=rotations,
+                peak_rotations=rotations,
             )
 
-        return None
-
-    @abstractmethod
-    def call_peaks(self, scores: BackendArray, **kwargs) -> PeakType:
-        """
-        Call peaks in the score space.
-
-        Parameters
-        ----------
-        scores : BackendArray
-            Score array.
-        **kwargs : dict
-            Optional keyword arguments passed to underlying implementations.
-
-        Returns
-        -------
-        Tuple[BackendArray, BackendArray]
-            Array of peak coordinates and peak details.
-        """
+        return state
 
     @classmethod
-    def merge(cls, candidates=List[List], **kwargs) -> Tuple:
+    def merge(cls, results=List[Tuple], **kwargs) -> Tuple:
         """
         Merge multiple instances of :py:class:`PeakCaller`.
 
         Parameters
         ----------
-        candidates : list of lists
-            Obtained by invoking list on the generator returned by __iter__.
+        results : list of tuple
+            List of instance results created by applying `result`.
         **kwargs
             Optional keyword arguments.
 
         Returns
         -------
-        Tuple
-            Tuple of translation, rotation, score and details of candidates.
+        NDArray
+            Peak positions (n, d).
+        NDArray
+            Peak rotation matrices (n, d, d).
+        NDArray
+            Peak scores (n, ).
+        NDArray
+            Peak details (n,).
         """
         if "shape" not in kwargs:
-            kwargs["shape"] = tuple(1 for _ in range(candidates[0][0].shape[1]))
+            kwargs["shape"] = tuple(1 for _ in range(results[0][0].shape[1]))
 
         base = cls(**kwargs)
-        for candidate in candidates:
-            if len(candidate) == 0:
+        base_state = base.init_state()
+        for result in results:
+            if len(result) == 0:
                 continue
-            peak_positions, rotations, peak_scores, peak_details = candidate
-            base._update(
+            peak_positions, rotations, peak_scores, peak_details = result
+            base_state = base._update(
+                base_state,
                 peak_positions=be.to_backend_array(peak_positions),
                 peak_details=be.to_backend_array(peak_details),
                 peak_scores=be.to_backend_array(peak_scores),
-                rotations=be.to_backend_array(rotations),
+                peak_rotations=be.to_backend_array(rotations),
                 offset=kwargs.get("offset", None),
             )
-        return tuple(base)
+        return base_state
 
     @staticmethod
     def oversample_peaks(
@@ -520,10 +530,11 @@ class PeakCaller(ABC):
 
     def _update(
         self,
+        state,
         peak_positions: BackendArray,
         peak_details: BackendArray,
         peak_scores: BackendArray,
-        rotations: BackendArray,
+        peak_rotations: BackendArray,
         offset: BackendArray = None,
     ):
         """
@@ -542,14 +553,15 @@ class PeakCaller(ABC):
         offset : BackendArray, optional
             Translation offset, e.g. from splitting, (d, ).
         """
+        translations, rotations, scores, details = state
         if offset is not None:
             offset = be.astype(be.to_backend_array(offset), peak_positions.dtype)
             peak_positions = be.add(peak_positions, offset, out=peak_positions)
 
-        positions = be.concatenate((self.translations, peak_positions))
-        rotations = be.concatenate((self.rotations, rotations))
-        scores = be.concatenate((self.scores, peak_scores))
-        details = be.concatenate((self.details, peak_details))
+        positions = be.concatenate((translations, peak_positions))
+        rotations = be.concatenate((rotations, peak_rotations))
+        scores = be.concatenate((scores, peak_scores))
+        details = be.concatenate((details, peak_details))
 
         # topk filtering after distances yields more distributed peak calls
         distance_order = filter_points_indices(
@@ -564,22 +576,69 @@ class PeakCaller(ABC):
         )
         final_order = distance_order[top_scores]
 
-        self.translations = positions[final_order, :]
-        self.rotations = rotations[final_order, :]
-        self.scores = scores[final_order]
-        self.details = details[final_order]
+        translations = positions[final_order, :]
+        rotations = rotations[final_order, :]
+        scores = scores[final_order]
+        details = details[final_order]
+        return translations, rotations, scores, details
 
-    def _postprocess(self, **kwargs):
-        if not len(self.translations):
-            return self
+    def result(
+        self,
+        state,
+        fast_shape: Tuple[int] = None,
+        targetshape: Tuple[int] = None,
+        templateshape: Tuple[int] = None,
+        convolution_shape: Tuple[int] = None,
+        fourier_shift: Tuple[int] = None,
+        convolution_mode: str = None,
+        **kwargs,
+    ):
+        """
+        Finalize the analysis result with optional postprocessing.
 
-        positions, valid_peaks = score_to_cart(self.translations, **kwargs)
+        Parameters
+        ----------
+        state : tuple
+            Current state tuple where:
+            - positions : BackendArray, (n, d) of peak positions
+            - rotations : BackendArray, (n, d, d) of correponding rotations
+            - scores : BackendArray, (n, ) of peak scores
+            - details : BackendArray, (n, ) of peak details
+        targetshape : Tuple[int], optional
+            Shape of the target for convolution mode correction.
+        templateshape : Tuple[int], optional
+            Shape of the template for convolution mode correction.
+        convolution_shape : Tuple[int], optional
+            Shape used for convolution.
+        fourier_shift : Tuple[int], optional.
+            Shift to apply for Fourier correction.
+        convolution_mode : str, optional
+            Convolution mode for padding correction.
+        **kwargs
+            Additional keyword arguments.
 
-        self.translations = positions[valid_peaks]
-        self.rotations = self.rotations[valid_peaks]
-        self.scores = self.scores[valid_peaks]
-        self.details = self.details[valid_peaks]
-        return self
+        Returns
+        -------
+        tuple
+            Final result tuple (positions, rotations, scores, details).
+        """
+        translations, rotations, scores, details = state
+
+        positions, valid_peaks = score_to_cart(
+            positions=translations,
+            fast_shape=fast_shape,
+            targetshape=targetshape,
+            templateshape=templateshape,
+            convolution_shape=convolution_shape,
+            fourier_shift=fourier_shift,
+            convolution_mode=convolution_mode,
+            **kwargs,
+        )
+        translations = be.to_cpu_array(positions[valid_peaks])
+        rotations = be.to_cpu_array(rotations[valid_peaks])
+        scores = be.to_cpu_array(scores[valid_peaks])
+        details = be.to_cpu_array(details[valid_peaks])
+        return translations, rotations, scores, details
 
 
 class PeakCallerSort(PeakCaller):

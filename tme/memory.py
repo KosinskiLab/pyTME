@@ -1,8 +1,9 @@
-""" Compute memory consumption of template matching components.
+"""
+Compute memory consumption of template matching components.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from abc import ABC, abstractmethod

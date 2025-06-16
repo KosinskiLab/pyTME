@@ -50,7 +50,6 @@ class TestDensity:
         assert np.issubdtype(orientations.translations.dtype, np.floating)
         assert np.issubdtype(orientations.rotations.dtype, np.floating)
         assert np.issubdtype(orientations.scores.dtype, np.floating)
-        assert np.issubdtype(orientations.details.dtype, np.floating)
 
     def test_initialization_error(self):
         with pytest.raises(ValueError):

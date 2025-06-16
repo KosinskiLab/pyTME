@@ -1,8 +1,9 @@
-""" Implements parsers for atomic structure file formats.
+"""
+Implements parsers for atomic structure file formats.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import re
@@ -560,7 +561,7 @@ class StarParser(MMCIFParser):
     .. [1]  https://www.iucr.org/__data/assets/file/0013/11416/star.5.html
     """
 
-    def parse_input(self, lines: List[str], delimiter: str = "\t") -> Dict:
+    def parse_input(self, lines: List[str], delimiter: str = None) -> Dict:
         pattern = re.compile(r"\s*#.*")
 
         ret, category, block = {}, None, []

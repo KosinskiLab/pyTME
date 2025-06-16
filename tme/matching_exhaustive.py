@@ -1,8 +1,9 @@
-""" Implements cross-correlation based template matching using different metrics.
+"""
+Implements cross-correlation based template matching using different metrics.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import sys
@@ -19,6 +20,7 @@ from .filters import Compose
 from .backends import backend as be
 from .matching_utils import split_shape
 from .types import CallbackClass, MatchingData
+from .analyzer.proxy import SharedAnalyzerProxy
 from .matching_scores import MATCHING_EXHAUSTIVE_REGISTER
 from .memory import MatchingMemoryUsage, MATCHING_MEMORY_REGISTRY
 
@@ -242,6 +244,7 @@ def scan(
         "aggregate_axis": matching_data._batch_axis(matching_data._batch_mask),
         "n_rotations": matching_data.rotations.shape[0],
     }
+    callback_class_args["inversion_mapping"] = n_jobs == 1
     default_callback_args.update(callback_class_args)
 
     setup = matching_setup(
@@ -257,13 +260,17 @@ def scan(
     matching_data._free_data()
     be.free_cache()
 
-    # Some analyzers cannot be shared across processes
-    if not getattr(callback_class, "is_shareable", False):
-        jobs_per_callback_class = 1
-
     n_callback_classes = max(n_jobs // jobs_per_callback_class, 1)
     callback_classes = [
-        callback_class(**default_callback_args) if callback_class else None
+        (
+            SharedAnalyzerProxy(
+                callback_class,
+                default_callback_args,
+                shm_handler=shm_handler if n_jobs > 1 else None,
+            )
+            if callback_class
+            else None
+        )
         for _ in range(n_callback_classes)
     ]
     ret = Parallel(n_jobs=n_jobs)(
@@ -276,14 +283,9 @@ def scan(
         )
         for index, rotation in enumerate(matching_data._split_rotations_on_jobs(n_jobs))
     )
-
-    # TODO: Make sure peak callers are thread safe to begin with
-    if not getattr(callback_class, "is_shareable", False):
-        callback_classes = ret
-
     callbacks = [
-        tuple(callback._postprocess(**default_callback_args))
-        for callback in callback_classes
+        callback.result(**default_callback_args)
+        for callback in ret[:n_callback_classes]
         if callback
     ]
     be.free_cache()
@@ -454,7 +456,6 @@ def scan_subsets(
                 for index, (target_split, template_split) in enumerate(splits)
             ]
         )
-
     matching_data._free_data()
     if callback_class is not None:
         return callback_class.merge(results, **callback_class_args)

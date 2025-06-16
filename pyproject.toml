@@ -7,13 +7,13 @@ name="pytme"
 authors = [
   { name = "Valentin Maurer", email = "valentin.maurer@embl-hamburg.de" },
 ]
-version="0.2.9"
+version="0.3.b0"
 description="Python Template Matching Engine"
 readme="README.md"
 requires-python = ">=3.11"
 dependencies=[
     "mrcfile>=1.4.3",
-    "numpy>=1.22.2,<2.0",
+    "numpy>=1.22.2",
     "scipy>=1.9.1",
     "pyfftw>=0.13.1",
     "pytest>=6.2.5",
@@ -26,28 +26,28 @@ dependencies=[
     "importlib_resources",
     "joblib"
 ]
-license = {text = "Proprietary"}
+license = "GPL-2.0-only"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
 
 [project.optional-dependencies]
-cupy = ["cupy-cuda12x", "voltools==0.6.0"]
+cupy = ["cupy-cuda12x>=13.0.0"]
 pytorch = ["torch", "torchvision"]
-jax = ["jax", "jaxlib"]
+jax = ["jax[cuda12]", "jaxlib"]
+jax_cpu = ["jax", "jaxlib"]
 all = [
-    "cupy",
-    "voltools==0.6.0",
+    "cupy-cuda12x>=13.0.0",
     "torch",
-    "jax",
+    "jax[cuda12]",
     "jaxlib",
     "tifffile"
 ]
 
 [project.scripts]
 match_template = "scripts:match_template.main"
-estimate_ram_usage = "scripts:estimate_ram_usage.main"
+estimate_memory_usage = "scripts:estimate_memory_usage.main"
 preprocessor_gui = "scripts:preprocessor_gui.main"
 preprocess = "scripts:preprocess.main"
 postprocess = "scripts:postprocess.main"

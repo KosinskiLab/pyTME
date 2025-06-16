@@ -5,7 +5,7 @@ Installation
 
 .. _installation-section:
 
-This section provides instructions on how to install |project|. We recommend creating an installation enviroment for a clean and isolated setup. Available options for different use cases are outlined in the tabs below.
+We recommend creating a virtual environment for a clean and isolated setup.
 
 .. tab-set::
 

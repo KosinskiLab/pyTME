@@ -1,9 +1,10 @@
 #!python3
-""" GUI for identifying adequate template matching filter and masks.
+"""
+GUI for identifying suitable masks and analyzing template matchign results.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 import inspect
 import argparse
@@ -23,9 +24,9 @@ from napari.utils.events import EventedList
 
 from tme.backends import backend
 from tme.rotations import align_vectors
-from tme.filters import BandPassFilter, CTF
 from tme import Preprocessor, Density, Orientations
 from tme.matching_utils import create_mask, load_pickle
+from tme.filters import BandPassFilter, CTFReconstructed
 
 preprocessor = Preprocessor()
 SLIDER_MIN, SLIDER_MAX = 0, 25
@@ -71,15 +72,14 @@ def ctf_filter(
     fast_shape = [next_fast_len(x) for x in np.multiply(template.shape, 2)]
     template_pad = backend.topleft_pad(template, fast_shape)
     template_ft = np.fft.rfftn(template_pad, s=template_pad.shape)
-    ctf = CTF(
-        angles=[0],
+    ctf = CTFReconstructed(
         shape=fast_shape,
         defocus_x=[defocus_angstrom],
         acceleration_voltage=acceleration_voltage * 1e3,
         spherical_aberration=spherical_aberration * 1e7,
         amplitude_contrast=amplitude_contrast,
-        phase_shift=[phase_shift],
-        defocus_angle=[defocus_angle],
+        phase_shift=phase_shift,
+        defocus_angle=defocus_angle,
         sampling_rate=np.max(sampling_rate),
         return_real_fourier=True,
         flip_phase=flip_phase,
@@ -1216,7 +1216,8 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="GUI for preparing and analyzing template matching runs."
+        description="GUI for preparing and analyzing template matching runs.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     args = parser.parse_args()
     return args

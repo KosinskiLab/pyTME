@@ -55,7 +55,7 @@ setup(
     packages=find_packages(),
     scripts=[
         "scripts/match_template.py",
-        "scripts/estimate_ram_usage.py",
+        "scripts/estimate_memory_usage.py",
         "scripts/preprocessor_gui.py",
         "scripts/preprocess.py",
         "scripts/postprocess.py",

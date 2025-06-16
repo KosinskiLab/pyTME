@@ -1,8 +1,9 @@
-""" Analyzer utility functions.
+"""
+Analyzer utility functions.
 
-    Copyright (c) 2023-2025 European Molecular Biology Laboratory
+Copyright (c) 2023-2025 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from typing import Tuple
@@ -161,26 +162,33 @@ def score_to_cart(
     targetshape = be.to_backend_array(targetshape)
     templateshape = be.to_backend_array(templateshape)
 
+    valid_positions = be.ones((positions.shape[0],)) == 1
+
     # Wrap peaks around score space
     if fourier_shift is not None:
         fourier_shift = be.to_backend_array(fourier_shift)
         positions = be.add(positions, fourier_shift)
         positions = be.mod(positions, fast_shape)
 
-    output_shape = _convmode_to_shape(
-        convolution_mode=convolution_mode,
-        targetshape=targetshape,
-        templateshape=templateshape,
-        convolution_shape=convolution_shape,
-    )
-    starts = be.astype(
-        be.divide(be.subtract(convolution_shape, output_shape), 2),
-        be._int_dtype,
-    )
-    stops = be.add(starts, output_shape)
+    if convolution_mode is not None:
+        output_shape = _convmode_to_shape(
+            convolution_mode=convolution_mode,
+            targetshape=targetshape,
+            templateshape=templateshape,
+            convolution_shape=convolution_shape,
+        )
+        starts = be.astype(
+            be.divide(be.subtract(convolution_shape, output_shape), 2),
+            be._int_dtype,
+        )
+        stops = be.add(starts, output_shape)
 
-    valid_positions = be.multiply(positions >= starts, positions < stops)
-    valid_positions = be.sum(valid_positions, axis=1) == positions.shape[1]
-    positions = be.subtract(positions, starts)
+        valid_positions = be.multiply(positions >= starts, positions < stops)
+        valid_positions = be.sum(valid_positions, axis=1) == positions.shape[1]
+        positions = be.subtract(positions, starts)
 
+    # Get rid of -1 position peaks used to keep GPU happy
+    valid_positions = be.multiply(
+        be.sum(positions >= 0, axis=1) == positions.shape[1], valid_positions
+    )
     return positions, valid_positions

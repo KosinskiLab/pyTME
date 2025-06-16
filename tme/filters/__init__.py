@@ -1,4 +1,4 @@
-from .ctf import CTF
+from .ctf import CTF, CTFReconstructed
 from .compose import Compose, ComposableFilter
 from .bandpass import BandPassFilter
 from .whitening import LinearWhiteningFilter

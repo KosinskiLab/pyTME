@@ -1,8 +1,9 @@
-""" Utilities for the generation of frequency grids.
+"""
+Utilities for the generation of frequency grids.
 
-    Copyright (c) 2024 European Molecular Biology Laboratory
+Copyright (c) 2024 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from typing import Tuple, List, Dict

@@ -10,13 +10,44 @@ Backends allows users to effortlessly switch between different array and FFT imp
 
 .. note::
 
-   Currently flexible backends are only implemented for exhaustive template matching operations. Keep an eye on the documentation or announcements regarding extension to other parts of |project|.
+   Currently flexible backends are only implemented for exhaustive template matching operations. Keep an eye on the documentation for extension to other parts.
+
+
+.. list-table:: Comparison of supported backends
+   :widths: 20 16 16 16 16
+   :header-rows: 1
+
+   * - Property
+     - NumPy FFTW
+     - CuPy
+     - PyTorch
+     - JAX
+   * - **Hardware**
+     - CPU
+     - GPU (CUDA)
+     - CPU/GPU
+     - CPU/GPU/TPU
+   * - **Performance**
+     - Fastest CPU
+     - Good GPU allrounder
+     - Best for peak calling
+     - Fastest GPU (aggregation)
+   * - **Analyzer Support**
+     - All
+     - All
+     - All
+     - MaxScoreOverRotations only
+   * - **When to Use**
+     - CPU-only systems
+     - New users with NVIDIA GPU
+     - Peak calling workflows
+     - Maximum performance
 
 
 Backend Manager
 ~~~~~~~~~~~~~~~
 
-Modules that support flexible backends import a global instance of :py:class:`BackendManager <tme.backends.BackendManager>` like so: :code:`from tme.backends import backend`. The import is quasi-equivalent to :code:`import numpy as np`, apart from the difference in naming. Notably, backend agnostic code is written without instance specific methods such as the ones defined by ``np.ndarray``. Instance-specific functions are wrapped instead, e.g. :py:meth:`NumpyFFTWBackend.fill`. For additional information please refer to the class documentation below.
+Modules that support flexible backends import a global instance of :py:class:`BackendManager <tme.backends.BackendManager>` like so: :code:`from tme.backends import backend`. The import is quasi-equivalent to :code:`import numpy as np`, apart from the difference in naming. Notably, backend agnostic code is written without instance specific methods such as the ones defined by ``np.ndarray``. Instance-specific functions are wrapped instead, e.g., :py:meth:`NumpyFFTWBackend.fill`. For additional information please refer to the class documentation below.
 
 .. autosummary::
    :toctree: api/

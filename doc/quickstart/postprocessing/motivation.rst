@@ -4,7 +4,7 @@
 Motivation
 ==========
 
-Postprocessing identifies regions of high similarity from the template matching output, which we refer to as peaks. Each peak corresponds to an occurence of the template in the target, which is fully characterized by a translation and rotation vector. Identifying peaks is challenging by itself, hence |project| implements a variety of analysis strategies for optimal performance.
+Postprocessing identifies regions of high similarity from the template matching output, which we refer to as peaks. Each peak corresponds to an occurence of the template in the target, which is fully characterized by a translation and rotation matrix. Identifying peaks is challenging by itself, hence |project| implements a variety of analysis strategies for optimal performance.
 
 
 Background
@@ -18,14 +18,14 @@ Lets recall an example from the preprocessing section. The highest peak is locat
     import numpy as np
     import matplotlib.pyplot as plt
     import matplotlib.patches as patches
-    from skimage.feature import match_template
 
     from tme import Density
+    from tme.cli import match_template
 
     target = Density.from_file("../../_static/examples/preprocessing_target.png").data
     template = Density.from_file("../../_static/examples/preprocessing_template.png").data
 
-    result = match_template(target, template, pad_input=True)
+    result = match_template(target, template)[0]
     ij = np.unravel_index(np.argmax(result), result.shape)
     x, y = ij[::-1]
 

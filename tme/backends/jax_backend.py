@@ -1,8 +1,9 @@
-""" Backend using jax for template matching.
+"""
+Backend using jax for template matching.
 
-    Copyright (c) 2023-2024 European Molecular Biology Laboratory
+Copyright (c) 2023-2024 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from functools import wraps
@@ -288,13 +289,10 @@ class JaxBackend(NumpyFFTWBackend):
             for index in range(scores.shape[0]):
                 temp = callback_class(
                     shape=scores.shape,
-                    scores=scores[index],
-                    rotations=rotations[index],
-                    thread_safe=False,
                     offset=translation_offsets[index],
                 )
-                temp.rotation_mapping = rotation_mapping
-                ret.append(tuple(temp._postprocess(**analyzer_args)))
+                state = (scores, rotations, rotation_mapping)
+                ret.append(temp.result(state, **analyzer_args))
 
         return ret
 

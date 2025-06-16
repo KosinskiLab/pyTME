@@ -111,7 +111,10 @@ The final orientations can be passed to ``postprocess.py`` via the ``--orientati
 
     from tme import Orientations
     orientations = Orientations.from_file("orientations.tsv")
-    orientations.to_file("orientations.star", name = "/path/to/your/tomogram")
+    orientations.to_file(
+        "orientations.star",
+        source_path="/path/to/your/tomogram"
+    )
 
 
 References

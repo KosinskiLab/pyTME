@@ -1,14 +1,15 @@
 #!python3
-""" Preprocessing routines for template matching.
+"""Preprocessing routines for template matching.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 import argparse
 import numpy as np
 
 from tme import Density, Structure
+from tme.cli import print_entry
 from tme.backends import backend as be
 from tme.filters import BandPassFilter
 
@@ -59,7 +60,8 @@ def parse_args():
         dest="input_sampling_rate",
         type=float,
         required=False,
-        help="Sampling rate of the input file.",
+        help="Sampling rate of the input file. Defaults to header for volume "
+        "and to --sampling_rate for atomic structures.",
     )
 
     modulation_group = parser.add_argument_group("Modulation")
@@ -125,6 +127,7 @@ def parse_args():
 
 def main():
     args = parse_args()
+    print_entry()
 
     try:
         data = Structure.from_file(args.data)
@@ -190,11 +193,11 @@ def main():
             shape_is_real_fourier=False,
             sampling_rate=data.sampling_rate,
         )(shape=data.shape)["data"]
-        bpf_mask = be.to_numpy_array(bpf_mask)
+        bpf_mask = be.to_backend_array(bpf_mask)
 
-    data_ft = np.fft.rfftn(data.data, s=data.shape)
-    data_ft = np.multiply(data_ft, bpf_mask, out=data_ft)
-    data.data = np.fft.irfftn(data_ft, s=data.shape).real
+        data_ft = be.rfftn(be.to_backend_array(data.data), s=data.shape)
+        data_ft = be.multiply(data_ft, bpf_mask, out=data_ft)
+        data.data = be.to_numpy_array(be.irfftn(data_ft, s=data.shape).real)
 
     data = data.resample(args.sampling_rate, method="spline", order=3)
 

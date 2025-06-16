@@ -1,9 +1,9 @@
 #!python3
-""" CLI for basic pyTME template matching functions.
+"""CLI for basic pyTME template matching functions.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 import os
 import argparse
@@ -18,61 +18,31 @@ from tempfile import gettempdir
 import numpy as np
 
 from tme.backends import backend as be
-from tme import Density, __version__
+from tme import Density, __version__, Orientations
 from tme.matching_utils import scramble_phases, write_pickle
 from tme.matching_exhaustive import scan_subsets, MATCHING_EXHAUSTIVE_REGISTER
 from tme.rotations import (
     get_cone_rotations,
     get_rotation_matrices,
+    euler_to_rotationmatrix,
 )
 from tme.matching_data import MatchingData
 from tme.analyzer import (
     MaxScoreOverRotations,
     PeakCallerMaximumFilter,
+    MaxScoreOverRotationsConstrained,
 )
 from tme.filters import (
     CTF,
     Wedge,
     Compose,
     BandPassFilter,
+    CTFReconstructed,
     WedgeReconstructed,
     ReconstructFromTilt,
     LinearWhiteningFilter,
 )
-
-
-def get_func_fullname(func) -> str:
-    """Returns the full name of the given function, including its module."""
-    return f"<function '{func.__module__}.{func.__name__}'>"
-
-
-def print_block(name: str, data: dict, label_width=20) -> None:
-    """Prints a formatted block of information."""
-    print(f"\n> {name}")
-    for key, value in data.items():
-        if isinstance(value, np.ndarray):
-            value = value.shape
-        formatted_value = str(value)
-        print(f"  - {key + ':':<{label_width}} {formatted_value}")
-
-
-def print_entry() -> None:
-    width = 80
-    text = f" pytme v{__version__} "
-    padding_total = width - len(text) - 2
-    padding_left = padding_total // 2
-    padding_right = padding_total - padding_left
-
-    print("*" * width)
-    print(f"*{ ' ' * padding_left }{text}{ ' ' * padding_right }*")
-    print("*" * width)
-
-
-def check_positive(value):
-    ivalue = float(value)
-    if ivalue <= 0:
-        raise argparse.ArgumentTypeError("%s is an invalid positive float." % value)
-    return ivalue
+from tme.cli import get_func_fullname, print_block, print_entry, check_positive
 
 
 def load_and_validate_mask(mask_target: "Density", mask_path: str, **kwargs):
@@ -118,6 +88,14 @@ def load_and_validate_mask(mask_target: "Density", mask_path: str, **kwargs):
 
 
 def parse_rotation_logic(args, ndim):
+    if args.particle_diameter is not None:
+        resolution = Density.from_file(args.target, use_memmap=True)
+        resolution = 360 * np.maximum(
+            np.max(2 * resolution.sampling_rate),
+            args.lowpass if args.lowpass is not None else 0,
+        )
+        args.angular_sampling = resolution / (3.14159265358979 * args.particle_diameter)
+
     if args.angular_sampling is not None:
         rotations = get_rotation_matrices(
             angular_sampling=args.angular_sampling,
@@ -178,123 +156,72 @@ def compute_schedule(
 
 
 def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Compose]:
-    needs_reconstruction = False
     template_filter, target_filter = [], []
+
+    wedge = None
     if args.tilt_angles is not None:
-        needs_reconstruction = args.tilt_weighting is not None
         try:
             wedge = Wedge.from_file(args.tilt_angles)
             wedge.weight_type = args.tilt_weighting
-            if args.tilt_weighting in ("angle", None) and args.ctf_file is None:
+            if args.tilt_weighting in ("angle", None):
                 wedge = WedgeReconstructed(
                     angles=wedge.angles,
                     weight_wedge=args.tilt_weighting == "angle",
-                    opening_axis=args.wedge_axes[0],
-                    tilt_axis=args.wedge_axes[1],
                 )
-        except FileNotFoundError:
-            tilt_step, create_continuous_wedge = None, True
+        except (FileNotFoundError, AttributeError):
             tilt_start, tilt_stop = args.tilt_angles.split(",")
-            if ":" in tilt_stop:
-                create_continuous_wedge = False
-                tilt_stop, tilt_step = tilt_stop.split(":")
-            tilt_start, tilt_stop = float(tilt_start), float(tilt_stop)
-            tilt_angles = (tilt_start, tilt_stop)
-            if tilt_step is not None:
-                tilt_step = float(tilt_step)
-                tilt_angles = np.arange(
-                    -tilt_start, tilt_stop + tilt_step, tilt_step
-                ).tolist()
-
-            if args.tilt_weighting is not None and tilt_step is None:
-                raise ValueError(
-                    "Tilt weighting is not supported for continuous wedges."
-                )
-            if args.tilt_weighting not in ("angle", None):
-                raise ValueError(
-                    "Tilt weighting schemes other than 'angle' or 'None' require "
-                    "a specification of electron doses via --tilt_angles."
-                )
-
-            wedge = Wedge(
-                angles=tilt_angles,
-                opening_axis=args.wedge_axes[0],
-                tilt_axis=args.wedge_axes[1],
-                shape=None,
-                weight_type=None,
-                weights=np.ones_like(tilt_angles),
-            )
-            if args.tilt_weighting in ("angle", None) and args.ctf_file is None:
-                wedge = WedgeReconstructed(
-                    angles=tilt_angles,
-                    weight_wedge=args.tilt_weighting == "angle",
-                    create_continuous_wedge=create_continuous_wedge,
-                    reconstruction_filter=args.reconstruction_filter,
-                    opening_axis=args.wedge_axes[0],
-                    tilt_axis=args.wedge_axes[1],
-                )
-                wedge_target = WedgeReconstructed(
-                    angles=(np.abs(np.min(tilt_angles)), np.abs(np.max(tilt_angles))),
-                    weight_wedge=False,
-                    create_continuous_wedge=True,
-                    opening_axis=args.wedge_axes[0],
-                    tilt_axis=args.wedge_axes[1],
-                )
-                target_filter.append(wedge_target)
-
-        wedge.sampling_rate = template.sampling_rate
-        template_filter.append(wedge)
-        if not isinstance(wedge, WedgeReconstructed):
-            reconstruction_filter = ReconstructFromTilt(
+            tilt_start, tilt_stop = abs(float(tilt_start)), abs(float(tilt_stop))
+            wedge = WedgeReconstructed(
+                angles=(tilt_start, tilt_stop),
+                create_continuous_wedge=True,
+                weight_wedge=False,
                 reconstruction_filter=args.reconstruction_filter,
-                interpolation_order=args.reconstruction_interpolation_order,
             )
-            template_filter.append(reconstruction_filter)
 
+        wedge_target = WedgeReconstructed(
+            angles=wedge.angles,
+            weight_wedge=False,
+            create_continuous_wedge=True,
+            opening_axis=args.wedge_axes[0],
+            tilt_axis=args.wedge_axes[1],
+        )
+        wedge.opening_axis = args.wedge_axes[0]
+        wedge.tilt_axis = args.wedge_axes[1]
+
+        target_filter.append(wedge_target)
+        template_filter.append(wedge)
+
+    args.ctf_file is not None
     if args.ctf_file is not None or args.defocus is not None:
-        needs_reconstruction = True
-        if args.ctf_file is not None:
+        try:
             ctf = CTF.from_file(args.ctf_file)
-            n_tilts_ctfs, n_tils_angles = len(ctf.defocus_x), len(wedge.angles)
-            if n_tilts_ctfs != n_tils_angles:
+            if (len(ctf.angles) == 0) and wedge is None:
                 raise ValueError(
-                    f"CTF file contains {n_tilts_ctfs} micrographs, but match_template "
-                    f"recieved {n_tils_angles} tilt angles. Expected one angle "
-                    "per micrograph."
+                    "You requested to specify the CTF per tilt, but did not specify "
+                    "tilt angles via --tilt_angles or --ctf_file (Warp/M XML format). "
                 )
-            ctf.angles = wedge.angles
-            ctf.no_reconstruction = False
-            ctf.opening_axis, ctf.tilt_axis = args.wedge_axes
-        else:
-            needs_reconstruction = False
-            ctf = CTF(
-                defocus_x=[args.defocus],
-                phase_shift=[args.phase_shift],
-                defocus_y=None,
-                angles=[0],
-                shape=None,
-                return_real_fourier=True,
-            )
+            if len(ctf.angles) == 0:
+                ctf.angles = wedge.angles
+
+            n_tilts_ctfs, n_tils_angles = len(ctf.defocus_x), len(wedge.angles)
+            if (n_tilts_ctfs != n_tils_angles) and isinstance(wedge, Wedge):
+                raise ValueError(
+                    f"CTF file contains {n_tilts_ctfs} tilt, but match_template "
+                    f"recieved {n_tils_angles} tilt angles. Expected one angle "
+                    "per tilt."
+                )
+
+        except (FileNotFoundError, AttributeError):
+            ctf = CTFReconstructed(defocus_x=args.defocus, phase_shift=args.phase_shift)
+
+        ctf.opening_axis, ctf.tilt_axis = args.wedge_axes
         ctf.sampling_rate = template.sampling_rate
         ctf.flip_phase = args.no_flip_phase
         ctf.amplitude_contrast = args.amplitude_contrast
         ctf.spherical_aberration = args.spherical_aberration
         ctf.acceleration_voltage = args.acceleration_voltage * 1e3
         ctf.correct_defocus_gradient = args.correct_defocus_gradient
-
-        if not needs_reconstruction:
-            template_filter.append(ctf)
-        elif isinstance(template_filter[-1], ReconstructFromTilt):
-            template_filter.insert(-1, ctf)
-        else:
-            template_filter.insert(0, ctf)
-            template_filter.insert(
-                1,
-                ReconstructFromTilt(
-                    reconstruction_filter=args.reconstruction_filter,
-                    interpolation_order=args.reconstruction_interpolation_order,
-                ),
-            )
+        template_filter.append(ctf)
 
     if args.lowpass or args.highpass is not None:
         lowpass, highpass = args.lowpass, args.highpass
@@ -329,10 +256,30 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
         template_filter.append(whitening_filter)
         target_filter.append(whitening_filter)
 
-    if needs_reconstruction and args.reconstruction_filter is None:
+    rec_filt = (Wedge, CTF)
+    needs_reconstruction = sum(type(x) in rec_filt for x in template_filter)
+    if needs_reconstruction > 0 and args.reconstruction_filter is None:
         warnings.warn(
-            "Consider using a --reconstruction_filter such as 'ramp' to avoid artifacts."
+            "Consider using a --reconstruction_filter such as 'ram-lak' or 'ramp' "
+            "to avoid artifacts from reconstruction using weighted backprojection."
         )
+
+    template_filter = sorted(
+        template_filter, key=lambda x: type(x) in rec_filt, reverse=True
+    )
+    if needs_reconstruction > 0:
+        relevant_filters = [x for x in template_filter if type(x) in rec_filt]
+        if len(relevant_filters) == 0:
+            raise ValueError("Filters require ")
+
+        reconstruction_filter = ReconstructFromTilt(
+            reconstruction_filter=args.reconstruction_filter,
+            interpolation_order=args.reconstruction_interpolation_order,
+            angles=relevant_filters[0].angles,
+            opening_axis=args.wedge_axes[0],
+            tilt_axis=args.wedge_axes[1],
+        )
+        template_filter.insert(needs_reconstruction, reconstruction_filter)
 
     template_filter = Compose(template_filter) if len(template_filter) else None
     target_filter = Compose(target_filter) if len(target_filter) else None
@@ -340,6 +287,10 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
         target_filter = None
 
     return template_filter, target_filter
+
+
+def _format_sampling(arr, decimals: int = 2):
+    return tuple(round(float(x), decimals) for x in arr)
 
 
 def parse_args():
@@ -406,6 +357,40 @@ def parse_args():
         help="Phase scramble the template to generate a noise score background.",
     )
 
+    sampling_group = parser.add_argument_group("Sampling")
+    sampling_group.add_argument(
+        "--orientations",
+        dest="orientations",
+        default=None,
+        required=False,
+        help="Path to a file readable via Orientations.from_file containing "
+        "translations and rotations of candidate peaks to refine.",
+    )
+    sampling_group.add_argument(
+        "--orientations_scaling",
+        required=False,
+        type=float,
+        default=1.0,
+        help="Scaling factor to map candidate translations onto the target. "
+        "Assuming coordinates are in Å and target sampling rate are 3Å/voxel, "
+        "the corresponding orientations_scaling would be 3.",
+    )
+    sampling_group.add_argument(
+        "--orientations_cone",
+        required=False,
+        type=float,
+        default=20.0,
+        help="Accept orientations within specified cone angle of each orientation.",
+    )
+    sampling_group.add_argument(
+        "--orientations_uncertainty",
+        required=False,
+        type=str,
+        default="10",
+        help="Accept translations within the specified radius of each orientation. "
+        "Can be a single value or comma-separated string for per-axis uncertainty.",
+    )
+
     scoring_group = parser.add_argument_group("Scoring")
     scoring_group.add_argument(
         "-s",
@@ -434,6 +419,13 @@ def parse_args():
         default=None,
         help="Half-angle of the cone to be sampled in degrees. Allows to sample a "
         "narrow interval around a known orientation, e.g. for surface oversampling.",
+    )
+    angular_exclusive.add_argument(
+        "--particle_diameter",
+        dest="particle_diameter",
+        type=check_positive,
+        default=None,
+        help="Particle diameter in units of sampling rate.",
     )
     angular_group.add_argument(
         "--cone_axis",
@@ -517,6 +509,7 @@ def parse_args():
     computation_group.add_argument(
         "-r",
         "--ram",
+        "--memory",
         dest="memory",
         required=False,
         type=int,
@@ -529,7 +522,7 @@ def parse_args():
         required=False,
         type=float,
         default=0.85,
-        help="Fraction of available memory to be used. Ignored if --ram is set.",
+        help="Fraction of available memory to be used. Ignored if --memory is set.",
     )
     computation_group.add_argument(
         "--temp_directory",
@@ -540,7 +533,7 @@ def parse_args():
     computation_group.add_argument(
         "--backend",
         dest="backend",
-        default=None,
+        default=be._backend_name,
         choices=be.available_backends(),
         help="[Expert] Overwrite default computation backend.",
     )
@@ -575,7 +568,8 @@ def parse_args():
         required=False,
         default="sampling_rate",
         choices=["sampling_rate", "voxel", "frequency"],
-        help="How values passed to --lowpass and --highpass should be interpreted. ",
+        help="How values passed to --lowpass and --highpass should be interpreted. "
+        "Defaults to unit of sampling_rate, e.g., 40 Angstrom.",
     )
     filter_group.add_argument(
         "--whiten_spectrum",
@@ -589,9 +583,9 @@ def parse_args():
         dest="wedge_axes",
         type=str,
         required=False,
-        default=None,
-        help="Indices of wedge opening and tilt axis, e.g. '2,0' for a wedge open "
-        "in z and tilted over the x-axis.",
+        default="2,0",
+        help="Indices of projection (wedge opening) and tilt axis, e.g., '2,0' "
+        "for the typical projection over z and tilting over the x-axis.",
     )
     filter_group.add_argument(
         "--tilt_angles",
@@ -599,10 +593,12 @@ def parse_args():
         type=str,
         required=False,
         default=None,
-        help="Path to a tab-separated file containing the column angles and optionally "
-        " weights, or comma separated start and stop stage tilt angle, e.g. 50,45, which "
-        " yields a continuous wedge mask. Alternatively, a tilt step size can be "
-        "specified like 50,45:5.0 to sample 5.0 degree tilt angle steps.",
+        help="Path to a file specifying tilt angles. This can be a Warp/M XML file, "
+        "a tomostar STAR file, a tab-separated file with column name 'angles', or a "
+        "single column file without header. Exposure will be taken from the input file "
+        ", if you are using a tab-separated file, the column names 'angles' and "
+        "'weights' need to be present. It is also possible to specify a continuous "
+        "wedge mask using e.g., -50,45.",
     )
     filter_group.add_argument(
         "--tilt_weighting",
@@ -649,8 +645,9 @@ def parse_args():
         type=str,
         required=False,
         default=None,
-        help="Path to a file with CTF parameters from CTFFIND4. Each line will be "
-        "interpreted as tilt obtained at the angle specified in --tilt_angles. ",
+        help="Path to a file with CTF parameters. This can be a Warp/M XML file "
+        "a GCTF/Relion STAR file, or the output of CTFFIND4. If the file does not "
+        "specify tilt angles, the angles specified with --tilt_angles are used.",
     )
     ctf_group.add_argument(
         "--defocus",
@@ -658,8 +655,8 @@ def parse_args():
         type=float,
         required=False,
         default=None,
-        help="Defocus in units of sampling rate (typically Ångstrom). "
-        "Superseded by --ctf_file.",
+        help="Defocus in units of sampling rate (typically Ångstrom), e.g., 30000 "
+        "for a defocus of 3 micrometer. Superseded by --ctf_file.",
     )
     ctf_group.add_argument(
         "--phase_shift",
@@ -745,7 +742,8 @@ def parse_args():
         dest="use_mixed_precision",
         action="store_true",
         default=False,
-        help="Use float16 for real values operations where possible.",
+        help="Use float16 for real values operations where possible. Not supported "
+        "for jax backend.",
     )
     performance_group.add_argument(
         "--use_memmap",
@@ -773,8 +771,8 @@ def parse_args():
         help="Perform peak calling instead of score aggregation.",
     )
     analyzer_group.add_argument(
-        "--number_of_peaks",
-        dest="number_of_peaks",
+        "--num_peaks",
+        dest="num_peaks",
         action="store_true",
         default=1000,
         help="Number of peaks to call, 1000 by default.",
@@ -794,21 +792,14 @@ def parse_args():
             f"score has to be one of {', '.join(MATCHING_EXHAUSTIVE_REGISTER.keys())}"
         )
 
-    gpu_devices = os.environ.get("CUDA_VISIBLE_DEVICES", None)
     if args.gpu_indices is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_indices
 
     if args.use_gpu:
-        gpu_devices = os.environ.get("CUDA_VISIBLE_DEVICES", None)
-        if gpu_devices is None:
-            print(
-                "No GPU indices provided and CUDA_VISIBLE_DEVICES is not set.",
-                "Assuming device 0.",
-            )
-            os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-        args.gpu_indices = [
-            int(x) for x in os.environ["CUDA_VISIBLE_DEVICES"].split(",")
-        ]
+        warnings.warn(
+            "The use_gpu flag is no longer required and automatically "
+            "determined based on the selected backend."
+        )
 
     if args.tilt_angles is not None:
         if args.wedge_axes is None:
@@ -824,6 +815,13 @@ def parse_args():
 
     if args.wedge_axes is not None:
         args.wedge_axes = tuple(int(i) for i in args.wedge_axes.split(","))
+
+    if args.orientations is not None:
+        orientations = Orientations.from_file(args.orientations)
+        orientations.translations = np.divide(
+            orientations.translations, args.orientations_scaling
+        )
+        args.orientations = orientations
 
     return args
 
@@ -864,7 +862,7 @@ def main():
         name="Target",
         data={
             "Initial Shape": initial_shape,
-            "Sampling Rate": tuple(np.round(target.sampling_rate, 2)),
+            "Sampling Rate": _format_sampling(target.sampling_rate),
             "Final Shape": target.shape,
         },
     )
@@ -874,7 +872,7 @@ def main():
             name="Target Mask",
             data={
                 "Initial Shape": initial_shape,
-                "Sampling Rate": tuple(np.round(target_mask.sampling_rate, 2)),
+                "Sampling Rate": _format_sampling(target_mask.sampling_rate),
                 "Final Shape": target_mask.shape,
             },
         )
@@ -887,7 +885,7 @@ def main():
         name="Template",
         data={
             "Initial Shape": initial_shape,
-            "Sampling Rate": tuple(np.round(template.sampling_rate, 2)),
+            "Sampling Rate": _format_sampling(template.sampling_rate),
             "Final Shape": template.shape,
         },
     )
@@ -919,7 +917,7 @@ def main():
         name="Template Mask",
         data={
             "Inital Shape": initial_shape,
-            "Sampling Rate": tuple(np.round(template_mask.sampling_rate, 2)),
+            "Sampling Rate": _format_sampling(template_mask.sampling_rate),
             "Final Shape": template_mask.shape,
         },
     )
@@ -930,65 +928,71 @@ def main():
             template.data, noise_proportion=1.0, normalize_power=False
         )
 
+    callback_class = MaxScoreOverRotations
+    if args.peak_calling:
+        callback_class = PeakCallerMaximumFilter
+
+    if args.orientations is not None:
+        callback_class = MaxScoreOverRotationsConstrained
+
     # Determine suitable backend for the selected operation
     available_backends = be.available_backends()
-    if args.backend is not None:
-        req_backend = args.backend
-        if req_backend not in available_backends:
-            raise ValueError("Requested backend is not available.")
-        available_backends = [req_backend]
+    if args.backend not in available_backends:
+        raise ValueError("Requested backend is not available.")
+    if args.backend == "jax" and callback_class != MaxScoreOverRotations:
+        raise ValueError(
+            "Jax backend only supports the MaxScoreOverRotations analyzer."
+        )
 
-    be_selection = ("numpyfftw", "pytorch", "jax", "mlx")
-    if args.use_gpu:
-        args.cores = len(args.gpu_indices)
-        be_selection = ("pytorch", "cupy", "jax")
-    if args.use_mixed_precision:
-        be_selection = tuple(x for x in be_selection if x in ("cupy", "numpyfftw"))
-
-    available_backends = [x for x in available_backends if x in be_selection]
-    if args.peak_calling:
-        if "jax" in available_backends:
-            available_backends.remove("jax")
-        if args.use_gpu and "pytorch" in available_backends:
-            available_backends = ("pytorch",)
-
-    # dim_match = len(template.shape) == len(target.shape) <= 3
-    # if dim_match and args.use_gpu and "jax" in available_backends:
-    #     args.interpolation_order = 1
-    #     available_backends = ["jax"]
-
-    backend_preference = ("numpyfftw", "pytorch", "jax", "mlx")
-    if args.use_gpu:
-        backend_preference = ("cupy", "pytorch", "jax")
-    for pref in backend_preference:
-        if pref not in available_backends:
-            continue
-        be.change_backend(pref)
-        if pref == "pytorch":
-            be.change_backend(pref, device="cuda" if args.use_gpu else "cpu")
-
-        if args.use_mixed_precision:
-            be.change_backend(
-                backend_name=pref,
-                default_dtype=be._array_backend.float16,
-                complex_dtype=be._array_backend.complex64,
-                default_dtype_int=be._array_backend.int16,
-            )
-        break
-
-    if pref == "pytorch" and args.interpolation_order == 3:
+    if args.interpolation_order == 3 and args.backend in ("jax", "pytorch"):
         warnings.warn(
-            "Pytorch does not support --interpolation_order 3, setting it to 1."
+            "Jax and pytorch do not support interpolation order 3, setting it to 1."
         )
         args.interpolation_order = 1
+
+    if args.backend in ("pytorch", "cupy", "jax"):
+        gpu_devices = os.environ.get("CUDA_VISIBLE_DEVICES", None)
+        if gpu_devices is None:
+            warnings.warn(
+                "No GPU indices provided and CUDA_VISIBLE_DEVICES is not set. "
+                "Assuming device 0.",
+            )
+            os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+        else:
+            args.cores = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
+        args.gpu_indices = [
+            int(x) for x in os.environ["CUDA_VISIBLE_DEVICES"].split(",")
+        ]
+
+    # Finally set the desired backend
+    device = "cuda"
+    be.change_backend(args.backend)
+    if args.backend == "pytorch":
+        try:
+            be.change_backend("pytorch", device=device)
+            # Trigger exception if not compiled with device
+            be.get_available_memory()
+        except Exception as e:
+            print(e)
+            device = "cpu"
+            be.change_backend("pytorch", device=device)
+    if args.use_mixed_precision:
+        be.change_backend(
+            backend_name=args.backend,
+            default_dtype=be._array_backend.float16,
+            complex_dtype=be._array_backend.complex64,
+            default_dtype_int=be._array_backend.int16,
+            device=device,
+        )
 
     available_memory = be.get_available_memory() * be.device_count()
     if args.memory is None:
         args.memory = int(args.memory_scaling * available_memory)
 
-    callback_class = MaxScoreOverRotations
-    if args.peak_calling:
-        callback_class = PeakCallerMaximumFilter
+    if args.orientations_uncertainty is not None:
+        args.orientations_uncertainty = tuple(
+            int(x) for x in args.orientations_uncertainty.split(",")
+        )
 
     matching_data = MatchingData(
         target=target,
@@ -1079,10 +1083,19 @@ def main():
 
     analyzer_args = {
         "score_threshold": args.score_threshold,
-        "number_of_peaks": args.number_of_peaks,
+        "num_peaks": args.num_peaks,
         "min_distance": max(template.shape) // 3,
         "use_memmap": args.use_memmap,
     }
+    if args.orientations is not None:
+        analyzer_args["reference"] = (0, 0, 1)
+        analyzer_args["cone_angle"] = args.orientations_cone
+        analyzer_args["acceptance_radius"] = args.orientations_uncertainty
+        analyzer_args["positions"] = args.orientations.translations
+        analyzer_args["rotations"] = euler_to_rotationmatrix(
+            args.orientations.rotations
+        )
+
     print_block(
         name="Analyzer",
         data={"Analyzer": callback_class, **analyzer_args},
@@ -1111,18 +1124,6 @@ def main():
     )
 
     candidates = list(candidates) if candidates is not None else []
-    if issubclass(callback_class, MaxScoreOverRotations):
-        if target_mask is not None and args.score != "MCC":
-            candidates[0] *= target_mask.data
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=UserWarning)
-            nbytes = be.datatype_bytes(be._float_dtype)
-            dtype = np.float32 if nbytes == 4 else np.float16
-            rot_dim = matching_data.rotations.shape[1]
-            candidates[3] = {
-                x: np.frombuffer(i, dtype=dtype).reshape(rot_dim, rot_dim)
-                for i, x in candidates[3].items()
-            }
     candidates.append((target.origin, template.origin, template.sampling_rate, args))
     write_pickle(data=candidates, filename=args.output)
 

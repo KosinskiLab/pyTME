@@ -1,8 +1,9 @@
-""" Implements class BandPassFilter to create Fourier filter representations.
+"""
+Implements class BandPassFilter to create Fourier filter representations.
 
-    Copyright (c) 2024 European Molecular Biology Laboratory
+Copyright (c) 2024 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from typing import Tuple
@@ -225,6 +226,7 @@ class BandPassFilter(ComposableFilter):
 
         return {
             "data": be.to_backend_array(mask),
-            "sampling_rate": func_args.get("sampling_rate", 1),
+            "shape": func_args["shape"],
+            "return_real_fourier": func_args.get("return_real_fourier"),
             "is_multiplicative_filter": True,
         }

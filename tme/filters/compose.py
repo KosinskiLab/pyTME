@@ -1,8 +1,9 @@
-""" Combine filters using an interface analogous to pytorch's Compose.
+"""
+Combine filters using an interface analogous to pytorch's Compose.
 
-    Copyright (c) 2024 European Molecular Biology Laboratory
+Copyright (c) 2024 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from typing import Tuple, Dict
@@ -60,7 +61,7 @@ class Compose:
 
 class ComposableFilter(ABC):
     """
-    Strategy class for composable filters.
+    Base class for composable filters.
     """
 
     @abstractmethod

@@ -10,11 +10,11 @@ The following subsections provide templates for the execution of |project| on di
 
 .. note::
 
-    The ``estimate_ram_usage.py`` script computes an initial memory estimate on a given template matching case for clusters that require memory reservations.
+    The ``estimate_memory_usage.py`` script computes an initial memory estimate on a given template matching case for clusters that require memory reservations.
 
     .. code-block:: bash
 
-        estimate_ram_usage.py --help
+        estimate_memory_usage.py --help
 
 SLURM (EMBL)
 ------------

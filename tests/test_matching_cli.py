@@ -6,26 +6,10 @@ from os import remove, makedirs
 
 import pytest
 import numpy as np
-from tme import Density
+from tme import Density, Orientations
 from tme.backends import backend as be
 
-BACKEND_CLASSES = ["NumpyFFTWBackend", "PytorchBackend", "CupyBackend", "MLXBackend"]
-BACKENDS_TO_TEST = []
-
-test_gpu = (False,)
-for backend_class in BACKEND_CLASSES:
-    try:
-        BackendClass = getattr(
-            __import__("tme.backends", fromlist=[backend_class]), backend_class
-        )
-        BACKENDS_TO_TEST.append(BackendClass(device="cpu"))
-        if backend_class == "CupyBackend":
-            if BACKENDS_TO_TEST[-1].device_count() >= 1:
-                test_gpu = (False, True)
-    except ImportError:
-        print(f"Couldn't import {backend_class}. Skipping...")
-
-
+np.random.seed(42)
 available_backends = (x for x in be.available_backends() if x != "mlx")
 
 
@@ -48,7 +32,6 @@ def argdict_to_command(input_args, executable: str):
 class TestMatchTemplate:
     @classmethod
     def setup_class(cls):
-        np.random.seed(42)
         target = np.random.rand(20, 20, 20)
         template = np.random.rand(5, 5, 5)
 
@@ -65,6 +48,19 @@ class TestMatchTemplate:
         cls.template_mask_path = tempfile.NamedTemporaryFile(
             delete=False, suffix=".mrc"
         ).name
+        cls.tempdir = tempfile.TemporaryDirectory().name
+        makedirs(cls.tempdir, exist_ok=True)
+
+        orientations = Orientations(
+            translations=((10, 10, 10), (12, 10, 15)),
+            rotations=((0, 0, 0), (45, 12, 90)),
+            scores=(0, 0),
+            details=(-1, -1),
+        )
+        cls.orientations_path = tempfile.NamedTemporaryFile(
+            delete=False, suffix=".star"
+        ).name
+        orientations.to_file(cls.orientations_path)
 
         Density(target, sampling_rate=5).to_file(cls.target_path)
         Density(template, sampling_rate=5).to_file(cls.template_path)
@@ -76,6 +72,8 @@ class TestMatchTemplate:
         cls.try_delete(cls.template_path)
         cls.try_delete(cls.target_mask_path)
         cls.try_delete(cls.template_mask_path)
+        cls.try_delete(cls.orientations_path)
+        cls.try_delete(cls.tempdir)
 
     @staticmethod
     def try_delete(file_path: str):
@@ -88,8 +86,8 @@ class TestMatchTemplate:
         except Exception:
             pass
 
-    @staticmethod
     def run_matching(
+        self,
         use_template_mask: bool,
         test_filter: bool,
         call_peaks: bool,
@@ -99,6 +97,7 @@ class TestMatchTemplate:
         target_mask_path: str,
         use_target_mask: bool = False,
         backend: str = "numpyfftw",
+        test_rejection_sampling: bool = False,
     ):
         output_path = tempfile.NamedTemporaryFile(delete=False, suffix="pickle").name
 
@@ -109,7 +108,6 @@ class TestMatchTemplate:
             "-a": 60,
             "-o": output_path,
             "--pad_edges": False,
-            "--pad_fourier": False,
             "--backend": backend,
         }
 
@@ -119,14 +117,14 @@ class TestMatchTemplate:
         if use_target_mask:
             argdict["--target_mask"] = target_mask_path
 
-        if backend in ("cupy", "pytorch") and True in test_gpu:
-            argdict["--use_gpu"] = True
+        if test_rejection_sampling:
+            argdict["--orientations"] = self.orientations_path
 
         if test_filter:
             argdict["--lowpass"] = 30
             argdict["--defocus"] = 3000
-            argdict["--tilt_angles"] = "40,40:10"
-            argdict["--wedge_axes"] = "0,2"
+            argdict["--tilt_angles"] = "40,40"
+            argdict["--wedge_axes"] = "2,0"
             argdict["--whiten"] = True
 
         if call_peaks:
@@ -142,13 +140,18 @@ class TestMatchTemplate:
     @pytest.mark.parametrize("call_peaks", (False, True))
     @pytest.mark.parametrize("use_template_mask", (False, True))
     @pytest.mark.parametrize("test_filter", (False, True))
+    @pytest.mark.parametrize("test_rejection_sampling", (False, True))
     def test_match_template(
         self,
         backend: bool,
         call_peaks: bool,
         use_template_mask: bool,
         test_filter: bool,
+        test_rejection_sampling: bool,
     ):
+        if backend == "jax" and (call_peaks or test_rejection_sampling):
+            return None
+
         self.run_matching(
             use_template_mask=use_template_mask,
             use_target_mask=True,
@@ -159,6 +162,7 @@ class TestMatchTemplate:
             target_path=self.target_path,
             template_mask_path=self.template_mask_path,
             target_mask_path=self.target_mask_path,
+            test_rejection_sampling=test_rejection_sampling,
         )
 
 
@@ -175,20 +179,20 @@ class TestPostprocessing(TestMatchTemplate):
             "target_path": cls.target_path,
             "template_mask_path": cls.template_mask_path,
             "target_mask_path": cls.target_mask_path,
+            "test_rejection_sampling": False,
         }
 
         cls.score_pickle = cls.run_matching(
+            cls,
             call_peaks=False,
             **matching_kwargs,
         )
-        cls.peak_pickle = cls.run_matching(call_peaks=True, **matching_kwargs)
-        cls.tempdir = tempfile.TemporaryDirectory().name
+        cls.peak_pickle = cls.run_matching(cls, call_peaks=True, **matching_kwargs)
 
     @classmethod
     def teardown_class(cls):
         cls.try_delete(cls.score_pickle)
         cls.try_delete(cls.peak_pickle)
-        cls.try_delete(cls.tempdir)
 
     @pytest.mark.parametrize("distance_cutoff_strategy", (0, 1, 2, 3))
     @pytest.mark.parametrize("score_cutoff", (None, (1,), (0, 1), (None, 1), (0, None)))
@@ -252,7 +256,7 @@ class TestPostprocessing(TestMatchTemplate):
         }
         cmd = argdict_to_command(argdict, executable="postprocess.py")
         ret = subprocess.run(cmd, capture_output=True, shell=True)
-        print(ret.stdout, ret.stderr)
+        print(ret)
 
         match output_format:
             case "orientations":
@@ -265,7 +269,8 @@ class TestPostprocessing(TestMatchTemplate):
                 assert exists(f"{self.tempdir}/temp.star")
             case "relion5":
                 assert exists(f"{self.tempdir}/temp.star")
-
+            case "pickle":
+                assert exists(f"{self.tempdir}/temp.pickle")
         assert ret.returncode == 0
 
     def test_postprocess_score_local_optimization(self):
@@ -280,5 +285,55 @@ class TestPostprocessing(TestMatchTemplate):
             "--local_optimization": True,
         }
         cmd = argdict_to_command(argdict, executable="postprocess.py")
+        ret = subprocess.run(cmd, capture_output=True, shell=True)
+        assert ret.returncode == 0
+
+
+class TestEstimateMemoryUsage(TestMatchTemplate):
+    @classmethod
+    def setup_class(cls):
+        super().setup_class()
+
+    @pytest.mark.parametrize("ncores", (1, 4, 8))
+    @pytest.mark.parametrize("pad_edges", (False, True))
+    def test_estimation(self, ncores, pad_edges):
+
+        argdict = {
+            "-m": self.target_path,
+            "-i": self.template_path,
+            "--ncores": ncores,
+            "--pad_edges": pad_edges,
+            "--score": "FLCSphericalMask",
+        }
+
+        cmd = argdict_to_command(argdict, executable="estimate_memory_usage.py")
+        ret = subprocess.run(cmd, capture_output=True, shell=True)
+        assert ret.returncode == 0
+
+
+class TestPreprocess(TestMatchTemplate):
+    @classmethod
+    def setup_class(cls):
+        super().setup_class()
+
+    @pytest.mark.parametrize("backend", available_backends)
+    @pytest.mark.parametrize("align_axis", (False, True))
+    @pytest.mark.parametrize("invert_contrast", (False, True))
+    def test_estimation(self, backend, align_axis, invert_contrast):
+
+        argdict = {
+            "-m": self.target_path,
+            "--backend": backend,
+            "--lowpass": 40,
+            "--sampling_rate": 5,
+            "-o": f"{self.tempdir}/out.mrc",
+        }
+        if align_axis:
+            argdict["--align_axis"] = 2
+
+        if invert_contrast:
+            argdict["--invert_contrast"] = True
+
+        cmd = argdict_to_command(argdict, executable="preprocess.py")
         ret = subprocess.run(cmd, capture_output=True, shell=True)
         assert ret.returncode == 0

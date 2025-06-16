@@ -1,8 +1,9 @@
-""" Backend using numpy and pyFFTW for template matching.
+"""
+Backend using numpy and pyFFTW for template matching.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import os
@@ -159,8 +160,9 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         temp = self._array_backend.zeros(1, dtype=dtype)
         return temp.nbytes
 
-    @staticmethod
-    def astype(arr, dtype: Type) -> NDArray:
+    def astype(self, arr, dtype: Type) -> NDArray:
+        if self._array_backend.iscomplexobj(arr):
+            arr = arr.real
         return arr.astype(dtype)
 
     @staticmethod

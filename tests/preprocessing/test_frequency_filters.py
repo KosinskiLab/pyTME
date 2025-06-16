@@ -68,7 +68,6 @@ class TestBandPassFilter:
 
         assert isinstance(result, dict)
         assert "data" in result
-        assert "sampling_rate" in result
         assert "is_multiplicative_filter" in result
         assert isinstance(result["data"], type(be.ones((1,))))
         assert result["is_multiplicative_filter"] is True
@@ -146,7 +145,11 @@ class TestLinearWhiteningFilter:
     ):
         data = be.random.random(shape)
         result = LinearWhiteningFilter()(
-            data=data, n_bins=n_bins, batch_dimension=batch_dimension, order=order
+            shape=shape,
+            data=data,
+            n_bins=n_bins,
+            batch_dimension=batch_dimension,
+            order=order,
         )
 
         assert isinstance(result, dict)
@@ -161,7 +164,9 @@ class TestLinearWhiteningFilter:
     def test_call_method_with_data_rfft(self):
         shape = (30, 30, 30)
         data_rfft = be.fft.rfftn(be.random.random(shape))
-        result = LinearWhiteningFilter()(data_rfft=data_rfft)
+        result = LinearWhiteningFilter()(
+            shape=shape, data_rfft=data_rfft, return_real_fourier=True
+        )
 
         assert isinstance(result, dict)
         assert result.get("data", False) is not False
@@ -172,7 +177,7 @@ class TestLinearWhiteningFilter:
     @pytest.mark.parametrize("shape", [(10, 10), (20, 20, 20), (30, 30, 30)])
     def test_filter_mask_range(self, shape: Tuple[int]):
         data = be.random.random(shape)
-        result = LinearWhiteningFilter()(data=data)
+        result = LinearWhiteningFilter()(shape=shape, data=data)
 
         filter_mask = result["data"]
         assert np.all(filter_mask >= 0) and np.all(filter_mask <= 1)

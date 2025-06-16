@@ -27,31 +27,7 @@ By default, |project| uses the entire area under the template as mask. However, 
 
     import copy
 
-    from tme import Density
-    from tme.matching_utils import create_mask
-    from tme.matching_data import MatchingData
-    from tme.analyzer import MaxScoreOverRotations
-    from tme.matching_exhaustive import scan_subsets, MATCHING_EXHAUSTIVE_REGISTER
-
-    def compute_score(target, template, template_mask, score):
-        matching_data = MatchingData(
-            target=target.astype(np.float32),
-            template=template.astype(np.float32)
-        )
-        matching_data.template_mask = template_mask
-        matching_data.rotations = np.eye(2).reshape(1, 2, 2)
-        matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[score]
-
-        candidates = scan_subsets(
-            matching_data=matching_data,
-            matching_score=matching_score,
-            matching_setup=matching_setup,
-            callback_class=MaxScoreOverRotations,
-            callback_class_args={"score_threshold": -1},
-            pad_target_edges=True,
-            job_schedule=(1,1),
-        )
-        return candidates[0]
+    from tme.cli import match_template
 
     if __name__ == "__main__":
 
@@ -69,12 +45,12 @@ By default, |project| uses the entire area under the template as mask. However, 
         colormap.set_bad(color='white', alpha=0)
 
         template_mask = np.ones_like(template)
-        score = compute_score(
+        score = match_template(
             target=target,
             template=template,
             template_mask=template_mask,
             score=matching_score,
-        )
+        )[0]
         masked_template  = template.copy()
         masked_template[template_mask == 0] = np.nan
 
@@ -89,12 +65,12 @@ By default, |project| uses the entire area under the template as mask. However, 
         template_mask = create_mask(
             mask_type="ellipse", radius=(20, 10), shape=template.shape, center=mask_center
         )
-        score = compute_score(
+        score = match_template(
             target=target,
             template=template,
             template_mask=template_mask,
             score=matching_score,
-        )
+        )[0]
         masked_template  = template.copy()
         masked_template[template_mask == 0] = np.nan
         axs[0, 1].imshow(masked_template, cmap=colormap)
@@ -105,12 +81,12 @@ By default, |project| uses the entire area under the template as mask. However, 
         template_mask = create_mask(
             mask_type="ellipse", radius=(5, 5), shape=template.shape, center=mask_center
         )
-        score = compute_score(
+        score = match_template(
             target=target,
             template=template,
             template_mask=template_mask,
             score=matching_score,
-        )
+        )[0]
         masked_template = template.copy()
         masked_template[template_mask == 0] = np.nan
         axs[0, 2].imshow(masked_template, cmap=colormap)
@@ -133,31 +109,7 @@ Albeit difficult to see in this representation, smoothing the mask with a sigma 
     import copy
     import matplotlib.colors as colors
 
-    from tme import Density
-    from tme.matching_utils import create_mask
-    from tme.matching_data import MatchingData
-    from tme.analyzer import MaxScoreOverRotations
-    from tme.matching_exhaustive import scan_subsets, MATCHING_EXHAUSTIVE_REGISTER
-
-    def compute_score(target, template, template_mask, score):
-        matching_data = MatchingData(
-            target=target.astype(np.float32),
-            template=template.astype(np.float32)
-        )
-        matching_data.template_mask = template_mask
-        matching_data.rotations = np.eye(2).reshape(1, 2, 2)
-        matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[score]
-
-        candidates = scan_subsets(
-            matching_data=matching_data,
-            matching_score=matching_score,
-            matching_setup=matching_setup,
-            callback_class=MaxScoreOverRotations,
-            callback_class_args={"score_threshold": -1},
-            pad_target_edges=True,
-            job_schedule=(1,1),
-        )
-        return candidates[0]
+    from tme.cli import match_template
 
     if __name__ == "__main__":
 
@@ -182,12 +134,12 @@ Albeit difficult to see in this representation, smoothing the mask with a sigma 
         template_mask = create_mask(
             mask_type="ellipse", radius=(20, 10), shape=template.shape, center=mask_center
         ) * 1.0
-        score = compute_score(
+        score = match_template(
             target=target,
             template=template,
             template_mask=template_mask,
             score=matching_score,
-        )
+        )[0]
         template_mask[template_mask < 1] = np.nan
         axs[0, 0].imshow(template_mask, cmap=colormap, norm = norm)
         axs[1, 0].imshow(score)
@@ -197,12 +149,12 @@ Albeit difficult to see in this representation, smoothing the mask with a sigma 
         template_mask = create_mask(
             mask_type="ellipse", radius=(20, 10), shape=template.shape, center=mask_center,sigma_decay=2
         )
-        score = compute_score(
+        score = match_template(
             target=target,
             template=template,
             template_mask=template_mask,
             score=matching_score,
-        )
+        )[0]
         template_mask[template_mask == 0] = np.nan
         axs[0, 1].imshow(template_mask, cmap=colormap, norm = norm)
         axs[1, 1].imshow(score)
@@ -212,12 +164,12 @@ Albeit difficult to see in this representation, smoothing the mask with a sigma 
         template_mask = create_mask(
             mask_type="ellipse", radius=(20, 10), shape=template.shape, center=mask_center,sigma_decay=5
         )
-        score = compute_score(
+        score = match_template(
             target=target,
             template=template,
             template_mask=template_mask,
             score=matching_score,
-        )
+        )[0]
         template_mask[template_mask == 0] = np.nan
         axs[0, 2].imshow(template_mask, cmap=colormap, norm = norm)
         axs[1, 2].imshow(score)

@@ -1,8 +1,9 @@
-""" Backend using Apple's MLX library for template matching.
+"""
+Backend using Apple's MLX library for template matching.
 
-    Copyright (c) 2024 European Molecular Biology Laboratory
+Copyright (c) 2024 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from typing import Tuple, List, Callable

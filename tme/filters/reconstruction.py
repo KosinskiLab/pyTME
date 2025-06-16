@@ -1,8 +1,9 @@
-""" Defines filters on tomographic tilt series.
+"""
+Defines filters on tomographic tilt series.
 
-    Copyright (c) 2024 European Molecular Biology Laboratory
+Copyright (c) 2024 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from typing import Tuple
@@ -15,27 +16,26 @@ from ..backends import backend as be
 
 from .compose import ComposableFilter
 from ..rotations import euler_to_rotationmatrix
-from ._utils import (
-    crop_real_fourier,
-    shift_fourier,
-    create_reconstruction_filter,
-)
+from ._utils import crop_real_fourier, shift_fourier, create_reconstruction_filter
 
 __all__ = ["ReconstructFromTilt"]
 
 
 @dataclass
 class ReconstructFromTilt(ComposableFilter):
-    """Reconstruct a volume from a tilt series."""
+    """
+    Reconstruct a d+1 array from a d-dimensional input projection using weighted
+    backprojection (WBP).
+    """
 
     #: Shape of the reconstruction.
     shape: Tuple[int] = None
     #: Angle of each individual tilt.
     angles: Tuple[float] = None
-    #: The axis around which the volume is opened.
-    opening_axis: int = 0
-    #: Axis the plane is tilted over.
-    tilt_axis: int = 2
+    #: Projection axis, defaults to 2 (z).
+    opening_axis: int = 2
+    #: Tilt axis, defaults to 0 (x).
+    tilt_axis: int = 0
     #: Whether to return a share compliant with rfftn.
     return_real_fourier: bool = True
     #: Interpolation order used for rotation
@@ -43,19 +43,57 @@ class ReconstructFromTilt(ComposableFilter):
     #: Filter window applied during reconstruction.
     reconstruction_filter: str = None
 
-    def __call__(self, **kwargs):
+    def __call__(self, return_real_fourier: bool = False, **kwargs):
+        """
+        Reconstruct a  d+1 array from a d-dimensional input using WBP.
+
+        Parameters
+        ----------
+        shape : tuple of int
+            The shape of the reconstruction volume.
+        data : BackendArray
+            D-dimensional image stack with shape (n, ...)
+        angles : tuple of float
+            Angle of each individual tilt.
+        return_real_fourier : bool, optional
+            Return a shape compliant
+        return_real_fourier : tuple of int
+            Return a shape compliant with rfft, i.e., omit the negative frequencies
+            terms resulting in a return shape (*shape[:-1], shape[-1]//2+1). Defaults
+            to False.
+        reconstruction_filter : bool, optional
+           Filter window applied during reconstruction.
+           See :py:meth:`create_reconstruction_filter` for available options.
+        tilt_axis : int
+            Axis the plane is tilted over, defaults to 0 (x).
+        opening_axis : int
+            The projection axis, defaults to 2 (z).
+
+        Returns
+        -------
+        dict
+            data: BackendArray
+                The filter mask.
+            shape: tuple of ints
+                The requested filter shape
+            return_real_fourier: bool
+                Whether data is compliant with rfftn.
+            is_multiplicative_filter: bool
+                Whether the filter is multiplicative in Fourier space.
+        """
+
         func_args = vars(self).copy()
         func_args.update(kwargs)
 
         ret = self.reconstruct(**func_args)
 
+        if return_real_fourier:
+            ret = crop_real_fourier(ret)
+
         return {
             "data": ret,
-            "shape": ret.shape,
-            "shape_is_real_fourier": func_args["return_real_fourier"],
-            "angles": func_args["angles"],
-            "tilt_axis": func_args["tilt_axis"],
-            "opening_axis": func_args["opening_axis"],
+            "shape": func_args["shape"],
+            "shape_is_real_fourier": return_real_fourier,
             "is_multiplicative_filter": False,
         }
 
@@ -67,7 +105,6 @@ class ReconstructFromTilt(ComposableFilter):
         opening_axis: int,
         tilt_axis: int,
         interpolation_order: int = 1,
-        return_real_fourier: bool = True,
         reconstruction_filter: str = None,
         **kwargs,
     ):
@@ -88,8 +125,6 @@ class ReconstructFromTilt(ComposableFilter):
             Axis the plane is tilted over.
         interpolation_order : int, optional
             Interpolation order used for rotation, defaults to 1.
-        return_real_fourier : bool, optional
-           Whether to return a shape compliant with rfftn, defaults to True.
         reconstruction_filter : bool, optional
            Filter window applied during reconstruction.
            See :py:meth:`create_reconstruction_filter` for available options.
@@ -152,9 +187,4 @@ class ReconstructFromTilt(ComposableFilter):
             )
             volume = be.add(volume, volume_temp_rotated, out=volume)
 
-        volume = shift_fourier(data=volume, shape_is_real_fourier=False)
-
-        if return_real_fourier:
-            volume = crop_real_fourier(volume)
-
-        return volume
+        return shift_fourier(data=volume, shape_is_real_fourier=False)

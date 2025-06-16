@@ -1,8 +1,9 @@
-""" Utility functions for template matching.
+"""
+Utility functions for template matching.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import os
@@ -1150,3 +1151,40 @@ def compute_extraction_box(
     keep = be.multiply(keep, clamp_change == 0)
 
     return obs_beg_clamp, obs_end_clamp, cand_beg, cand_end, keep
+
+
+class TqdmParallel(Parallel):
+    """
+    A minimal Parallel implementation using tqdm for progress reporting.
+
+    Parameters:
+    -----------
+    tqdm_args : dict, optional
+        Dictionary of arguments passed to tqdm.tqdm
+    *args, **kwargs:
+        Arguments to pass to joblib.Parallel
+    """
+
+    def __init__(self, tqdm_args: Dict = {}, *args, **kwargs):
+        from tqdm import tqdm
+
+        super().__init__(*args, **kwargs)
+        self.pbar = tqdm(**tqdm_args)
+
+    def __call__(self, iterable, *args, **kwargs):
+        self.n_tasks = len(iterable) if hasattr(iterable, "__len__") else None
+        return super().__call__(iterable, *args, **kwargs)
+
+    def print_progress(self):
+        if self.n_tasks is None:
+            return super().print_progress()
+
+        if self.n_tasks != self.pbar.total:
+            self.pbar.total = self.n_tasks
+            self.pbar.refresh()
+
+        self.pbar.n = self.n_completed_tasks
+        self.pbar.refresh()
+
+        if self.n_completed_tasks >= self.n_tasks:
+            self.pbar.close()

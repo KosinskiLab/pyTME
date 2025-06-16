@@ -1,8 +1,9 @@
-""" Backend using cupy for template matching.
+"""
+Backend using cupy for template matching.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import warnings
@@ -112,16 +113,6 @@ class CupyBackend(NumpyFFTWBackend):
 
     def unravel_index(self, indices, shape):
         return self._array_backend.unravel_index(indices=indices, dims=shape)
-
-    def unique(self, ar, axis=None, *args, **kwargs):
-        if axis is None:
-            return self._array_backend.unique(ar=ar, axis=axis, *args, **kwargs)
-
-        warnings.warn("Axis argument not yet supported in CupY, falling back to NumPy.")
-        ret = np.unique(ar=self.to_numpy_array(ar), axis=axis, *args, **kwargs)
-        if not isinstance(ret, tuple):
-            return self.to_backend_array(ret)
-        return tuple(self.to_backend_array(k) for k in ret)
 
     def build_fft(
         self,

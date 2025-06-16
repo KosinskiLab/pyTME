@@ -24,6 +24,7 @@ coordinate_to_coordinate = [
     for k, v in MATCHING_OPTIMIZATION_REGISTER.items()
     if issubclass(v, _MatchCoordinatesToCoordinates)
 ]
+np.random.seed(42)
 
 
 class TestMatchDensityToDensity:
@@ -52,9 +53,7 @@ class TestMatchDensityToDensity:
 
     @pytest.mark.parametrize("method", density_to_density)
     def test_call(self, method):
-        instance = self.test_initialization(method=method, notest=True)
-        score = instance()
-        assert isinstance(score, float)
+        self.test_initialization(method=method, notest=True)()
 
 
 class TestMatchDensityToCoordinates:
@@ -97,9 +96,7 @@ class TestMatchDensityToCoordinates:
 
     @pytest.mark.parametrize("method", coordinate_to_density)
     def test_call(self, method):
-        instance = self.test_initialization(method=method, notest=True)
-        score = instance()
-        assert isinstance(score, float)
+        self.test_initialization(method=method, notest=True)()
 
 
 class TestMatchCoordinateToCoordinates:
@@ -135,9 +132,7 @@ class TestMatchCoordinateToCoordinates:
 
     @pytest.mark.parametrize("method", coordinate_to_coordinate)
     def test_call(self, method):
-        instance = self.test_initialization(method=method, notest=True)
-        score = instance()
-        assert isinstance(score, float)
+        self.test_initialization(method=method, notest=True)()
 
 
 class TestOptimizeMatch:

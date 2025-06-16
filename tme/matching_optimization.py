@@ -1,8 +1,9 @@
-""" Implements methods for non-exhaustive template matching.
+"""
+Implements methods for non-exhaustive template matching.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import warnings
@@ -1308,4 +1309,4 @@ def optimize_match(
         result.x = np.zeros_like(result.x)
     translation, rotation = result.x[:ndim], result.x[ndim:]
     rotation_matrix = euler_to_rotationmatrix(rotation)
-    return translation, rotation_matrix, result.fun
+    return translation, rotation_matrix, float(result.fun)

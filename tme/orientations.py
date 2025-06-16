@@ -1,10 +1,11 @@
-#!python3
-""" Handle template matching orientations and conversion between formats.
-
-    Copyright (c) 2024 European Molecular Biology Laboratory
-
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
+Handle template matching orientations and conversion between formats.
+
+Copyright (c) 2024 European Molecular Biology Laboratory
+
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+"""
+
 from typing import List, Tuple
 from dataclasses import dataclass
 from string import ascii_lowercase, ascii_uppercase
@@ -14,7 +15,7 @@ import numpy as np
 from .parser import StarParser
 from .matching_utils import compute_extraction_box
 
-# Exceeds available numpy dimensions for default installations.
+# Exceeds available numpy dimensions for default installations
 NAMES = ["x", "y", "z", *ascii_lowercase[:-3], *ascii_uppercase]
 
 
@@ -81,7 +82,7 @@ class Orientations:
         self.translations = np.array(self.translations).astype(np.float32)
         self.rotations = np.array(self.rotations).astype(np.float32)
         self.scores = np.array(self.scores).astype(np.float32)
-        self.details = np.array(self.details).astype(np.float32)
+        self.details = np.array(self.details)
         n_orientations = set(
             [
                 self.translations.shape[0],
@@ -324,6 +325,7 @@ class Orientations:
             "_rlnAngleRot",
             "_rlnAngleTilt",
             "_rlnAnglePsi",
+            "_rlnClassNumber",
         ]
         if source_path is not None:
             header.append("_rlnMicrographName")
@@ -339,6 +341,7 @@ class Orientations:
             for index, (translation, rotation, score, detail) in enumerate(self):
                 line = [str(x) for x in translation]
                 line.extend([str(x) for x in rotation])
+                line.extend([str(detail)])
 
                 if source_path is not None:
                     line.append(source_path)

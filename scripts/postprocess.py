@@ -1,22 +1,23 @@
 #!python3
-""" CLI to simplify analysing the output of match_template.py.
+"""CLI to simplify analysing the output of match_template.py.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 import argparse
 from sys import exit
 from os import getcwd
-from typing import List, Tuple
-from os.path import join, abspath, splitext
+from typing import Tuple, List
+from os.path import join, splitext
 
 import numpy as np
 from numpy.typing import NDArray
 from scipy.special import erfcinv
 
 from tme import Density, Structure, Orientations
-from tme.matching_utils import load_pickle, centered_mask
+from tme.cli import sanitize_name, print_block, print_entry
+from tme.matching_utils import load_pickle, centered_mask, write_pickle
 from tme.matching_optimization import create_score_object, optimize_match
 from tme.rotations import euler_to_rotationmatrix, euler_from_rotationmatrix
 from tme.analyzer import (
@@ -38,7 +39,10 @@ PEAK_CALLERS = {
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Analyze Template Matching Outputs")
+    parser = argparse.ArgumentParser(
+        description="Analyze template matching outputs",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
 
     input_group = parser.add_argument_group("Input")
     output_group = parser.add_argument_group("Output")
@@ -47,15 +51,18 @@ def parse_args():
 
     input_group.add_argument(
         "--input_file",
+        "--input_files",
         required=True,
         nargs="+",
-        help="Path to the output of match_template.py.",
+        help="Path to one or multiple runs of match_template.py.",
     )
     input_group.add_argument(
         "--background_file",
+        "--background_files",
         required=False,
         nargs="+",
-        help="Path to an output of match_template.py used for normalization. "
+        default=[],
+        help="Path to one or multiple runs of match_template.py for normalization. "
         "For instance from --scramble_phases or a different template.",
     )
     input_group.add_argument(
@@ -87,6 +94,7 @@ def parse_args():
             "alignment",
             "extraction",
             "average",
+            "pickle",
         ],
         default="orientations",
         help="Available output formats: "
@@ -95,7 +103,8 @@ def parse_args():
         "relion5 (RELION 5 star format), "
         "alignment (aligned template to target based on orientations), "
         "extraction (extract regions around peaks from targets, i.e. subtomograms), "
-        "average (extract matched regions from target and average them).",
+        "average (extract matched regions from target and average them)."
+        "pickle (results of applying mask and background correction for inspection).",
     )
 
     peak_group.add_argument(
@@ -107,7 +116,7 @@ def parse_args():
     peak_group.add_argument(
         "--minimum_score",
         type=float,
-        default=None,
+        default=0.0,
         help="Minimum score from which peaks will be considered.",
     )
     peak_group.add_argument(
@@ -152,11 +161,10 @@ def parse_args():
     )
 
     additional_group.add_argument(
-        "--subtomogram_box_size",
+        "--extraction_box_size",
         type=int,
         default=None,
-        help="Subtomogram box size, by default equal to the centered template. Will be "
-        "padded to even values if output_format is relion.",
+        help="Box size of extracted subtomograms, defaults to the centered template.",
     )
     additional_group.add_argument(
         "--mask_subtomograms",
@@ -188,20 +196,8 @@ def parse_args():
 
     args = parser.parse_args()
 
-    if args.output_format == "relion" and args.subtomogram_box_size is not None:
-        args.subtomogram_box_size += args.subtomogram_box_size % 2
-
     if args.orientations is not None:
         args.orientations = Orientations.from_file(filename=args.orientations)
-
-    if args.background_file is None:
-        args.background_file = [None]
-    if len(args.background_file) == 1:
-        args.background_file = args.background_file * len(args.input_file)
-    elif len(args.background_file) not in (0, len(args.input_file)):
-        raise ValueError(
-            "--background_file needs to be specified once or for each --input_file."
-        )
 
     return args
 
@@ -210,7 +206,6 @@ def load_template(
     filepath: str,
     sampling_rate: NDArray,
     centering: bool = True,
-    target_shape: Tuple[int] = None,
 ):
     try:
         template = Density.from_file(filepath)
@@ -230,72 +225,211 @@ def load_template(
     return template, center, translation, template_is_density
 
 
-def merge_outputs(data, foreground_paths: List[str], background_paths: List[str], args):
-    if len(foreground_paths) == 0:
-        return data, 1
-
+def load_matching_output(path: str) -> List:
+    data = load_pickle(path)
     if data[0].ndim != data[2].ndim:
-        return data, 1
+        data = _peaks_to_volume(data)
+    return list(data)
 
-    from tme.matching_exhaustive import normalize_under_mask
 
-    def _norm_scores(data, args):
-        target_origin, _, sampling_rate, cli_args = data[-1]
+def _peaks_to_volume(data):
+    # Emulate the output of analyzer aggregators
+    translations = data[0].astype(int)
+    keep = (translations < 0).sum(axis=1) == 0
 
-        _, template_extension = splitext(cli_args.template)
-        ret = load_template(
-            filepath=cli_args.template,
-            sampling_rate=sampling_rate,
-            centering=not cli_args.no_centering,
+    translations = translations[keep]
+    rotations = data[1][keep]
+
+    unique_rotations, rotation_map = np.unique(rotations, axis=0, return_inverse=True)
+    rotation_mapping = {
+        i: unique_rotations[i] for i in range(unique_rotations.shape[0])
+    }
+
+    out_shape = np.max(translations, axis=0) + 1
+
+    scores_out = np.full(out_shape, fill_value=0, dtype=np.float32)
+    scores_out[tuple(translations.T)] = data[2][keep]
+
+    rotations_out = np.full(out_shape, fill_value=-1, dtype=np.int32)
+    rotations_out[tuple(translations.T)] = rotation_map
+
+    offset = np.zeros((scores_out.ndim), dtype=int)
+    return (scores_out, offset, rotations_out, rotation_mapping, data[-1])
+
+
+def prepare_pickle_merge(paths):
+    new_rotation_mapping, out_shape = {}, None
+    for path in paths:
+        data = load_matching_output(path)
+        scores, _, rotations, rotation_mapping, *_ = data
+        if np.allclose(scores.shape, 0):
+            continue
+
+        if out_shape is None:
+            out_shape = scores.shape
+
+        if out_shape is not None and not np.allclose(out_shape, scores.shape):
+            print(
+                f"\nScore spaces have different sizes {out_shape} and {scores.shape}. "
+                "Assuming that both boxes are aligned at the origin, but please "
+                "make sure this is intentional."
+            )
+        out_shape = np.maximum(out_shape, scores.shape)
+
+        for key, value in rotation_mapping.items():
+            if key not in new_rotation_mapping:
+                new_rotation_mapping[key] = len(new_rotation_mapping)
+
+    return new_rotation_mapping, out_shape
+
+
+def simple_stats(arr, decimals=3):
+    return {
+        "mean": round(float(arr.mean()), decimals),
+        "std": round(float(arr.std()), decimals),
+        "max": round(float(arr.max()), decimals),
+    }
+
+
+def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
+    # Determine output array shape and create consistent rotation map
+    new_rotation_mapping, out_shape = prepare_pickle_merge(foregrounds)
+
+    if out_shape is None:
+        exit("No valid score spaces found. Check messages aboves.")
+
+    print("\nFinished conversion - Now aggregating over entities.")
+    entities = np.full(out_shape, fill_value=-1, dtype=np.int32)
+    scores_out = np.full(out_shape, fill_value=0, dtype=np.float32)
+    rotations_out = np.full(out_shape, fill_value=-1, dtype=np.int32)
+
+    # We reload to avoid potential memory bottlenecks
+    for entity_index, foreground in enumerate(foregrounds):
+        data = load_matching_output(foreground)
+        scores, _, rotations, rotation_mapping, *_ = data
+
+        # We could normalize to unit sdev, but that might lead to unexpected
+        # results for flat background distributions
+        scores -= scores.mean()
+        indices = tuple(slice(0, x) for x in scores.shape)
+
+        indices_update = scores > scores_out[indices]
+        scores_out[indices][indices_update] = scores[indices_update]
+
+        lookup_table = np.arange(len(rotation_mapping) + 1, dtype=rotations_out.dtype)
+
+        # Maps rotation matrix to rotation index in rotations array
+        for key, _ in rotation_mapping.items():
+            lookup_table[key] = new_rotation_mapping[key]
+
+        updated_rotations = rotations[indices_update].astype(int)
+        if len(updated_rotations):
+            rotations_out[indices][indices_update] = lookup_table[updated_rotations]
+
+        entities[indices][indices_update] = entity_index
+
+    data = list(data)
+    data[0] = scores_out
+    data[2] = rotations_out
+
+    fg = simple_stats(data[0])
+    print(f"> Foreground {', '.join(str(k) + ' ' + str(v) for k, v in fg.items())}.")
+
+    if not len(backgrounds):
+        print("\nScore statistics per entity")
+        for i in range(len(foregrounds)):
+            mask = entities == i
+            avg = "No occurences"
+            if mask.sum() != 0:
+                fg = simple_stats(data[0][mask])
+                avg = ", ".join(str(k) + " " + str(v) for k, v in fg.items())
+            print(f"> Entity {i}: {avg}.")
+        return data, entities
+
+    print("\nComputing and applying background correction.")
+    _, out_shape_norm = prepare_pickle_merge(backgrounds)
+
+    if not np.allclose(out_shape, out_shape_norm):
+        print(
+            f"Foreground and background have different sizes {out_shape} and "
+            f"{out_shape_norm}. Assuming that boxes are aligned at the origin and "
+            "dropping scores beyond, but make sure this is intentional."
         )
-        template, center_of_mass, translation, template_is_density = ret
 
-        if args.mask_edges and args.min_boundary_distance == 0:
-            max_shape = np.max(template.shape)
-            args.min_boundary_distance = np.ceil(np.divide(max_shape, 2))
+    scores_norm = np.full(out_shape_norm, fill_value=0, dtype=np.float32)
+    for background in backgrounds:
+        data_norm = load_matching_output(background)
 
-        target_mask = 1
-        if args.target_mask is not None:
-            target_mask = Density.from_file(args.target_mask).data
-        elif cli_args.target_mask is not None:
-            target_mask = Density.from_file(args.target_mask).data
+        scores = data_norm[0]
+        scores -= scores.mean()
+        indices = tuple(slice(0, x) for x in scores.shape)
+        indices_update = scores > scores_norm[indices]
+        scores_norm[indices][indices_update] = scores[indices_update]
 
-        mask = np.ones_like(data[0])
-        np.multiply(mask, target_mask, out=mask)
+    # Set translations to zero that do not have background distribution
+    update = tuple(slice(0, int(x)) for x in np.minimum(out_shape, scores.shape))
+    scores_out = np.full(out_shape, fill_value=0, dtype=np.float32)
+    scores_out[update] = data[0][update] - scores_norm[update]
+    scores_out[update] = np.divide(scores_out[update], 1 - scores_norm[update])
+    np.fmax(scores_out, 0, out=scores_out)
+    data[0] = scores_out
 
-        cropped_shape = np.subtract(
-            mask.shape, np.multiply(args.min_boundary_distance, 2)
-        ).astype(int)
-        mask[cropped_shape] = 0
-        normalize_under_mask(template=data[0], mask=mask, mask_intensity=mask.sum())
-        return data[0]
+    fg, bg = simple_stats(data[0]), simple_stats(scores_norm)
+    print(f"> Background {', '.join(str(k) + ' ' + str(v) for k, v in bg.items())}.")
+    print(f"> Normalized {', '.join(str(k) + ' ' + str(v) for k, v in fg.items())}.")
 
-    entities = np.zeros_like(data[0])
-    data[0] = _norm_scores(data=data, args=args)
-    for index, filepath in enumerate(foreground_paths):
-        new_scores = _norm_scores(
-            data=load_match_template_output(filepath, background_paths[index]),
-            args=args,
-        )
-        indices = new_scores > data[0]
-        entities[indices] = index + 1
-        data[0][indices] = new_scores[indices]
+    print("\nScore statistics per entity")
+    for i in range(len(foregrounds)):
+        mask = entities == i
+        avg = "No occurences"
+        if mask.sum() != 0:
+            fg = simple_stats(data[0][mask])
+            avg = ", ".join(str(k) + " " + str(v) for k, v in fg.items())
+        print(f"> Entity {i}: {avg}.")
 
     return data, entities
 
 
-def load_match_template_output(foreground_path, background_path):
-    data = load_pickle(foreground_path)
-    if background_path is not None:
-        data_background = load_pickle(background_path)
-        data[0] = (data[0] - data_background[0]) / (1 - data_background[0])
-        np.fmax(data[0], 0, out=data[0])
-    return data
-
-
 def main():
     args = parse_args()
-    data = load_match_template_output(args.input_file[0], args.background_file[0])
+    print_entry()
+
+    cli_kwargs = {
+        key: value
+        for key, value in sorted(vars(args).items())
+        if value is not None and key not in ("input_file", "background_file")
+    }
+    print_block(
+        name="Parameters",
+        data={sanitize_name(k): v for k, v in cli_kwargs.items()},
+        label_width=25,
+    )
+    print("\n" + "-" * 80)
+
+    print_block(
+        name=sanitize_name("Foreground entities"),
+        data={i: k for i, k in enumerate(args.input_file)},
+        label_width=25,
+    )
+
+    if len(args.background_file):
+        print_block(
+            name=sanitize_name("Background entities"),
+            data={i: k for i, k in enumerate(args.background_file)},
+            label_width=25,
+        )
+
+    data, entities = normalize_input(args.input_file, args.background_file)
+
+    if args.target_mask:
+        target_mask = Density.from_file(args.target_mask, use_memmap=True).data
+        if target_mask.shape != data[0].shape:
+            print(
+                f"Shape of target mask and scores do not match {target_mask} "
+                f"{data[0].shape}. Skipping mask application"
+            )
+        else:
+            np.multiply(data[0], target_mask, out=data[0])
 
     target_origin, _, sampling_rate, cli_args = data[-1]
 
@@ -327,96 +461,83 @@ def main():
         max_shape = np.max(template.shape)
         args.min_boundary_distance = np.ceil(np.divide(max_shape, 2))
 
-    entities = None
-    if len(args.input_file) > 1:
-        data, entities = merge_outputs(
-            data=data,
-            foreground_paths=args.input_file,
-            background_paths=args.background_file,
-            args=args,
-        )
+    if args.output_format == "pickle":
+        write_pickle(data, f"{args.output_prefix}.pickle")
+        exit(0)
 
     orientations = args.orientations
     if orientations is None:
         translations, rotations, scores, details = [], [], [], []
-        # Output is MaxScoreOverRotations
-        if data[0].ndim == data[2].ndim:
-            scores, offset, rotation_array, rotation_mapping, meta = data
 
-            if args.target_mask is not None:
-                target_mask = Density.from_file(args.target_mask)
-                scores = scores * target_mask.data
+        # Data processed by normalize_input is guaranteed to have this shape
+        scores, offset, rotation_array, rotation_mapping, meta = data
 
-            cropped_shape = np.subtract(
-                scores.shape, np.multiply(args.min_boundary_distance, 2)
-            ).astype(int)
+        cropped_shape = np.subtract(
+            scores.shape, np.multiply(args.min_boundary_distance, 2)
+        ).astype(int)
 
-            if args.min_boundary_distance > 0:
-                scores = centered_mask(scores, new_shape=cropped_shape)
+        if args.min_boundary_distance > 0:
+            scores = centered_mask(scores, new_shape=cropped_shape)
 
-            if args.n_false_positives is not None:
-                # Rickgauer et al. 2017
-                cropped_slice = tuple(
-                    slice(
-                        int(args.min_boundary_distance),
-                        int(x - args.min_boundary_distance),
-                    )
-                    for x in scores.shape
+        if args.n_false_positives is not None:
+            # Rickgauer et al. 2017
+            cropped_slice = tuple(
+                slice(
+                    int(args.min_boundary_distance),
+                    int(x - args.min_boundary_distance),
                 )
-                args.n_false_positives = max(args.n_false_positives, 1)
-                n_correlations = np.size(scores[cropped_slice]) * len(rotation_mapping)
-                minimum_score = np.multiply(
-                    erfcinv(2 * args.n_false_positives / n_correlations),
-                    np.sqrt(2) * np.std(scores[cropped_slice]),
-                )
-                print(f"Determined minimum score cutoff: {minimum_score}.")
-                minimum_score = max(minimum_score, 0)
-                args.minimum_score = minimum_score
-
-            args.batch_dims = None
-            if hasattr(cli_args, "target_batch"):
-                args.batch_dims = cli_args.target_batch
-
-            peak_caller_kwargs = {
-                "shape": scores.shape,
-                "num_peaks": args.num_peaks,
-                "min_distance": args.min_distance,
-                "min_boundary_distance": args.min_boundary_distance,
-                "batch_dims": args.batch_dims,
-                "minimum_score": args.minimum_score,
-                "maximum_score": args.maximum_score,
-            }
-
-            peak_caller = PEAK_CALLERS[args.peak_caller](**peak_caller_kwargs)
-            peak_caller(
-                scores,
-                rotation_matrix=np.eye(template.data.ndim),
-                mask=template.data,
-                rotation_mapping=rotation_mapping,
-                rotations=rotation_array,
+                for x in scores.shape
             )
-            candidates = peak_caller.merge(
-                candidates=[tuple(peak_caller)], **peak_caller_kwargs
+            args.n_false_positives = max(args.n_false_positives, 1)
+            n_correlations = np.size(scores[cropped_slice]) * len(rotation_mapping)
+            minimum_score = np.multiply(
+                erfcinv(2 * args.n_false_positives / n_correlations),
+                np.sqrt(2) * np.std(scores[cropped_slice]),
             )
-            if len(candidates) == 0:
-                candidates = [[], [], [], []]
-                print("Found no peaks, consider changing peak calling parameters.")
-                exit(-1)
+            print(f"Determined minimum score cutoff: {minimum_score}.")
+            minimum_score = max(minimum_score, 0)
+            args.minimum_score = minimum_score
 
-            for translation, _, score, detail in zip(*candidates):
-                rotation_index = rotation_array[tuple(translation)]
-                rotation = rotation_mapping.get(
-                    rotation_index, np.zeros(template.data.ndim, int)
-                )
-                if rotation.ndim == 2:
-                    rotation = euler_from_rotationmatrix(rotation)
-                rotations.append(rotation)
+        args.batch_dims = None
+        if hasattr(cli_args, "target_batch"):
+            args.batch_dims = cli_args.target_batch
 
-        else:
-            candidates = data
-            translation, rotation, *_ = data
-            for i in range(translation.shape[0]):
-                rotations.append(euler_from_rotationmatrix(rotation[i]))
+        peak_caller_kwargs = {
+            "shape": scores.shape,
+            "num_peaks": args.num_peaks,
+            "min_distance": args.min_distance,
+            "min_boundary_distance": args.min_boundary_distance,
+            "batch_dims": args.batch_dims,
+            "minimum_score": args.minimum_score,
+            "maximum_score": args.maximum_score,
+        }
+
+        peak_caller = PEAK_CALLERS[args.peak_caller](**peak_caller_kwargs)
+        state = peak_caller.init_state()
+        state = peak_caller(
+            state,
+            scores,
+            rotation_matrix=np.eye(template.data.ndim),
+            mask=template.data,
+            rotation_mapping=rotation_mapping,
+            rotations=rotation_array,
+        )
+        candidates = peak_caller.merge(
+            results=[peak_caller.result(state)], **peak_caller_kwargs
+        )
+        if len(candidates) == 0:
+            candidates = [[], [], [], []]
+            print("Found no peaks, consider changing peak calling parameters.")
+            exit(-1)
+
+        for translation, _, score, detail in zip(*candidates):
+            rotation_index = rotation_array[tuple(translation)]
+            rotation = rotation_mapping.get(
+                rotation_index, np.zeros(template.data.ndim, int)
+            )
+            if rotation.ndim == 2:
+                rotation = euler_from_rotationmatrix(rotation)
+            rotations.append(rotation)
 
         if len(rotations):
             rotations = np.vstack(rotations).astype(float)
@@ -520,9 +641,9 @@ def main():
             )
 
         extraction_shape = template.shape
-        if args.subtomogram_box_size is not None:
+        if args.extraction_box_size is not None:
             extraction_shape = np.repeat(
-                args.subtomogram_box_size, len(extraction_shape)
+                args.extraction_box_size, len(extraction_shape)
             )
 
         orientations, cand_slices, obs_slices = orientations.get_extraction_slices(
@@ -588,7 +709,6 @@ def main():
         filepath=cli_args.template,
         sampling_rate=sampling_rate,
         centering=not cli_args.no_centering,
-        target_shape=target.shape,
     )
 
     for index, (translation, angles, *_) in enumerate(orientations):

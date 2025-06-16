@@ -1,8 +1,9 @@
-""" Strategy pattern to allow for flexible array / FFT backends.
+"""
+Strategy pattern to allow for flexible array / FFT backends.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from abc import ABC, abstractmethod

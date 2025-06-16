@@ -1,8 +1,9 @@
-""" Implements various means of generating rotation matrices.
+"""
+Implements various means of generating rotation matrices.
 
-    Copyright (c) 2023-2025 European Molecular Biology Laboratory
+Copyright (c) 2023-2025 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import yaml
@@ -183,12 +184,14 @@ def euler_to_rotationmatrix(angles: Tuple[float], seq: str = "zyz") -> NDArray:
     NDArray
         The generated rotation matrix.
     """
+    angles = np.asarray(angles)
+
     n_angles = len(angles)
-    angle_convention = seq[:n_angles]
-    if n_angles == 1:
-        angles = (angles, 0, 0)
+    if angles.ndim == 2:
+        n_angles = angles.shape[1]
+
     rotation_matrix = Rotation.from_euler(
-        seq=angle_convention, angles=angles, degrees=True
+        seq=seq[:n_angles], angles=angles, degrees=True
     )
     return rotation_matrix.as_matrix().astype(np.float32)
 

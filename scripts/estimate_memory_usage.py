@@ -1,20 +1,21 @@
 #!python3
-""" Estimate RAM requirements for template matching jobs.
+"""Estimate memory requirements for template matching jobs.
 
-    Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023 European Molecular Biology Laboratory
 
-    Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
+Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 import numpy as np
 import argparse
 from tme import Density
-from tme.matching_utils import estimate_ram_usage
+from tme.memory import estimate_memory_usage
 from tme.matching_exhaustive import MATCHING_EXHAUSTIVE_REGISTER
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Estimate RAM usage for template matching."
+        description="Estimate memory usage for template matching.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "-m",
@@ -33,13 +34,8 @@ def parse_args():
         help="Path to a template in PDB/MMCIF or CCP4/MRC format.",
     )
     parser.add_argument(
-        "--matching_method",
-        required=False,
-        default=None,
-        help="Analyzer method to use.",
-    )
-    parser.add_argument(
         "-s",
+        "--score",
         dest="score",
         type=str,
         default="FLCSphericalMask",
@@ -50,21 +46,12 @@ def parse_args():
         "--ncores", type=int, help="Number of cores for parallelization.", required=True
     )
     parser.add_argument(
-        "--no_edge_padding",
-        dest="no_edge_padding",
+        "--pad_edges",
+        dest="pad_edges",
         action="store_true",
         default=False,
-        help="Whether to pad the edges of the target. This is useful, if the target"
-        " has a well defined bounding box, e.g. a density map.",
-    )
-    parser.add_argument(
-        "--no_fourier_padding",
-        dest="no_fourier_padding",
-        action="store_true",
-        default=False,
-        help="Whether input arrays should be zero-padded to the full convolution shape"
-        " for numerical stability. When working with very large targets such as"
-        " tomograms it is safe to use this flag and benefit from the performance gain.",
+        help="Whether to pad the edges of the target. Useful if the target does not "
+        "a well-defined bounding box. Defaults to True if splitting is required.",
     )
     args = parser.parse_args()
     return args
@@ -72,19 +59,15 @@ def parse_args():
 
 def main():
     args = parse_args()
-    target = Density.from_file(args.target)
-    template = Density.from_file(args.template)
-
-    target_box = target.shape
-    if not args.no_edge_padding:
-        target_box = np.add(target_box, template.shape)
+    target = Density.from_file(args.target, use_memmap=True)
+    template = Density.from_file(args.template, use_memmap=True)
 
     template_box = template.shape
-    if args.no_fourier_padding:
+    if not args.pad_edges:
         template_box = np.ones(len(template_box), dtype=int)
 
-    result = estimate_ram_usage(
-        shape1=target_box,
+    result = estimate_memory_usage(
+        shape1=target.shape,
         shape2=template_box,
         matching_method=args.score,
         ncores=args.ncores,
