@@ -1,0 +1,6 @@
+CTF.correct\_defocus\_gradient
+========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.correct_defocus_gradient

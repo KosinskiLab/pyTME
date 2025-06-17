@@ -1,0 +1,52 @@
+﻿PeakCallerScipy
+===============
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: PeakCallerScipy
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            PeakCallerScipy.shareable
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            PeakCallerScipy.__call__
+      
+
+      
+         
+         
+            PeakCallerScipy.call_peaks
+         
+         
+            PeakCallerScipy.init_state
+         
+         
+            PeakCallerScipy.merge
+         
+         
+            PeakCallerScipy.oversample_peaks
+         
+         
+            PeakCallerScipy.result
+         
+
+   
+   

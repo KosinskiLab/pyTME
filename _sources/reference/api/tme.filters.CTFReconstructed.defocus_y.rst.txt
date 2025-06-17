@@ -1,0 +1,6 @@
+CTFReconstructed.defocus\_y
+======================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.defocus_y

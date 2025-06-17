@@ -1,0 +1,46 @@
+﻿MaxScoreOverRotations
+=====================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: MaxScoreOverRotations
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            MaxScoreOverRotations.shareable
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            MaxScoreOverRotations.__call__
+      
+
+      
+         
+         
+            MaxScoreOverRotations.init_state
+         
+         
+            MaxScoreOverRotations.merge
+         
+         
+            MaxScoreOverRotations.result
+         
+
+   
+   

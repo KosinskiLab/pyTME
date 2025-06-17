@@ -1,0 +1,6 @@
+PeakCallerFast.result
+==================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerFast.result

@@ -1,0 +1,6 @@
+WedgeReconstructed.continuous\_wedge
+===============================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: WedgeReconstructed.continuous_wedge

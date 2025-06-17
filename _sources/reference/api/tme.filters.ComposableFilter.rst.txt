@@ -1,0 +1,28 @@
+﻿ComposableFilter
+================
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: ComposableFilter
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            ComposableFilter.__call__
+      
+
+      
+         
+
+   
+   

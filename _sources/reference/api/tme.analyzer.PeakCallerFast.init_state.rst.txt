@@ -1,0 +1,6 @@
+PeakCallerFast.init\_state
+======================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerFast.init_state

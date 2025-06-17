@@ -1,0 +1,6 @@
+﻿align\_vectors
+===========================
+
+.. currentmodule:: tme.rotations
+
+.. autofunction:: align_vectors

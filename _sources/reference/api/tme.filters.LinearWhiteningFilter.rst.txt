@@ -1,0 +1,28 @@
+﻿LinearWhiteningFilter
+=====================
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: LinearWhiteningFilter
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            LinearWhiteningFilter.__call__
+      
+
+      
+         
+
+   
+   

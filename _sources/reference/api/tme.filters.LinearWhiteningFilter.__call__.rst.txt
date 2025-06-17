@@ -1,0 +1,6 @@
+LinearWhiteningFilter.\_\_call\_\_
+==========================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: LinearWhiteningFilter.__call__

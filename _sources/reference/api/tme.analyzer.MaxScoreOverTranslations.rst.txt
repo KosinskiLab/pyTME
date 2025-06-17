@@ -1,0 +1,46 @@
+﻿MaxScoreOverTranslations
+========================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: MaxScoreOverTranslations
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            MaxScoreOverTranslations.shareable
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            MaxScoreOverTranslations.__call__
+      
+
+      
+         
+         
+            MaxScoreOverTranslations.init_state
+         
+         
+            MaxScoreOverTranslations.merge
+         
+         
+            MaxScoreOverTranslations.result
+         
+
+   
+   

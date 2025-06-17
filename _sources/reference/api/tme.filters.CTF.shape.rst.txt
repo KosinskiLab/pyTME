@@ -1,0 +1,6 @@
+CTF.shape
+=====================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.shape

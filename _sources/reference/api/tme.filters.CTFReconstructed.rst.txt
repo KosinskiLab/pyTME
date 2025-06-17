@@ -1,0 +1,85 @@
+﻿CTFReconstructed
+================
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: CTFReconstructed
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            CTFReconstructed.acceleration_voltage
+         
+         
+            CTFReconstructed.amplitude_contrast
+         
+         
+            CTFReconstructed.angles
+         
+         
+            CTFReconstructed.correct_defocus_gradient
+         
+         
+            CTFReconstructed.defocus_angle
+         
+         
+            CTFReconstructed.defocus_x
+         
+         
+            CTFReconstructed.defocus_y
+         
+         
+            CTFReconstructed.flip_phase
+         
+         
+            CTFReconstructed.opening_axis
+         
+         
+            CTFReconstructed.phase_shift
+         
+         
+            CTFReconstructed.return_real_fourier
+         
+         
+            CTFReconstructed.sampling_rate
+         
+         
+            CTFReconstructed.shape
+         
+         
+            CTFReconstructed.spherical_aberration
+         
+         
+            CTFReconstructed.tilt_axis
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            CTFReconstructed.__call__
+      
+
+      
+         
+         
+            CTFReconstructed.from_file
+         
+         
+            CTFReconstructed.weight
+         
+
+   
+   

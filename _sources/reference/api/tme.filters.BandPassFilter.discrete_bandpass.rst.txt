@@ -1,0 +1,6 @@
+BandPassFilter.discrete\_bandpass
+============================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: BandPassFilter.discrete_bandpass

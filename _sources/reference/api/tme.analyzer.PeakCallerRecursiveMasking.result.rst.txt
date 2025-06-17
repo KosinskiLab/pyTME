@@ -1,0 +1,6 @@
+PeakCallerRecursiveMasking.result
+==============================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerRecursiveMasking.result

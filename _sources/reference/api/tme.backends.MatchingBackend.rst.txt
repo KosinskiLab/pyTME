@@ -1,0 +1,197 @@
+﻿MatchingBackend
+===============
+
+.. currentmodule:: tme.backends
+
+.. autoclass:: MatchingBackend
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            MatchingBackend.abs
+         
+         
+            MatchingBackend.add
+         
+         
+            MatchingBackend.arange
+         
+         
+            MatchingBackend.argsort
+         
+         
+            MatchingBackend.astype
+         
+         
+            MatchingBackend.at
+         
+         
+            MatchingBackend.build_fft
+         
+         
+            MatchingBackend.clip
+         
+         
+            MatchingBackend.compute_convolution_shapes
+         
+         
+            MatchingBackend.concatenate
+         
+         
+            MatchingBackend.datatype_bytes
+         
+         
+            MatchingBackend.device_count
+         
+         
+            MatchingBackend.divide
+         
+         
+            MatchingBackend.einsum
+         
+         
+            MatchingBackend.eps
+         
+         
+            MatchingBackend.extract_center
+         
+         
+            MatchingBackend.fill
+         
+         
+            MatchingBackend.free_cache
+         
+         
+            MatchingBackend.from_sharedarr
+         
+         
+            MatchingBackend.full
+         
+         
+            MatchingBackend.get_available_memory
+         
+         
+            MatchingBackend.get_fundamental_dtype
+         
+         
+            MatchingBackend.indices
+         
+         
+            MatchingBackend.max
+         
+         
+            MatchingBackend.max_filter_coordinates
+         
+         
+            MatchingBackend.maximum
+         
+         
+            MatchingBackend.mean
+         
+         
+            MatchingBackend.min
+         
+         
+            MatchingBackend.minimum
+         
+         
+            MatchingBackend.mod
+         
+         
+            MatchingBackend.multiply
+         
+         
+            MatchingBackend.power
+         
+         
+            MatchingBackend.repeat
+         
+         
+            MatchingBackend.reverse
+         
+         
+            MatchingBackend.rigid_transform
+         
+         
+            MatchingBackend.roll
+         
+         
+            MatchingBackend.set_device
+         
+         
+            MatchingBackend.size
+         
+         
+            MatchingBackend.sqrt
+         
+         
+            MatchingBackend.square
+         
+         
+            MatchingBackend.stack
+         
+         
+            MatchingBackend.std
+         
+         
+            MatchingBackend.subtract
+         
+         
+            MatchingBackend.sum
+         
+         
+            MatchingBackend.to_backend_array
+         
+         
+            MatchingBackend.to_cpu_array
+         
+         
+            MatchingBackend.to_numpy_array
+         
+         
+            MatchingBackend.to_sharedarr
+         
+         
+            MatchingBackend.tobytes
+         
+         
+            MatchingBackend.topk_indices
+         
+         
+            MatchingBackend.topleft_pad
+         
+         
+            MatchingBackend.transpose
+         
+         
+            MatchingBackend.tril_indices
+         
+         
+            MatchingBackend.unique
+         
+         
+            MatchingBackend.unravel_index
+         
+         
+            MatchingBackend.where
+         
+         
+            MatchingBackend.zeros
+         
+
+   
+   
