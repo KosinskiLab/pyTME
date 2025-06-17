@@ -10,6 +10,7 @@ The following outlines potential applications for template matching using ``matc
    :maxdepth: 2
 
    particle_picking
+   constrained
    fitting
    alignment
 

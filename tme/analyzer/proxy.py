@@ -18,6 +18,7 @@ from ..backends import backend as be
 
 __all__ = ["StatelessSharedAnalyzerProxy", "SharedAnalyzerProxy"]
 
+
 class StatelessSharedAnalyzerProxy:
     """
     Proxy that wraps functional analyzers for concurrent access via shared memory.

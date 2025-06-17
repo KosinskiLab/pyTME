@@ -38,7 +38,7 @@ Learn how to get started with
 
 ## How to Cite
 
-If pyTME contributed significantly to your research, please cite the corresponding publication on [SoftwareX](https://www.sciencedirect.com/science/article/pii/S2352711024000074).
+If you used PyTME in your research, please cite the corresponding [publication](https://www.sciencedirect.com/science/article/pii/S2352711024000074).
 
 ```bibtex
 @article{Maurer:2024aa,
