@@ -1763,12 +1763,13 @@ class Density:
                 axis=axis,
             )
 
-            arr_ft = np.fft.fftn(self.data)
+            mask, mask_ret = np.where(mask), np.where(mask_ret)
+
+            arr_ft = np.fft.fftn(self.data)[mask]
             arr_ft *= np.prod(ret_shape) / np.prod(self.shape)
             ret_ft = np.zeros(ret_shape, dtype=arr_ft.dtype)
-            ret_ft[mask_ret] = arr_ft[mask]
-            ret.data = np.real(np.fft.ifftn(ret_ft))
-
+            np.add.at(ret_ft, mask_ret, arr_ft)
+            ret.data = np.real(np.fft.ifftn(ret_ft)).astype(self.data.dtype)
         ret.sampling_rate = new_sampling_rate
         return ret
 

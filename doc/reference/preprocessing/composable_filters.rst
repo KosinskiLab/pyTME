@@ -6,27 +6,27 @@ Composable Filters
 
 Composable filters in |project| are inspired by the similarly named `Compose <https://pytorch.org/vision/main/generated/torchvision.transforms.Compose.html>`_ operation used in deep learning frameworks. Composable filters are an explicit solution to defining complex filtering procedures and can be lazily evaluated.
 
-To demonstrate the use of composable filters, let's walk through a basic example showcasing how to combine :py:class:`BandPassFilter <tme.filters.bandpass.BandPassFilter>` and :py:class:`WedgeReconstructed <tme.filters.wedge.WedgeReconstructed>`
+To demonstrate the use of composable filters, let's walk through a basic example showcasing how to combine :py:class:`BandPassReconstructed <tme.filters.bandpass.BandPassReconstructed>` and :py:class:`WedgeReconstructed <tme.filters.wedge.WedgeReconstructed>`
 
 .. code-block:: python
 
    import numpy as np
-   from tme.filters import Compose, BandPassFilter, WedgeReconstructed
+   from tme.filters import Compose, BandPassReconstructed, WedgeReconstructed
 
    sampling_rate = (5,5,5)           # Sampling rate, typically Å/voxel
 
-   # Setup BandPassFilter
-   bandpass = BandPassFilter(
+   # Setup bandpass filter
+   bandpass = BandPassReconstructed(
        lowpass=30,                   # Resolution to lowpass filter to
        highpass=5,                   # Resolution to highpass filter to
        sampling_rate=sampling_rate
    )
 
-   # Setup WedgeReconstructed
+   # Setup wege mask
    wedge = WedgeReconstructed(
-       angles=[-60, 60],              # Start, stop tilt angle
+       angles=[-60, 60],             # Start, stop tilt angle
        opening_axis=2,               # Wedge is open in z-axis
-       tilt_axis=1,                  # Sample is tilted over y-axis
+       tilt_axis=0,                  # Sample is tilted over x-axis
        create_continuous_wedge=True, # Include all angles from -60 to 60
        sampling_rate=sampling_rate,
    )
@@ -75,7 +75,8 @@ Frequency Filters
    :toctree: ../api/
    :nosignatures:
 
-   BandPassFilter
+   BandPass
+   BandPassReconstructed
    LinearWhiteningFilter
 
 

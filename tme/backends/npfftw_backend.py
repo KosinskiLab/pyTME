@@ -398,33 +398,33 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         out_mask: NDArray = None,
         order: int = 3,
         cache: bool = False,
+        batched: bool = False,
     ) -> Tuple[NDArray, NDArray]:
-        out = self.zeros_like(arr) if out is None else out
-        batched = arr.ndim != rotation_matrix.shape[0]
+        if out is None:
+            out = self.zeros_like(arr)
 
-        center = self.divide(self.to_backend_array(arr.shape) - 1, 2)
-        if not use_geometric_center:
-            center = self.center_of_mass(arr, cutoff=0)
+        # Check whether rotation_matrix is already a rigid transform matrix
+        matrix = rotation_matrix
+        if matrix.shape[-1] == (arr.ndim - int(batched)):
+            center = self.divide(self.to_backend_array(arr.shape) - 1, 2)
+            if not use_geometric_center:
+                center = self.center_of_mass(arr, cutoff=0)
 
-        offset = int(arr.ndim - rotation_matrix.shape[0])
-        center = center[offset:]
-        translation = self.zeros(center.size) if translation is None else translation
-        matrix = self._rigid_transform_matrix(
-            rotation_matrix=rotation_matrix,
-            translation=translation,
-            center=center,
-        )
-
-        subset = tuple(slice(None) for _ in range(arr.ndim))
-        if offset > 1:
-            subset = tuple(
-                0 if i < (offset - 1) else slice(None) for i in range(arr.ndim)
+            offset = int(arr.ndim - rotation_matrix.shape[0])
+            center = center[offset:]
+            translation = (
+                self.zeros(center.size) if translation is None else translation
+            )
+            matrix = self._rigid_transform_matrix(
+                rotation_matrix=rotation_matrix,
+                translation=translation,
+                center=center,
             )
 
         self._rigid_transform(
-            data=arr[subset],
+            data=arr,
             matrix=matrix,
-            output=out[subset],
+            output=out,
             order=order,
             prefilter=True,
             cache=cache,
@@ -433,11 +433,13 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
 
         # Applying the prefilter leads to artifacts in the mask.
         if arr_mask is not None:
-            out_mask = self.zeros_like(arr_mask) if out_mask is None else out_mask
+            if out_mask is None:
+                out_mask = self.zeros_like(arr_mask)
+
             self._rigid_transform(
-                data=arr_mask[subset],
+                data=arr_mask,
                 matrix=matrix,
-                output=out_mask[subset],
+                output=out_mask,
                 order=order,
                 prefilter=False,
                 cache=cache,

@@ -79,3 +79,17 @@ html[data-theme=dark] .bd-content img:not(.only-dark):not(.dark-light) {
     background: transparent;
     background-color: transparent;
 }
+
+.transparent-table,
+.transparent-table table {
+    background: transparent !important;
+    border: none !important;
+    border-collapse: collapse !important;
+}
+
+.transparent-table td,
+.transparent-table th {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}

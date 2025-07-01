@@ -72,7 +72,7 @@ The sbatch file below is sufficient to perform template matching on a bin 4 tomo
     match_template.py \
         -m ${TOMOGRAM_PATH} \
         -i ${TEMPLATE_PATH} \
-        --template_mask ${TEMPLATE_MASK_PATH} \
+        --template-mask ${TEMPLATE_MASK_PATH} \
         -n 10 \
         -a $ANGULAR_SAMPLING \
         -o ${OUTPUT_PATH}
@@ -100,7 +100,7 @@ The following will perform template matching using 2 NVIDIA RTX3090 GPUs. If N i
     match_template.py \
         -m ${TOMOGRAM_PATH} \
         -i ${TEMPLATE_PATH} \
-        --template_mask ${TEMPLATE_MASK_PATH} \
+        --template-mask ${TEMPLATE_MASK_PATH} \
         -n 2 \
         -a $ANGULAR_SAMPLING \
         -o ${OUTPUT_PATH} \

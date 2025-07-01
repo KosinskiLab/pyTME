@@ -26,7 +26,7 @@ from tme.backends import backend
 from tme.rotations import align_vectors
 from tme import Preprocessor, Density, Orientations
 from tme.matching_utils import create_mask, load_pickle
-from tme.filters import BandPassFilter, CTFReconstructed
+from tme.filters import BandPassReconstructed, CTFReconstructed
 
 preprocessor = Preprocessor()
 SLIDER_MIN, SLIDER_MAX = 0, 25
@@ -43,17 +43,16 @@ def bandpass_filter(
     hard_edges: bool = False,
     sampling_rate=None,
 ) -> NDArray:
-    bpf = BandPassFilter(
+    bpf = BandPassReconstructed(
         lowpass=lowpass_angstrom,
         highpass=highpass_angstrom,
         sampling_rate=np.max(sampling_rate),
         use_gaussian=not hard_edges,
-        shape_is_real_fourier=True,
         return_real_fourier=True,
     )
     template_ft = np.fft.rfftn(template, s=template.shape)
 
-    mask = bpf(shape=template_ft.shape)["data"]
+    mask = bpf(shape=template.shape)["data"]
     np.multiply(template_ft, mask, out=template_ft)
     return np.fft.irfftn(template_ft, s=template.shape).real
 

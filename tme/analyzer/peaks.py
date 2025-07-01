@@ -17,9 +17,9 @@ from skimage.registration._phase_cross_correlation import _upsampled_dft
 from .base import AbstractAnalyzer
 from ._utils import score_to_cart
 from ..backends import backend as be
-from ..matching_utils import split_shape
 from ..types import BackendArray, NDArray
 from ..rotations import euler_to_rotationmatrix
+from ..matching_utils import split_shape, compute_extraction_box
 
 __all__ = [
     "PeakCaller",
@@ -765,14 +765,14 @@ class PeakCallerRecursiveMasking(PeakCaller):
         values. If rotations and rotation_mapping is provided, the respective
         rotation will be applied to the mask, otherwise rotation_matrix is used.
         """
-        coordinates, masking_function = [], self._mask_scores_rotate
+        peaks = []
+        box = tuple(self.min_distance for _ in range(scores.ndim))
 
-        if mask is None:
-            masking_function = self._mask_scores_box
-            shape = tuple(self.min_distance for _ in range(scores.ndim))
-            mask = be.zeros(shape, dtype=be._float_dtype)
-
-        rotated_template = be.zeros(mask.shape, dtype=mask.dtype)
+        scores = be.to_backend_array(scores)
+        if mask is not None:
+            box = mask.shape
+            mask = be.to_backend_array(mask)
+            mask_buffer = be.zeros(mask.shape, dtype=mask.dtype)
 
         peak_limit = self.num_peaks
         if min_score is not None:
@@ -780,39 +780,45 @@ class PeakCallerRecursiveMasking(PeakCaller):
         else:
             min_score = be.min(scores) - 1
 
-        scores_copy = be.zeros(scores.shape, dtype=scores.dtype)
-        scores_copy[:] = scores
-
+        _scores = be.zeros(scores.shape, dtype=scores.dtype)
+        _scores[:] = scores[:]
         while True:
-            be.argmax(scores_copy)
-            peak = be.unravel_index(
-                indices=be.argmax(scores_copy), shape=scores_copy.shape
+            peak = be.unravel_index(indices=be.argmax(_scores), shape=_scores.shape)
+            if _scores[tuple(peak)] < min_score:
+                break
+            peaks.append(peak)
+
+            score_beg, score_end, tmpl_beg, tmpl_end, _ = compute_extraction_box(
+                centers=be.to_backend_array(peak)[None],
+                extraction_shape=box,
+                original_shape=scores.shape,
             )
-            if scores_copy[tuple(peak)] < min_score:
+            score_slice = tuple(
+                slice(int(x), int(y)) for x, y in zip(score_beg[0], score_end[0])
+            )
+            tmpl_slice = tuple(
+                slice(int(x), int(y)) for x, y in zip(tmpl_beg[0], tmpl_end[0])
+            )
+
+            score_mask = 0
+            if mask is not None:
+                mask_buffer.fill(0)
+                rmat = self._get_rotation_matrix(
+                    peak=peak,
+                    rotation_space=rotations,
+                    rotation_mapping=rotation_mapping,
+                    rotation_matrix=rotation_matrix,
+                )
+                be.rigid_transform(
+                    arr=mask, rotation_matrix=rmat, order=1, out=mask_buffer
+                )
+                score_mask = mask_buffer[tmpl_slice] <= 0.1
+
+            _scores[score_slice] = be.multiply(_scores[score_slice], score_mask)
+            if len(peaks) >= peak_limit:
                 break
 
-            coordinates.append(peak)
-
-            current_rotation_matrix = self._get_rotation_matrix(
-                peak=peak,
-                rotation_space=rotations,
-                rotation_mapping=rotation_mapping,
-                rotation_matrix=rotation_matrix,
-            )
-
-            masking_function(
-                scores=scores_copy,
-                rotation_matrix=current_rotation_matrix,
-                peak=peak,
-                mask=mask,
-                rotated_template=rotated_template,
-            )
-
-            if len(coordinates) >= peak_limit:
-                break
-
-        peaks = be.to_backend_array(coordinates)
-        return peaks, None
+        return be.to_backend_array(peaks), None
 
     @staticmethod
     def _get_rotation_matrix(
@@ -851,86 +857,6 @@ class PeakCallerRecursiveMasking(PeakCaller):
                 euler_to_rotationmatrix(be.to_numpy_array(rotation))
             )
         return rotation
-
-    @staticmethod
-    def _mask_scores_box(
-        scores: BackendArray, peak: BackendArray, mask: BackendArray, **kwargs: Dict
-    ) -> None:
-        """
-        Mask scores in a box around a peak.
-
-        Parameters
-        ----------
-        scores : BackendArray
-            Data array of scores.
-        peak : BackendArray
-            Peak coordinates.
-        mask : BackendArray
-            Mask array.
-        """
-        start = be.maximum(be.subtract(peak, mask.shape), 0)
-        stop = be.minimum(be.add(peak, mask.shape), scores.shape)
-        start, stop = be.astype(start, int), be.astype(stop, int)
-        coords = tuple(slice(*pos) for pos in zip(start, stop))
-        scores[coords] = 0
-        return None
-
-    @staticmethod
-    def _mask_scores_rotate(
-        scores: BackendArray,
-        peak: BackendArray,
-        mask: BackendArray,
-        rotated_template: BackendArray,
-        rotation_matrix: BackendArray,
-        **kwargs: Dict,
-    ) -> None:
-        """
-        Mask scores using mask rotation around a peak.
-
-        Parameters
-        ----------
-        scores : BackendArray
-            Data array of scores.
-        peak : BackendArray
-            Peak coordinates.
-        mask : BackendArray
-            Mask array.
-        rotated_template : BackendArray
-            Empty array to write mask rotations to.
-        rotation_matrix : BackendArray
-            Rotation matrix.
-        """
-        left_pad = be.divide(mask.shape, 2).astype(int)
-        right_pad = be.add(left_pad, be.mod(mask.shape, 2).astype(int))
-
-        score_start = be.subtract(peak, left_pad)
-        score_stop = be.add(peak, right_pad)
-
-        template_start = be.subtract(be.maximum(score_start, 0), score_start)
-        template_stop = be.subtract(score_stop, be.minimum(score_stop, scores.shape))
-        template_stop = be.subtract(mask.shape, template_stop)
-
-        score_start = be.maximum(score_start, 0)
-        score_stop = be.minimum(score_stop, scores.shape)
-        score_start = be.astype(score_start, int)
-        score_stop = be.astype(score_stop, int)
-
-        template_start = be.astype(template_start, int)
-        template_stop = be.astype(template_stop, int)
-        coords_score = tuple(slice(*pos) for pos in zip(score_start, score_stop))
-        coords_template = tuple(
-            slice(*pos) for pos in zip(template_start, template_stop)
-        )
-
-        rotated_template.fill(0)
-        be.rigid_transform(
-            arr=mask, rotation_matrix=rotation_matrix, order=1, out=rotated_template
-        )
-
-        scores[coords_score] = be.multiply(
-            scores[coords_score], (rotated_template[coords_template] <= 0.1)
-        )
-        return None
 
 
 class PeakCallerScipy(PeakCaller):

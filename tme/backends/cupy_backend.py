@@ -6,12 +6,9 @@ Copyright (c) 2023 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-import warnings
 from importlib.util import find_spec
 from contextlib import contextmanager
 from typing import Tuple, Callable, List
-
-import numpy as np
 
 from .npfftw_backend import NumpyFFTWBackend
 from ..types import CupyArray, NDArray, shm_type
@@ -146,15 +143,14 @@ class CupyBackend(NumpyFFTWBackend):
         def rfftn(
             arr: CupyArray, out: CupyArray = None, s=rfft_shape, axes=fwd_axes
         ) -> CupyArray:
-            return self.rfftn(arr, s=s, axes=fwd_axes)
+            return self.rfftn(arr, s=s, axes=fwd_axes, overwrite_x=True)
 
         def irfftn(
             arr: CupyArray, out: CupyArray = None, s=irfft_shape, axes=inv_axes
         ) -> CupyArray:
-            return self.irfftn(arr, s=s, axes=inv_axes)
+            return self.irfftn(arr, s=s, axes=inv_axes, overwrite_x=True)
 
         PLAN_CACHE[current_device] = [fwd_shape, inv_shape]
-
         return rfftn, irfftn
 
     def rfftn(self, arr: CupyArray, out: CupyArray = None, **kwargs) -> CupyArray:
@@ -239,13 +235,13 @@ class CupyBackend(NumpyFFTWBackend):
             )
             return None
 
-        # if data.ndim == 3 and cache and self.texture_available:
-        #     # Device memory pool (should) come to rescue performance
-        #     temp = self.zeros(data.shape, data.dtype)
-        #     texture = self._get_texture(data, order=order, prefilter=prefilter)
-        #     texture.affine(transform_m=matrix, profile=False, output=temp)
-        #     output[out_slice] = temp
-        #     return None
+        if data.ndim == 3 and cache and self.texture_available:
+            # Device memory pool (should) come to rescue performance
+            temp = self.zeros(data.shape, data.dtype)
+            texture = self._get_texture(data, order=order, prefilter=prefilter)
+            texture.affine(transform_m=matrix, profile=False, output=temp)
+            output[out_slice] = temp
+            return None
 
         self.affine_transform(
             input=data,

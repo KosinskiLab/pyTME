@@ -423,6 +423,7 @@ class TestBackends:
             rotation_matrix=rotation_matrix,
             out=out,
             out_mask=out_mask,
+            batched=True,
         )
 
         arr_b = backend.to_backend_array(arr_b)

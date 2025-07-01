@@ -43,18 +43,17 @@ The following will recover the correct orientation between the densities
         -m emd_15271.mrc \
         -i emd_15271_mod.mrc \
         -a 40 \
-        -n 4 \
-        --no_centering
+        -n 4
 
 The orientation with highest score, which in our case is the initial correct orientation, can be obtained from the created pickle files like so
 
 .. code-block:: bash
 
     postprocess.py \
-        --input_file output.pickle \
-        --num_peaks 1 \
-        --output_format alignment \
-        --output_prefix emd_15271_fit
+        --input-file output.pickle \
+        --num-peaks 1 \
+        --output-format alignment \
+        --output-prefix emd_15271_fit
 
 The aligned densities are displayed below. The left side shows the map and `emd_15271_mod.mrc`, the right side the output of |project|.
 

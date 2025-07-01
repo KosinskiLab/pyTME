@@ -670,9 +670,9 @@ class Preprocessor:
         NDArray
             Bandpass filtered.
         """
-        from .filters import BandPassFilter
+        from .filters import BandPassReconstructed
 
-        return BandPassFilter(
+        return BandPassReconstructed(
             sampling_rate=sampling_rate,
             lowpass=lowpass,
             highpass=highpass,

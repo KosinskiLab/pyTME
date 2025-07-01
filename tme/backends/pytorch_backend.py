@@ -306,6 +306,9 @@ class PytorchBackend(NumpyFFTWBackend):
         kwargs["dim"] = kwargs.pop("axes", None)
         return self._array_backend.fft.irfftn(arr, **kwargs)
 
+    def _rigid_transform_matrix(self, rotation_matrix, *args, **kwargs):
+        return rotation_matrix
+
     def rigid_transform(
         self,
         arr: TorchTensor,
@@ -317,6 +320,7 @@ class PytorchBackend(NumpyFFTWBackend):
         out_mask: TorchTensor = None,
         order: int = 1,
         cache: bool = False,
+        **kwargs,
     ):
         _mode_mapping = {0: "nearest", 1: "bilinear", 3: "bicubic"}
         mode = _mode_mapping.get(order, None)

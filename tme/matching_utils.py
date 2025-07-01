@@ -1057,7 +1057,7 @@ def tube_mask(
 
 def scramble_phases(
     arr: NDArray,
-    noise_proportion: float = 0.5,
+    noise_proportion: float = 1.0,
     seed: int = 42,
     normalize_power: bool = False,
 ) -> NDArray:
@@ -1069,7 +1069,7 @@ def scramble_phases(
     arr : NDArray
         Input data.
     noise_proportion : float, optional
-        Proportion of scrambled phases, 0.5 by default.
+        Proportion of scrambled phases, 1.0 by default.
     seed : int, optional
         The seed for the random phase scrambling, 42 by default.
     normalize_power : bool, optional
@@ -1080,15 +1080,22 @@ def scramble_phases(
     NDArray
         Phase scrambled version of ``arr``.
     """
+    from tme.filters._utils import fftfreqn
+
     np.random.seed(seed)
     noise_proportion = max(min(noise_proportion, 1), 0)
 
     arr_fft = np.fft.fftn(arr)
     amp, ph = np.abs(arr_fft), np.angle(arr_fft)
 
-    ph_noise = np.random.permutation(ph)
-    ph_new = ph * (1 - noise_proportion) + ph_noise * noise_proportion
-    ret = np.real(np.fft.ifftn(amp * np.exp(1j * ph_new)))
+    # Scrambling up to nyquist gives more uniform noise distribution
+    mask = np.fft.ifftshift(
+        fftfreqn(arr_fft.shape, sampling_rate=1, compute_euclidean_norm=True) <= 0.5
+    )
+
+    ph_noise = np.random.permutation(ph[mask])
+    ph[mask] = ph[mask] * (1 - noise_proportion) + ph_noise * noise_proportion
+    ret = np.real(np.fft.ifftn(amp * np.exp(1j * ph)))
 
     if normalize_power:
         np.divide(ret - ret.min(), ret.max() - ret.min(), out=ret)

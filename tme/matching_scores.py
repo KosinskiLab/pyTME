@@ -593,20 +593,27 @@ def corr_scoring(
         **_fftargs,
     )
 
+    center = be.divide(be.to_backend_array(template.shape) - 1, 2)
     unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
+
+    template_rot = be.zeros(template.shape, be._float_dtype)
     for index in range(rotations.shape[0]):
+        # d+1, d+1 rigid transform matrix from d,d rotation matrix
         rotation = rotations[index]
-        arr = be.fill(arr, 0)
-        arr, _ = be.rigid_transform(
+        matrix = be._rigid_transform_matrix(rotation_matrix=rotation, center=center)
+        template_rot, _ = be.rigid_transform(
             arr=template,
-            rotation_matrix=rotation,
-            out=arr,
-            use_geometric_center=True,
+            rotation_matrix=matrix,
+            out=template_rot,
             order=interpolation_order,
-            cache=False,
+            cache=True,
         )
-        arr = template_filter_func(arr, ft_temp, template_filter)
-        norm_template(arr[unpadded_slice], template_mask, mask_sum)
+
+        template_rot = template_filter_func(template_rot, ft_temp, template_filter)
+        norm_template(template_rot, template_mask, mask_sum)
+
+        arr = be.fill(arr, 0)
+        arr[unpadded_slice] = template_rot
 
         ft_temp = rfftn(arr, ft_temp)
         ft_temp = be.multiply(ft_target, ft_temp, out=ft_temp)
@@ -729,7 +736,7 @@ def flc_scoring(
             out_mask=temp,
             use_geometric_center=True,
             order=interpolation_order,
-            cache=False,
+            cache=True,
         )
 
         n_obs = be.sum(temp)
@@ -875,7 +882,7 @@ def mcc_scoring(
             out_mask=temp,
             use_geometric_center=True,
             order=interpolation_order,
-            cache=False,
+            cache=True,
         )
 
         template_filter_func(template_rot, temp_ft, template_filter)
@@ -1035,7 +1042,8 @@ def flc_scoring2(
             out_mask=tmp_sqz,
             use_geometric_center=True,
             order=interpolation_order,
-            cache=False,
+            cache=True,
+            batched=True,
         )
         n_obs = be.sum(tmp_sqz, axis=data_axes, keepdims=True)
         arr_norm = template_filter_func(arr_sqz, ft_temp, template_filter)
@@ -1155,7 +1163,8 @@ def corr_scoring2(
             out=arr_sqz,
             use_geometric_center=True,
             order=interpolation_order,
-            cache=False,
+            cache=True,
+            batched=True,
         )
         arr_norm = template_filter_func(arr_sqz, ft_sqz, template_filter)
         norm_template(arr_norm[unpadded_slice], template_mask, mask_sum, axis=data_axes)

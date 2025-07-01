@@ -11,7 +11,7 @@ import numpy as np
 from tme import Density, Structure
 from tme.cli import print_entry
 from tme.backends import backend as be
-from tme.filters import BandPassFilter
+from tme.filters import BandPassReconstructed
 
 
 def parse_args():
@@ -24,7 +24,6 @@ def parse_args():
     io_group.add_argument(
         "-m",
         "--data",
-        dest="data",
         type=str,
         required=True,
         help="Path to a file in PDB/MMCIF, CCP4/MRC, EM, H5 or a format supported by "
@@ -34,7 +33,6 @@ def parse_args():
     io_group.add_argument(
         "-o",
         "--output",
-        dest="output",
         type=str,
         required=True,
         help="Path the output should be written to.",
@@ -42,22 +40,19 @@ def parse_args():
 
     box_group = parser.add_argument_group("Box")
     box_group.add_argument(
-        "--box_size",
-        dest="box_size",
+        "--box-size",
         type=int,
         required=False,
         help="Box size of the output. Defaults to twice the required box size.",
     )
     box_group.add_argument(
-        "--sampling_rate",
-        dest="sampling_rate",
+        "--sampling-rate",
         type=float,
         required=True,
         help="Sampling rate of the output file.",
     )
     box_group.add_argument(
-        "--input_sampling_rate",
-        dest="input_sampling_rate",
+        "--input-sampling-rate",
         type=float,
         required=False,
         help="Sampling rate of the input file. Defaults to header for volume "
@@ -66,15 +61,13 @@ def parse_args():
 
     modulation_group = parser.add_argument_group("Modulation")
     modulation_group.add_argument(
-        "--invert_contrast",
-        dest="invert_contrast",
+        "--invert-contrast",
         action="store_true",
         required=False,
         help="Inverts the template contrast.",
     )
     modulation_group.add_argument(
         "--lowpass",
-        dest="lowpass",
         type=float,
         required=False,
         default=None,
@@ -82,14 +75,12 @@ def parse_args():
         "A value of 0 disables the filter.",
     )
     modulation_group.add_argument(
-        "--no_centering",
-        dest="no_centering",
+        "--no-centering",
         action="store_true",
         help="Assumes the template is already centered and omits centering.",
     )
     modulation_group.add_argument(
         "--backend",
-        dest="backend",
         type=str,
         default=None,
         choices=be.available_backends(),
@@ -98,15 +89,13 @@ def parse_args():
 
     alignment_group = parser.add_argument_group("Modulation")
     alignment_group.add_argument(
-        "--align_axis",
-        dest="align_axis",
+        "--align-axis",
         type=int,
         required=False,
         help="Align template to given axis, e.g. 2 for z-axis.",
     )
     alignment_group.add_argument(
-        "--align_eigenvector",
-        dest="align_eigenvector",
+        "--align-eigenvector",
         type=int,
         required=False,
         default=0,
@@ -114,8 +103,7 @@ def parse_args():
         "with numerically largest eigenvalue.",
     )
     alignment_group.add_argument(
-        "--flip_axis",
-        dest="flip_axis",
+        "--flip-axis",
         action="store_true",
         required=False,
         help="Align the template to -axis instead of axis.",
@@ -185,12 +173,11 @@ def main():
     bpf_mask = 1
     lowpass = 2 * args.sampling_rate if args.lowpass is None else args.lowpass
     if args.lowpass != 0:
-        bpf_mask = BandPassFilter(
+        bpf_mask = BandPassReconstructed(
             lowpass=lowpass,
             highpass=None,
             use_gaussian=True,
             return_real_fourier=True,
-            shape_is_real_fourier=False,
             sampling_rate=data.sampling_rate,
         )(shape=data.shape)["data"]
         bpf_mask = be.to_backend_array(bpf_mask)

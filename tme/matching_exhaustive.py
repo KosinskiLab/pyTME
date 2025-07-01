@@ -210,7 +210,7 @@ def scan(
     >>> )
 
     """
-    matching_data = matching_data.subset_by_slice(
+    matching_data, translation_offset = matching_data.subset_by_slice(
         target_slice=target_slice,
         template_slice=template_slice,
         target_pad=matching_data.target_padding(pad_target=pad_fourier),
@@ -231,7 +231,7 @@ def scan(
 
     default_callback_args = {
         "shape": fwd,
-        "offset": matching_data._translation_offset,
+        "offset": translation_offset,
         "fourier_shift": shift,
         "fast_shape": fwd,
         "targetshape": matching_data._output_shape,
@@ -425,14 +425,17 @@ def scan_subsets(
     splits = tuple(product(target_splits, template_splits))
 
     outer_jobs, inner_jobs = job_schedule
-    if hasattr(be, "scan"):
+    if be._backend_name == "jax":
+        func = be.scan
+
         corr_scoring = MATCHING_EXHAUSTIVE_REGISTER.get("CORR", (None, None))[1]
-        results = be.scan(
+        results = func(
             matching_data=matching_data,
             splits=splits,
             n_jobs=outer_jobs,
             rotate_mask=matching_score != corr_scoring,
             callback_class=callback_class,
+            callback_class_args=callback_class_args,
         )
     else:
         results = Parallel(n_jobs=outer_jobs, verbose=verbose)(

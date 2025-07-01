@@ -11,14 +11,14 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..types import NDArray
 from ..backends import backend as be
+from ..types import NDArray, BackendArray
 
 from .compose import ComposableFilter
 from ..rotations import euler_to_rotationmatrix
 from ._utils import crop_real_fourier, shift_fourier, create_reconstruction_filter
 
-__all__ = ["ReconstructFromTilt"]
+__all__ = ["ReconstructFromTilt", "ShiftFourier"]
 
 
 @dataclass
@@ -52,7 +52,9 @@ class ReconstructFromTilt(ComposableFilter):
         shape : tuple of int
             The shape of the reconstruction volume.
         data : BackendArray
-            D-dimensional image stack with shape (n, ...)
+            D-dimensional image stack with shape (n, ...). The data is assumed to be
+            a Fourier transform of the stack you are trying to reconstruct with
+            DC component in the center.
         angles : tuple of float
             Angle of each individual tilt.
         return_real_fourier : bool, optional
@@ -87,13 +89,14 @@ class ReconstructFromTilt(ComposableFilter):
 
         ret = self.reconstruct(**func_args)
 
+        ret = shift_fourier(data=ret, shape_is_real_fourier=False)
         if return_real_fourier:
             ret = crop_real_fourier(ret)
 
         return {
             "data": ret,
             "shape": func_args["shape"],
-            "shape_is_real_fourier": return_real_fourier,
+            "return_real_fourier": return_real_fourier,
             "is_multiplicative_filter": False,
         }
 
@@ -114,7 +117,7 @@ class ReconstructFromTilt(ComposableFilter):
         Parameters
         ----------
         data : NDArray
-            The tilt series data.
+            The Fourier transform of tilt series data.
         shape : tuple of int
             Shape of the reconstruction.
         angles : tuple of float
@@ -138,9 +141,9 @@ class ReconstructFromTilt(ComposableFilter):
             return data
 
         data = be.to_backend_array(data)
-        volume_temp = be.zeros(shape, dtype=be._float_dtype)
-        volume_temp_rotated = be.zeros(shape, dtype=be._float_dtype)
-        volume = be.zeros(shape, dtype=be._float_dtype)
+        volume_temp = be.zeros(shape, dtype=data.dtype)
+        volume_temp_rotated = be.zeros(shape, dtype=data.dtype)
+        volume = be.zeros(shape, dtype=data.dtype)
 
         slices = tuple(slice(a // 2, (a // 2) + 1) for a in shape)
         subset = tuple(
@@ -187,4 +190,30 @@ class ReconstructFromTilt(ComposableFilter):
             )
             volume = be.add(volume, volume_temp_rotated, out=volume)
 
-        return shift_fourier(data=volume, shape_is_real_fourier=False)
+        return volume
+
+
+class ShiftFourier(ComposableFilter):
+    def __call__(
+        self,
+        data: BackendArray,
+        shape_is_real_fourier: bool = False,
+        return_real_fourier: bool = True,
+        **kwargs,
+    ):
+        ret = []
+        for index in range(data.shape[0]):
+            mask = be.to_numpy_array(data[index])
+
+            mask = shift_fourier(data=mask, shape_is_real_fourier=shape_is_real_fourier)
+            if return_real_fourier:
+                mask = crop_real_fourier(mask)
+            ret.append(mask[None])
+        ret = np.concatenate(ret, axis=0)
+
+        return {
+            "data": ret,
+            "shape": kwargs.get("shape"),
+            "return_real_fourier": return_real_fourier,
+            "is_multiplicative_filter": False,
+        }

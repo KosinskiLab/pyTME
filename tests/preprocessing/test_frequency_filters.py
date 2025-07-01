@@ -4,13 +4,15 @@ from typing import Tuple
 
 from tme.backends import backend as be
 from tme.filters._utils import compute_fourier_shape
-from tme.filters import BandPassFilter, LinearWhiteningFilter
+from tme.filters import BandPassReconstructed, LinearWhiteningFilter
+from tme.filters.bandpass import gaussian_bandpass, discrete_bandpass
+from tme.filters._utils import fftfreqn
 
 
 class TestBandPassFilter:
     @pytest.fixture
     def band_pass_filter(self):
-        return BandPassFilter()
+        return BandPassReconstructed()
 
     @pytest.mark.parametrize(
         "shape, lowpass, highpass, sampling_rate",
@@ -24,9 +26,13 @@ class TestBandPassFilter:
     def test_discrete_bandpass(
         self, shape: Tuple[int], lowpass: float, highpass: float, sampling_rate: float
     ):
-        result = BandPassFilter.discrete_bandpass(
-            shape, lowpass, highpass, sampling_rate
+        grid = fftfreqn(
+            shape=shape,
+            sampling_rate=0.5,
+            shape_is_real_fourier=False,
+            compute_euclidean_norm=True,
         )
+        result = discrete_bandpass(grid, lowpass, highpass, sampling_rate)
         assert isinstance(result, type(be.ones((1,))))
         assert result.shape == shape
         assert np.all((result >= 0) & (result <= 1))
@@ -43,9 +49,13 @@ class TestBandPassFilter:
     def test_gaussian_bandpass(
         self, shape: Tuple[int], lowpass: float, highpass: float, sampling_rate: float
     ):
-        result = BandPassFilter.gaussian_bandpass(
-            shape, lowpass, highpass, sampling_rate
+        grid = fftfreqn(
+            shape=shape,
+            sampling_rate=0.5,
+            shape_is_real_fourier=False,
+            compute_euclidean_norm=True,
         )
+        result = gaussian_bandpass(grid, lowpass, highpass, sampling_rate)
         assert isinstance(result, type(be.ones((1,))))
         assert result.shape == shape
         assert np.all((result >= 0) & (result <= 1))
@@ -55,7 +65,7 @@ class TestBandPassFilter:
     @pytest.mark.parametrize("shape_is_real_fourier", [True, False])
     def test_call_method(
         self,
-        band_pass_filter: BandPassFilter,
+        band_pass_filter: BandPassReconstructed,
         use_gaussian: bool,
         return_real_fourier: bool,
         shape_is_real_fourier: bool,
@@ -72,17 +82,16 @@ class TestBandPassFilter:
         assert isinstance(result["data"], type(be.ones((1,))))
         assert result["is_multiplicative_filter"] is True
 
-    def test_default_values(self, band_pass_filter: BandPassFilter):
+    def test_default_values(self, band_pass_filter: BandPassReconstructed):
         assert band_pass_filter.lowpass is None
         assert band_pass_filter.highpass is None
         assert band_pass_filter.sampling_rate == 1
         assert band_pass_filter.use_gaussian is True
         assert band_pass_filter.return_real_fourier is False
-        assert band_pass_filter.shape_is_real_fourier is False
 
     @pytest.mark.parametrize("shape", ((10, 10), (20, 20, 20), (30, 30)))
     def test_return_real_fourier(self, shape: Tuple[int]):
-        bpf = BandPassFilter(return_real_fourier=True)
+        bpf = BandPassReconstructed(return_real_fourier=True)
         result = bpf(shape=shape, lowpass=0.2, highpass=0.8)
         expected_shape = tuple(compute_fourier_shape(shape, False))
         assert result["data"].shape == expected_shape

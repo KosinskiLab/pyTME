@@ -20,7 +20,6 @@ def parse_args():
     parser.add_argument(
         "-m",
         "--target",
-        dest="target",
         type=str,
         required=True,
         help="Path to a target in CCP4/MRC format.",
@@ -28,7 +27,6 @@ def parse_args():
     parser.add_argument(
         "-i",
         "--template",
-        dest="template",
         type=str,
         required=True,
         help="Path to a template in PDB/MMCIF or CCP4/MRC format.",
@@ -36,7 +34,6 @@ def parse_args():
     parser.add_argument(
         "-s",
         "--score",
-        dest="score",
         type=str,
         default="FLCSphericalMask",
         help="Template matching scoring function.",
@@ -46,8 +43,7 @@ def parse_args():
         "--ncores", type=int, help="Number of cores for parallelization.", required=True
     )
     parser.add_argument(
-        "--pad_edges",
-        dest="pad_edges",
+        "--pad-edges",
         action="store_true",
         default=False,
         help="Whether to pad the edges of the target. Useful if the target does not "

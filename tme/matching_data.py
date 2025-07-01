@@ -175,7 +175,7 @@ class MatchingData:
         target_pad: NDArray = None,
         template_pad: NDArray = None,
         invert_target: bool = False,
-    ) -> "MatchingData":
+    ) -> Tuple["MatchingData", Tuple]:
         """
         Subset class instance based on slices.
 
@@ -194,6 +194,8 @@ class MatchingData:
         -------
         :py:class:`MatchingData`
             Newly allocated subset of class instance.
+        Tuple
+            Translation offset to merge analyzers.
 
         Examples
         --------
@@ -251,8 +253,9 @@ class MatchingData:
         target_offset[mask] = [x.start for x in target_slice]
         mask = np.subtract(1, self._target_batch).astype(bool)
         template_offset = np.zeros(len(self._output_template_shape), dtype=int)
-        template_offset[mask] = [x.start for x in template_slice]
-        ret._translation_offset = tuple(x for x in target_offset)
+        template_offset[mask] = [x.start for x, b in zip(template_slice, mask) if b]
+
+        translation_offset = tuple(x for x in target_offset)
 
         ret.target_filter = self.target_filter
         ret.template_filter = self.template_filter
@@ -262,7 +265,7 @@ class MatchingData:
             template_dim=getattr(self, "_template_dim", None),
         )
 
-        return ret
+        return ret, translation_offset
 
     def to_backend(self):
         """
@@ -323,11 +326,6 @@ class MatchingData:
 
         target_ndim -= len(target_dims)
         template_ndim -= len(template_dims)
-
-        if target_ndim != template_ndim:
-            raise ValueError(
-                f"Dimension mismatch: Target ({target_ndim}) Template ({template_ndim})."
-            )
         self._set_matching_dimension(
             target_dims=target_dims, template_dims=template_dims
         )
@@ -507,7 +505,9 @@ class MatchingData:
         fourier_pad = np.multiply(fourier_pad, 1 - batch_mask)
         fourier_pad = np.add(fourier_pad, batch_mask)
 
+        # Avoid padding batch dimensions
         pad_shape = np.maximum(target_shape, template_shape)
+        pad_shape = np.maximum(target_shape, np.multiply(1 - batch_mask, pad_shape))
         ret = be.compute_convolution_shapes(pad_shape, fourier_pad)
         conv_shape, fast_shape, fast_ft_shape = ret
 

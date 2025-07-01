@@ -87,9 +87,9 @@ class TestDensity:
         matching_data.target_mask = self.target
         matching_data.template_mask = self.template
 
-        ret = matching_data.subset_by_slice()
+        ret, offset = matching_data.subset_by_slice()
 
-        assert type(ret) == type(matching_data)
+        assert isinstance(ret, type(matching_data))
         assert np.allclose(ret.target, matching_data.target)
         assert np.allclose(ret.template, matching_data.template)
         assert np.allclose(ret.target_mask, matching_data.target_mask)
@@ -107,10 +107,10 @@ class TestDensity:
         template_slice = MatchingData._shape_to_slice(
             shape=np.divide(self.template.shape, 2).astype(int)
         )
-        ret = matching_data.subset_by_slice(
+        ret, offset = matching_data.subset_by_slice(
             target_slice=target_slice, template_slice=template_slice
         )
-        assert type(ret) == type(matching_data)
+        assert isinstance(ret, type(matching_data))
 
         assert np.allclose(
             ret.target.shape, np.divide(self.target.shape, 2).astype(int)

@@ -7,8 +7,8 @@ Copyright (c) 2024 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-import warnings
 from typing import Tuple, Dict
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -16,8 +16,8 @@ from ..types import NDArray
 from ..backends import backend as be
 from .compose import ComposableFilter
 from ..matching_utils import centered
-from ..parser import XMLParser, StarParser
 from ..rotations import euler_to_rotationmatrix
+from ..parser import XMLParser, StarParser, MDOCParser
 from ._utils import (
     centered_grid,
     frequency_grid_at_angle,
@@ -31,56 +31,28 @@ from ._utils import (
 __all__ = ["Wedge", "WedgeReconstructed"]
 
 
+@dataclass
 class Wedge(ComposableFilter):
     """
     Generate wedge mask for tomographic data.
-
-    Parameters
-    ----------
-    shape : tuple of int
-        The shape of the reconstruction volume.
-    tilt_axis : int
-        Axis the plane is tilted over, defaults to 0 (x).
-    opening_axis : int
-        The projection axis, defaults to 2 (z).
-    angles : tuple of float
-        The tilt angles.
-    weights : tuple of float
-        The weights corresponding to each tilt angle.
-    weight_type : str, optional
-        The type of weighting to apply, defaults to None.
-    frequency_cutoff : float, optional
-        Frequency cutoff for created mask. Nyquist 0.5 by default.
-
-    Returns
-    -------
-    dict
-        data: BackendArray
-            The filter mask.
-        shape: tuple of ints
-            The requested filter shape
-        return_real_fourier: bool
-            Whether data is compliant with rfftn.
-        is_multiplicative_filter: bool
-            Whether the filter is multiplicative in Fourier space.
     """
 
-    def __init__(
-        self,
-        shape: Tuple[int],
-        angles: Tuple[float],
-        weights: Tuple[float],
-        tilt_axis: int = 0,
-        opening_axis: int = 2,
-        weight_type: str = None,
-        frequency_cutoff: float = 0.5,
-    ):
-        self.shape = shape
-        self.tilt_axis = tilt_axis
-        self.opening_axis = opening_axis
-        self.angles = angles
-        self.weights = weights
-        self.frequency_cutoff = frequency_cutoff
+    #: The shape of the reconstruction volume.
+    shape: Tuple[int] = None
+    #: The tilt angles.
+    angles: Tuple[float] = None
+    #: The weights corresponding to each tilt angle.
+    weights: Tuple[float] = None
+    #: Axis the plane is tilted over, defaults to 0 (x).
+    tilt_axis: int = 0
+    #: The projection axis, defaults to 2 (z).
+    opening_axis: int = 2
+    #: The type of weighting to apply, defaults to None.
+    weight_type: str = None
+    #: Frequency cutoff for created mask. Nyquist 0.5 by default.
+    frequency_cutoff: float = 0.5
+    #: The sampling rate, defaults to 1 Ångstrom / voxel.
+    sampling_rate: Tuple[float] = 1
 
     @classmethod
     def from_file(cls, filename: str) -> "Wedge":
@@ -92,6 +64,8 @@ class Wedge(ComposableFilter):
             | .star | Tomostar STAR file                                      |
             +-------+---------------------------------------------------------+
             | .xml  | WARP/M XML file                                         |
+            +-------+---------------------------------------------------------+
+            | .mdoc | SerialEM file                                           |
             +-------+---------------------------------------------------------+
             | .*    | Tab-separated file with optional column names           |
             +-------+---------------------------------------------------------+
@@ -111,6 +85,8 @@ class Wedge(ComposableFilter):
             func = _from_xml
         elif filename.lower().endswith("star"):
             func = _from_star
+        elif filename.lower().endswith("mdoc"):
+            func = _from_mdoc
 
         data = func(filename)
         angles, weights = data.get("angles", None), data.get("weights", None)
@@ -132,6 +108,9 @@ class Wedge(ComposableFilter):
         )
 
     def __call__(self, **kwargs: Dict) -> NDArray:
+        """
+        Returns a Wedge stack of chosen parameters with DC component in the center.
+        """
         func_args = vars(self).copy()
         func_args.update(kwargs)
 
@@ -170,6 +149,7 @@ class Wedge(ComposableFilter):
         return {
             "data": ret,
             "shape": func_args["shape"],
+            "return_real_fourier": func_args.get("return_real_fourier", False),
             "is_multiplicative_filter": True,
         }
 
@@ -196,7 +176,12 @@ class Wedge(ComposableFilter):
         return wedges
 
     def weight_relion(
-        self, shape: Tuple[int], opening_axis: int, tilt_axis: int, **kwargs
+        self,
+        shape: Tuple[int],
+        opening_axis: int,
+        tilt_axis: int,
+        sampling_rate: float = 1.0,
+        **kwargs,
     ) -> NDArray:
         """
         Generate weighted wedges based on the RELION 1.4 formalism, weighting each
@@ -211,7 +196,6 @@ class Wedge(ComposableFilter):
         tilt_shape = compute_tilt_shape(
             shape=shape, opening_axis=opening_axis, reduce_dim=True
         )
-
         wedges = np.zeros((len(self.angles), *tilt_shape))
         for index, angle in enumerate(self.angles):
             frequency_grid = frequency_grid_at_angle(
@@ -219,7 +203,7 @@ class Wedge(ComposableFilter):
                 opening_axis=opening_axis,
                 tilt_axis=tilt_axis,
                 angle=angle,
-                sampling_rate=1,
+                sampling_rate=sampling_rate,
             )
             sigma = np.sqrt(self.weights[index] * 4 / (8 * np.pi**2))
             sigma = -2 * np.pi**2 * sigma**2
@@ -239,6 +223,7 @@ class Wedge(ComposableFilter):
         amplitude: float = 0.245,
         power: float = -1.665,
         offset: float = 2.81,
+        sampling_rate: float = 1.0,
         **kwargs,
     ) -> NDArray:
         """
@@ -264,7 +249,7 @@ class Wedge(ComposableFilter):
                 opening_axis=opening_axis,
                 tilt_axis=tilt_axis,
                 angle=angle,
-                sampling_rate=1,
+                sampling_rate=sampling_rate,
             )
 
             with np.errstate(divide="ignore"):
@@ -283,55 +268,35 @@ class Wedge(ComposableFilter):
         return wedges
 
 
+@dataclass
 class WedgeReconstructed:
     """
     Initialize :py:class:`WedgeReconstructed`.
-
-    Parameters
-    ----------
-    angles :tuple of float, optional
-        The tilt angles, defaults to None.
-    tilt_axis : int
-        Axis the plane is tilted over, defaults to 0 (x).
-    opening_axis : int
-        The projection axis, defaults to 2 (z).
-    weights : tuple of float, optional
-        Weights to assign to individual wedge components.
-    weight_wedge : bool, optional
-        Whether individual wedge components should be weighted. If True and weights
-        is None, uses the cosine of the angle otherwise weights.
-    create_continuous_wedge: bool, optional
-        Whether to create a continous wedge or a per-component wedge. Weights are only
-        considered for non-continuous wedges.
-    frequency_cutoff : float, optional
-        Filter window applied during reconstruction.
-    **kwargs : Dict
-        Additional keyword arguments.
     """
 
-    def __init__(
-        self,
-        opening_axis: int = 2,
-        tilt_axis: int = 0,
-        angles: Tuple[float] = None,
-        weights: Tuple[float] = None,
-        weight_wedge: bool = False,
-        create_continuous_wedge: bool = False,
-        frequency_cutoff: float = 0.5,
-        reconstruction_filter: str = None,
-        **kwargs: Dict,
-    ):
-        self.angles = angles
-        self.opening_axis = opening_axis
-        self.tilt_axis = tilt_axis
-        self.weights = weights
-        self.weight_wedge = weight_wedge
-        self.reconstruction_filter = reconstruction_filter
-        self.create_continuous_wedge = create_continuous_wedge
-        self.frequency_cutoff = frequency_cutoff
+    #: The tilt angles, defaults to None.
+    angles: Tuple[float] = None
+    #: Weights to assign to individual wedge components. Not considered for continuous wedge
+    weights: Tuple[float] = None
+    #: Whether individual wedge components should be weighted.
+    weight_wedge: bool = False
+    #: Whether to create a continous wedge or a per-component wedge.
+    create_continuous_wedge: bool = False
+    #: Frequency cutoff of filter
+    frequency_cutoff: float = 0.5
+    #: Axis the plane is tilted over, defaults to 0 (x).
+    tilt_axis: int = 0
+    #: The projection axis, defaults to 2 (z).
+    opening_axis: int = 2
+    #: Filter window applied during reconstruction.
+    reconstruction_filter: str = None
+
+    def __post_init__(self):
+        if self.create_continuous_wedge:
+            self.angles = (min(self.angles), max(self.angles))
 
     def __call__(
-        self, shape: Tuple[int], return_real_fourier: bool = False, **kwargs: Dict
+        self, shape: Tuple[int], return_real_fourier: bool = False, **kwargs
     ) -> Dict:
         """
         Generate the reconstructed wedge.
@@ -373,7 +338,6 @@ class WedgeReconstructed:
             )
 
         ret = func(shape=shape, **func_args)
-
         frequency_cutoff = func_args.get("frequency_cutoff", None)
         if frequency_cutoff is not None:
             frequency_mask = fftfreqn(
@@ -581,6 +545,25 @@ def _from_star(filename: str, **kwargs) -> Dict:
     return {"angles": data["_wrpAxisAngle"], "weights": data["_wrpDose"]}
 
 
+def _from_mdoc(filename: str, **kwargs) -> Dict:
+    """
+    Read tilt data from an MDOC file.
+
+    Parameters
+    ----------
+    filename : str
+        The path to the text file.
+
+    Returns
+    -------
+    Dict
+        A dictionary with one key for each column.
+    """
+    data = MDOCParser(filename)
+    cumulative_exposure = np.multiply(np.add(1, data["ZValue"]), data["ExposureDose"])
+    return {"angles": data["TiltAngle"], "weights": cumulative_exposure}
+
+
 def _from_text(filename: str, **kwargs) -> Dict:
     """
     Read column data from a text file.
@@ -604,10 +587,6 @@ def _from_text(filename: str, **kwargs) -> Dict:
     if "angles" in data[0]:
         headers = data.pop(0)
     else:
-        warnings.warn(
-            f"Did not find a column named 'angles' in {filename}. Assuming "
-            "first column specifies angles."
-        )
         if len(data[0]) != 1:
             raise ValueError(
                 "Found more than one column without column names. Please add "

@@ -67,7 +67,7 @@ class MaxScoreOverRotations(AbstractAnalyzer):
     >>> for rotation_number in range(10):
     >>>     scores = np.random.rand(50,50)
     >>>     rotation = np.random.rand(scores.ndim, scores.ndim)
-    >>>     state, analyzer(state, scores = scores, rotation_matrix = rotation)
+    >>>     state = analyzer(state, scores = scores, rotation_matrix = rotation)
 
     The aggregated scores can be extracted by invoking the result method of
     ``analyzer``
@@ -100,12 +100,17 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         shm_handler: object = None,
         use_memmap: bool = False,
         inversion_mapping: bool = False,
+        jax_mode: bool = False,
         **kwargs,
     ):
         self._use_memmap = use_memmap
         self._score_threshold = score_threshold
         self._shape = tuple(int(x) for x in shape)
         self._inversion_mapping = inversion_mapping
+
+        self._jax_mode = jax_mode
+        if self._jax_mode:
+            self._inversion_mapping = False
 
         if offset is None:
             offset = be.zeros(len(self._shape), be._int_dtype)
@@ -138,6 +143,7 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         state: Tuple,
         scores: BackendArray,
         rotation_matrix: BackendArray,
+        **kwargs,
     ) -> Tuple:
         """
         Update the parameter store.
@@ -167,6 +173,8 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         rotation_matrix = be.astype(rotation_matrix, be._float_dtype)
         if self._inversion_mapping:
             rotation_mapping[rotation_index] = rotation_matrix
+        elif self._jax_mode:
+            rotation_index = kwargs.get("rotation_index", 0)
         else:
             rotation = be.tobytes(rotation_matrix)
             rotation_index = rotation_mapping.setdefault(rotation, rotation_index)
@@ -738,5 +746,5 @@ class MaxScoreOverTranslations(MaxScoreOverRotations):
             cls._invert_rmap(master_rotation_mapping),
         )
 
-    def _postprocess(self, **kwargs):
-        return self
+    def result(self, state: Tuple, **kwargs) -> Tuple:
+        return state

@@ -21,9 +21,9 @@ Recall the output of the previous template matching run, the peaks are fairly wi
 .. code-block:: bash
 
     postprocess.py \
-        --input_file output_default.pickle \
-        --output_prefix orientations \
-        --output_format orientations
+        --input-file output_default.pickle \
+        --output-prefix orientations \
+        --output-format orientations
 
 
 Peaks can be imported into the GUI using the *Import Point Cloud* button. We can change the color of the points to their relative scores by setting *Color* to *Score*. A 2D projection of the point cloud is shown below. While some peaks are correctly identified in the center, we note that many are too tightly packed and clustered around the tomogram borders. Inflated scores at the tomogram borders are a common occurence and arise due to artifacts from reconstruction and padding during template matching.
@@ -33,16 +33,16 @@ Peaks can be imported into the GUI using the *Import Point Cloud* button. We can
     :align: left
 
 
-We can avoid the errors seen on the left by specifying a minimum distance between the peaks and masking the edges of the tomogram, effectively eliminating all scores that were computed using padding. Edge masking is done based on the shape of the template. For heavily zero-padded templates, users might want to specify the exact distance from the edges using ``--min_boundary_distance``.
+We can avoid the errors seen on the left by specifying a minimum distance between the peaks and masking the edges of the tomogram, effectively eliminating all scores that were computed using padding. Edge masking is done based on the shape of the template. For heavily zero-padded templates, users might want to specify the exact distance from the edges using ``--min-boundary-distance``.
 
 .. code-block:: bash
 
     postprocess.py \
-        --input_file output_default.pickle \
-        --output_prefix orientations_distance \
-        --output_format orientations \
-        --min_distance 15 \
-        --mask_edges
+        --input-file output_default.pickle \
+        --output-prefix orientations_distance \
+        --output-format orientations \
+        --min-distance 15 \
+        --mask-edges
 
 .. figure:: ../../_static/quickstart/pick_constrained.png
     :scale: 50%
@@ -54,12 +54,12 @@ Adding distance constraints and edge masking lead to a better distinction betwee
 .. code-block:: bash
 
     postprocess.py \
-        --input_file output_default.pickle \
-        --output_prefix orientations_distance_score \
-        --output_format orientations \
-        --min_distance 15 \
-        --mask_edges \
-        --n_false_positives 5
+        --input-file output_default.pickle \
+        --output-prefix orientations_distance_score \
+        --output-format orientations \
+        --min-distance 15 \
+        --mask-edges \
+        --n-false-positives 5
 
 
 Refinement
@@ -87,7 +87,7 @@ The GUI can also be used to exclude erroneous picks. Locate the layer controls i
 Background Correction
 ^^^^^^^^^^^^^^^^^^^^^
 
-We can pass a ``--background_file`` to ``postprocess.py`` that corresponds to a template matching run obtained using a different template. By cross-referencing high-scoring peaks between both we can exclude the ones occuring in both datasets, thus removing high-scoring peaks that are not specific to our template of interest. While using a different macromolecule as a template typically yields superior results, you can also rerun ``match_template.py`` and simply add the ``--scramble_phases`` flag to acquire an approximation of the background.
+We can pass a ``--background-file`` to ``postprocess.py`` that corresponds to a template matching run obtained using a different template. By cross-referencing high-scoring peaks between both we can exclude the ones occuring in both datasets, thus removing high-scoring peaks that are not specific to our template of interest. While using a different macromolecule as a template typically yields superior results, you can also rerun ``match_template.py`` and simply add the ``--scramble-phases`` flag to acquire an approximation of the background.
 
 
 Validation
@@ -99,23 +99,7 @@ The final picks obtained using distance constraints and score cutoffs are shown 
     :width: 100%
     :align: left
 
-Comparing the final picks to EMPIAR-10988's `ground truth <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_ reveals 90% [335 / 398] accuracy. However, due to the template's spherical shape and the lack of high-resolution features, the angular assignment accuracy will be suboptimal (The topic is futher explored in [1]_). This can be visually assessed by computing an average based on the angles from template matching. Angular accuracy can be principally improved by more elaborate reconstruction workflows considering the 3D CTF, less binned tomograms in template matching, or on the fly during :doc:`refinement <relion>`.
-
-
-Integrations
-------------
-
-The final orientations can be passed to ``postprocess.py`` via the ``--orientations`` flag. Alternatively, we can use :py:class:`Orientations <tme.orientations.Orientations>` to convert them into a range of formats
-
-.. code-block:: python
-
-    from tme import Orientations
-    orientations = Orientations.from_file("orientations.tsv")
-    orientations.to_file(
-        "orientations.star",
-        source_path="/path/to/your/tomogram"
-    )
-
+Comparing the final picks to `ground truth picks <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_ reveals 90% [335 / 398] accuracy. However, due to the template's spherical shape and the lack of high-resolution features, the angular assignment accuracy will be suboptimal (The topic is futher explored in [1]_). This can be visually assessed by computing an average based on the angles from template matching. Angular accuracy can be principally improved by more elaborate reconstruction workflows considering the 3D CTF, less binned tomograms in template matching, or on the fly during :doc:`refinement <relion>`.
 
 References
 ----------

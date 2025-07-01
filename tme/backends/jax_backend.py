@@ -7,7 +7,7 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from functools import wraps
-from typing import Tuple, List, Callable
+from typing import Tuple, List, Callable, Dict
 
 from ..types import BackendArray
 from .npfftw_backend import NumpyFFTWBackend, shm_type
@@ -51,12 +51,6 @@ class JaxBackend(NumpyFFTWBackend):
         )
         self.scipy = jsp
         self._create_ufuncs()
-        try:
-            from ._jax_utils import scan as _
-
-            self.scan = self._scan
-        except Exception:
-            pass
 
     def from_sharedarr(self, arr: BackendArray) -> BackendArray:
         return arr
@@ -189,7 +183,18 @@ class JaxBackend(NumpyFFTWBackend):
         rotations = rotations.at[:].set(self.where(update, rotations, rotation_index))
         return max_scores, rotations
 
-    def _scan(
+    def compute_convolution_shapes(
+        self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
+    ) -> Tuple[List[int], List[int], List[int]]:
+        from scipy.fft import next_fast_len
+
+        convolution_shape = [int(x + y - 1) for x, y in zip(arr1_shape, arr2_shape)]
+        fast_shape = [next_fast_len(x, real=True) for x in convolution_shape]
+        fast_ft_shape = list(fast_shape[:-1]) + [fast_shape[-1] // 2 + 1]
+
+        return convolution_shape, fast_shape, fast_ft_shape
+
+    def scan(
         self,
         matching_data: type,
         splits: Tuple[Tuple[slice, slice]],
@@ -214,9 +219,9 @@ class JaxBackend(NumpyFFTWBackend):
         conv_shape, fast_shape, fast_ft_shape, shift = matching_data._fourier_padding(
             target_shape=self.to_numpy_array(target_shape),
             template_shape=self.to_numpy_array(matching_data._template.shape),
+            batch_mask=self.to_numpy_array(matching_data._batch_mask),
             pad_fourier=False,
         )
-
         analyzer_args = {
             "convolution_mode": convolution_mode,
             "fourier_shift": shift,
@@ -246,12 +251,12 @@ class JaxBackend(NumpyFFTWBackend):
 
             targets, translation_offsets = [], []
             for target_split, template_split in split_subset:
-                base = matching_data.subset_by_slice(
+                base, translation_offset = matching_data.subset_by_slice(
                     target_slice=target_split,
                     target_pad=target_pad,
                     template_slice=template_split,
                 )
-                translation_offsets.append(base._translation_offset)
+                translation_offsets.append(translation_offset)
                 targets.append(self.topleft_pad(base._target, fast_shape))
 
             if create_filter:
@@ -288,12 +293,11 @@ class JaxBackend(NumpyFFTWBackend):
 
             for index in range(scores.shape[0]):
                 temp = callback_class(
-                    shape=scores.shape,
+                    shape=scores[index].shape,
                     offset=translation_offsets[index],
                 )
-                state = (scores, rotations, rotation_mapping)
+                state = (scores[index], rotations[index], rotation_mapping)
                 ret.append(temp.result(state, **analyzer_args))
-
         return ret
 
     def get_available_memory(self) -> int:

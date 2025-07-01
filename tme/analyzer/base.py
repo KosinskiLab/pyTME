@@ -38,16 +38,16 @@ class AbstractAnalyzer(ABC):
 
         Returns
         -------
-        state
-            Initial state tuple containing the analyzer's internal data
-            structures. The exact structure depends on the specific
-            implementation.
+        state : tuple
+            Initial state tuple of the analyzer instance. The exact structure
+            depends on the specific implementation.
 
         Notes
         -----
         This method creates the initial state that will be passed to
-        subsequent calls to __call__. The state should contain all
-        necessary data structures for accumulating analysis results.
+        :py:meth:`AbstractAnalyzer.__call__` and finally to
+        :py:meth:`AbstractAnalyzer.result`. The state should contain all necessary
+        data structures for accumulating analysis results.
         """
 
     @abstractmethod
@@ -57,49 +57,39 @@ class AbstractAnalyzer(ABC):
 
         Parameters
         ----------
-        state : object
-            Current analyzer state as returned by init_state() or
-            previous calls to __call__.
+        state : tuple
+            Current analyzer state as returned :py:meth:`AbstractAnalyzer.init_state`
+            or previous invocations of :py:meth:`AbstractAnalyzer.__call__`.
         scores : BackendArray
-            Array of scores computed for the current rotation.
+            Array of new scores with dimensionality d.
         rotation_matrix : BackendArray
-            Rotation matrix used to generate the scores.
+            Rotation matrix used to generate scores with shape (d,d).
         **kwargs : dict
-            Additional keyword arguments specific to the analyzer
-            implementation.
+            Keyword arguments used by specific implementations.
 
         Returns
         -------
-        state
-            Updated analyzer state with the new scoring data incorporated.
-
-        Notes
-        -----
-        This method should be pure functional - it should not modify
-        the input state but return a new state with the updates applied.
-        The exact signature may vary between implementations.
+        tuple
+            Updated analyzer state incorporating the new data.
         """
-        pass
 
     @abstractmethod
     def result(self, state: Tuple, **kwargs) -> Tuple:
         """
-        Finalize the analysis and produce the final result.
+        Finalize the analysis by performing potential post processing.
 
         Parameters
         ----------
         state : tuple
-            Final analyzer state containing all accumulated data.
+            Analyzer state containing accumulated data.
         **kwargs : dict
-            Additional keyword arguments for result processing,
-            such as postprocessing parameters.
+            Keyword arguments used by specific implementations.
 
         Returns
         -------
         result
-            Final analysis result. The exact format depends on the
-            analyzer implementation but typically includes processed
-            scores, rotation information, and metadata.
+            Final analysis result. The exact struccture depends on the
+            analyzer implementation.
 
         Notes
         -----
@@ -108,25 +98,24 @@ class AbstractAnalyzer(ABC):
         It may apply postprocessing operations like convolution mode
         correction or coordinate transformations.
         """
-        pass
 
     @classmethod
     @abstractmethod
     def merge(cls, results: List[Tuple], **kwargs) -> Tuple:
         """
-        Merge results from multiple analyzer instances.
+        Merge multiple analyzer results.
 
         Parameters
         ----------
-        results : list
-            List of result objects as returned by the result() method
-            from multiple analyzer instances.
+        results : list of tuple
+            List of tuple objects returned by :py:meth:`AbstractAnalyzer.result`
+            from different instances of the same analyzer class.
         **kwargs : dict
-            Additional keyword arguments for merge configuration.
+            Keyword arguments used by specific implementations.
 
         Returns
         -------
-        merged_result
+        tuple
             Single result object combining all input results.
 
         Notes

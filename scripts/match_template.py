@@ -36,13 +36,20 @@ from tme.filters import (
     CTF,
     Wedge,
     Compose,
-    BandPassFilter,
+    BandPass,
     CTFReconstructed,
     WedgeReconstructed,
     ReconstructFromTilt,
     LinearWhiteningFilter,
+    BandPassReconstructed,
 )
-from tme.cli import get_func_fullname, print_block, print_entry, check_positive
+from tme.cli import (
+    get_func_fullname,
+    print_block,
+    print_entry,
+    check_positive,
+    sanitize_name,
+)
 
 
 def load_and_validate_mask(mask_target: "Density", mask_path: str, **kwargs):
@@ -116,7 +123,7 @@ def parse_rotation_logic(args, ndim):
         axis_sampling=args.axis_sampling,
         n_symmetry=args.axis_symmetry,
         axis=[0 if i != args.cone_axis else 1 for i in range(ndim)],
-        reference=[0, 0, -1],
+        reference=[0, 0, -1 if args.invert_cone else 1],
     )
     return rotations
 
@@ -158,6 +165,9 @@ def compute_schedule(
 def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Compose]:
     template_filter, target_filter = [], []
 
+    if args.tilt_angles is None:
+        args.tilt_angles = args.ctf_file
+
     wedge = None
     if args.tilt_angles is not None:
         try:
@@ -177,28 +187,34 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
                 weight_wedge=False,
                 reconstruction_filter=args.reconstruction_filter,
             )
+        wedge.opening_axis, wedge.tilt_axis = args.wedge_axes
 
         wedge_target = WedgeReconstructed(
             angles=wedge.angles,
             weight_wedge=False,
             create_continuous_wedge=True,
-            opening_axis=args.wedge_axes[0],
-            tilt_axis=args.wedge_axes[1],
+            opening_axis=wedge.opening_axis,
+            tilt_axis=wedge.tilt_axis,
         )
-        wedge.opening_axis = args.wedge_axes[0]
-        wedge.tilt_axis = args.wedge_axes[1]
+
+        wedge.sampling_rate = template.sampling_rate
+        wedge_target.sampling_rate = template.sampling_rate
 
         target_filter.append(wedge_target)
         template_filter.append(wedge)
 
-    args.ctf_file is not None
     if args.ctf_file is not None or args.defocus is not None:
         try:
-            ctf = CTF.from_file(args.ctf_file)
+            ctf = CTF.from_file(
+                args.ctf_file,
+                spherical_aberration=args.spherical_aberration,
+                amplitude_contrast=args.amplitude_contrast,
+                acceleration_voltage=args.acceleration_voltage * 1e3,
+            )
             if (len(ctf.angles) == 0) and wedge is None:
                 raise ValueError(
                     "You requested to specify the CTF per tilt, but did not specify "
-                    "tilt angles via --tilt_angles or --ctf_file (Warp/M XML format). "
+                    "tilt angles via --tilt-angles or --ctf-file. "
                 )
             if len(ctf.angles) == 0:
                 ctf.angles = wedge.angles
@@ -206,20 +222,21 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
             n_tilts_ctfs, n_tils_angles = len(ctf.defocus_x), len(wedge.angles)
             if (n_tilts_ctfs != n_tils_angles) and isinstance(wedge, Wedge):
                 raise ValueError(
-                    f"CTF file contains {n_tilts_ctfs} tilt, but match_template "
-                    f"recieved {n_tils_angles} tilt angles. Expected one angle "
-                    "per tilt."
+                    f"CTF file contains {n_tilts_ctfs} tilt, but recieved "
+                    f"{n_tils_angles} tilt angles. Expected one angle per tilt"
                 )
 
         except (FileNotFoundError, AttributeError):
-            ctf = CTFReconstructed(defocus_x=args.defocus, phase_shift=args.phase_shift)
-
-        ctf.opening_axis, ctf.tilt_axis = args.wedge_axes
-        ctf.sampling_rate = template.sampling_rate
+            ctf = CTFReconstructed(
+                defocus_x=args.defocus,
+                phase_shift=args.phase_shift,
+                amplitude_contrast=args.amplitude_contrast,
+                spherical_aberration=args.spherical_aberration,
+                acceleration_voltage=args.acceleration_voltage * 1e3,
+            )
         ctf.flip_phase = args.no_flip_phase
-        ctf.amplitude_contrast = args.amplitude_contrast
-        ctf.spherical_aberration = args.spherical_aberration
-        ctf.acceleration_voltage = args.acceleration_voltage * 1e3
+        ctf.sampling_rate = template.sampling_rate
+        ctf.opening_axis, ctf.tilt_axis = args.wedge_axes
         ctf.correct_defocus_gradient = args.correct_defocus_gradient
         template_filter.append(ctf)
 
@@ -242,7 +259,7 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
         except Exception:
             pass
 
-        bandpass = BandPassFilter(
+        bandpass = BandPassReconstructed(
             use_gaussian=args.no_pass_smooth,
             lowpass=lowpass,
             highpass=highpass,
@@ -303,7 +320,6 @@ def parse_args():
     io_group.add_argument(
         "-m",
         "--target",
-        dest="target",
         type=str,
         required=True,
         help="Path to a target in CCP4/MRC, EM, H5 or another format supported by "
@@ -311,8 +327,8 @@ def parse_args():
         "https://kosinskilab.github.io/pyTME/reference/api/tme.density.Density.from_file.html",
     )
     io_group.add_argument(
-        "--target_mask",
-        dest="target_mask",
+        "-M",
+        "--target-mask",
         type=str,
         required=False,
         help="Path to a mask for the target in a supported format (see target).",
@@ -320,14 +336,13 @@ def parse_args():
     io_group.add_argument(
         "-i",
         "--template",
-        dest="template",
         type=str,
         required=True,
         help="Path to a template in PDB/MMCIF or other supported formats (see target).",
     )
     io_group.add_argument(
-        "--template_mask",
-        dest="template_mask",
+        "-I",
+        "--template-mask",
         type=str,
         required=False,
         help="Path to a mask for the template in a supported format (see target).",
@@ -335,23 +350,20 @@ def parse_args():
     io_group.add_argument(
         "-o",
         "--output",
-        dest="output",
         type=str,
         required=False,
         default="output.pickle",
         help="Path to the output pickle file.",
     )
     io_group.add_argument(
-        "--invert_target_contrast",
-        dest="invert_target_contrast",
+        "--invert-target-contrast",
         action="store_true",
         default=False,
         help="Invert the target's contrast for cases where templates to-be-matched have "
         "negative values, e.g. tomograms.",
     )
     io_group.add_argument(
-        "--scramble_phases",
-        dest="scramble_phases",
+        "--scramble-phases",
         action="store_true",
         default=False,
         help="Phase scramble the template to generate a noise score background.",
@@ -360,30 +372,29 @@ def parse_args():
     sampling_group = parser.add_argument_group("Sampling")
     sampling_group.add_argument(
         "--orientations",
-        dest="orientations",
         default=None,
         required=False,
-        help="Path to a file readable via Orientations.from_file containing "
+        help="Path to a file readable by Orientations.from_file containing "
         "translations and rotations of candidate peaks to refine.",
     )
     sampling_group.add_argument(
-        "--orientations_scaling",
+        "--orientations-scaling",
         required=False,
         type=float,
         default=1.0,
         help="Scaling factor to map candidate translations onto the target. "
         "Assuming coordinates are in Å and target sampling rate are 3Å/voxel, "
-        "the corresponding orientations_scaling would be 3.",
+        "the corresponding --orientations-scaling would be 3.",
     )
     sampling_group.add_argument(
-        "--orientations_cone",
+        "--orientations-cone",
         required=False,
         type=float,
         default=20.0,
         help="Accept orientations within specified cone angle of each orientation.",
     )
     sampling_group.add_argument(
-        "--orientations_uncertainty",
+        "--orientations-uncertainty",
         required=False,
         type=str,
         default="10",
@@ -394,7 +405,7 @@ def parse_args():
     scoring_group = parser.add_argument_group("Scoring")
     scoring_group.add_argument(
         "-s",
-        dest="score",
+        "--score",
         type=str,
         default="FLCSphericalMask",
         choices=list(MATCHING_EXHAUSTIVE_REGISTER.keys()),
@@ -406,74 +417,64 @@ def parse_args():
 
     angular_exclusive.add_argument(
         "-a",
-        dest="angular_sampling",
+        "--angular-sampling",
         type=check_positive,
         default=None,
-        help="Angular sampling rate using optimized rotational sets."
-        "A lower number yields more rotations. Values >= 180 sample only the identity.",
+        help="Angular sampling rate. Lower values = more rotations, higher precision.",
     )
     angular_exclusive.add_argument(
-        "--cone_angle",
-        dest="cone_angle",
+        "--cone-angle",
         type=check_positive,
         default=None,
         help="Half-angle of the cone to be sampled in degrees. Allows to sample a "
         "narrow interval around a known orientation, e.g. for surface oversampling.",
     )
     angular_exclusive.add_argument(
-        "--particle_diameter",
-        dest="particle_diameter",
+        "--particle-diameter",
         type=check_positive,
         default=None,
         help="Particle diameter in units of sampling rate.",
     )
     angular_group.add_argument(
-        "--cone_axis",
-        dest="cone_axis",
+        "--cone-axis",
         type=check_positive,
         default=2,
         help="Principal axis to build cone around.",
     )
     angular_group.add_argument(
-        "--invert_cone",
-        dest="invert_cone",
+        "--invert-cone",
         action="store_true",
         help="Invert cone handedness.",
     )
     angular_group.add_argument(
-        "--cone_sampling",
-        dest="cone_sampling",
+        "--cone-sampling",
         type=check_positive,
         default=None,
         help="Sampling rate of the cone in degrees.",
     )
     angular_group.add_argument(
-        "--axis_angle",
-        dest="axis_angle",
+        "--axis-angle",
         type=check_positive,
         default=360.0,
         required=False,
         help="Sampling angle along the z-axis of the cone.",
     )
     angular_group.add_argument(
-        "--axis_sampling",
-        dest="axis_sampling",
+        "--axis-sampling",
         type=check_positive,
         default=None,
         required=False,
-        help="Sampling rate along the z-axis of the cone. Defaults to --cone_sampling.",
+        help="Sampling rate along the z-axis of the cone. Defaults to --cone-sampling.",
     )
     angular_group.add_argument(
-        "--axis_symmetry",
-        dest="axis_symmetry",
+        "--axis-symmetry",
         type=check_positive,
         default=1,
         required=False,
         help="N-fold symmetry around z-axis of the cone.",
     )
     angular_group.add_argument(
-        "--no_use_optimized_set",
-        dest="no_use_optimized_set",
+        "--no-use-optimized-set",
         action="store_true",
         default=False,
         required=False,
@@ -490,57 +491,40 @@ def parse_args():
         help="Number of cores used for template matching.",
     )
     computation_group.add_argument(
-        "--use_gpu",
-        dest="use_gpu",
-        action="store_true",
-        default=False,
-        help="Whether to perform computations on the GPU.",
-    )
-    computation_group.add_argument(
-        "--gpu_indices",
-        dest="gpu_indices",
+        "--gpu-indices",
         type=str,
         default=None,
-        help="Comma-separated list of GPU indices to use. For example,"
-        " 0,1 for the first and second GPU. Only used if --use_gpu is set."
-        " If not provided but --use_gpu is set, CUDA_VISIBLE_DEVICES will"
-        " be respected.",
+        help="Comma-separated GPU indices (e.g., '0,1,2' for first 3 GPUs). Otherwise "
+        "CUDA_VISIBLE_DEVICES will be used.",
     )
     computation_group.add_argument(
-        "-r",
-        "--ram",
         "--memory",
-        dest="memory",
         required=False,
         type=int,
         default=None,
         help="Amount of memory that can be used in bytes.",
     )
     computation_group.add_argument(
-        "--memory_scaling",
-        dest="memory_scaling",
+        "--memory-scaling",
         required=False,
         type=float,
         default=0.85,
         help="Fraction of available memory to be used. Ignored if --memory is set.",
     )
     computation_group.add_argument(
-        "--temp_directory",
-        dest="temp_directory",
-        default=None,
-        help="Directory for temporary objects. Faster I/O improves runtime.",
+        "--temp-directory",
+        default=gettempdir(),
+        help="Temporary directory for memmaps. Better I/O improves runtime.",
     )
     computation_group.add_argument(
         "--backend",
-        dest="backend",
         default=be._backend_name,
         choices=be.available_backends(),
-        help="[Expert] Overwrite default computation backend.",
+        help="Set computation backend.",
     )
     filter_group = parser.add_argument_group("Filters")
     filter_group.add_argument(
         "--lowpass",
-        dest="lowpass",
         type=float,
         required=False,
         help="Resolution to lowpass filter template and target to in the same unit "
@@ -548,22 +532,19 @@ def parse_args():
     )
     filter_group.add_argument(
         "--highpass",
-        dest="highpass",
         type=float,
         required=False,
         help="Resolution to highpass filter template and target to in the same unit "
         "as the sampling rate of template and target (typically Ångstrom).",
     )
     filter_group.add_argument(
-        "--no_pass_smooth",
-        dest="no_pass_smooth",
+        "--no-pass-smooth",
         action="store_false",
         default=True,
         help="Whether a hard edge filter should be used for --lowpass and --highpass.",
     )
     filter_group.add_argument(
-        "--pass_format",
-        dest="pass_format",
+        "--pass-format",
         type=str,
         required=False,
         default="sampling_rate",
@@ -572,15 +553,13 @@ def parse_args():
         "Defaults to unit of sampling_rate, e.g., 40 Angstrom.",
     )
     filter_group.add_argument(
-        "--whiten_spectrum",
-        dest="whiten_spectrum",
+        "--whiten-spectrum",
         action="store_true",
         default=None,
         help="Apply spectral whitening to template and target based on target spectrum.",
     )
     filter_group.add_argument(
-        "--wedge_axes",
-        dest="wedge_axes",
+        "--wedge-axes",
         type=str,
         required=False,
         default="2,0",
@@ -588,21 +567,19 @@ def parse_args():
         "for the typical projection over z and tilting over the x-axis.",
     )
     filter_group.add_argument(
-        "--tilt_angles",
-        dest="tilt_angles",
+        "--tilt-angles",
         type=str,
         required=False,
         default=None,
         help="Path to a file specifying tilt angles. This can be a Warp/M XML file, "
-        "a tomostar STAR file, a tab-separated file with column name 'angles', or a "
-        "single column file without header. Exposure will be taken from the input file "
-        ", if you are using a tab-separated file, the column names 'angles' and "
-        "'weights' need to be present. It is also possible to specify a continuous "
-        "wedge mask using e.g., -50,45.",
+        "a tomostar STAR file, an MMOD file, a tab-separated file with column name "
+        "'angles', or a single column file without header. Exposure will be taken from "
+        "the input file , if you are using a tab-separated file, the column names "
+        "'angles' and 'weights' need to be present. It is also possible to specify a "
+        "continuous wedge mask using e.g., -50,45.",
     )
     filter_group.add_argument(
-        "--tilt_weighting",
-        dest="tilt_weighting",
+        "--tilt-weighting",
         type=str,
         required=False,
         choices=["angle", "relion", "grigorieff"],
@@ -611,28 +588,25 @@ def parse_args():
         "angle (cosine based weighting), "
         "relion (relion formalism for wedge weighting) requires,"
         "grigorieff (exposure filter as defined in Grant and Grigorieff 2015)."
-        "relion and grigorieff require electron doses in --tilt_angles weights column.",
+        "relion and grigorieff require electron doses in --tilt-angles weights column.",
     )
     filter_group.add_argument(
-        "--reconstruction_filter",
-        dest="reconstruction_filter",
+        "--reconstruction-filter",
         type=str,
         required=False,
         choices=["ram-lak", "ramp", "ramp-cont", "shepp-logan", "cosine", "hamming"],
-        default=None,
+        default="ramp",
         help="Filter applied when reconstructing (N+1)-D from N-D filters.",
     )
     filter_group.add_argument(
-        "--reconstruction_interpolation_order",
-        dest="reconstruction_interpolation_order",
+        "--reconstruction-interpolation-order",
         type=int,
         default=1,
         required=False,
-        help="Analogous to --interpolation_order but for reconstruction.",
+        help="Analogous to --interpolation-order but for reconstruction.",
     )
     filter_group.add_argument(
-        "--no_filter_target",
-        dest="no_filter_target",
+        "--no-filter-target",
         action="store_true",
         default=False,
         help="Whether to not apply potential filters to the target.",
@@ -640,66 +614,58 @@ def parse_args():
 
     ctf_group = parser.add_argument_group("Contrast Transfer Function")
     ctf_group.add_argument(
-        "--ctf_file",
-        dest="ctf_file",
+        "--ctf-file",
         type=str,
         required=False,
         default=None,
         help="Path to a file with CTF parameters. This can be a Warp/M XML file "
-        "a GCTF/Relion STAR file, or the output of CTFFIND4. If the file does not "
-        "specify tilt angles, the angles specified with --tilt_angles are used.",
+        "a GCTF/Relion STAR file, an MDOC file, or the output of CTFFIND4. If the file "
+        " does not specify tilt angles, --tilt-angles are used.",
     )
     ctf_group.add_argument(
         "--defocus",
-        dest="defocus",
         type=float,
         required=False,
         default=None,
         help="Defocus in units of sampling rate (typically Ångstrom), e.g., 30000 "
-        "for a defocus of 3 micrometer. Superseded by --ctf_file.",
+        "for a defocus of 3 micrometer. Superseded by --ctf-file.",
     )
     ctf_group.add_argument(
-        "--phase_shift",
-        dest="phase_shift",
+        "--phase-shift",
         type=float,
         required=False,
         default=0,
-        help="Phase shift in degrees. Superseded by --ctf_file.",
+        help="Phase shift in degrees. Superseded by --ctf-file.",
     )
     ctf_group.add_argument(
-        "--acceleration_voltage",
-        dest="acceleration_voltage",
+        "--acceleration-voltage",
         type=float,
         required=False,
         default=300,
         help="Acceleration voltage in kV.",
     )
     ctf_group.add_argument(
-        "--spherical_aberration",
-        dest="spherical_aberration",
+        "--spherical-aberration",
         type=float,
         required=False,
         default=2.7e7,
         help="Spherical aberration in units of sampling rate (typically Ångstrom).",
     )
     ctf_group.add_argument(
-        "--amplitude_contrast",
-        dest="amplitude_contrast",
+        "--amplitude-contrast",
         type=float,
         required=False,
         default=0.07,
         help="Amplitude contrast.",
     )
     ctf_group.add_argument(
-        "--no_flip_phase",
-        dest="no_flip_phase",
+        "--no-flip-phase",
         action="store_false",
         required=False,
         help="Do not perform phase-flipping CTF correction.",
     )
     ctf_group.add_argument(
-        "--correct_defocus_gradient",
-        dest="correct_defocus_gradient",
+        "--correct-defocus-gradient",
         action="store_true",
         required=False,
         help="[Experimental] Whether to compute a more accurate 3D CTF incorporating "
@@ -708,56 +674,49 @@ def parse_args():
 
     performance_group = parser.add_argument_group("Performance")
     performance_group.add_argument(
-        "--no_centering",
-        dest="no_centering",
+        "--centering",
         action="store_true",
-        help="Assumes the template is already centered and omits centering.",
+        help="Center the template in the box if it has not been done already.",
     )
     performance_group.add_argument(
-        "--pad_edges",
-        dest="pad_edges",
+        "--pad-edges",
         action="store_true",
         default=False,
-        help="Whether to pad the edges of the target. Useful if the target does not "
-        "a well-defined bounding box. Defaults to True if splitting is required.",
+        help="Useful if the target does not have a well-defined bounding box. Will be "
+        "activated automatically if splitting is required to avoid boundary artifacts.",
     )
     performance_group.add_argument(
-        "--pad_filter",
-        dest="pad_filter",
+        "--pad-filter",
         action="store_true",
         default=False,
-        help="Pads the filter to the shape of the target. Particularly useful for fast "
+        help="Pad the template filter to the shape of the target. Useful for fast "
         "oscilating filters to avoid aliasing effects.",
     )
     performance_group.add_argument(
-        "--interpolation_order",
-        dest="interpolation_order",
+        "--interpolation-order",
         required=False,
         type=int,
-        default=3,
-        help="Spline interpolation used for rotations.",
+        default=None,
+        help="Spline interpolation used for rotations. Defaults to 3, and 1 for jax "
+        "and pytorch backends.",
     )
     performance_group.add_argument(
-        "--use_mixed_precision",
-        dest="use_mixed_precision",
+        "--use-mixed-precision",
         action="store_true",
         default=False,
         help="Use float16 for real values operations where possible. Not supported "
         "for jax backend.",
     )
     performance_group.add_argument(
-        "--use_memmap",
-        dest="use_memmap",
+        "--use-memmap",
         action="store_true",
         default=False,
-        help="Use memmaps to offload large data objects to disk. "
-        "Particularly useful for large inputs in combination with --use_gpu.",
+        help="Memmap large data to disk, e.g., matching on unbinned tomograms.",
     )
 
-    analyzer_group = parser.add_argument_group("Analyzer")
+    analyzer_group = parser.add_argument_group("Output / Analysis")
     analyzer_group.add_argument(
-        "--score_threshold",
-        dest="score_threshold",
+        "--score-threshold",
         required=False,
         type=float,
         default=0,
@@ -765,20 +724,24 @@ def parse_args():
     )
     analyzer_group.add_argument(
         "-p",
-        dest="peak_calling",
+        "--peak-calling",
         action="store_true",
         default=False,
         help="Perform peak calling instead of score aggregation.",
     )
     analyzer_group.add_argument(
-        "--num_peaks",
-        dest="num_peaks",
-        action="store_true",
+        "--num-peaks",
+        type=int,
         default=1000,
         help="Number of peaks to call, 1000 by default.",
     )
     args = parser.parse_args()
     args.version = __version__
+
+    if args.interpolation_order is None:
+        args.interpolation_order = 3
+        if args.backend in ("jax", "pytorch"):
+            args.interpolation_order = 1
 
     if args.interpolation_order < 0:
         args.interpolation_order = None
@@ -787,35 +750,28 @@ def parse_args():
         args.temp_directory = gettempdir()
 
     os.environ["TMPDIR"] = args.temp_directory
-    if args.score not in MATCHING_EXHAUSTIVE_REGISTER:
-        raise ValueError(
-            f"score has to be one of {', '.join(MATCHING_EXHAUSTIVE_REGISTER.keys())}"
-        )
-
     if args.gpu_indices is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_indices
 
-    if args.use_gpu:
-        warnings.warn(
-            "The use_gpu flag is no longer required and automatically "
-            "determined based on the selected backend."
-        )
-
-    if args.tilt_angles is not None:
-        if args.wedge_axes is None:
-            raise ValueError("Need to specify --wedge_axes when --tilt_angles is set.")
-        if not exists(args.tilt_angles):
-            try:
-                float(args.tilt_angles.split(",")[0])
-            except ValueError:
-                raise ValueError(f"{args.tilt_angles} is not a file nor a range.")
+    if args.tilt_angles is not None and not exists(args.tilt_angles):
+        try:
+            float(args.tilt_angles.split(",")[0])
+        except Exception:
+            raise ValueError(f"{args.tilt_angles} is not a file nor a range.")
 
     if args.ctf_file is not None and args.tilt_angles is None:
-        raise ValueError("Need to specify --tilt_angles when --ctf_file is set.")
+        # Check if tilt angles can be extracted from CTF specification
+        try:
+            ctf = CTF.from_file(args.ctf_file)
+            if ctf.angles is None:
+                raise ValueError
+            args.tilt_angles = args.ctf_file
+        except Exception:
+            raise ValueError(
+                "Need to specify --tilt-angles when not provided in --ctf-file."
+            )
 
-    if args.wedge_axes is not None:
-        args.wedge_axes = tuple(int(i) for i in args.wedge_axes.split(","))
-
+    args.wedge_axes = tuple(int(i) for i in args.wedge_axes.split(","))
     if args.orientations is not None:
         orientations = Orientations.from_file(args.orientations)
         orientations.translations = np.divide(
@@ -879,8 +835,9 @@ def main():
 
     initial_shape = template.shape
     translation = np.zeros(len(template.shape), dtype=np.float32)
-    if not args.no_centering:
+    if args.centering:
         template, translation = template.centered(0)
+
     print_block(
         name="Template",
         data={
@@ -892,7 +849,7 @@ def main():
 
     if template_mask is None:
         template_mask = template.empty
-        if not args.no_centering:
+        if not args.centering:
             enclosing_box = template.minimum_enclosing_box(
                 0, use_geometric_center=False
             )
@@ -958,15 +915,19 @@ def main():
                 "Assuming device 0.",
             )
             os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-        else:
-            args.cores = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
+
+        args.cores = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
         args.gpu_indices = [
             int(x) for x in os.environ["CUDA_VISIBLE_DEVICES"].split(",")
         ]
 
     # Finally set the desired backend
     device = "cuda"
+    args.use_gpu = False
     be.change_backend(args.backend)
+    if args.backend in ("jax", "pytorch", "cupy"):
+        args.use_gpu = True
+
     if args.backend == "pytorch":
         try:
             be.change_backend("pytorch", device=device)
@@ -975,15 +936,18 @@ def main():
         except Exception as e:
             print(e)
             device = "cpu"
+            args.use_gpu = False
             be.change_backend("pytorch", device=device)
-    if args.use_mixed_precision:
-        be.change_backend(
-            backend_name=args.backend,
-            default_dtype=be._array_backend.float16,
-            complex_dtype=be._array_backend.complex64,
-            default_dtype_int=be._array_backend.int16,
-            device=device,
-        )
+
+    # TODO: Make the inverse casting from complex64 -> float 16 stable
+    # if args.use_mixed_precision:
+    #     be.change_backend(
+    #         backend_name=args.backend,
+    #         float_dtype=be._array_backend.float16,
+    #         complex_dtype=be._array_backend.complex64,
+    #         int_dtype=be._array_backend.int16,
+    #         device=device,
+    #     )
 
     available_memory = be.get_available_memory() * be.device_count()
     if args.memory is None:
@@ -1022,7 +986,7 @@ def main():
     options = {
         "Angular Sampling": f"{args.angular_sampling}"
         f" [{matching_data.rotations.shape[0]} rotations]",
-        "Center Template": not args.no_centering,
+        "Center Template": args.centering,
         "Scramble Template": args.scramble_phases,
         "Invert Contrast": args.invert_target_contrast,
         "Extend Target Edges": args.pad_edges,
@@ -1065,12 +1029,7 @@ def main():
     }
     if args.ctf_file is not None or args.defocus is not None:
         filter_args["CTF File"] = args.ctf_file
-        filter_args["Defocus"] = args.defocus
-        filter_args["Phase Shift"] = args.phase_shift
         filter_args["Flip Phase"] = args.no_flip_phase
-        filter_args["Acceleration Voltage"] = args.acceleration_voltage
-        filter_args["Spherical Aberration"] = args.spherical_aberration
-        filter_args["Amplitude Contrast"] = args.amplitude_contrast
         filter_args["Correct Defocus"] = args.correct_defocus_gradient
 
     filter_args = {k: v for k, v in filter_args.items() if v is not None}
@@ -1098,7 +1057,10 @@ def main():
 
     print_block(
         name="Analyzer",
-        data={"Analyzer": callback_class, **analyzer_args},
+        data={
+            "Analyzer": callback_class,
+            **{sanitize_name(k): v for k, v in analyzer_args.items()},
+        },
         label_width=max(len(key) for key in options.keys()) + 3,
     )
     print("\n" + "-" * 80)

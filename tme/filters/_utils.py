@@ -15,6 +15,18 @@ from ..backends import NumpyFFTWBackend
 from ..types import BackendArray, NDArray
 from ..rotations import euler_to_rotationmatrix
 
+__all__ = [
+    "compute_tilt_shape",
+    "centered_grid",
+    "frequency_grid_at_angle",
+    "fftfreqn",
+    "crop_real_fourier",
+    "compute_fourier_shape",
+    "shift_fourier",
+    "create_reconstruction_filter",
+    "pad_to_length",
+]
+
 
 def compute_tilt_shape(shape: Tuple[int], opening_axis: int, reduce_dim: bool = False):
     """
@@ -71,21 +83,27 @@ def frequency_grid_at_angle(
     """
     Generate a frequency grid from 0 to 1/(2 * sampling_rate) in each axis.
 
+    Conceptually, this function generates accurate frequency grid of tilted
+    projections. Given a non-cubical shape, it no longer accurate to compute
+    frequences as Euclidean distances from a centered index grid. This function
+    solves this issue, and makes it possible to create complex filters on
+    non-cubical input shapes.
+
     Parameters
     ----------
-    shape : Tuple[int]
+    shape : tuple of int
         The shape of the grid.
     angle : float
         The angle at which to generate the grid.
-    sampling_rate : Tuple[float]
+    sampling_rate : tuple of float
         The sampling rate for each dimension.
     opening_axis : int, optional
-        The axis to be opened, defaults to None.
+        The projection axis, defaults to None.
     tilt_axis : int, optional
         The axis along which the grid is tilted, defaults to None.
 
-    Returns:
-    --------
+    Returns
+    -------
     NDArray
         The frequency grid.
     """
@@ -231,7 +249,9 @@ def shift_fourier(
 def create_reconstruction_filter(
     filter_shape: Tuple[int], filter_type: str, **kwargs: Dict
 ):
-    """Create a reconstruction filter of given filter_type.
+    """
+    Create a reconstruction filter of given filter_type. The DC component of
+    the filter will be located in the array center.
 
     Parameters
     ----------
@@ -299,7 +319,7 @@ def create_reconstruction_filter(
         ret = fftfreqn((size,), sampling_rate=1, compute_euclidean_norm=True)
         min_increment = np.radians(np.min(np.abs(np.diff(np.sort(tilt_angles)))))
         ret *= min_increment * size
-        np.fmin(ret, 1, out=ret)
+        ret = np.fmin(ret, 1, out=ret)
     elif filter_type == "shepp-logan":
         ret = freq * np.sinc(freq / 2)
     elif filter_type == "cosine":
@@ -310,3 +330,8 @@ def create_reconstruction_filter(
         raise ValueError("Unsupported filter type")
 
     return ret
+
+
+def pad_to_length(arr, length: int):
+    ret = np.atleast_1d(arr)
+    return np.repeat(ret, length // ret.size)

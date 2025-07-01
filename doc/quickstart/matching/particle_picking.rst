@@ -4,34 +4,69 @@
 Picking Ribosomes
 =================
 
-In the following we will use template matching to to identify and isolate ribosomes from a tomogram using a density map as a template.
+This tutorial demonstrates how to identify and extract ribosome locations from cryo-electron tomograms using template matching. You will learn
 
-The tomogram TS_037.rec is part of the dataset `EMPIAR-10988  <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_ and can be downloaded from the section titled *2. Reconstructed cryo-electron tomograms acquired with defocus-only (DEF) on S. pombe cryo-FIB lamellae*. The template used is EMD-3228, which you can download by clicking `here <https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-3228/map/emd_3228.map.gz>`_. Alternatively, you can use wget:
+- How to prepare templates and masks for template matching
+- How to run template matching with various filtering options
+- How to interpret and optimize template matching results
+
+
+Data Acquisition
+----------------
+
+For this tutorial, we use data from `EMPIAR-10988 <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_. You will need to download
+
+.. code-block:: text
+
+    EMPIAR-10988/
+    └── data/
+        └── DEF/
+            ├── tomograms/
+            │   └── TS_037.rec          # Main tomogram file
+            └── metadata/
+                └── mdocs_modified/
+                    └── TS_037.mdoc     # Tilt series metadata
+
+As 80S ribosome template, we will use `EMD-3228 <https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-3228/map/emd_3228.map.gz>`_
 
 .. code-block:: bash
 
     wget https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-3228/map/emd_3228.map.gz
 
 
+Your working directory should now contain
+
+.. code-block:: text
+
+    tutorial_directory/
+    ├── TS_037.rec              # Tomogram
+    ├── TS_037.mdoc             # Metadata
+    └── emd_3228.map.gz         # Template
+
+
 Template and Mask Generation
 ----------------------------
 
-EMD-3228 is at a different sampling rate than the binned tomogram. Although ``match_template.py`` can perform resampling on the fly, its generally recommended to provide a template with the correct sampling rate. This can either be achieved using the API (see :py:meth:`Density.resample <tme.density.Density.resample>`) or using ``preprocess.py``. The right box size depends on the use-case, but generally speaking, larger boxes enable more accurate frequency operations and are essential for oscillating filters like the CTF. As a rule of thumb, you can set the box size to two times the minimum enclosing box.
+EMD-3228 has a different sampling rate than our tomogram, so we need to resample it to match. We can do this using the API (see :py:meth:`Density.resample <tme.density.Density.resample>`) or using ``preprocess.py``.
 
 .. code-block:: bash
 
     preprocess.py \
         -m emd_3228.map.gz \
-        --sampling_rate 13.48 \
-        --box_size 70 \
-        --invert_contrast \
-        -o emd_3228_resampled.mrc
+        --sampling-rate 13.48 \
+        --box-size 70 \
+        --invert-contrast \
+        --output emd_3228_resampled.mrc
+
+Larger boxes enable more accurate frequency operations and are essential for oscillating filters like the CTF. As a rule of thumb, set the box size to about twice the minimum enclosing box of your structure.
 
 .. note::
 
     The cisTEM tool `simulate <https://grigoriefflab.umassmed.edu/simulate>`_ is a good alternative for template generation.
 
-We can use the GUI to create a template mask. Since we inverted the template, do yourself a favor and use the *Invert Contrast* filter on the template. Alternatively, you can do this programatically, given you know the required mask dimensions
+The mask defines which parts of the template to use for matching. We can use the napari GUI to create the mask visually. Since we inverted the template contrast above, make sure to use the *Invert Contrast* filter when viewing the template.
+
+Alternatively, you can create the mask programmatically
 
 .. code-block:: python
 
@@ -48,11 +83,13 @@ We can use the GUI to create a template mask. Since we inverted the template, do
     mask = Density(mask, sampling_rate=13.48)
     mask.to_file("emd_3228_resampled_mask.mrc")
 
-Your mask and template should look similar to the projection below
+Your prepared template and mask should look similar to the projection below
 
 .. figure:: ../../_static/quickstart/napari_mask.png
     :width: 100 %
     :align: center
+
+    Template (left) and mask (right) for template matching
 
 
 Template Matching
@@ -64,184 +101,267 @@ For demonstration purposes we are going to process a subset of the data. However
 
     from tme import Density
 
+    # Load the full tomogram
     dens = Density.from_file("TS_037.rec")
+
+    # Extract a subset for faster processing (X: 100-400, Y: 450-750, Z: 150-450)
+    # This creates a 300x300x300 voxel region containing multiple ribosomes
     dens.data = dens.data[100:400, 450:750, 150:450]
+
+    # Save the subset for template matching
     dens.to_file("TS_037_subset.mrc")
 
-
-Executing the following code will run template matching, using the common 40 Ångstrom lowpass filter to avoid bias towards high-frequency components. If you are performing this analysis on your laptop, make sure to increase the angular sampling rate from 6 to 15. If you are on an M-series MacBook you can add ``--backend jax`` to make use of the integrated GPU.
+The code below will run template matching, taking about 1-2 minutes on a consumer-level GPU or 5-10 minutes on CPU (if you are running on CPU, make sure to set the number of cores via ``--cores``).
 
 .. code-block:: bash
 
     match_template.py \
-        -m TS_037_subset.mrc \
-        -i emd_3228_resampled.mrc \
-        --template_mask emd_3228_resampled_mask \
+        --target TS_037_subset.mrc \
+        --template emd_3228_resampled.mrc \
+        --template-mask emd_3228_resampled_mask.mrc \
         --lowpass 40 \
-        -a 6 \
-        -n 4 \
-        --no_centering \
-        --use_gpu \
-        -o output_default.pickle
+        --angular-sampling 8 \
+        --output output_default.pickle
 
-.. note::
+.. tip::
 
-    You can inspect the results in the GUI by clicking the *Import Pickle* button.
+    For GPU acceleration: add ``--backend cupy`` (NVIDIA, or pytorch/jax) or ``--backend jax`` (M-series Mac).
 
-The figure below shows a lowpass-filtered representation of the tomogram subset on the left and the corresponding template matching scores on the right. Overall, the majority of ribosomes appear to be accounted for. However, the peaks are fairly wide, and some represent erroneous matches to membranes and gold markers.
 
-.. figure:: ../../_static/quickstart/particle_picking_default.png
-    :width: 100 %
-    :align: center
+You can inspect the results in the GUI by clicking the *Import Pickle* button. The figure below shows a lowpass-filtered representation of the tomogram subset on the left and the corresponding template matching scores on the right. Bright spots in the score map indicate potential ribosome locations, the brighter the spot the better the match.
+
+Overall, the majority of ribosomes appear to be accounted for. However, note that
+
+- **Wide peaks**: Multiple high-scoring voxels around each ribosome
+- **False positives**: Some bright spots on membranes and gold markers
+
+.. list-table::
+   :widths: 50 50
+   :class: transparent-table
+
+   * - .. figure:: ../../_static/quickstart/data_deconv.png
+          :width: 100%
+
+          Deconvolved tomogram
+
+     - .. figure:: ../../_static/quickstart/default.png
+          :width: 100%
+
+          Template matching scores
 
 
 Parameter Comparison
 --------------------
 
-The following outlines common filtering approaches we have tried so you do not have to. Due to the dynamic ranges of the scores and unique color mapping in napari, we can not directly determine which filtering method is optimal. However, we do note that peak shape and amplitude relative to the background can be optimized by going beyond the trivial example shown above.
+The following outlines common filtering approaches to improve template matching results. When processing cryo-ET data, you should at least use missing wedge correction, and add CTF if you have the parameter estimated. Background normalization can be useful to reduce the contribution of dense areas to template matching scores, e.g., membranes or fiducial gold markers. Bandpass filters are useful when specific frequency ranges contain information irrelevant for template matching. Spectral whitening enhances weak signals but may overamplify noise.
 
 .. tab-set::
 
-    .. tab-item:: Bandpass
+    .. tab-item:: Missing Wedge
 
-        .. figure:: ../../_static/quickstart/picking_bandpass.png
-            :width: 100 %
-            :align: center
-
-        The figure above was generated using the following
+        Missing wedge correction accounts for the anisotropic resolution in tomograms. The template can be modulated using either a continuous wedge or a more accurate per-tilt mask. For a continuous wedge mask
 
         .. code-block:: bash
 
             match_template.py \
-                -m TS_037_subset.mrc \
-                -i emd_3228_resampled.mrc \
-                --template_mask emd_3228_resampled_mask.mrc \
+                --target TS_037_subset.mrc \
+                --template emd_3228_resampled.mrc \
+                --template-mask emd_3228_resampled_mask.mrc \
                 --lowpass 40 \
-                --highpass 400 \
-                -a 6 \
-                -n 4 \
-                --no_centering \
-                --use_gpu
+                --tilt-angles 35,35 \
+                --angular-sampling 8 \
+                --output output_contwedge.pickle
 
-    .. tab-item:: Whitening
-
-        .. figure:: ../../_static/quickstart/picking_whiten.png
-            :width: 100 %
-            :align: center
-
-        The figure above was generated using the following
+        For a step wedge mask
 
         .. code-block:: bash
 
             match_template.py \
-                -m TS_037_subset.mrc \
-                -i emd_3228_resampled.mrc \
-                --template_mask emd_3228_resampled_mask.mrc \
+                --target TS_037_subset.mrc \
+                --template emd_3228_resampled.mrc \
+                --template-mask emd_3228_resampled_mask.mrc \
                 --lowpass 40 \
-                --whiten \
-                -a 6 \
-                -n 4 \
-                --no_centering \
-                --use_gpu
+                --tilt-angles TS_037.mdoc \
+                --angular-sampling 8 \
+                --output output_stepwedge.pickle
 
+        Instead of binary masks, the wedge can also be weighted based on the cosine of the tilt angle or the electron dose to more faithfully recapitulate the data acquisition process. For instance, to reproduce the weighting scheme of relion
+
+        .. code-block:: bash
+
+            match_template.py \
+                --target TS_037_subset.mrc \
+                --template emd_3228_resampled.mrc \
+                --template-mask emd_3228_resampled_mask.mrc \
+                --lowpass 40 \
+                --tilt-angles TS_037.mdoc \
+                --tilt-weighting relion \
+                --angular-sampling 8 \
+                --output output_weightedstepwedge.pickle
+
+        .. list-table:: Template matching scores by wedge mask type
+           :widths: 33 33 33
+           :class: transparent-table
+
+           * - .. figure:: ../../_static/quickstart/wedge_cont.png
+                  :width: 100%
+
+                  Continuous wedge mask
+
+             - .. figure:: ../../_static/quickstart/wedge_step.png
+                  :width: 100%
+
+                  Per-tilt wedge mask
+
+             - .. figure:: ../../_static/quickstart/wedge_weighted.png
+                  :width: 100%
+
+                  Weighted per-tilt wedge mask
+
+        .. tip::
+
+            The ``--tilt-angles`` argument can directly use Warp/M XML files, mdoc, tomostar and text files. The latter contain either the tilt angles as single value per line, or two tab-separated columns with column names 'angles' and 'weights'.
 
     .. tab-item:: CTF
 
+        CTF correction recovers high-resolution information and produces sharper peaks with better separation of closely spaced ribosomes. In the simplest case, a single defocus value can be provided, assuming constant defocus throughout the volume. 3D CTFs can be created using Warp/M XML, tomostar, mdoc, and ctffind4 files (use ``match_template.py --help`` to see all available formats for the ctf file).
 
-        .. figure:: ../../_static/quickstart/picking_ctf.png
-            :width: 100 %
-            :align: center
-
-        The figure above was generated using the following
+        For constant 3µm defocus (30000 Å)
 
         .. code-block:: bash
 
             match_template.py \
-                -m TS_037_subset.mrc \
-                -i emd_3228_resampled.mrc \
-                --template_mask emd_3228_resampled_mask.mrc \
-                --lowpass 40 \
+                --target TS_037_subset.mrc \
+                --template emd_3228_resampled.mrc \
+                --template-mask emd_3228_resampled_mask.mrc \
                 --defocus 30000 \
-                --amplitude_contrast 0.08 \
-                --no_flip_phase \
-                -a 6 \
-                -n 4 \
-                --no_centering \
-                --use_gpu
+                --amplitude-contrast 0.08 \
+                --acceleration-voltage 300 \
+                --spherical-aberration 27000000.0 \
+                --angular-sampling 8 \
+                --output output_ctf.pickle
 
+        The CTF can be specified per tilt to create a 3D CTF filter. However, note that the CTF parameter estimates in the MDOC file are only a starting point, and should be replaced by estimates from dedicated software for optimal results.
+
+        .. code-block:: bash
+
+            match_template.py \
+                --target TS_037_subset.mrc \
+                --template emd_3228_resampled.mrc \
+                --template-mask emd_3228_resampled_mask.mrc \
+                --ctf-file TS_037.mdoc \
+                --amplitude-contrast 0.08 \
+                --acceleration-voltage 300 \
+                --spherical-aberration 27000000.0 \
+                --angular-sampling 8 \
+                --output output_3dctf.pickle
+
+        .. list-table:: Template matching scores by CTF
+           :widths: 50 50
+           :class: transparent-table
+
+           * - .. figure:: ../../_static/quickstart/ctf.png
+                  :width: 100%
+
+                  Constant defocus CTF
+
+             - .. figure:: ../../_static/quickstart/3dctf.png
+                  :width: 100%
+
+                  3D CTF
+
+        .. tip::
+
+            Using a 3D CTF will implicitly apply a step wedge mask. [Experts] the approach by which the 3D CTF is constructed from 2D tilts can be modified using ``--reconstruction-filter`` and ``reconstruction-interpolation-order`` for optimal results.
 
     .. tab-item:: Background Norm
 
-        .. figure:: ../../_static/quickstart/picking_norm.png
-            :width: 100 %
-            :align: center
-
-        The figure above was generated using the following
+        Background normalization reduces the contribution of dense cellular features to template matching scores and helps handle contamination artifacts. In the simplest case, a noise version of the current template can be used for normalization
 
         .. code-block:: bash
 
             match_template.py \
-                -m TS_037_subset.mrc \
-                -i emd_3228_resampled.mrc \
-                --template_mask emd_3228_resampled_mask.mrc \
+                --target TS_037_subset.mrc \
+                --template emd_3228_resampled.mrc \
+                --template-mask emd_3228_resampled_mask.mrc \
                 --lowpass 40 \
-                --scramble_phases \
-                --invert_target_contrast \
-                -a 6 \
-                -n 4 \
-                --use_gpu \
-                --no_centering \
-                -o output_scramble.pickle
+                --scramble-phases \
+                --angular-sampling 8 \
+                --output output_scramble.pickle
 
-        .. code-block:: python
+        We then use the scores obtained from the noise template to normalize our observations. Note, that you do not need to use a noise template for this, but in principle any other cellular component you would like to avoid, e.g., membranes, fiducial markers or alternative macromolecules.
 
-            import numpy as np
-            from tme.matching_utils import load_pickle, write_pickle
+        .. code-block:: bash
 
-            data = load_pickle("output_default.pickle")
-            data_background = load_pickle("output_scramble.pickle")
-            data[0] = (data[0] - data_background[0]) / (1 - data_background[0])
-            np.fmax(data[0], 0, out=data[0])
-            write_pickle(data, "norm.pickle")
+            postprocess.py \
+                --input-file output_default.pickle \
+                --background-file output_scramble.pickle \
+                --output-format pickle \
+                --output-prefix output_norm.pickle
 
-
-    .. tab-item:: Wedge
-
-        .. figure:: ../../_static/quickstart/picking_wedge.png
+        .. figure:: ../../_static/quickstart/norm.png
             :width: 100 %
             :align: center
 
-        The figure above was generated using the following
+            Template matching scores for background normalization
+
+        .. note::
+
+            We use ``--output-format pickle`` for visualization. There is no need to create this intermediary file in practice.
+
+    .. tab-item:: Bandpass
+
+        Bandpass filtering removes specific frequency ranges that may contain artifacts or noise while preserving the relevant structural information. This is particularly useful when low frequencies are dominated by cellular background or high frequencies contain excessive noise.
 
         .. code-block:: bash
 
             match_template.py \
-                -m TS_037_subset.mrc \
-                -i emd_3228_resampled.mrc \
-                --template_mask emd_3228_resampled_mask.mrc \
+                --target TS_037_subset.mrc \
+                --template emd_3228_resampled.mrc \
+                --template-mask emd_3228_resampled_mask.mrc \
                 --lowpass 40 \
-                --tilt_angles 35,35 \
-                --wedge_axes 0,2 \
-                -a 6 \
-                -n 4 \
-                --no_centering \
-                --use_gpu
+                --highpass 400 \
+                --angular-sampling 8 \
+                --output output_bandpass.pickle
 
-.. note::
+        .. figure:: ../../_static/quickstart/bandpass.png
+            :width: 100 %
+            :align: center
 
-    The optimal filter would need to be determined by comparing the identified peaks to a ground truth dataset, which we do in a future tutorial.
+            Template matching scores for bandpass filter
+
+    .. tab-item:: Whitening
+
+        Spectral whitening flattens the power spectrum to enhance weak signals across all frequencies, which can improve detection of ribosomes in noisy regions. However, this approach may also amplify noise, so it should be used judiciously depending on the signal-to-noise ratio of your data.
+
+        .. code-block:: bash
+
+            match_template.py \
+                --target TS_037_subset.mrc \
+                --template emd_3228_resampled.mrc \
+                --template-mask emd_3228_resampled_mask.mrc \
+                --lowpass 40 \
+                --whiten \
+                --angular-sampling 8 \
+                --output output_whitening.pickle
+
+        .. figure:: ../../_static/quickstart/whitening.png
+            :width: 100 %
+            :align: center
+
+            Template matching scores for spectral whitening
 
 
 Remarks on Tomogram Preprocessing
 ---------------------------------
 
-We have seen that template matching performance can be improved using a variety of strategies. However, ultimately, its limited by the quality of the experimental data.
+We have seen that template matching performance can be improved using a variety of strategies. However, ultimately, it's limited by the quality of the experimental data.
 
-Denoising approaches have recently found popularity, due to their ability to generate visually appealing tomograms. However, that does not necessarily make them more suitable for template matching. Cross-correlation-based template matching is fairly robust towards Gaussian and Poisson noise, which is commonly removed in denoising, leading to an overall reduction of high-frequency information. It is however, the high frequency information, that enables truly unambigous template matching [1]_. Albeit not possible to draw a general conclusion, denoising is most likely not the place to start if template matching is not working.
+Denoising approaches have recently found popularity, due to their ability to generate visually appealing tomograms. However, that does not necessarily make them more suitable for template matching. Cross-correlation-based template matching is fairly robust towards Gaussian and Poisson noise, which is commonly removed in denoising, leading to an overall reduction of high-frequency information. It is, however, the high-frequency information that enables truly unambiguous template matching [1]_. Albeit not possible to draw a general conclusion, denoising is most likely not the place to start if template matching is not working.
 
-Instead, processing before tomogram reconstruction, such as tilt-series alignment and CTF correction should be prioritized. To demonstrate the utility of CTF correction, we use a tomogram from that was CTF corrected using IMOD's phase-flip (`source <https://dataverse.nl/dataset.xhtml?persistentId=doi:10.34894/TLGJCM>`_).
+Instead, processing before tomogram reconstruction, such as tilt-series alignment and CTF correction should be prioritized. To demonstrate the utility of CTF correction, we use a tomogram that was CTF corrected using IMOD's phase-flip (`source <https://dataverse.nl/dataset.xhtml?persistentId=doi:10.34894/TLGJCM>`_).
 
-Shown below is the raw data on the left, baseline scores in the middle, and on the right using a CTF-corrected template on the right, which reproduces the results from Chaillet et al. [2]_.
+Shown below is the raw data on the left, baseline scores in the middle, and on the right using a CTF-corrected template, which reproduces the results from Chaillet et al. [2]_.
 
 
 .. image:: ../../_static/quickstart/picking_ctf_tomogram.png
@@ -263,10 +383,10 @@ The figure above was generated using the following template
 
     preprocess.py \
         -m emd_2938.map.gz \
-        --sampling_rate 13.79 \
-        --box_size 60 \
-        --invert_contrast \
-        -o emd_2938_resampled.mrc
+        --sampling-rate 13.79 \
+        --box-size 60 \
+        --invert-contrast \
+        --output emd_2938_resampled.mrc
 
 and a spherical mask
 
@@ -290,19 +410,21 @@ CTF parameters were omitted from the command below to compute baseline scores
 .. code-block:: bash
 
     match_template.py \
-        -i emd_2938_resampled.mrc \
-        --template_mask emd_2938_resampled_mask.mrc \
-        -m tomo200528_100.mrc \
-        -a 6 \
+        --target tomo200528_100.mrc \
+        --template emd_2938_resampled.mrc \
+        --template-mask emd_2938_resampled_mask.mrc \
         --lowpass 40 \
         --defocus 30000 \
-        --amplitude_contrast 0.08 \
-        --spherical_aberration 27000000.0 \
-        --acceleration_voltage 200 \
-        --no_centering \
-        --use_gpu
+        --amplitude-contrast 0.08 \
+        --spherical-aberration 27000000.0 \
+        --acceleration-voltage 200 \
+        --angular-sampling 6
 
-With CTF correction in place, we can move to more complex correction approaches such as true 3D-CTF corrected templates, defocus gradient incorporation, and tilt weighting. These will be covered in a future tutorial.
+
+Next Steps
+----------
+
+Extract ribosome coordinates using :doc:`postprocessing <../postprocessing/example>`.
 
 
 References

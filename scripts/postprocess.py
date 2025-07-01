@@ -9,7 +9,7 @@ import argparse
 from sys import exit
 from os import getcwd
 from typing import Tuple, List
-from os.path import join, splitext
+from os.path import join, splitext, basename
 
 import numpy as np
 from numpy.typing import NDArray
@@ -50,15 +50,15 @@ def parse_args():
     additional_group = parser.add_argument_group("Additional Parameters")
 
     input_group.add_argument(
-        "--input_file",
-        "--input_files",
+        "--input-file",
+        "--input-files",
         required=True,
         nargs="+",
         help="Path to one or multiple runs of match_template.py.",
     )
     input_group.add_argument(
-        "--background_file",
-        "--background_files",
+        "--background-file",
+        "--background-files",
         required=False,
         nargs="+",
         default=[],
@@ -66,7 +66,7 @@ def parse_args():
         "For instance from --scramble_phases or a different template.",
     )
     input_group.add_argument(
-        "--target_mask",
+        "--target-mask",
         required=False,
         type=str,
         help="Path to an optional mask applied to template matching scores.",
@@ -81,12 +81,14 @@ def parse_args():
     )
 
     output_group.add_argument(
-        "--output_prefix",
-        required=True,
-        help="Output filename, extension will be added based on output_format.",
+        "--output-prefix",
+        required=False,
+        default=None,
+        help="Output prefix. Defaults to basename of first input. Extension is "
+        "added with respect to chosen output format.",
     )
     output_group.add_argument(
-        "--output_format",
+        "--output-format",
         choices=[
             "orientations",
             "relion4",
@@ -108,44 +110,44 @@ def parse_args():
     )
 
     peak_group.add_argument(
-        "--peak_caller",
+        "--peak-caller",
         choices=list(PEAK_CALLERS.keys()),
         default="PeakCallerScipy",
         help="Peak caller for local maxima identification.",
     )
     peak_group.add_argument(
-        "--minimum_score",
+        "--min-score",
         type=float,
         default=0.0,
         help="Minimum score from which peaks will be considered.",
     )
     peak_group.add_argument(
-        "--maximum_score",
+        "--max-score",
         type=float,
         default=None,
         help="Maximum score until which peaks will be considered.",
     )
     peak_group.add_argument(
-        "--min_distance",
+        "--min-distance",
         type=int,
         default=5,
         help="Minimum distance between peaks.",
     )
     peak_group.add_argument(
-        "--min_boundary_distance",
+        "--min-boundary-distance",
         type=int,
         default=0,
         help="Minimum distance of peaks to target edges.",
     )
     peak_group.add_argument(
-        "--mask_edges",
+        "--mask-edges",
         action="store_true",
         default=False,
         help="Whether candidates should not be identified from scores that were "
         "computed from padded densities. Superseded by min_boundary_distance.",
     )
     peak_group.add_argument(
-        "--num_peaks",
+        "--num-peaks",
         type=int,
         default=1000,
         required=False,
@@ -153,7 +155,7 @@ def parse_args():
         "If minimum_score is provided all peaks scoring higher will be reported.",
     )
     peak_group.add_argument(
-        "--peak_oversampling",
+        "--peak-oversampling",
         type=int,
         default=1,
         help="1 / factor equals voxel precision, e.g. 2 detects half voxel "
@@ -161,33 +163,33 @@ def parse_args():
     )
 
     additional_group.add_argument(
-        "--extraction_box_size",
+        "--extraction-box-size",
         type=int,
         default=None,
         help="Box size of extracted subtomograms, defaults to the centered template.",
     )
     additional_group.add_argument(
-        "--mask_subtomograms",
+        "--mask-subtomograms",
         action="store_true",
         default=False,
         help="Whether to mask subtomograms using the template mask. The mask will be "
         "rotated according to determined angles.",
     )
     additional_group.add_argument(
-        "--invert_target_contrast",
+        "--invert-target-contrast",
         action="store_true",
         default=False,
         help="Whether to invert the target contrast.",
     )
     additional_group.add_argument(
-        "--n_false_positives",
+        "--n-false-positives",
         type=int,
         default=None,
         required=False,
         help="Number of accepted false-positives picks to determine minimum score.",
     )
     additional_group.add_argument(
-        "--local_optimization",
+        "--local-optimization",
         action="store_true",
         required=False,
         help="[Experimental] Perform local optimization of candidates. Useful when the "
@@ -195,6 +197,9 @@ def parse_args():
     )
 
     args = parser.parse_args()
+
+    if args.output_prefix is None:
+        args.output_prefix = splitext(basename(args.input_file[0]))[0]
 
     if args.orientations is not None:
         args.orientations = Orientations.from_file(filename=args.orientations)
@@ -433,11 +438,15 @@ def main():
 
     target_origin, _, sampling_rate, cli_args = data[-1]
 
+    # Backwards compatibility with pre v0.3.0b
+    if hasattr(cli_args, "no_centering"):
+        cli_args.centering = not cli_args.no_centering
+
     _, template_extension = splitext(cli_args.template)
     ret = load_template(
         filepath=cli_args.template,
         sampling_rate=sampling_rate,
-        centering=not cli_args.no_centering,
+        centering=cli_args.centering,
     )
     template, center_of_mass, translation, template_is_density = ret
 
@@ -496,7 +505,7 @@ def main():
             )
             print(f"Determined minimum score cutoff: {minimum_score}.")
             minimum_score = max(minimum_score, 0)
-            args.minimum_score = minimum_score
+            args.min_score = minimum_score
 
         args.batch_dims = None
         if hasattr(cli_args, "target_batch"):
@@ -508,8 +517,8 @@ def main():
             "min_distance": args.min_distance,
             "min_boundary_distance": args.min_boundary_distance,
             "batch_dims": args.batch_dims,
-            "minimum_score": args.minimum_score,
-            "maximum_score": args.maximum_score,
+            "minimum_score": args.min_score,
+            "maximum_score": args.max_score,
         }
 
         peak_caller = PEAK_CALLERS[args.peak_caller](**peak_caller_kwargs)
@@ -518,7 +527,7 @@ def main():
             state,
             scores,
             rotation_matrix=np.eye(template.data.ndim),
-            mask=template.data,
+            mask=template_mask.data,
             rotation_mapping=rotation_mapping,
             rotations=rotation_array,
         )
@@ -553,12 +562,12 @@ def main():
             details=details,
         )
 
-    if args.minimum_score is not None and len(orientations.scores):
-        keep = orientations.scores >= args.minimum_score
+    if args.min_score is not None and len(orientations.scores):
+        keep = orientations.scores >= args.min_score
         orientations = orientations[keep]
 
-    if args.maximum_score is not None and len(orientations.scores):
-        keep = orientations.scores <= args.maximum_score
+    if args.max_score is not None and len(orientations.scores):
+        keep = orientations.scores <= args.max_score
         orientations = orientations[keep]
 
     if args.peak_oversampling > 1:
@@ -623,7 +632,7 @@ def main():
         orientations.to_file(
             filename=f"{args.output_prefix}.{extension}",
             file_format=file_format,
-            source_path=cli_args.target,
+            source_path=basename(cli_args.target),
             version=version,
         )
         exit(0)
@@ -708,7 +717,7 @@ def main():
     template, center, *_ = load_template(
         filepath=cli_args.template,
         sampling_rate=sampling_rate,
-        centering=not cli_args.no_centering,
+        centering=cli_args.centering,
     )
 
     for index, (translation, angles, *_) in enumerate(orientations):

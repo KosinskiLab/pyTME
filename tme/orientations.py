@@ -492,9 +492,12 @@ class Orientations:
     def _from_star(
         cls, filename: str, delimiter: str = "\t"
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        ret = StarParser(filename, delimiter=delimiter)
+        parser = StarParser(filename, delimiter=delimiter)
 
-        ret = ret.get("data_particles", None)
+        ret = parser.get("data_particles", None)
+        if ret is None:
+            ret = parser.get("data_", None)
+
         if ret is None:
             raise ValueError(f"No data_particles section found in {filename}.")
 
@@ -503,13 +506,20 @@ class Orientations:
         )
         translation = translation.astype(np.float32).T
 
+        default_angle = np.zeros(translation.shape[0], dtype=np.float32)
+        for x in ("_rlnAngleRot", "_rlnAngleTilt", "_rlnAnglePsi"):
+            if x not in ret:
+                ret[x] = default_angle
+
         rotation = np.vstack(
             (ret["_rlnAngleRot"], ret["_rlnAngleTilt"], ret["_rlnAnglePsi"])
         )
         rotation = rotation.astype(np.float32).T
 
         default = np.zeros(translation.shape[0])
-        return translation, rotation, default, default
+
+        scores = ret.get("_pytmeScore", default)
+        return translation, rotation, scores, default
 
     @staticmethod
     def _from_tbl(

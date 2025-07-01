@@ -16,7 +16,14 @@ from typing import List, Dict, Union
 
 import numpy as np
 
-__all__ = ["PDBParser", "MMCIFParser", "GROParser", "StarParser", "XMLParser"]
+__all__ = [
+    "PDBParser",
+    "MMCIFParser",
+    "GROParser",
+    "StarParser",
+    "XMLParser",
+    "MDOCParser",
+]
 
 
 class Parser(ABC):
@@ -84,6 +91,34 @@ class Parser(ABC):
             True if the key exists in the internal data, False otherwise.
         """
         return key in self._data
+
+    def __repr__(self) -> str:
+        """
+        String representation of the Parser showing available keys and their lengths.
+
+        Returns
+        -------
+        str
+            A formatted string showing each key and the length of its value.
+        """
+        if not self._data:
+            return f"{self.__class__.__name__}(empty)"
+
+        lines = [f"{self.__class__.__name__}:"]
+        try:
+            for key, value in sorted(self._data.items()):
+                if isinstance(value, (list, tuple)):
+                    lines.append(f"  {key}: length {len(value)}")
+                elif isinstance(value, dict):
+                    lines.append(f"  {key}: dict with {len(value)} keys")
+                elif isinstance(value, str):
+                    lines.append(f"  {key}: str")
+                else:
+                    lines.append(f"  {key}: {type(value).__name__}")
+        except Exception:
+            pass
+
+        return "\n".join(lines)
 
     def get(self, key, default=None):
         """
@@ -248,19 +283,6 @@ class MMCIFParser(Parser):
     """
 
     def parse_input(self, lines: deque) -> Dict:
-        """
-        Parse a list of lines from an MMCIF file and convert the data into a dictionary.
-
-        Parameters
-        ----------
-        lines : deque of str
-            The lines of an MMCIF file to parse.
-
-        Returns
-        -------
-        dict
-            A dictionary containing the parsed data from the MMCIF file.
-        """
         lines = self._consolidate_strings(lines)
         blocks = self._split_in_blocks(lines)
         mmcif_dict = {}
@@ -449,21 +471,6 @@ class GROParser(Parser):
     """
 
     def parse_input(self, lines, **kwargs) -> Dict:
-        """
-        Parse a list of lines from a GRO file and convert the data into a dictionary.
-
-        Parameters
-        ----------
-        lines : deque of str
-            The lines of a GRO file to parse.
-        kwargs : Dict, optional
-            Optional keyword arguments.
-
-        Returns
-        -------
-        dict
-            A dictionary containing the parsed data from the GRO file.
-        """
         data = {
             "title": [],
             "num_atoms": [],
@@ -684,3 +691,76 @@ class XMLParser(Parser):
             pass
 
         return value_str
+
+
+class MDOCParser(Parser):
+    """
+    Convert MDOC file (SerialEM metadata) into a dictionary representation.
+
+    MDOC files contain global parameters and per-tilt metadata for cryo-ET
+    tilt series, with sections marked by [ZValue = N] for individual tilts.
+    """
+
+    def parse_input(self, lines: deque, **kwargs) -> Dict:
+        data = {}
+        global_params = {}
+        in_zvalue_section = False
+        zvalue_pattern = re.compile(r"\[ZValue\s*=\s*(\d+)\]")
+        section_pattern = re.compile(r"\[T\s*=\s*(.*?)\]")
+
+        if not lines:
+            return data
+
+        while lines:
+            line = lines.popleft().strip()
+
+            if not line:
+                continue
+
+            # Check for ZValue section header
+            zvalue_match = zvalue_pattern.match(line)
+            if zvalue_match:
+                in_zvalue_section = True
+
+                zvalue = int(zvalue_match.group(1))
+                if "ZValue" not in data:
+                    data["ZValue"] = []
+                data["ZValue"].append(zvalue)
+                continue
+
+            # Check for T section header (comments/metadata)
+            section_match = section_pattern.match(line)
+            if section_match:
+                section_content = section_match.group(1)
+                if "sections" not in global_params:
+                    global_params["sections"] = []
+                global_params["sections"].append(section_content)
+                continue
+
+            # Parse key-value pairs
+            if "=" in line:
+                try:
+                    key, value = line.split("=", 1)
+                    key = key.strip()
+                    value = value.strip()
+
+                    try:
+                        if "." not in value and "e" not in value.lower():
+                            parsed_value = int(value)
+                        else:
+                            parsed_value = float(value)
+                    except ValueError:
+                        parsed_value = value
+
+                    if not in_zvalue_section:
+                        global_params[key] = parsed_value
+                    else:
+                        if key not in data:
+                            data[key] = []
+                        data[key].append(parsed_value)
+
+                except ValueError:
+                    continue
+
+        data.update(global_params)
+        return data

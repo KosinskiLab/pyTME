@@ -38,6 +38,7 @@ The following will fit the newly created structure `6HMS_mod.pdb` into the densi
         -i 6HMS_mod.pdb \
         -n 4 \
         -a 40 \
+        --centering \
         -o output.pickle
 
 We can also apply various filters to the atomic structure, such as a lowpass filter to 30 Ångstrom
@@ -50,6 +51,7 @@ We can also apply various filters to the atomic structure, such as a lowpass fil
         -n 4 \
         -a 40 \
         --lowpass 30 \
+        --centering \
         -o output_mod.pickle
 
 
@@ -58,10 +60,10 @@ The orientation with highest score, which in our case is the initial correct ori
 .. code-block:: bash
 
     postprocess.py \
-        --input_file output.pickle \
-        --num_peaks 1 \
-        --output_format alignment \
-        --output_prefix 6HMS_fit
+        --input-file output.pickle \
+        --num-peaks 1 \
+        --output-format alignment \
+        --output-prefix 6HMS_fit
 
 The postprocessing tool offers a range of additional features to enable subvoxel precision such as peak oversampling via ``--peak_oversampling``  and local optimization via the ``--local_optimization`` flag. The output of fitting is shown below. The left side shows the map and `6HMS_mod.pdb`, the right side the output of |project|.
 

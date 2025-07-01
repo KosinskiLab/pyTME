@@ -14,12 +14,12 @@ The input required by RELION can be readily generated using ``postprocess.py`` w
 .. code-block:: bash
 
     postprocess.py \
-        --input_file output.pickle \
-        --output_prefix output \
-        --output_format relion \
-        --min_distance 20 \
-        --number_of_peaks 1000 \
-        -—wegde_mask mask.mrc
+        --input-file output.pickle \
+        --output-prefix output \
+        --output-format relion \
+        --min-distance 20 \
+        --num-peaks 1000 \
+        -—wegde-mask mask.mrc
 
 
 Using the generated STAR file, extracted subtomgrams and optimal angles, an initial averaged reference structure can be generated with RELION from within a shell as follows:

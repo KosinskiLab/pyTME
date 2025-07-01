@@ -107,15 +107,15 @@ class TestMatchTemplate:
             "-n": 1,
             "-a": 60,
             "-o": output_path,
-            "--pad_edges": False,
+            "--pad-edges": False,
             "--backend": backend,
         }
 
         if use_template_mask:
-            argdict["--template_mask"] = template_mask_path
+            argdict["--template-mask"] = template_mask_path
 
         if use_target_mask:
-            argdict["--target_mask"] = target_mask_path
+            argdict["--target-mask"] = target_mask_path
 
         if test_rejection_sampling:
             argdict["--orientations"] = self.orientations_path
@@ -123,8 +123,8 @@ class TestMatchTemplate:
         if test_filter:
             argdict["--lowpass"] = 30
             argdict["--defocus"] = 3000
-            argdict["--tilt_angles"] = "40,40"
-            argdict["--wedge_axes"] = "2,0"
+            argdict["--tilt-angles"] = "40,40"
+            argdict["--wedge-axes"] = "2,0"
             argdict["--whiten"] = True
 
         if call_peaks:
@@ -207,28 +207,28 @@ class TestPostprocessing(TestMatchTemplate):
         makedirs(self.tempdir, exist_ok=True)
 
         argdict = {
-            "--input_file": self.score_pickle,
-            "--output_format": "orientations",
-            "--output_prefix": f"{self.tempdir}/temp",
-            "--peak_oversampling": peak_oversampling,
-            "--num_peaks": 3,
+            "--input-file": self.score_pickle,
+            "--output-format": "orientations",
+            "--output-prefix": f"{self.tempdir}/temp",
+            "--peak-oversampling": peak_oversampling,
+            "--num-peaks": 3,
         }
 
         if score_cutoff is not None:
             if len(score_cutoff) == 1:
-                argdict["--n_false_positives"] = 1
+                argdict["--n-false-positives"] = 1
             else:
                 min_score, max_score = score_cutoff
-                argdict["--minimum_score"] = min_score
-                argdict["--maximum_score"] = max_score
+                argdict["--min-score"] = min_score
+                argdict["--max-score"] = max_score
 
         match distance_cutoff_strategy:
             case 1:
-                argdict["--mask_edges"] = True
+                argdict["--mask-edges"] = True
             case 2:
-                argdict["--min_distance"] = 5
+                argdict["--min-distance"] = 5
             case 3:
-                argdict["--min_boundary_distance"] = 5
+                argdict["--min-boundary-distance"] = 5
 
         cmd = argdict_to_command(argdict, executable="postprocess.py")
         ret = subprocess.run(cmd, capture_output=True, shell=True)
@@ -248,11 +248,11 @@ class TestPostprocessing(TestMatchTemplate):
             input_file = self.peak_pickle
 
         argdict = {
-            "--input_file": input_file,
-            "--output_format": output_format,
-            "--output_prefix": f"{self.tempdir}/temp",
-            "--num_peaks": 3,
-            "--peak_caller": "PeakCallerMaximumFilter",
+            "--input-file": input_file,
+            "--output-format": output_format,
+            "--output-prefix": f"{self.tempdir}/temp",
+            "--num-peaks": 3,
+            "--peak-caller": "PeakCallerMaximumFilter",
         }
         cmd = argdict_to_command(argdict, executable="postprocess.py")
         ret = subprocess.run(cmd, capture_output=True, shell=True)
@@ -278,11 +278,11 @@ class TestPostprocessing(TestMatchTemplate):
         makedirs(self.tempdir, exist_ok=True)
 
         argdict = {
-            "--input_file": self.score_pickle,
-            "--output_format": "orientations",
-            "--output_prefix": f"{self.tempdir}/temp",
-            "--num_peaks": 1,
-            "--local_optimization": True,
+            "--input-file": self.score_pickle,
+            "--output-format": "orientations",
+            "--output-prefix": f"{self.tempdir}/temp",
+            "--num-peaks": 1,
+            "--local-optimization": True,
         }
         cmd = argdict_to_command(argdict, executable="postprocess.py")
         ret = subprocess.run(cmd, capture_output=True, shell=True)
@@ -302,7 +302,7 @@ class TestEstimateMemoryUsage(TestMatchTemplate):
             "-m": self.target_path,
             "-i": self.template_path,
             "--ncores": ncores,
-            "--pad_edges": pad_edges,
+            "--pad-edges": pad_edges,
             "--score": "FLCSphericalMask",
         }
 
@@ -325,14 +325,14 @@ class TestPreprocess(TestMatchTemplate):
             "-m": self.target_path,
             "--backend": backend,
             "--lowpass": 40,
-            "--sampling_rate": 5,
+            "--sampling-rate": 5,
             "-o": f"{self.tempdir}/out.mrc",
         }
         if align_axis:
-            argdict["--align_axis"] = 2
+            argdict["--align-axis"] = 2
 
         if invert_contrast:
-            argdict["--invert_contrast"] = True
+            argdict["--invert-contrast"] = True
 
         cmd = argdict_to_command(argdict, executable="preprocess.py")
         ret = subprocess.run(cmd, capture_output=True, shell=True)
