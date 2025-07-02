@@ -7,7 +7,7 @@ sys.path.insert(1, os.path.abspath("../scripts"))
 from tme import __version__
 
 project = "pytme"
-copyright = "2023-2024, European Molecular Biology Laboratory"
+copyright = "2023-2025, European Molecular Biology Laboratory"
 author = "Valentin J. Maurer"
 release = __version__
 

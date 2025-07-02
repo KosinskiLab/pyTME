@@ -27,7 +27,9 @@ By default, |project| uses the entire area under the template as mask. However, 
 
     import copy
 
+    from tme import Density
     from tme.cli import match_template
+    from tme.matching_utils import create_mask
 
     if __name__ == "__main__":
 
@@ -65,6 +67,7 @@ By default, |project| uses the entire area under the template as mask. However, 
         template_mask = create_mask(
             mask_type="ellipse", radius=(20, 10), shape=template.shape, center=mask_center
         )
+
         score = match_template(
             target=target,
             template=template,
@@ -109,7 +112,10 @@ Albeit difficult to see in this representation, smoothing the mask with a sigma 
     import copy
     import matplotlib.colors as colors
 
+    from tme import Density
     from tme.cli import match_template
+    from tme.matching_utils import create_mask
+
 
     if __name__ == "__main__":
 

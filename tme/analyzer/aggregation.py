@@ -57,22 +57,23 @@ class MaxScoreOverRotations(AbstractAnalyzer):
     The following achieves the minimal definition of a :py:class:`MaxScoreOverRotations`
     instance
 
+    >>> import numpy as np
     >>> from tme.analyzer import MaxScoreOverRotations
-    >>> analyzer = MaxScoreOverRotations(shape = (50, 50))
+    >>> analyzer = MaxScoreOverRotations(shape=(50, 50))
 
     The following simulates a template matching run by creating random data for a range
     of rotations and sending it to ``analyzer`` via its __call__ method
 
-    >>  state = analyzer.init_state()
+    >>> state = analyzer.init_state()
     >>> for rotation_number in range(10):
     >>>     scores = np.random.rand(50,50)
     >>>     rotation = np.random.rand(scores.ndim, scores.ndim)
-    >>>     state = analyzer(state, scores = scores, rotation_matrix = rotation)
+    >>>     state = analyzer(state, scores=scores, rotation_matrix=rotation)
 
     The aggregated scores can be extracted by invoking the result method of
     ``analyzer``
 
-    >>> results = analyzer.result()
+    >>> results = analyzer.result(state)
 
     The ``results`` tuple contains (1) the maximum scores for each translation,
     (2) an offset which is relevant when merging results from split template matching

@@ -20,9 +20,15 @@ API
 
    template_matching/matching_exhaustive
    template_matching/matching_optimization
-   template_matching/analyzer
    template_matching/memory
    template_matching/matching_utils
+
+.. toctree::
+   :caption: Analyzer
+
+   analyzer/base
+   analyzer/aggregation
+   analyzer/peaks
 
 .. toctree::
    :caption: Flexible Backends

@@ -9,17 +9,8 @@ User Guide
 
 
 .. toctree::
-   :caption: Preprocessing
-
-   preprocessing/motivation
-   preprocessing/filters
-   preprocessing/masks
-   preprocessing/example
-   preprocessing/summary
-
-
-.. toctree::
    :caption: Template Matching
+   :maxdepth: 2
 
    matching/motivation
    matching/example
@@ -33,6 +24,13 @@ User Guide
    postprocessing/motivation
    postprocessing/example
    postprocessing/summary
+
+.. toctree::
+   :caption: Further Reading
+
+   preprocessing/masks
+   preprocessing/filters
+   preprocessing/gui_example
 
 
 .. toctree::

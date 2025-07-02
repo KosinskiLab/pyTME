@@ -16,7 +16,7 @@ Within |project|, exhaustive template matching is modularized into three primary
    Sample :ref:`scoring function <scoring-functions>` across translational and rotational degrees of freedom.
 
 3. **Callback:**
-   Custom on the fly processing of template matching results using :doc:`analyzers <analyzer>`.
+   Custom on the fly processing of template matching results using :doc:`analyzers <../analyzer/base>`.
 
 This concept is embodied in the :py:class:`scan <tme.matching_exhaustive.scan>` and :py:class:`scan_subsets <tme.matching_exhaustive.scan_subsets>` methods below.
 

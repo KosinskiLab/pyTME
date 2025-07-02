@@ -108,39 +108,38 @@ Low-pass, high-pass and band-pass filters serve as prototypical modulators of an
 .. plot::
    :caption: Application of Frequency Filters.
 
-   from tme import Density, Preprocessor
-   from tme.filters import BandPassFilter
+   from tme import Density
+   from tme.filters import BandPassReconstructed
    from tme.cli import match_template
 
    target = Density.from_file("../../_static/examples/preprocessing_target.png").data
    target_ft = np.fft.fftshift(np.fft.fft2(target))
    template = Density.from_file("../../_static/examples/preprocessing_template.png").data
 
-   preprocessor = Preprocessor()
    fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(10, 5), constrained_layout=True)
    for ax in axs.flat:
       ax.axis("off")
-   lowpass = BandPassFilter(
-      lowpass = 5,
-      highpass = None,
-      sampling_rate = 1,
-   )(shape = target.shape, shape_is_real_fourier = False, return_real_fourier=False)["data"]
+   lowpass = BandPassReconstructed(
+      lowpass=5,
+      highpass=None,
+      sampling_rate=1,
+   )(shape=target.shape, return_real_fourier=False)["data"]
    lowpass = np.fft.ifftshift(lowpass)
    target_lowpass = np.fft.ifft2(np.fft.ifftshift(lowpass * target_ft)).real
 
-   highpass = BandPassFilter(
-      lowpass = None,
-      highpass = 4,
-      sampling_rate = 1,
-   )(shape = target.shape, shape_is_real_fourier = False, return_real_fourier=False)["data"]
+   highpass = BandPassReconstructed(
+      lowpass=None,
+      highpass=4,
+      sampling_rate=1,
+   )(shape=target.shape, return_real_fourier=False)["data"]
    highpass = np.fft.fftshift(highpass)
    target_highpass = np.fft.ifft2(np.fft.ifftshift(highpass * target_ft)).real
 
-   bandpass = BandPassFilter(
-      lowpass = 5,
-      highpass = 10,
-      sampling_rate = 1
-   )(shape = target.shape, shape_is_real_fourier = False, return_real_fourier=False)["data"]
+   bandpass = BandPassReconstructed(
+      lowpass=5,
+      highpass=10,
+      sampling_rate=1
+   )(shape= arget.shape, return_real_fourier=False)["data"]
    bandpass = np.fft.fftshift(bandpass)
    target_bandpass = np.fft.ifft2(np.fft.ifftshift(bandpass * target_ft)).real
 

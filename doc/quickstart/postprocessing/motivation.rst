@@ -62,4 +62,4 @@ However, when you use the `-p` flag the output structure differs
 
 .. note::
 
-    In general, all but the last element of the created output pickle will correspond to return value of a given :doc:`analyzer </reference/template_matching/analyzer>`'s merge method.
+    In general, all but the last element of the created output pickle will correspond to return value of a given :doc:`analyzer </reference/analyzer/base>`'s merge method.
