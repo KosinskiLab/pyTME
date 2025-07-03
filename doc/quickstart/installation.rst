@@ -22,9 +22,6 @@ We recommend creating a virtual environment for a clean and isolated setup.
             pyfftw \
             pyqt
 
-            napari \
-            magicgui \
-
    .. tab-item:: Venv
 
       Python's built-in option, suitable for simpler setups.
@@ -90,23 +87,6 @@ CPU/GPU/TPU Support
 
       If your CUDA version is lower than 12 or you encounter any issues, please refer to CuPy's official `installation guide <https://docs.cupy.dev/en/stable/install.html>`_ for a version tailored to your system and detailed instructions.
 
-   .. tab-item:: PyTorch
-
-      The following will install the PyTorch dependencies of |project|
-
-      .. code-block:: bash
-
-         pip install "pytme[torch]"
-
-      Alternatively, you can install PyTorch directly
-
-      .. code-block:: bash
-
-         pip install torch torchvision
-
-      PyTorch's installation might vary based on your system and the specific GPU in use. Consult the official `PyTorch website <https://pytorch.org/>`_ for detailed installation options tailored for your environment.
-
-
    .. tab-item:: JAX
 
       The following will install the JAX dependencies of |project|
@@ -122,6 +102,22 @@ CPU/GPU/TPU Support
          pip install "jax[cuda12]"
 
       Setting up JAX might require additional attention on certain platforms. Consult the `JAX documentation <https://jax.readthedocs.io/en/latest/installation.html>`_ for tailored options.
+
+   .. tab-item:: PyTorch
+
+      The following will install the PyTorch dependencies of |project|
+
+      .. code-block:: bash
+
+         pip install "pytme[torch]"
+
+      Alternatively, you can install PyTorch directly
+
+      .. code-block:: bash
+
+         pip install torch torchvision
+
+      PyTorch's installation might vary based on your system and the specific GPU in use. Consult the official `PyTorch website <https://pytorch.org/>`_ for detailed installation options tailored for your environment.
 
    .. tab-item:: MLX
 
@@ -143,13 +139,16 @@ If you would like to perform interactive preprocessing and analysis of your data
 
 .. code-block:: bash
 
-   pip install "napari==0.4.19.post1" magicgui git+https://github.com/maurerv/napari-density-io.git
+   pip install \
+      "napari==0.4.19.post1" \
+      magicgui \
+      git+https://github.com/maurerv/napari-density-io.git
 
 
 Troubleshooting
 ---------------
 
-The following presents known issues encountered during installation and outlines solutions to them.
+The following outlines issues encountered during installation and solutions to them.
 
 
 pyFFTW

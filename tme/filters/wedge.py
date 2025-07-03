@@ -529,7 +529,7 @@ def _from_xml(filename: str, **kwargs) -> Dict:
 
 def _from_star(filename: str, **kwargs) -> Dict:
     """
-    Read tilt data from a tomostar STAR file.
+    Read tilt data from a STAR file.
 
     Parameters
     ----------
@@ -541,13 +541,19 @@ def _from_star(filename: str, **kwargs) -> Dict:
     Dict
         A dictionary with one key for each column.
     """
-    data = StarParser(filename, delimiter=None)["data_"]
-    return {"angles": data["_wrpAxisAngle"], "weights": data["_wrpDose"]}
+    data = StarParser(filename, delimiter=None)
+    if "data_stopgap_wedgelist" in data:
+        angles = data["data_stopgap_wedgelist"]["_tilt_angle"]
+        weights = data["data_stopgap_wedgelist"]["_exposure"]
+    else:
+        angles = data["data_"]["_wrpAxisAngle"]
+        weights = data["data_"]["_wrpDose"]
+    return {"angles": angles, "weights": weights}
 
 
 def _from_mdoc(filename: str, **kwargs) -> Dict:
     """
-    Read tilt data from an MDOC file.
+    Read tilt data from a SerialEM MDOC file.
 
     Parameters
     ----------

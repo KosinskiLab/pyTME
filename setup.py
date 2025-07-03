@@ -59,6 +59,7 @@ setup(
         "scripts/preprocessor_gui.py",
         "scripts/preprocess.py",
         "scripts/postprocess.py",
+        "scripts/pytme_runner.py",
     ],
     ext_modules=ext_modules,
     cmdclass={"build_ext": build_ext},

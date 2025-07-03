@@ -51,6 +51,7 @@ estimate_memory_usage = "scripts:estimate_memory_usage.main"
 preprocessor_gui = "scripts:preprocessor_gui.main"
 preprocess = "scripts:preprocess.main"
 postprocess = "scripts:postprocess.main"
+pytme_runner = "scripts:pytme_runner.main"
 
 [project.urls]
 "Homepage" = "https://github.com/KosinskiLab/pyTME"

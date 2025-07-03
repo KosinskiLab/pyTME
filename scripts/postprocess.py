@@ -376,7 +376,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
     scores_out = np.full(out_shape, fill_value=0, dtype=np.float32)
     scores_out[update] = data[0][update] - scores_norm[update]
     scores_out[update] = np.divide(scores_out[update], 1 - scores_norm[update])
-    np.fmax(scores_out, 0, out=scores_out)
+    scores_out = np.fmax(scores_out, 0, out=scores_out)
     data[0] = scores_out
 
     fg, bg = simple_stats(data[0]), simple_stats(scores_norm)
@@ -426,6 +426,10 @@ def main():
 
     data, entities = normalize_input(args.input_file, args.background_file)
 
+    if args.output_format == "pickle":
+        write_pickle(data, f"{args.output_prefix}.pickle")
+        exit(0)
+
     if args.target_mask:
         target_mask = Density.from_file(args.target_mask, use_memmap=True).data
         if target_mask.shape != data[0].shape:
@@ -469,10 +473,6 @@ def main():
     if args.mask_edges and args.min_boundary_distance == 0:
         max_shape = np.max(template.shape)
         args.min_boundary_distance = np.ceil(np.divide(max_shape, 2))
-
-    if args.output_format == "pickle":
-        write_pickle(data, f"{args.output_prefix}.pickle")
-        exit(0)
 
     orientations = args.orientations
     if orientations is None:

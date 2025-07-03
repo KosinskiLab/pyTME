@@ -7,7 +7,6 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import re
-import warnings
 from typing import Tuple, Dict
 from dataclasses import dataclass
 
@@ -37,7 +36,7 @@ class CTF(ComposableFilter):
 
     #: The shape of the to-be created mask.
     shape: Tuple[int] = None
-    #: The defocus value in x direction.
+    #: The defocus value in x direction (in units of sampling rate).
     defocus_x: Tuple[float] = None
     #: The tilt angles.
     angles: Tuple[float] = None
@@ -51,7 +50,7 @@ class CTF(ComposableFilter):
     sampling_rate: Tuple[float] = 1
     #: The acceleration voltage in Volts, defaults to 300e3.
     acceleration_voltage: Tuple[float] = 300e3
-    #: The spherical aberration coefficient, defaults to 2.7e7.
+    #: The spherical aberration, defaults to 2.7e7 (in units of sampling rate).
     spherical_aberration: Tuple[float] = 2.7e7
     #: The amplitude contrast, defaults to 0.07.
     amplitude_contrast: Tuple[float] = 0.07
@@ -59,7 +58,7 @@ class CTF(ComposableFilter):
     phase_shift: Tuple[float] = 0
     #: The defocus angle in degrees, defaults to 0.
     defocus_angle: Tuple[float] = 0
-    #: The defocus value in y direction, defaults to None.
+    #: The defocus value in y direction, defaults to None (in units of sampling rate).
     defocus_y: Tuple[float] = None
     #: Whether the returned CTF should be phase-flipped, defaults to True.
     flip_phase: bool = True
@@ -90,7 +89,7 @@ class CTF(ComposableFilter):
         """
         func = _from_ctffind
         if filename.lower().endswith("star"):
-            func = _from_gctf
+            func = _from_star
         elif filename.lower().endswith("xml"):
             func = _from_xml
         elif filename.lower().endswith("mdoc"):
@@ -104,7 +103,7 @@ class CTF(ComposableFilter):
             "angles": data.get("angles", None),
             "defocus_x": data["defocus_1"],
             "sampling_rate": data["pixel_size"],
-            "acceleration_voltage": data["acceleration_voltage"] * 1e3,
+            "acceleration_voltage": np.multiply(data["acceleration_voltage"], 1e3),
             "spherical_aberration": data.get("spherical_aberration"),
             "amplitude_contrast": data.get("amplitude_contrast"),
             "phase_shift": data.get("additional_phase_shift"),
@@ -440,30 +439,45 @@ def _from_ctffind(filename: str) -> Dict:
     return output
 
 
-def _from_gctf(filename: str) -> Dict:
+def _from_star(filename: str) -> Dict:
     parser = StarParser(filename)
-    ctf_data = parser["data_"]
 
-    mapping = {
-        "defocus_1": ("_rlnDefocusU", float),
-        "defocus_2": ("_rlnDefocusV", float),
-        "pixel_size": ("_rlnDetectorPixelSize", float),
-        "acceleration_voltage": ("_rlnVoltage", float),
-        "spherical_aberration": ("_rlnSphericalAberration", float),
-        "amplitude_contrast": ("_rlnAmplitudeContrast", float),
-        "additional_phase_shift": (None, float),
-        "azimuth_astigmatism": ("_rlnDefocusAngle", float),
-    }
+    if "data_stopgap_wedgelist" in parser:
+        key = "data_stopgap_wedgelist"
+        mapping = {
+            "angles": ("_tilt_angle", float, 1),
+            "defocus_1": ("_defocus", float, 1e4),
+            "defocus_2": (None, float, 1e4),
+            "pixel_size": ("_pixelsize", float, 1),
+            "acceleration_voltage": ("_voltage", float, 1),
+            "spherical_aberration": ("_cs", float, 1e7),
+            "amplitude_contrast": ("_amp_contrast", float, 1),
+            "additional_phase_shift": (None, float, 1),
+            "azimuth_astigmatism": (None, float, 1),
+        }
+    else:
+        key = "data_"
+        mapping = {
+            "defocus_1": ("_rlnDefocusU", float, 1),
+            "defocus_2": ("_rlnDefocusV", float, 1),
+            "pixel_size": ("_rlnDetectorPixelSize", float, 1),
+            "acceleration_voltage": ("_rlnVoltage", float, 1),
+            "spherical_aberration": ("_rlnSphericalAberration", float, 1),
+            "amplitude_contrast": ("_rlnAmplitudeContrast", float, 1),
+            "additional_phase_shift": (None, float, 1),
+            "azimuth_astigmatism": ("_rlnDefocusAngle", float, 1),
+        }
+
     output = {}
-    for out_key, (key, key_dtype) in mapping.items():
-        if key not in ctf_data and key is not None:
-            warnings.warn(f"ctf_data is missing key {key}.")
-
-        key_value = ctf_data.get(key, [0])
-        output[out_key] = [key_dtype(x) for x in key_value]
-
-    longest_key = max(map(len, output.values()))
-    output = {k: v * longest_key if len(v) == 1 else v for k, v in output.items()}
+    ctf_data = parser[key]
+    for out_key, (key, key_dtype, scale) in mapping.items():
+        key_value = ctf_data.get(key)
+        if key_value is not None:
+            try:
+                key_value = [key_dtype(x) * scale for x in key_value]
+            except Exception:
+                pass
+        output[out_key] = key_value
     return output
 
 
