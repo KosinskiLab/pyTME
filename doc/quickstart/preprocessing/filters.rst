@@ -139,7 +139,7 @@ Low-pass, high-pass and band-pass filters serve as prototypical modulators of an
       lowpass=5,
       highpass=10,
       sampling_rate=1
-   )(shape= arget.shape, return_real_fourier=False)["data"]
+   )(shape=target.shape, return_real_fourier=False)["data"]
    bandpass = np.fft.fftshift(bandpass)
    target_bandpass = np.fft.ifft2(np.fft.ifftshift(bandpass * target_ft)).real
 

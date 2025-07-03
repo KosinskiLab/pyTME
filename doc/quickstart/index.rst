@@ -30,7 +30,7 @@ User Guide
 
    preprocessing/masks
    preprocessing/filters
-   preprocessing/gui_example
+   preprocessing/gui
 
 
 .. toctree::

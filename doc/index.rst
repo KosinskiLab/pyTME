@@ -17,9 +17,9 @@
 
 - :doc:`Flexible backends <reference/backends>` to run the same code on diverse hardware platforms using a best-of-breed approach.
 
-- :doc:`Analyzer <reference/template_matching/analyzer>` to inject custom code enabling real-time processing and manipulation of template matching scores.
+- :doc:`Analyzer <reference/analyzer/base>` to inject custom code enabling real-time processing and manipulation of template matching scores.
 
-- Specialized tools for cryogenic electron microscopy from CTF correction, :doc:`data structures <reference/data_structures/density>`, a :doc:`GUI <quickstart/preprocessing/gui_example>` for interactive mask creation and filter exploration, to :doc:`integrations <quickstart/integrations>` with other commonly used software.
+- Specialized tools for cryogenic electron microscopy from CTF correction, :doc:`data structures <reference/data_structures/density>`, a :doc:`GUI <quickstart/preprocessing/gui>` for interactive mask creation and filter exploration, to :doc:`integrations <quickstart/integrations>` with other commonly used software.
 
 
 .. grid:: 2

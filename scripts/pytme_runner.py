@@ -609,7 +609,7 @@ def parse_args():
         "--cpus", type=int, default=4, help="Number of CPUs per job"
     )
     compute_group.add_argument(
-        "--memory", type=int, default=128, help="Memory per job in GB"
+        "--memory", type=int, default=64, help="Memory per job in GB"
     )
     compute_group.add_argument(
         "--gpu-count", type=int, default=1, help="Number of GPUs per job"
