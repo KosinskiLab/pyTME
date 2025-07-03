@@ -1,0 +1,6 @@
+CTFReconstructed.tilt\_axis
+======================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.tilt_axis

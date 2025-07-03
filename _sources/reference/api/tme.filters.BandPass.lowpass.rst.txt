@@ -1,0 +1,6 @@
+BandPass.lowpass
+============================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: BandPass.lowpass

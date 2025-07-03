@@ -1,0 +1,6 @@
+CTF.flip\_phase
+==========================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.flip_phase

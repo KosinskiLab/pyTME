@@ -1,0 +1,6 @@
+ReconstructFromTilt.shape
+=====================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: ReconstructFromTilt.shape

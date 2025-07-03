@@ -1,0 +1,6 @@
+CTF.weight
+======================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: CTF.weight

@@ -1,0 +1,6 @@
+CTF.defocus\_angle
+=============================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.defocus_angle

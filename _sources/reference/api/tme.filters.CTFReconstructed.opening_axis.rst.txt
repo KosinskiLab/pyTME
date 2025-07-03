@@ -1,0 +1,6 @@
+CTFReconstructed.opening\_axis
+=========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.opening_axis

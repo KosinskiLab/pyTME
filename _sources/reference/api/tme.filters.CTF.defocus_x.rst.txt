@@ -1,0 +1,6 @@
+CTF.defocus\_x
+=========================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.defocus_x

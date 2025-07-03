@@ -1,0 +1,1058 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tme.filters.wedge &#8212; pytme 0.3.b0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/general.css?v=2e4b593a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=97acad5b"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/tme/filters/wedge';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">tme.filters.wedge</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for tme.filters.wedge</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Implements class Wedge and WedgeReconstructed to create Fourier</span>
+<span class="sd">filter representations.</span>
+
+<span class="sd">Copyright (c) 2024 European Molecular Biology Laboratory</span>
+
+<span class="sd">Author: Valentin Maurer &lt;valentin.maurer@embl-hamburg.de&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..types</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span> <span class="k">as</span> <span class="n">be</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.compose</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComposableFilter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..matching_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">centered</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..rotations</span><span class="w"> </span><span class="kn">import</span> <span class="n">euler_to_rotationmatrix</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">XMLParser</span><span class="p">,</span> <span class="n">StarParser</span><span class="p">,</span> <span class="n">MDOCParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">centered_grid</span><span class="p">,</span>
+    <span class="n">frequency_grid_at_angle</span><span class="p">,</span>
+    <span class="n">compute_tilt_shape</span><span class="p">,</span>
+    <span class="n">crop_real_fourier</span><span class="p">,</span>
+    <span class="n">fftfreqn</span><span class="p">,</span>
+    <span class="n">shift_fourier</span><span class="p">,</span>
+    <span class="n">create_reconstruction_filter</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Wedge&quot;</span><span class="p">,</span> <span class="s2">&quot;WedgeReconstructed&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Wedge">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.Wedge.html#tme.filters.Wedge">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Wedge</span><span class="p">(</span><span class="n">ComposableFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate wedge mask for tomographic data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: The shape of the reconstruction volume.</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: The tilt angles.</span>
+    <span class="n">angles</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: The weights corresponding to each tilt angle.</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: Axis the plane is tilted over, defaults to 0 (x).</span>
+    <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1">#: The projection axis, defaults to 2 (z).</span>
+    <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="c1">#: The type of weighting to apply, defaults to None.</span>
+    <span class="n">weight_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: Frequency cutoff for created mask. Nyquist 0.5 by default.</span>
+    <span class="n">frequency_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="c1">#: The sampling rate, defaults to 1 Ångstrom / voxel.</span>
+    <span class="n">sampling_rate</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="Wedge.from_file">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.Wedge.from_file.html#tme.filters.Wedge.from_file">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Wedge&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a :py:class:`Wedge` instance by reading tilt angles and weights.</span>
+<span class="sd">        Supported extensions are:</span>
+
+<span class="sd">            +-------+---------------------------------------------------------+</span>
+<span class="sd">            | .star | Tomostar STAR file                                      |</span>
+<span class="sd">            +-------+---------------------------------------------------------+</span>
+<span class="sd">            | .xml  | WARP/M XML file                                         |</span>
+<span class="sd">            +-------+---------------------------------------------------------+</span>
+<span class="sd">            | .mdoc | SerialEM file                                           |</span>
+<span class="sd">            +-------+---------------------------------------------------------+</span>
+<span class="sd">            | .*    | Tab-separated file with optional column names           |</span>
+<span class="sd">            +-------+---------------------------------------------------------+</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            The path to the file containing tilt angles and weights.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :py:class:`Wedge`</span>
+<span class="sd">           Class instance instance initialized with angles and weights from the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">_from_text</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;xml&quot;</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">_from_xml</span>
+        <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;star&quot;</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">_from_star</span>
+        <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;mdoc&quot;</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">_from_mdoc</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">angles</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;angles&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;weights&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">angles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find colum angles in </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Length of weights and angles differ.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">tilt_axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">opening_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">angles</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Wedge.__call__">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.Wedge.__call__.html#tme.filters.Wedge.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a Wedge stack of chosen parameters with DC component in the center.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">func_args</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">func_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">weight_types</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="kc">None</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight_angle</span><span class="p">,</span>
+            <span class="s2">&quot;angle&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight_angle</span><span class="p">,</span>
+            <span class="s2">&quot;relion&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight_relion</span><span class="p">,</span>
+            <span class="s2">&quot;grigorieff&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight_grigorieff</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">weight_type</span> <span class="o">=</span> <span class="n">func_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;weight_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">weight_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">weight_types</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Supported weight_types are </span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">weight_types</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weight_type</span> <span class="o">==</span> <span class="s2">&quot;angle&quot;</span><span class="p">:</span>
+            <span class="n">func_args</span><span class="p">[</span><span class="s2">&quot;weights&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">))</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">weight_types</span><span class="p">[</span><span class="n">weight_type</span><span class="p">](</span><span class="o">**</span><span class="n">func_args</span><span class="p">)</span>
+
+        <span class="n">frequency_cutoff</span> <span class="o">=</span> <span class="n">func_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;frequency_cutoff&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">frequency_cutoff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">angle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">func_args</span><span class="p">[</span><span class="s2">&quot;angles&quot;</span><span class="p">]):</span>
+                <span class="n">frequency_grid</span> <span class="o">=</span> <span class="n">frequency_grid_at_angle</span><span class="p">(</span>
+                    <span class="n">shape</span><span class="o">=</span><span class="n">func_args</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">],</span>
+                    <span class="n">opening_axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opening_axis</span><span class="p">,</span>
+                    <span class="n">tilt_axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_axis</span><span class="p">,</span>
+                    <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span>
+                    <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">ret</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">frequency_grid</span> <span class="o">&lt;=</span> <span class="n">frequency_cutoff</span><span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">ret</span><span class="p">),</span> <span class="n">be</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">ret</span><span class="p">,</span>
+            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="n">func_args</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;return_real_fourier&quot;</span><span class="p">:</span> <span class="n">func_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;return_real_fourier&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+            <span class="s2">&quot;is_multiplicative_filter&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Wedge.weight_angle">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.Wedge.weight_angle.html#tme.filters.Wedge.weight_angle">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">weight_angle</span><span class="p">(</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">weights</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">angles</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate weighted wedges based on the cosine of the current angle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tilt_shape</span> <span class="o">=</span> <span class="n">compute_tilt_shape</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">opening_axis</span><span class="o">=</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">reduce_dim</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">wedge</span><span class="p">,</span> <span class="n">wedges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">tilt_shape</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">),</span> <span class="o">*</span><span class="n">tilt_shape</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">angle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">angles</span><span class="p">):</span>
+            <span class="n">wedge</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">weights</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+            <span class="n">wedges</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">wedge</span>
+
+        <span class="k">return</span> <span class="n">wedges</span></div>
+
+
+<div class="viewcode-block" id="Wedge.weight_relion">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.Wedge.weight_relion.html#tme.filters.Wedge.weight_relion">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">weight_relion</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate weighted wedges based on the RELION 1.4 formalism, weighting each</span>
+<span class="sd">        angle using the cosine of the angle and a Gaussian lowpass filter computed</span>
+<span class="sd">        with respect to the exposure per angstrom.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Weighted wedges.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tilt_shape</span> <span class="o">=</span> <span class="n">compute_tilt_shape</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">opening_axis</span><span class="o">=</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">reduce_dim</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">wedges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">),</span> <span class="o">*</span><span class="n">tilt_shape</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">angle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">):</span>
+            <span class="n">frequency_grid</span> <span class="o">=</span> <span class="n">frequency_grid_at_angle</span><span class="p">(</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">opening_axis</span><span class="o">=</span><span class="n">opening_axis</span><span class="p">,</span>
+                <span class="n">tilt_axis</span><span class="o">=</span><span class="n">tilt_axis</span><span class="p">,</span>
+                <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">/</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">frequency_grid</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">frequency_grid</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">frequency_grid</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">frequency_grid</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">frequency_grid</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">frequency_grid</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">frequency_grid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">angle</span><span class="p">)),</span> <span class="n">out</span><span class="o">=</span><span class="n">frequency_grid</span><span class="p">)</span>
+            <span class="n">wedges</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">frequency_grid</span>
+
+        <span class="k">return</span> <span class="n">wedges</span></div>
+
+
+<div class="viewcode-block" id="Wedge.weight_grigorieff">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.Wedge.weight_grigorieff.html#tme.filters.Wedge.weight_grigorieff">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">weight_grigorieff</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.245</span><span class="p">,</span>
+        <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.665</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.81</span><span class="p">,</span>
+        <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate weighted wedges based on the formalism introduced in [1]_.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Weighted wedges.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [1]  Timothy Grant, Nikolaus Grigorieff (2015), eLife 4:e06980.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tilt_shape</span> <span class="o">=</span> <span class="n">compute_tilt_shape</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">opening_axis</span><span class="o">=</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">reduce_dim</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="n">wedges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">),</span> <span class="o">*</span><span class="n">tilt_shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">angle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">):</span>
+            <span class="n">frequency_grid</span> <span class="o">=</span> <span class="n">frequency_grid_at_angle</span><span class="p">(</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">opening_axis</span><span class="o">=</span><span class="n">opening_axis</span><span class="p">,</span>
+                <span class="n">tilt_axis</span><span class="o">=</span><span class="n">tilt_axis</span><span class="p">,</span>
+                <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">frequency_grid</span><span class="p">,</span> <span class="n">power</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">frequency_grid</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">frequency_grid</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">frequency_grid</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">frequency_grid</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">frequency_grid</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">frequency_grid</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">frequency_grid</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                    <span class="n">frequency_grid</span><span class="p">,</span>
+                    <span class="n">out</span><span class="o">=</span><span class="n">frequency_grid</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="n">wedges</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">frequency_grid</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wedges</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="WedgeReconstructed">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.WedgeReconstructed.html#tme.filters.WedgeReconstructed">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">WedgeReconstructed</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize :py:class:`WedgeReconstructed`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: The tilt angles, defaults to None.</span>
+    <span class="n">angles</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: Weights to assign to individual wedge components. Not considered for continuous wedge</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: Whether individual wedge components should be weighted.</span>
+    <span class="n">weight_wedge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1">#: Whether to create a continous wedge or a per-component wedge.</span>
+    <span class="n">create_continuous_wedge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1">#: Frequency cutoff of filter</span>
+    <span class="n">frequency_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="c1">#: Axis the plane is tilted over, defaults to 0 (x).</span>
+    <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1">#: The projection axis, defaults to 2 (z).</span>
+    <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="c1">#: Filter window applied during reconstruction.</span>
+    <span class="n">reconstruction_filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_continuous_wedge</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">angles</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">))</span>
+
+<div class="viewcode-block" id="WedgeReconstructed.__call__">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.WedgeReconstructed.__call__.html#tme.filters.WedgeReconstructed.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">return_real_fourier</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the reconstructed wedge.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        shape : tuple of int</span>
+<span class="sd">            The shape of the reconstruction volume.</span>
+<span class="sd">        return_real_fourier : tuple of int</span>
+<span class="sd">            Return a shape compliant with rfftn. Defaults to False.</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional keyword arguments.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            data: BackendArray</span>
+<span class="sd">                The filter mask.</span>
+<span class="sd">            shape: tuple of ints</span>
+<span class="sd">                The requested filter shape</span>
+<span class="sd">            return_real_fourier: bool</span>
+<span class="sd">                Whether data is compliant with rfftn.</span>
+<span class="sd">            is_multiplicative_filter: bool</span>
+<span class="sd">                Whether the filter is multiplicative in Fourier space.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">func_args</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">func_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_wedge</span>
+        <span class="k">if</span> <span class="n">func_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;create_continuous_wedge&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuous_wedge</span>
+
+        <span class="n">weight_wedge</span> <span class="o">=</span> <span class="n">func_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;weight_wedge&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">func_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;wedge_weights&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">weight_wedge</span><span class="p">:</span>
+            <span class="n">func_args</span><span class="p">[</span><span class="s2">&quot;weights&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">func_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;angles&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,))))</span>
+            <span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">func_args</span><span class="p">)</span>
+        <span class="n">frequency_cutoff</span> <span class="o">=</span> <span class="n">func_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;frequency_cutoff&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">frequency_cutoff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">frequency_mask</span> <span class="o">=</span> <span class="n">fftfreqn</span><span class="p">(</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">compute_euclidean_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">shape_is_real_fourier</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">frequency_mask</span> <span class="o">&lt;=</span> <span class="n">frequency_cutoff</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">weight_wedge</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="p">(</span><span class="n">ret</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">ret</span><span class="p">),</span> <span class="n">be</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">shift_fourier</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ret</span><span class="p">,</span> <span class="n">shape_is_real_fourier</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">return_real_fourier</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">crop_real_fourier</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">ret</span><span class="p">,</span>
+            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="n">shape</span><span class="p">,</span>
+            <span class="s2">&quot;return_real_fourier&quot;</span><span class="p">:</span> <span class="n">return_real_fourier</span><span class="p">,</span>
+            <span class="s2">&quot;is_multiplicative_filter&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="WedgeReconstructed.continuous_wedge">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.WedgeReconstructed.continuous_wedge.html#tme.filters.WedgeReconstructed.continuous_wedge">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">continuous_wedge</span><span class="p">(</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">angles</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a continous wedge mask with DC component at the center.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        shape : tuple of int</span>
+<span class="sd">            The shape of the reconstruction volume.</span>
+<span class="sd">        angles : tuple of float</span>
+<span class="sd">            Start and stop tilt angle.</span>
+<span class="sd">        opening_axis : int</span>
+<span class="sd">            The axis around which the wedge is opened.</span>
+<span class="sd">        tilt_axis : int</span>
+<span class="sd">            The axis along which the tilt is applied.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Wedge mask.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">angles</span><span class="p">))</span>
+        <span class="n">aspect_ratio</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="n">opening_axis</span><span class="p">]</span> <span class="o">/</span> <span class="n">shape</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">]</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">angles</span><span class="p">))</span> <span class="o">*</span> <span class="n">aspect_ratio</span><span class="p">))</span>
+
+        <span class="n">start_radians</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">stop_radians</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">angles</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">centered_grid</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+            <span class="n">ratios</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">grid</span><span class="p">[</span><span class="n">opening_axis</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">90</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">grid</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">]</span> <span class="o">/</span> <span class="n">grid</span><span class="p">[</span><span class="n">opening_axis</span><span class="p">],</span>
+            <span class="p">)</span>
+
+        <span class="n">wedge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">start_radians</span> <span class="o">&lt;=</span> <span class="n">ratios</span><span class="p">,</span> <span class="n">stop_radians</span> <span class="o">&gt;=</span> <span class="n">ratios</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wedge</span></div>
+
+
+<div class="viewcode-block" id="WedgeReconstructed.step_wedge">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.WedgeReconstructed.step_wedge.html#tme.filters.WedgeReconstructed.step_wedge">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">step_wedge</span><span class="p">(</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">angles</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">weights</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reconstruction_filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a per-angle wedge shape with DC component at the center.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        shape : tuple of int</span>
+<span class="sd">            The shape of the reconstruction volume.</span>
+<span class="sd">        angles : tuple of float</span>
+<span class="sd">            The tilt angles.</span>
+<span class="sd">        opening_axis : int</span>
+<span class="sd">            The axis around which the wedge is opened.</span>
+<span class="sd">        tilt_axis : int</span>
+<span class="sd">            The axis along which the tilt is applied.</span>
+<span class="sd">        reconstruction_filter : str</span>
+<span class="sd">            Filter used during reconstruction.</span>
+<span class="sd">        weights : tuple of float, optional</span>
+<span class="sd">            Weights to assign to individual tilts. Defaults to 1.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            Wege mask.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumpyFFTWBackend</span>
+
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">angles</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">angles</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+
+        <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">)</span>
+        <span class="n">opening_axis</span><span class="p">,</span> <span class="n">tilt_axis</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">opening_axis</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">tilt_axis</span><span class="p">)</span>
+
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">angles</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">weights</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="n">opening_axis</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">shape</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)),</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">aspect_ratio</span> <span class="o">=</span> <span class="n">plane</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">plane</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">angles</span><span class="p">))</span> <span class="o">*</span> <span class="n">aspect_ratio</span><span class="p">))</span>
+
+        <span class="n">rec_filter</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">reconstruction_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rec_filter</span> <span class="o">=</span> <span class="n">create_reconstruction_filter</span><span class="p">(</span>
+                <span class="n">plane</span><span class="o">.</span><span class="n">shape</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">filter_type</span><span class="o">=</span><span class="n">reconstruction_filter</span><span class="p">,</span> <span class="n">tilt_angles</span><span class="o">=</span><span class="n">angles</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">subset</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">slice</span><span class="p">(</span><span class="n">x</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">plane</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">plane_rotated</span><span class="p">,</span> <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">plane</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">angles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">plane_rotated</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">plane</span><span class="p">[</span><span class="n">subset</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">euler_to_rotationmatrix</span><span class="p">((</span><span class="n">angles</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))]</span>
+
+            <span class="n">NumpyFFTWBackend</span><span class="p">()</span><span class="o">.</span><span class="n">rigid_transform</span><span class="p">(</span>
+                <span class="n">arr</span><span class="o">=</span><span class="n">plane</span> <span class="o">*</span> <span class="n">rec_filter</span><span class="p">,</span>
+                <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">rotation_matrix</span><span class="p">,</span>
+                <span class="n">out</span><span class="o">=</span><span class="n">plane_rotated</span><span class="p">,</span>
+                <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">wedge_volume</span> <span class="o">+=</span> <span class="n">plane_rotated</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">centered</span><span class="p">(</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="n">opening_axis</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">]))</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">wedge_volume</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">opening_axis</span> <span class="o">&gt;</span> <span class="n">tilt_axis</span><span class="p">:</span>
+            <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">reshape_dimensions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">x</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">tilt_axis</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">wedge_volume</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">reshape_dimensions</span><span class="p">)</span>
+        <span class="n">tile_dimensions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">reshape_dimensions</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">wedge_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">wedge_volume</span><span class="p">,</span> <span class="n">tile_dimensions</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wedge_volume</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_xml</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read tilt data from a WARP/M XML file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The path to the text file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict</span>
+<span class="sd">        A dictionary with one key for each column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">XMLParser</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;angles&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Angles&quot;</span><span class="p">],</span> <span class="s2">&quot;weights&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Dose&quot;</span><span class="p">]}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_star</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read tilt data from a STAR file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The path to the text file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict</span>
+<span class="sd">        A dictionary with one key for each column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">StarParser</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;data_stopgap_wedgelist&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;data_stopgap_wedgelist&quot;</span><span class="p">][</span><span class="s2">&quot;_tilt_angle&quot;</span><span class="p">]</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;data_stopgap_wedgelist&quot;</span><span class="p">][</span><span class="s2">&quot;_exposure&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;data_&quot;</span><span class="p">][</span><span class="s2">&quot;_wrpAxisAngle&quot;</span><span class="p">]</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;data_&quot;</span><span class="p">][</span><span class="s2">&quot;_wrpDose&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;angles&quot;</span><span class="p">:</span> <span class="n">angles</span><span class="p">,</span> <span class="s2">&quot;weights&quot;</span><span class="p">:</span> <span class="n">weights</span><span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_mdoc</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read tilt data from a SerialEM MDOC file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The path to the text file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict</span>
+<span class="sd">        A dictionary with one key for each column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">MDOCParser</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">cumulative_exposure</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;ZValue&quot;</span><span class="p">]),</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;ExposureDose&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;angles&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;TiltAngle&quot;</span><span class="p">],</span> <span class="s2">&quot;weights&quot;</span><span class="p">:</span> <span class="n">cumulative_exposure</span><span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_text</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read column data from a text file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The path to the text file.</span>
+<span class="sd">    delimiter : str, optional</span>
+<span class="sd">        The delimiter used in the file, defaults to &#39;\t&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict</span>
+<span class="sd">        A dictionary with one key for each column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">infile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+
+    <span class="k">if</span> <span class="s2">&quot;angles&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Found more than one column without column names. Please add &quot;</span>
+                <span class="s2">&quot;column names to your file. If you only want to specify tilt &quot;</span>
+                <span class="s2">&quot;angles without column names, use a single column file.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;angles&quot;</span><span class="p">,)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">{</span><span class="n">header</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">column</span><span class="p">)</span> <span class="k">for</span> <span class="n">header</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">headers</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">))}</span>
+
+    <span class="k">return</span> <span class="n">ret</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

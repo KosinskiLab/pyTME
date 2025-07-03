@@ -1,0 +1,962 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Picking Ribosomes &#8212; pytme 0.3.b0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=2e4b593a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=97acad5b"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart/matching/particle_picking';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Constrained Template Matching" href="constrained.html" />
+    <link rel="prev" title="Practical Example" href="example.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Template Matching</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="motivation.html">Motivation</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="example.html">Practical Example</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Picking Ribosomes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constrained.html">Constrained Template Matching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting.html">Fitting Atomic Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alignment.html">Alignment of Densities</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html">Cluster Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">Summary</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Postprocessing</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../postprocessing/motivation.html">Motivation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../postprocessing/example.html">Practical Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../postprocessing/summary.html">Summary</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Further Reading</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing/masks.html">Masking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing/filters.html">Filtering Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing/gui.html">Using the GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">User Guide</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="example.html" class="nav-link">Practical Example</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Picking Ribosomes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="picking-ribosomes">
+<h1>Picking Ribosomes<a class="headerlink" href="#picking-ribosomes" title="Link to this heading">#</a></h1>
+<p>This tutorial demonstrates how to identify and extract ribosome locations from cryo-electron tomograms using template matching. You will learn</p>
+<ul class="simple">
+<li><p>How to prepare templates and masks for template matching</p></li>
+<li><p>How to run template matching with various filtering options</p></li>
+<li><p>How to interpret and optimize template matching results</p></li>
+</ul>
+<section id="data-acquisition">
+<h2>Data Acquisition<a class="headerlink" href="#data-acquisition" title="Link to this heading">#</a></h2>
+<p>For this tutorial, we use data from <a class="reference external" href="https://www.ebi.ac.uk/empiar/EMPIAR-10988/">EMPIAR-10988</a>. You will need to download</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>EMPIAR-10988/
+└── data/
+    └── DEF/
+        ├── tomograms/
+        │   └── TS_037.rec          # Main tomogram file
+        └── metadata/
+            └── mdocs_modified/
+                └── TS_037.mdoc     # Tilt series metadata
+</pre></div>
+</div>
+<p>As 80S ribosome template, we will use <a class="reference external" href="https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-3228/map/emd_3228.map.gz">EMD-3228</a></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-3228/map/emd_3228.map.gz
+</pre></div>
+</div>
+<p>Your working directory should now contain</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>tutorial_directory/
+├── TS_037.rec              # Tomogram
+├── TS_037.mdoc             # Metadata
+└── emd_3228.map.gz         # Template
+</pre></div>
+</div>
+</section>
+<section id="template-and-mask-generation">
+<h2>Template and Mask Generation<a class="headerlink" href="#template-and-mask-generation" title="Link to this heading">#</a></h2>
+<p>EMD-3228 has a different sampling rate than our tomogram, so we need to resample it to match. We can do this using the API (see <a class="reference internal" href="../../reference/api/tme.density.Density.resample.html#tme.density.Density.resample" title="tme.density.Density.resample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Density.resample</span></code></a>) or using <code class="docutils literal notranslate"><span class="pre">preprocess.py</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>preprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>emd_3228.map.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--sampling-rate<span class="w"> </span><span class="m">13</span>.48<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--box-size<span class="w"> </span><span class="m">70</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--invert-contrast<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>emd_3228_resampled.mrc
+</pre></div>
+</div>
+<p>Larger boxes enable more accurate frequency operations and are essential for oscillating filters like the CTF. As a rule of thumb, set the box size to about twice the minimum enclosing box of your structure.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The cisTEM tool <a class="reference external" href="https://grigoriefflab.umassmed.edu/simulate">simulate</a> is a good alternative for template generation.</p>
+</div>
+<p>The mask defines which parts of the template to use for matching. We can use the napari GUI to create the mask visually. Since we inverted the template contrast above, make sure to use the <em>Invert Contrast</em> filter when viewing the template.</p>
+<p>Alternatively, you can create the mask programmatically</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tme</span><span class="w"> </span><span class="kn">import</span> <span class="n">Density</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tme.matching_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_mask</span>
+
+<span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+    <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+    <span class="n">radius</span><span class="o">=</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">13</span><span class="p">),</span>
+    <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mf">34.50</span><span class="p">,</span><span class="mf">34.50</span><span class="p">,</span><span class="mf">34.50</span><span class="p">),</span>
+    <span class="n">sigma_decay</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span><span class="mi">70</span><span class="p">,</span><span class="mi">70</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="mf">13.48</span><span class="p">)</span>
+<span class="n">mask</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;emd_3228_resampled_mask.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Your prepared template and mask should look similar to the projection below</p>
+<figure class="align-center" id="id5">
+<a class="reference internal image-reference" href="../../_images/napari_mask.png"><img alt="../../_images/napari_mask.png" src="../../_images/napari_mask.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Template (left) and mask (right) for template matching</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="template-matching">
+<h2>Template Matching<a class="headerlink" href="#template-matching" title="Link to this heading">#</a></h2>
+<p>For demonstration purposes we are going to process a subset of the data. However, the procedure for the full tomogram would be identical.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tme</span><span class="w"> </span><span class="kn">import</span> <span class="n">Density</span>
+
+<span class="c1"># Load the full tomogram</span>
+<span class="n">dens</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;TS_037.rec&quot;</span><span class="p">)</span>
+
+<span class="c1"># Extract a subset for faster processing (X: 100-400, Y: 450-750, Z: 150-450)</span>
+<span class="c1"># This creates a 300x300x300 voxel region containing multiple ribosomes</span>
+<span class="n">dens</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">100</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span> <span class="mi">450</span><span class="p">:</span><span class="mi">750</span><span class="p">,</span> <span class="mi">150</span><span class="p">:</span><span class="mi">450</span><span class="p">]</span>
+
+<span class="c1"># Save the subset for template matching</span>
+<span class="n">dens</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;TS_037_subset.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The code below will run template matching, taking about 1-2 minutes on a consumer-level GPU or 5-10 minutes on CPU (if you are running on CPU, make sure to set the number of cores via <code class="docutils literal notranslate"><span class="pre">--cores</span></code>).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>TS_037_subset.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output_default.pickle
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>For GPU acceleration: add <code class="docutils literal notranslate"><span class="pre">--backend</span> <span class="pre">cupy</span></code> (NVIDIA, or pytorch/jax) or <code class="docutils literal notranslate"><span class="pre">--backend</span> <span class="pre">jax</span></code> (M-series Mac).</p>
+</div>
+<p>You can inspect the results in the GUI by clicking the <em>Import Pickle</em> button. The figure below shows a lowpass-filtered representation of the tomogram subset on the left and the corresponding template matching scores on the right. Bright spots in the score map indicate potential ribosome locations, the brighter the spot the better the match.</p>
+<p>Overall, the majority of ribosomes appear to be accounted for. However, note that</p>
+<ul class="simple">
+<li><p><strong>Wide peaks</strong>: Multiple high-scoring voxels around each ribosome</p></li>
+<li><p><strong>False positives</strong>: Some bright spots on membranes and gold markers</p></li>
+</ul>
+<div class="pst-scrollable-table-container"><table class="transparent-table table">
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-default" id="id6">
+<a class="reference internal image-reference" href="../../_images/data_deconv.png"><img alt="../../_images/data_deconv.png" src="../../_images/data_deconv.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Deconvolved tomogram</span><a class="headerlink" href="#id6" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id7">
+<a class="reference internal image-reference" href="../../_images/default.png"><img alt="../../_images/default.png" src="../../_images/default.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Template matching scores</span><a class="headerlink" href="#id7" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="parameter-comparison">
+<h2>Parameter Comparison<a class="headerlink" href="#parameter-comparison" title="Link to this heading">#</a></h2>
+<p>The following outlines common filtering approaches to improve template matching results. When processing cryo-ET data, you should at least use missing wedge correction, and add CTF if you have the parameter estimated. Background normalization can be useful to reduce the contribution of dense areas to template matching scores, e.g., membranes or fiducial gold markers. Bandpass filters are useful when specific frequency ranges contain information irrelevant for template matching. Spectral whitening enhances weak signals but may overamplify noise.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+Missing Wedge</label><div class="sd-tab-content docutils">
+<p>Missing wedge correction accounts for the anisotropic resolution in tomograms. The template can be modulated using either a continuous wedge or a more accurate per-tilt mask. For a continuous wedge mask</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>TS_037_subset.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tilt-angles<span class="w"> </span><span class="m">35</span>,35<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output_contwedge.pickle
+</pre></div>
+</div>
+<p>For a step wedge mask</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>TS_037_subset.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tilt-angles<span class="w"> </span>TS_037.mdoc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output_stepwedge.pickle
+</pre></div>
+</div>
+<p>Instead of binary masks, the wedge can also be weighted based on the cosine of the tilt angle or the electron dose to more faithfully recapitulate the data acquisition process. For instance, to reproduce the weighting scheme of relion</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>TS_037_subset.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tilt-angles<span class="w"> </span>TS_037.mdoc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tilt-weighting<span class="w"> </span>relion<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output_weightedstepwedge.pickle
+</pre></div>
+</div>
+<div class="pst-scrollable-table-container"><table class="transparent-table table" id="id8">
+<caption><span class="caption-text">Template matching scores by wedge mask type</span><a class="headerlink" href="#id8" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 33.3%" />
+<col style="width: 33.3%" />
+<col style="width: 33.3%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-default" id="id9">
+<a class="reference internal image-reference" href="../../_images/wedge_cont.png"><img alt="../../_images/wedge_cont.png" src="../../_images/wedge_cont.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Continuous wedge mask</span><a class="headerlink" href="#id9" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id10">
+<a class="reference internal image-reference" href="../../_images/wedge_step.png"><img alt="../../_images/wedge_step.png" src="../../_images/wedge_step.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Per-tilt wedge mask</span><a class="headerlink" href="#id10" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id11">
+<a class="reference internal image-reference" href="../../_images/wedge_weighted.png"><img alt="../../_images/wedge_weighted.png" src="../../_images/wedge_weighted.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Weighted per-tilt wedge mask</span><a class="headerlink" href="#id11" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--tilt-angles</span></code> argument can directly use Warp/M XML files, mdoc, tomostar and text files. The latter contain either the tilt angles as single value per line, or two tab-separated columns with column names ‘angles’ and ‘weights’.</p>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+CTF</label><div class="sd-tab-content docutils">
+<p>CTF correction recovers high-resolution information and produces sharper peaks with better separation of closely spaced ribosomes. In the simplest case, a single defocus value can be provided, assuming constant defocus throughout the volume. 3D CTFs can be created using Warp/M XML, tomostar, mdoc, and ctffind4 files (use <code class="docutils literal notranslate"><span class="pre">match_template.py</span> <span class="pre">--help</span></code> to see all available formats for the ctf file).</p>
+<p>For constant 3µm defocus (30000 Å)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>TS_037_subset.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--defocus<span class="w"> </span><span class="m">30000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--amplitude-contrast<span class="w"> </span><span class="m">0</span>.08<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--acceleration-voltage<span class="w"> </span><span class="m">300</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--spherical-aberration<span class="w"> </span><span class="m">27000000</span>.0<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output_ctf.pickle
+</pre></div>
+</div>
+<p>The CTF can be specified per tilt to create a 3D CTF filter. However, note that the CTF parameter estimates in the MDOC file are only a starting point, and should be replaced by estimates from dedicated software for optimal results.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>TS_037_subset.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--ctf-file<span class="w"> </span>TS_037.mdoc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--amplitude-contrast<span class="w"> </span><span class="m">0</span>.08<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--acceleration-voltage<span class="w"> </span><span class="m">300</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--spherical-aberration<span class="w"> </span><span class="m">27000000</span>.0<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output_3dctf.pickle
+</pre></div>
+</div>
+<div class="pst-scrollable-table-container"><table class="transparent-table table" id="id12">
+<caption><span class="caption-text">Template matching scores by CTF</span><a class="headerlink" href="#id12" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-default" id="id13">
+<a class="reference internal image-reference" href="../../_images/ctf.png"><img alt="../../_images/ctf.png" src="../../_images/ctf.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Constant defocus CTF</span><a class="headerlink" href="#id13" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id14">
+<a class="reference internal image-reference" href="../../_images/3dctf.png"><img alt="../../_images/3dctf.png" src="../../_images/3dctf.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">3D CTF</span><a class="headerlink" href="#id14" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Using a 3D CTF will implicitly apply a step wedge mask. [Experts] the approach by which the 3D CTF is constructed from 2D tilts can be modified using <code class="docutils literal notranslate"><span class="pre">--reconstruction-filter</span></code> and <code class="docutils literal notranslate"><span class="pre">reconstruction-interpolation-order</span></code> for optimal results.</p>
+</div>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+Background Norm</label><div class="sd-tab-content docutils">
+<p>Background normalization reduces the contribution of dense cellular features to template matching scores and helps handle contamination artifacts. In the simplest case, a noise version of the current template can be used for normalization</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>TS_037_subset.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--scramble-phases<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output_scramble.pickle
+</pre></div>
+</div>
+<p>We then use the scores obtained from the noise template to normalize our observations. Note, that you do not need to use a noise template for this, but in principle any other cellular component you would like to avoid, e.g., membranes, fiducial markers or alternative macromolecules.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input-file<span class="w"> </span>output_default.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--background-file<span class="w"> </span>output_scramble.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output-format<span class="w"> </span>pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output-prefix<span class="w"> </span>output_norm.pickle
+</pre></div>
+</div>
+<figure class="align-center" id="id15">
+<a class="reference internal image-reference" href="../../_images/norm.png"><img alt="../../_images/norm.png" src="../../_images/norm.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Template matching scores for background normalization</span><a class="headerlink" href="#id15" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We use <code class="docutils literal notranslate"><span class="pre">--output-format</span> <span class="pre">pickle</span></code> for visualization. There is no need to create this intermediary file in practice.</p>
+</div>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-3">
+Bandpass</label><div class="sd-tab-content docutils">
+<p>Bandpass filtering removes specific frequency ranges that may contain artifacts or noise while preserving the relevant structural information. This is particularly useful when low frequencies are dominated by cellular background or high frequencies contain excessive noise.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>TS_037_subset.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--highpass<span class="w"> </span><span class="m">400</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output_bandpass.pickle
+</pre></div>
+</div>
+<figure class="align-center" id="id16">
+<a class="reference internal image-reference" href="../../_images/bandpass.png"><img alt="../../_images/bandpass.png" src="../../_images/bandpass.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Template matching scores for bandpass filter</span><a class="headerlink" href="#id16" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</div>
+<input id="sd-tab-item-4" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-4">
+Whitening</label><div class="sd-tab-content docutils">
+<p>Spectral whitening flattens the power spectrum to enhance weak signals across all frequencies, which can improve detection of ribosomes in noisy regions. However, this approach may also amplify noise, so it should be used judiciously depending on the signal-to-noise ratio of your data.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>TS_037_subset.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--whiten<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>output_whitening.pickle
+</pre></div>
+</div>
+<figure class="align-center" id="id17">
+<a class="reference internal image-reference" href="../../_images/whitening.png"><img alt="../../_images/whitening.png" src="../../_images/whitening.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Template matching scores for spectral whitening</span><a class="headerlink" href="#id17" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="remarks-on-tomogram-preprocessing">
+<h2>Remarks on Tomogram Preprocessing<a class="headerlink" href="#remarks-on-tomogram-preprocessing" title="Link to this heading">#</a></h2>
+<p>We have seen that template matching performance can be improved using a variety of strategies. However, ultimately, it’s limited by the quality of the experimental data.</p>
+<p>Denoising approaches have recently found popularity, due to their ability to generate visually appealing tomograms. However, that does not necessarily make them more suitable for template matching. Cross-correlation-based template matching is fairly robust towards Gaussian and Poisson noise, which is commonly removed in denoising, leading to an overall reduction of high-frequency information. It is, however, the high-frequency information that enables truly unambiguous template matching <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. Albeit not possible to draw a general conclusion, denoising is most likely not the place to start if template matching is not working.</p>
+<p>Instead, processing before tomogram reconstruction, such as tilt-series alignment and CTF correction should be prioritized. To demonstrate the utility of CTF correction, we use a tomogram that was CTF corrected using IMOD’s phase-flip (<a class="reference external" href="https://dataverse.nl/dataset.xhtml?persistentId=doi:10.34894/TLGJCM">source</a>).</p>
+<p>Shown below is the raw data on the left, baseline scores in the middle, and on the right using a CTF-corrected template, which reproduces the results from Chaillet et al. <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<a class="reference internal image-reference" href="../../_images/picking_ctf_tomogram.png"><img alt="../../_images/picking_ctf_tomogram.png" src="../../_images/picking_ctf_tomogram.png" style="width: 32%;" />
+</a>
+<a class="reference internal image-reference" href="../../_images/picking_ctf_scoresnoctf.png"><img alt="../../_images/picking_ctf_scoresnoctf.png" src="../../_images/picking_ctf_scoresnoctf.png" style="width: 32%;" />
+</a>
+<a class="reference internal image-reference" href="../../_images/picking_ctf_scores.png"><img alt="../../_images/picking_ctf_scores.png" src="../../_images/picking_ctf_scores.png" style="width: 32%;" />
+</a>
+<p>The figure above was generated using the following template</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-2938/map/emd_2938.map.gz
+
+preprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>emd_2938.map.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--sampling-rate<span class="w"> </span><span class="m">13</span>.79<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--box-size<span class="w"> </span><span class="m">60</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--invert-contrast<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>emd_2938_resampled.mrc
+</pre></div>
+</div>
+<p>and a spherical mask</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tme</span><span class="w"> </span><span class="kn">import</span> <span class="n">Density</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tme.matching_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_mask</span>
+
+<span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+    <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+    <span class="n">radius</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span>
+    <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span>
+    <span class="n">sigma_decay</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span><span class="mi">60</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">Density</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="mf">13.79</span><span class="p">)</span>
+<span class="n">mask</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;emd_2938_resampled_mask.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>CTF parameters were omitted from the command below to compute baseline scores</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>tomo200528_100.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>emd_2938_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>emd_2938_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--defocus<span class="w"> </span><span class="m">30000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--amplitude-contrast<span class="w"> </span><span class="m">0</span>.08<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--spherical-aberration<span class="w"> </span><span class="m">27000000</span>.0<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--acceleration-voltage<span class="w"> </span><span class="m">200</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">6</span>
+</pre></div>
+</div>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
+<p>Extract ribosome coordinates using <a class="reference internal" href="../postprocessing/example.html"><span class="doc">postprocessing</span></a>.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Maurer, V. J.; Siggel, M.; Kosinski, J. What shapes template-matching performance in cryogenic electron tomography in situ?. Acta Crys D 2024</p>
+</aside>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Chaillet, M.L.; van der Schot, G; Gubbins, I.; Roet, S., Veltkamp, R.C; Foerster, F. Int. J. Mol. Sci  2023</p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="example.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Practical Example</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="constrained.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Constrained Template Matching</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-acquisition">Data Acquisition</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#template-and-mask-generation">Template and Mask Generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#template-matching">Template Matching</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parameter-comparison">Parameter Comparison</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#remarks-on-tomogram-preprocessing">Remarks on Tomogram Preprocessing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/quickstart/matching/particle_picking.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

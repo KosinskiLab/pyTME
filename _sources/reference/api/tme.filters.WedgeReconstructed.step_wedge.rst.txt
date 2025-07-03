@@ -1,0 +1,6 @@
+WedgeReconstructed.step\_wedge
+=========================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: WedgeReconstructed.step_wedge

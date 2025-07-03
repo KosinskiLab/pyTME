@@ -1,0 +1,6 @@
+Wedge.shape
+=======================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: Wedge.shape

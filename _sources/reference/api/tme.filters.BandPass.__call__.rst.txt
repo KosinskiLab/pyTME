@@ -1,0 +1,6 @@
+BandPass.\_\_call\_\_
+=============================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: BandPass.__call__

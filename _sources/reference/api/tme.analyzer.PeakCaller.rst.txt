@@ -1,0 +1,52 @@
+﻿PeakCaller
+==========
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: PeakCaller
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            PeakCaller.shareable
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            PeakCaller.__call__
+      
+
+      
+         
+         
+            PeakCaller.call_peaks
+         
+         
+            PeakCaller.init_state
+         
+         
+            PeakCaller.merge
+         
+         
+            PeakCaller.oversample_peaks
+         
+         
+            PeakCaller.result
+         
+
+   
+   

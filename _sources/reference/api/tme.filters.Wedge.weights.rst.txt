@@ -1,0 +1,6 @@
+Wedge.weights
+=========================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: Wedge.weights

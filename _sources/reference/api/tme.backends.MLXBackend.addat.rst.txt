@@ -1,0 +1,6 @@
+MLXBackend.addat
+=============================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: MLXBackend.addat

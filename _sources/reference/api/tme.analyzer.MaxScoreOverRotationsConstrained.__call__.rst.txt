@@ -1,0 +1,6 @@
+MaxScoreOverRotationsConstrained.\_\_call\_\_
+======================================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: MaxScoreOverRotationsConstrained.__call__

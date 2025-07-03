@@ -1,0 +1,2580 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; pytme 0.3.b0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/css/general.css?v=2e4b593a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=97acad5b"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=4ea706d9"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#Symbols"><strong>Symbols</strong></a>
+ | <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
+ | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
+ 
+</div>
+<h2 id="Symbols">Symbols</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    |project|
+
+      <ul>
+        <li><a href="index.html#module-project">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.analyzer.AbstractAnalyzer.__call__.html#tme.analyzer.AbstractAnalyzer.__call__">__call__() (AbstractAnalyzer method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.BandPass.__call__.html#tme.filters.BandPass.__call__">(BandPass method)</a>
+</li>
+        <li><a href="reference/api/tme.filters.BandPassReconstructed.__call__.html#tme.filters.BandPassReconstructed.__call__">(BandPassReconstructed method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.Chamfer.__call__.html#tme.matching_optimization.Chamfer.__call__">(Chamfer method)</a>
+</li>
+        <li><a href="reference/api/tme.filters.ComposableFilter.__call__.html#tme.filters.ComposableFilter.__call__">(ComposableFilter method)</a>
+</li>
+        <li><a href="reference/api/tme.filters.Compose.__call__.html#tme.filters.Compose.__call__">(Compose method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.CrossCorrelation.__call__.html#tme.matching_optimization.CrossCorrelation.__call__">(CrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTF.__call__.html#tme.filters.CTF.__call__">(CTF method)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.__call__.html#tme.filters.CTFReconstructed.__call__">(CTFReconstructed method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.Envelope.__call__.html#tme.matching_optimization.Envelope.__call__">(Envelope method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.FLC.__call__.html#tme.matching_optimization.FLC.__call__">(FLC method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.LaplaceCrossCorrelation.__call__.html#tme.matching_optimization.LaplaceCrossCorrelation.__call__">(LaplaceCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.filters.LinearWhiteningFilter.__call__.html#tme.filters.LinearWhiteningFilter.__call__">(LinearWhiteningFilter method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.MaskedCrossCorrelation.__call__.html#tme.matching_optimization.MaskedCrossCorrelation.__call__">(MaskedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverRotations.__call__.html#tme.analyzer.MaxScoreOverRotations.__call__">(MaxScoreOverRotations method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverRotationsConstrained.__call__.html#tme.analyzer.MaxScoreOverRotationsConstrained.__call__">(MaxScoreOverRotationsConstrained method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverTranslations.__call__.html#tme.analyzer.MaxScoreOverTranslations.__call__">(MaxScoreOverTranslations method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.MutualInformation.__call__.html#tme.matching_optimization.MutualInformation.__call__">(MutualInformation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelation.__call__.html#tme.matching_optimization.NormalizedCrossCorrelation.__call__">(NormalizedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelationMean.__call__.html#tme.matching_optimization.NormalizedCrossCorrelationMean.__call__">(NormalizedCrossCorrelationMean method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalVectorScore.__call__.html#tme.matching_optimization.NormalVectorScore.__call__">(NormalVectorScore method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.PartialLeastSquareDifference.__call__.html#tme.matching_optimization.PartialLeastSquareDifference.__call__">(PartialLeastSquareDifference method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCaller.__call__.html#tme.analyzer.PeakCaller.__call__">(PeakCaller method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerFast.__call__.html#tme.analyzer.PeakCallerFast.__call__">(PeakCallerFast method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerMaximumFilter.__call__.html#tme.analyzer.PeakCallerMaximumFilter.__call__">(PeakCallerMaximumFilter method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerRecursiveMasking.__call__.html#tme.analyzer.PeakCallerRecursiveMasking.__call__">(PeakCallerRecursiveMasking method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerScipy.__call__.html#tme.analyzer.PeakCallerScipy.__call__">(PeakCallerScipy method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerSort.__call__.html#tme.analyzer.PeakCallerSort.__call__">(PeakCallerSort method)</a>
+</li>
+        <li><a href="reference/api/tme.filters.ReconstructFromTilt.__call__.html#tme.filters.ReconstructFromTilt.__call__">(ReconstructFromTilt method)</a>
+</li>
+        <li><a href="reference/api/tme.filters.Wedge.__call__.html#tme.filters.Wedge.__call__">(Wedge method)</a>
+</li>
+        <li><a href="reference/api/tme.filters.WedgeReconstructed.__call__.html#tme.filters.WedgeReconstructed.__call__">(WedgeReconstructed method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.CupyBackend.abs.html#tme.backends.CupyBackend.abs">abs() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.abs.html#tme.backends.JaxBackend.abs">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.abs.html#tme.backends.MatchingBackend.abs">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.abs.html#tme.backends.MLXBackend.abs">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.abs.html#tme.backends.NumpyFFTWBackend.abs">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.abs.html#tme.backends.PytorchBackend.abs">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/extensions.html#tme.extensions.absolute_minimum_deviation">absolute_minimum_deviation() (in module tme.extensions)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.AbstractAnalyzer.html#tme.analyzer.AbstractAnalyzer">AbstractAnalyzer (class in tme.analyzer)</a>
+</li>
+      <li><a href="reference/api/tme.filters.CTF.acceleration_voltage.html#tme.filters.CTF.acceleration_voltage">acceleration_voltage (CTF attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.acceleration_voltage.html#tme.filters.CTFReconstructed.acceleration_voltage">(CTFReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.add.html#tme.backends.CupyBackend.add">add() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.add.html#tme.backends.JaxBackend.add">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.add.html#tme.backends.MatchingBackend.add">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.add.html#tme.backends.MLXBackend.add">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.add.html#tme.backends.NumpyFFTWBackend.add">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.add.html#tme.backends.PytorchBackend.add">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.BackendManager.add_backend.html#tme.backends.BackendManager.add_backend">add_backend() (BackendManager method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.addat.html#tme.backends.CupyBackend.addat">addat() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.addat.html#tme.backends.JaxBackend.addat">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.addat.html#tme.backends.MLXBackend.addat">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.addat.html#tme.backends.NumpyFFTWBackend.addat">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.addat.html#tme.backends.PytorchBackend.addat">(PytorchBackend static method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.adjust_box.html#tme.density.Density.adjust_box">adjust_box() (Density method)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.align_structures.html#tme.structure.Structure.align_structures">align_structures() (Structure class method)</a>
+</li>
+      <li><a href="reference/api/tme.density.Density.align_to_axis.html#tme.density.Density.align_to_axis">align_to_axis() (Density method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.rotations.align_to_axis.html#tme.rotations.align_to_axis">(in module tme.rotations)</a>
+</li>
+        <li><a href="reference/api/tme.structure.Structure.align_to_axis.html#tme.structure.Structure.align_to_axis">(Structure method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.rotations.align_vectors.html#tme.rotations.align_vectors">align_vectors() (in module tme.rotations)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.alternate_location_indicator.html#tme.structure.Structure.alternate_location_indicator">alternate_location_indicator (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.filters.CTF.amplitude_contrast.html#tme.filters.CTF.amplitude_contrast">amplitude_contrast (CTF attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.amplitude_contrast.html#tme.filters.CTFReconstructed.amplitude_contrast">(CTFReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.filters.BandPass.angles.html#tme.filters.BandPass.angles">angles (BandPass attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTF.angles.html#tme.filters.CTF.angles">(CTF attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.angles.html#tme.filters.CTFReconstructed.angles">(CTFReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.ReconstructFromTilt.angles.html#tme.filters.ReconstructFromTilt.angles">(ReconstructFromTilt attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.Wedge.angles.html#tme.filters.Wedge.angles">(Wedge attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.WedgeReconstructed.angles.html#tme.filters.WedgeReconstructed.angles">(WedgeReconstructed attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.matching_utils.apply_convolution_mode.html#tme.matching_utils.apply_convolution_mode">apply_convolution_mode() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.apply_method.html#tme.preprocessor.Preprocessor.apply_method">apply_method() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.arange.html#tme.backends.CupyBackend.arange">arange() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.arange.html#tme.backends.JaxBackend.arange">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.arange.html#tme.backends.MatchingBackend.arange">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.arange.html#tme.backends.MLXBackend.arange">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.arange.html#tme.backends.NumpyFFTWBackend.arange">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.arange.html#tme.backends.PytorchBackend.arange">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.argsort.html#tme.backends.CupyBackend.argsort">argsort() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.argsort.html#tme.backends.JaxBackend.argsort">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.argsort.html#tme.backends.MatchingBackend.argsort">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.argsort.html#tme.backends.MLXBackend.argsort">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.argsort.html#tme.backends.NumpyFFTWBackend.argsort">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.argsort.html#tme.backends.PytorchBackend.argsort">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_utils.array_to_memmap.html#tme.matching_utils.array_to_memmap">array_to_memmap() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.astype.html#tme.backends.CupyBackend.astype">astype() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.astype.html#tme.backends.JaxBackend.astype">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.astype.html#tme.backends.MatchingBackend.astype">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.astype.html#tme.backends.MLXBackend.astype">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.astype.html#tme.backends.NumpyFFTWBackend.astype">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.astype.html#tme.backends.PytorchBackend.astype">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.at.html#tme.backends.CupyBackend.at">at() (CupyBackend static method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.at.html#tme.backends.JaxBackend.at">(JaxBackend static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.at.html#tme.backends.MatchingBackend.at">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.at.html#tme.backends.MLXBackend.at">(MLXBackend static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.at.html#tme.backends.NumpyFFTWBackend.at">(NumpyFFTWBackend static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.at.html#tme.backends.PytorchBackend.at">(PytorchBackend static method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.structure.Structure.atom_coordinate.html#tme.structure.Structure.atom_coordinate">atom_coordinate (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.atom_name.html#tme.structure.Structure.atom_name">atom_name (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.atom_serial_number.html#tme.structure.Structure.atom_serial_number">atom_serial_number (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.backends.BackendManager.available_backends.html#tme.backends.BackendManager.available_backends">available_backends() (BackendManager method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.BackendManager.html#tme.backends.BackendManager">BackendManager (class in tme.backends)</a>
+</li>
+      <li><a href="reference/api/tme.filters.BandPass.html#tme.filters.BandPass">BandPass (class in tme.filters)</a>
+</li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.bandpass_filter.html#tme.preprocessor.Preprocessor.bandpass_filter">bandpass_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.bandpass_mask.html#tme.preprocessor.Preprocessor.bandpass_mask">bandpass_mask() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.BandPassReconstructed.html#tme.filters.BandPassReconstructed">BandPassReconstructed (class in tme.filters)</a>
+</li>
+      <li><a href="reference/api/tme.memory.CAMMemoryUsage.base_usage.html#tme.memory.CAMMemoryUsage.base_usage">base_usage() (CAMMemoryUsage method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.memory.CCMemoryUsage.base_usage.html#tme.memory.CCMemoryUsage.base_usage">(CCMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.CORRMemoryUsage.base_usage.html#tme.memory.CORRMemoryUsage.base_usage">(CORRMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.CupyBackendMemoryUsage.base_usage.html#tme.memory.CupyBackendMemoryUsage.base_usage">(CupyBackendMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.FLCMemoryUsage.base_usage.html#tme.memory.FLCMemoryUsage.base_usage">(FLCMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.FLCSphericalMaskMemoryUsage.base_usage.html#tme.memory.FLCSphericalMaskMemoryUsage.base_usage">(FLCSphericalMaskMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.LCCMemoryUsage.base_usage.html#tme.memory.LCCMemoryUsage.base_usage">(LCCMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.MatchingMemoryUsage.base_usage.html#tme.memory.MatchingMemoryUsage.base_usage">(MatchingMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.MaxScoreOverRotationsMemoryUsage.base_usage.html#tme.memory.MaxScoreOverRotationsMemoryUsage.base_usage">(MaxScoreOverRotationsMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.MCCMemoryUsage.base_usage.html#tme.memory.MCCMemoryUsage.base_usage">(MCCMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.PeakCallerMaximumFilterMemoryUsage.base_usage.html#tme.memory.PeakCallerMaximumFilterMemoryUsage.base_usage">(PeakCallerMaximumFilterMemoryUsage method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.blob_filter.html#tme.preprocessor.Preprocessor.blob_filter">blob_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.matching_utils.box_mask.html#tme.matching_utils.box_mask">box_mask() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.build_fft.html#tme.backends.CupyBackend.build_fft">build_fft() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.build_fft.html#tme.backends.JaxBackend.build_fft">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.build_fft.html#tme.backends.MatchingBackend.build_fft">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.build_fft.html#tme.backends.MLXBackend.build_fft">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.build_fft.html#tme.backends.NumpyFFTWBackend.build_fft">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.build_fft.html#tme.backends.PytorchBackend.build_fft">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.analyzer.PeakCaller.call_peaks.html#tme.analyzer.PeakCaller.call_peaks">call_peaks() (PeakCaller method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.analyzer.PeakCallerFast.call_peaks.html#tme.analyzer.PeakCallerFast.call_peaks">(PeakCallerFast method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerMaximumFilter.call_peaks.html#tme.analyzer.PeakCallerMaximumFilter.call_peaks">(PeakCallerMaximumFilter method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerRecursiveMasking.call_peaks.html#tme.analyzer.PeakCallerRecursiveMasking.call_peaks">(PeakCallerRecursiveMasking method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerScipy.call_peaks.html#tme.analyzer.PeakCallerScipy.call_peaks">(PeakCallerScipy method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerSort.call_peaks.html#tme.analyzer.PeakCallerSort.call_peaks">(PeakCallerSort method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_scores.cam_setup.html#tme.matching_scores.cam_setup">cam_setup() (in module tme.matching_scores)</a>
+</li>
+      <li><a href="reference/api/tme.memory.CAMMemoryUsage.html#tme.memory.CAMMemoryUsage">CAMMemoryUsage (class in tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.matching_scores.cc_setup.html#tme.matching_scores.cc_setup">cc_setup() (in module tme.matching_scores)</a>
+</li>
+      <li><a href="reference/api/tme.memory.CCMemoryUsage.html#tme.memory.CCMemoryUsage">CCMemoryUsage (class in tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.center_of_mass.html#tme.backends.CupyBackend.center_of_mass">center_of_mass() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.density.Density.center_of_mass.html#tme.density.Density.center_of_mass">(Density static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.JaxBackend.center_of_mass.html#tme.backends.JaxBackend.center_of_mass">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.center_of_mass.html#tme.backends.MLXBackend.center_of_mass">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.center_of_mass.html#tme.backends.NumpyFFTWBackend.center_of_mass">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.center_of_mass.html#tme.backends.PytorchBackend.center_of_mass">(PytorchBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.structure.Structure.center_of_mass.html#tme.structure.Structure.center_of_mass">(Structure method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.centered.html#tme.density.Density.centered">centered() (Density method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.matching_utils.centered.html#tme.matching_utils.centered">(in module tme.matching_utils)</a>
+</li>
+        <li><a href="reference/api/tme.structure.Structure.centered.html#tme.structure.Structure.centered">(Structure method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_utils.centered_mask.html#tme.matching_utils.centered_mask">centered_mask() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.chain_identifier.html#tme.structure.Structure.chain_identifier">chain_identifier (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.Chamfer.html#tme.matching_optimization.Chamfer">Chamfer (class in tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.backends.BackendManager.change_backend.html#tme.backends.BackendManager.change_backend">change_backend() (BackendManager method)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.charge.html#tme.structure.Structure.charge">charge (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.clip.html#tme.backends.CupyBackend.clip">clip() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.clip.html#tme.backends.JaxBackend.clip">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.clip.html#tme.backends.MatchingBackend.clip">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.clip.html#tme.backends.MLXBackend.clip">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.clip.html#tme.backends.NumpyFFTWBackend.clip">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.clip.html#tme.backends.PytorchBackend.clip">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.structure.Structure.code_for_residue_insertion.html#tme.structure.Structure.code_for_residue_insertion">code_for_residue_insertion (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.compare_structures.html#tme.structure.Structure.compare_structures">compare_structures() (Structure class method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.ComposableFilter.html#tme.filters.ComposableFilter">ComposableFilter (class in tme.filters)</a>
+</li>
+      <li><a href="reference/api/tme.filters.Compose.html#tme.filters.Compose">Compose (class in tme.filters)</a>
+</li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.computation_schedule.html#tme.matching_data.MatchingData.computation_schedule">computation_schedule() (MatchingData method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.compute_convolution_shapes.html#tme.backends.CupyBackend.compute_convolution_shapes">compute_convolution_shapes() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.compute_convolution_shapes.html#tme.backends.JaxBackend.compute_convolution_shapes">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.compute_convolution_shapes.html#tme.backends.MatchingBackend.compute_convolution_shapes">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.compute_convolution_shapes.html#tme.backends.MLXBackend.compute_convolution_shapes">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.compute_convolution_shapes.html#tme.backends.NumpyFFTWBackend.compute_convolution_shapes">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.compute_convolution_shapes.html#tme.backends.PytorchBackend.compute_convolution_shapes">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.matching_utils.compute_full_convolution_index.html#tme.matching_utils.compute_full_convolution_index">compute_full_convolution_index() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.matching_utils.compute_parallelization_schedule.html#tme.matching_utils.compute_parallelization_schedule">compute_parallelization_schedule() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.concatenate.html#tme.backends.CupyBackend.concatenate">concatenate() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.concatenate.html#tme.backends.JaxBackend.concatenate">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.concatenate.html#tme.backends.MatchingBackend.concatenate">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.concatenate.html#tme.backends.MLXBackend.concatenate">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.concatenate.html#tme.backends.NumpyFFTWBackend.concatenate">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.concatenate.html#tme.backends.PytorchBackend.concatenate">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_utils.conditional_execute.html#tme.matching_utils.conditional_execute">conditional_execute() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.filters.WedgeReconstructed.continuous_wedge.html#tme.filters.WedgeReconstructed.continuous_wedge">continuous_wedge() (WedgeReconstructed static method)</a>
+</li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.continuous_wedge_mask.html#tme.preprocessor.Preprocessor.continuous_wedge_mask">continuous_wedge_mask() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.copy.html#tme.backends.CupyBackend.copy">copy() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.density.Density.copy.html#tme.density.Density.copy">(Density method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.JaxBackend.copy.html#tme.backends.JaxBackend.copy">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.copy.html#tme.backends.MLXBackend.copy">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.copy.html#tme.backends.NumpyFFTWBackend.copy">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.orientations.Orientations.copy.html#tme.orientations.Orientations.copy">(Orientations method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.copy.html#tme.backends.PytorchBackend.copy">(PytorchBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.structure.Structure.copy.html#tme.structure.Structure.copy">(Structure method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.core_mask.html#tme.density.Density.core_mask">core_mask() (Density method)</a>
+</li>
+      <li><a href="reference/api/tme.matching_scores.corr_scoring.html#tme.matching_scores.corr_scoring">corr_scoring() (in module tme.matching_scores)</a>
+</li>
+      <li><a href="reference/api/tme.matching_scores.corr_setup.html#tme.matching_scores.corr_setup">corr_setup() (in module tme.matching_scores)</a>
+</li>
+      <li><a href="reference/api/tme.filters.CTF.correct_defocus_gradient.html#tme.filters.CTF.correct_defocus_gradient">correct_defocus_gradient (CTF attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.correct_defocus_gradient.html#tme.filters.CTFReconstructed.correct_defocus_gradient">(CTFReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.memory.CORRMemoryUsage.html#tme.memory.CORRMemoryUsage">CORRMemoryUsage (class in tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.filters.WedgeReconstructed.create_continuous_wedge.html#tme.filters.WedgeReconstructed.create_continuous_wedge">create_continuous_wedge (WedgeReconstructed attribute)</a>
+</li>
+      <li><a href="reference/api/tme.matching_utils.create_mask.html#tme.matching_utils.create_mask">create_mask() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.create_score_object.html#tme.matching_optimization.create_score_object">create_score_object() (in module tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.CrossCorrelation.html#tme.matching_optimization.CrossCorrelation">CrossCorrelation (class in tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.filters.CTF.html#tme.filters.CTF">CTF (class in tme.filters)</a>
+</li>
+      <li><a href="reference/api/tme.filters.CTFReconstructed.html#tme.filters.CTFReconstructed">CTFReconstructed (class in tme.filters)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.html#tme.backends.CupyBackend">CupyBackend (class in tme.backends)</a>
+</li>
+      <li><a href="reference/api/tme.memory.CupyBackendMemoryUsage.html#tme.memory.CupyBackendMemoryUsage">CupyBackendMemoryUsage (class in tme.memory)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.density.Density.data.html#tme.density.Density.data">data (Density property)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.datatype_bytes.html#tme.backends.CupyBackend.datatype_bytes">datatype_bytes() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.datatype_bytes.html#tme.backends.JaxBackend.datatype_bytes">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.datatype_bytes.html#tme.backends.MatchingBackend.datatype_bytes">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.datatype_bytes.html#tme.backends.MLXBackend.datatype_bytes">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.datatype_bytes.html#tme.backends.NumpyFFTWBackend.datatype_bytes">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.datatype_bytes.html#tme.backends.PytorchBackend.datatype_bytes">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.filters.CTF.defocus_angle.html#tme.filters.CTF.defocus_angle">defocus_angle (CTF attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.defocus_angle.html#tme.filters.CTFReconstructed.defocus_angle">(CTFReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.filters.CTF.defocus_x.html#tme.filters.CTF.defocus_x">defocus_x (CTF attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.defocus_x.html#tme.filters.CTFReconstructed.defocus_x">(CTFReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.filters.CTF.defocus_y.html#tme.filters.CTF.defocus_y">defocus_y (CTF attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.defocus_y.html#tme.filters.CTFReconstructed.defocus_y">(CTFReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.html#tme.density.Density">Density (class in tme.density)</a>
+</li>
+      <li><a href="reference/api/tme.density.Density.density_boundary.html#tme.density.Density.density_boundary">density_boundary() (Density method)</a>
+</li>
+      <li><a href="reference/api/tme.orientations.Orientations.details.html#tme.orientations.Orientations.details">details (Orientations attribute)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.device_count.html#tme.backends.CupyBackend.device_count">device_count() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.device_count.html#tme.backends.JaxBackend.device_count">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.device_count.html#tme.backends.MatchingBackend.device_count">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.device_count.html#tme.backends.MLXBackend.device_count">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.device_count.html#tme.backends.NumpyFFTWBackend.device_count">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.device_count.html#tme.backends.PytorchBackend.device_count">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.difference_of_gaussian_filter.html#tme.preprocessor.Preprocessor.difference_of_gaussian_filter">difference_of_gaussian_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.divide.html#tme.backends.CupyBackend.divide">divide() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.divide.html#tme.backends.JaxBackend.divide">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.divide.html#tme.backends.MatchingBackend.divide">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.divide.html#tme.backends.MLXBackend.divide">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.divide.html#tme.backends.NumpyFFTWBackend.divide">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.divide.html#tme.backends.PytorchBackend.divide">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.dot.html#tme.backends.CupyBackend.dot">dot() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.dot.html#tme.backends.JaxBackend.dot">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.dot.html#tme.backends.MLXBackend.dot">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.dot.html#tme.backends.NumpyFFTWBackend.dot">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.dot.html#tme.backends.PytorchBackend.dot">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.edge_gaussian_filter.html#tme.preprocessor.Preprocessor.edge_gaussian_filter">edge_gaussian_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.einsum.html#tme.backends.CupyBackend.einsum">einsum() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.einsum.html#tme.backends.JaxBackend.einsum">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.einsum.html#tme.backends.MatchingBackend.einsum">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.einsum.html#tme.backends.MLXBackend.einsum">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.einsum.html#tme.backends.NumpyFFTWBackend.einsum">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.einsum.html#tme.backends.PytorchBackend.einsum">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.structure.Structure.element_symbol.html#tme.structure.Structure.element_symbol">element_symbol (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.matching_utils.elliptical_mask.html#tme.matching_utils.elliptical_mask">elliptical_mask() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.density.Density.empty.html#tme.density.Density.empty">empty (Density property)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.Envelope.html#tme.matching_optimization.Envelope">Envelope (class in tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.eps.html#tme.backends.CupyBackend.eps">eps() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.eps.html#tme.backends.JaxBackend.eps">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.eps.html#tme.backends.MatchingBackend.eps">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.eps.html#tme.backends.MLXBackend.eps">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.eps.html#tme.backends.NumpyFFTWBackend.eps">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.eps.html#tme.backends.PytorchBackend.eps">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.memory.estimate_memory_usage.html#tme.memory.estimate_memory_usage">estimate_memory_usage() (in module tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.rotations.euler_from_rotationmatrix.html#tme.rotations.euler_from_rotationmatrix">euler_from_rotationmatrix() (in module tme.rotations)</a>
+</li>
+      <li><a href="reference/api/tme.rotations.euler_to_rotationmatrix.html#tme.rotations.euler_to_rotationmatrix">euler_to_rotationmatrix() (in module tme.rotations)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.extract_center.html#tme.backends.CupyBackend.extract_center">extract_center() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.extract_center.html#tme.backends.JaxBackend.extract_center">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.extract_center.html#tme.backends.MatchingBackend.extract_center">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.extract_center.html#tme.backends.MLXBackend.extract_center">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.extract_center.html#tme.backends.NumpyFFTWBackend.extract_center">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.extract_center.html#tme.backends.PytorchBackend.extract_center">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.PytorchBackend.eye.html#tme.backends.PytorchBackend.eye">eye() (PytorchBackend method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.CupyBackend.fill.html#tme.backends.CupyBackend.fill">fill() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.fill.html#tme.backends.JaxBackend.fill">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.fill.html#tme.backends.MatchingBackend.fill">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.fill.html#tme.backends.MLXBackend.fill">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.fill.html#tme.backends.NumpyFFTWBackend.fill">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.fill.html#tme.backends.PytorchBackend.fill">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/extensions.html#tme.extensions.find_candidate_coordinates">find_candidate_coordinates() (in module tme.extensions)</a>
+</li>
+      <li><a href="reference/extensions.html#tme.extensions.find_candidate_indices">find_candidate_indices() (in module tme.extensions)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.FLC.html#tme.matching_optimization.FLC">FLC (class in tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.matching_scores.flc_scoring.html#tme.matching_scores.flc_scoring">flc_scoring() (in module tme.matching_scores)</a>
+</li>
+      <li><a href="reference/api/tme.matching_scores.flc_setup.html#tme.matching_scores.flc_setup">flc_setup() (in module tme.matching_scores)</a>
+</li>
+      <li><a href="reference/api/tme.memory.FLCMemoryUsage.html#tme.memory.FLCMemoryUsage">FLCMemoryUsage (class in tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.matching_scores.flcSphericalMask_setup.html#tme.matching_scores.flcSphericalMask_setup">flcSphericalMask_setup() (in module tme.matching_scores)</a>
+</li>
+      <li><a href="reference/api/tme.memory.FLCSphericalMaskMemoryUsage.html#tme.memory.FLCSphericalMaskMemoryUsage">FLCSphericalMaskMemoryUsage (class in tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.backends.PytorchBackend.flip.html#tme.backends.PytorchBackend.flip">flip() (PytorchBackend method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.CTF.flip_phase.html#tme.filters.CTF.flip_phase">flip_phase (CTF attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.flip_phase.html#tme.filters.CTFReconstructed.flip_phase">(CTFReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.fourier_padding.html#tme.matching_data.MatchingData.fourier_padding">fourier_padding() (MatchingData method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.free_cache.html#tme.backends.CupyBackend.free_cache">free_cache() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.free_cache.html#tme.backends.JaxBackend.free_cache">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.free_cache.html#tme.backends.MatchingBackend.free_cache">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.free_cache.html#tme.backends.MLXBackend.free_cache">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.free_cache.html#tme.backends.NumpyFFTWBackend.free_cache">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.free_cache.html#tme.backends.PytorchBackend.free_cache">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.filters.Wedge.frequency_cutoff.html#tme.filters.Wedge.frequency_cutoff">frequency_cutoff (Wedge attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.WedgeReconstructed.frequency_cutoff.html#tme.filters.WedgeReconstructed.frequency_cutoff">(WedgeReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.filters.CTF.from_file.html#tme.filters.CTF.from_file">from_file() (CTF class method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.from_file.html#tme.filters.CTFReconstructed.from_file">(CTFReconstructed class method)</a>
+</li>
+        <li><a href="reference/api/tme.density.Density.from_file.html#tme.density.Density.from_file">(Density class method)</a>
+</li>
+        <li><a href="reference/api/tme.orientations.Orientations.from_file.html#tme.orientations.Orientations.from_file">(Orientations class method)</a>
+</li>
+        <li><a href="reference/api/tme.structure.Structure.from_file.html#tme.structure.Structure.from_file">(Structure class method)</a>
+</li>
+        <li><a href="reference/api/tme.filters.Wedge.from_file.html#tme.filters.Wedge.from_file">(Wedge class method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.from_sharedarr.html#tme.backends.CupyBackend.from_sharedarr">from_sharedarr() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.from_sharedarr.html#tme.backends.JaxBackend.from_sharedarr">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.from_sharedarr.html#tme.backends.MatchingBackend.from_sharedarr">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.from_sharedarr.html#tme.backends.MLXBackend.from_sharedarr">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.from_sharedarr.html#tme.backends.NumpyFFTWBackend.from_sharedarr">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.from_sharedarr.html#tme.backends.PytorchBackend.from_sharedarr">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.from_structure.html#tme.density.Density.from_structure">from_structure() (Density class method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.full.html#tme.backends.CupyBackend.full">full() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.full.html#tme.backends.JaxBackend.full">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.full.html#tme.backends.MatchingBackend.full">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.full.html#tme.backends.MLXBackend.full">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.full.html#tme.backends.NumpyFFTWBackend.full">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.full.html#tme.backends.PytorchBackend.full">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.gaussian_filter.html#tme.preprocessor.Preprocessor.gaussian_filter">gaussian_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.matching_utils.generate_tempfile_name.html#tme.matching_utils.generate_tempfile_name">generate_tempfile_name() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.parser.MMCIFParser.get.html#tme.parser.MMCIFParser.get">get() (MMCIFParser method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.parser.Parser.get.html#tme.parser.Parser.get">(Parser method)</a>
+</li>
+        <li><a href="reference/api/tme.parser.PDBParser.get.html#tme.parser.PDBParser.get">(PDBParser method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.get_available_memory.html#tme.backends.CupyBackend.get_available_memory">get_available_memory() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.get_available_memory.html#tme.backends.JaxBackend.get_available_memory">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.get_available_memory.html#tme.backends.MatchingBackend.get_available_memory">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.get_available_memory.html#tme.backends.MLXBackend.get_available_memory">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.get_available_memory.html#tme.backends.NumpyFFTWBackend.get_available_memory">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.get_available_memory.html#tme.backends.PytorchBackend.get_available_memory">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.rotations.get_cone_rotations.html#tme.rotations.get_cone_rotations">get_cone_rotations() (in module tme.rotations)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.orientations.Orientations.get_extraction_slices.html#tme.orientations.Orientations.get_extraction_slices">get_extraction_slices() (Orientations method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.get_fundamental_dtype.html#tme.backends.CupyBackend.get_fundamental_dtype">get_fundamental_dtype() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.get_fundamental_dtype.html#tme.backends.JaxBackend.get_fundamental_dtype">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.get_fundamental_dtype.html#tme.backends.MatchingBackend.get_fundamental_dtype">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.get_fundamental_dtype.html#tme.backends.MLXBackend.get_fundamental_dtype">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.get_fundamental_dtype.html#tme.backends.NumpyFFTWBackend.get_fundamental_dtype">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.get_fundamental_dtype.html#tme.backends.PytorchBackend.get_fundamental_dtype">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.rotations.get_rotation_matrices.html#tme.rotations.get_rotation_matrices">get_rotation_matrices() (in module tme.rotations)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.CrossCorrelation.grad.html#tme.matching_optimization.CrossCorrelation.grad">grad() (CrossCorrelation method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.matching_optimization.LaplaceCrossCorrelation.grad.html#tme.matching_optimization.LaplaceCrossCorrelation.grad">(LaplaceCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelation.grad.html#tme.matching_optimization.NormalizedCrossCorrelation.grad">(NormalizedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelationMean.grad.html#tme.matching_optimization.NormalizedCrossCorrelationMean.grad">(NormalizedCrossCorrelationMean method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.hamming_filter.html#tme.preprocessor.Preprocessor.hamming_filter">hamming_filter() (Preprocessor method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.filters.BandPass.highpass.html#tme.filters.BandPass.highpass">highpass (BandPass attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.BandPassReconstructed.highpass.html#tme.filters.BandPassReconstructed.highpass">(BandPassReconstructed attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.CupyBackend.identity.html#tme.backends.CupyBackend.identity">identity() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.identity.html#tme.backends.JaxBackend.identity">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.identity.html#tme.backends.MLXBackend.identity">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.identity.html#tme.backends.NumpyFFTWBackend.identity">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.identity.html#tme.backends.PytorchBackend.identity">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.indices.html#tme.backends.CupyBackend.indices">indices() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.indices.html#tme.backends.JaxBackend.indices">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.indices.html#tme.backends.MatchingBackend.indices">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.indices.html#tme.backends.MLXBackend.indices">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.indices.html#tme.backends.NumpyFFTWBackend.indices">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.indices.html#tme.backends.PytorchBackend.indices">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.analyzer.AbstractAnalyzer.init_state.html#tme.analyzer.AbstractAnalyzer.init_state">init_state() (AbstractAnalyzer method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverRotations.init_state.html#tme.analyzer.MaxScoreOverRotations.init_state">(MaxScoreOverRotations method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverRotationsConstrained.init_state.html#tme.analyzer.MaxScoreOverRotationsConstrained.init_state">(MaxScoreOverRotationsConstrained method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverTranslations.init_state.html#tme.analyzer.MaxScoreOverTranslations.init_state">(MaxScoreOverTranslations method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCaller.init_state.html#tme.analyzer.PeakCaller.init_state">(PeakCaller method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerFast.init_state.html#tme.analyzer.PeakCallerFast.init_state">(PeakCallerFast method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerMaximumFilter.init_state.html#tme.analyzer.PeakCallerMaximumFilter.init_state">(PeakCallerMaximumFilter method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerRecursiveMasking.init_state.html#tme.analyzer.PeakCallerRecursiveMasking.init_state">(PeakCallerRecursiveMasking method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerScipy.init_state.html#tme.analyzer.PeakCallerScipy.init_state">(PeakCallerScipy method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerSort.init_state.html#tme.analyzer.PeakCallerSort.init_state">(PeakCallerSort method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.interpolate_box.html#tme.preprocessor.Preprocessor.interpolate_box">interpolate_box() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.ReconstructFromTilt.interpolation_order.html#tme.filters.ReconstructFromTilt.interpolation_order">interpolation_order (ReconstructFromTilt attribute)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.irfftn.html#tme.backends.CupyBackend.irfftn">irfftn() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.irfftn.html#tme.backends.JaxBackend.irfftn">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.irfftn.html#tme.backends.MLXBackend.irfftn">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.irfftn.html#tme.backends.NumpyFFTWBackend.irfftn">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.irfftn.html#tme.backends.PytorchBackend.irfftn">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.parser.MMCIFParser.items.html#tme.parser.MMCIFParser.items">items() (MMCIFParser method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.parser.Parser.items.html#tme.parser.Parser.items">(Parser method)</a>
+</li>
+        <li><a href="reference/api/tme.parser.PDBParser.items.html#tme.parser.PDBParser.items">(PDBParser method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.JaxBackend.html#tme.backends.JaxBackend">JaxBackend (class in tme.backends)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.kaiserb_filter.html#tme.preprocessor.Preprocessor.kaiserb_filter">kaiserb_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.parser.MMCIFParser.keys.html#tme.parser.MMCIFParser.keys">keys() (MMCIFParser method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.parser.Parser.keys.html#tme.parser.Parser.keys">(Parser method)</a>
+</li>
+        <li><a href="reference/api/tme.parser.PDBParser.keys.html#tme.parser.PDBParser.keys">(PDBParser method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.matching_optimization.LaplaceCrossCorrelation.html#tme.matching_optimization.LaplaceCrossCorrelation">LaplaceCrossCorrelation (class in tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.matching_scores.lcc_setup.html#tme.matching_scores.lcc_setup">lcc_setup() (in module tme.matching_scores)</a>
+</li>
+      <li><a href="reference/api/tme.memory.LCCMemoryUsage.html#tme.memory.LCCMemoryUsage">LCCMemoryUsage (class in tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.filters.LinearWhiteningFilter.html#tme.filters.LinearWhiteningFilter">LinearWhiteningFilter (class in tme.filters)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.matching_utils.load_pickle.html#tme.matching_utils.load_pickle">load_pickle() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.local_gaussian_alignment_filter.html#tme.preprocessor.Preprocessor.local_gaussian_alignment_filter">local_gaussian_alignment_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.local_gaussian_filter.html#tme.preprocessor.Preprocessor.local_gaussian_filter">local_gaussian_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.BandPass.lowpass.html#tme.filters.BandPass.lowpass">lowpass (BandPass attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.BandPassReconstructed.lowpass.html#tme.filters.BandPassReconstructed.lowpass">(BandPassReconstructed attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.matching_optimization.MaskedCrossCorrelation.html#tme.matching_optimization.MaskedCrossCorrelation">MaskedCrossCorrelation (class in tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.density.Density.match_densities.html#tme.density.Density.match_densities">match_densities() (Density class method)</a>
+</li>
+      <li><a href="reference/api/tme.density.Density.match_structure_to_density.html#tme.density.Density.match_structure_to_density">match_structure_to_density() (Density class method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.MatchingBackend.html#tme.backends.MatchingBackend">MatchingBackend (class in tme.backends)</a>
+</li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.html#tme.matching_data.MatchingData">MatchingData (class in tme.matching_data)</a>
+</li>
+      <li><a href="reference/api/tme.memory.MatchingMemoryUsage.html#tme.memory.MatchingMemoryUsage">MatchingMemoryUsage (class in tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.max.html#tme.backends.CupyBackend.max">max() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.max.html#tme.backends.JaxBackend.max">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.max.html#tme.backends.MatchingBackend.max">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.max.html#tme.backends.MLXBackend.max">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.max.html#tme.backends.NumpyFFTWBackend.max">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.max.html#tme.backends.PytorchBackend.max">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/extensions.html#tme.extensions.max_euclidean_distance">max_euclidean_distance() (in module tme.extensions)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.max_filter_coordinates.html#tme.backends.CupyBackend.max_filter_coordinates">max_filter_coordinates() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.max_filter_coordinates.html#tme.backends.JaxBackend.max_filter_coordinates">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.max_filter_coordinates.html#tme.backends.MatchingBackend.max_filter_coordinates">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.max_filter_coordinates.html#tme.backends.MLXBackend.max_filter_coordinates">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.max_filter_coordinates.html#tme.backends.NumpyFFTWBackend.max_filter_coordinates">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.max_filter_coordinates.html#tme.backends.PytorchBackend.max_filter_coordinates">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/extensions.html#tme.extensions.max_index_by_label">max_index_by_label() (in module tme.extensions)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.max_score_over_rotations.html#tme.backends.CupyBackend.max_score_over_rotations">max_score_over_rotations() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.max_score_over_rotations.html#tme.backends.JaxBackend.max_score_over_rotations">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.max_score_over_rotations.html#tme.backends.MLXBackend.max_score_over_rotations">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.max_score_over_rotations.html#tme.backends.NumpyFFTWBackend.max_score_over_rotations">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.max_score_over_rotations.html#tme.backends.PytorchBackend.max_score_over_rotations">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.maximum.html#tme.backends.CupyBackend.maximum">maximum() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.maximum.html#tme.backends.JaxBackend.maximum">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.maximum.html#tme.backends.MatchingBackend.maximum">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.maximum.html#tme.backends.MLXBackend.maximum">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.maximum.html#tme.backends.NumpyFFTWBackend.maximum">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.maximum.html#tme.backends.PytorchBackend.maximum">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.analyzer.MaxScoreOverRotations.html#tme.analyzer.MaxScoreOverRotations">MaxScoreOverRotations (class in tme.analyzer)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.MaxScoreOverRotationsConstrained.html#tme.analyzer.MaxScoreOverRotationsConstrained">MaxScoreOverRotationsConstrained (class in tme.analyzer)</a>
+</li>
+      <li><a href="reference/api/tme.memory.MaxScoreOverRotationsMemoryUsage.html#tme.memory.MaxScoreOverRotationsMemoryUsage">MaxScoreOverRotationsMemoryUsage (class in tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.MaxScoreOverTranslations.html#tme.analyzer.MaxScoreOverTranslations">MaxScoreOverTranslations (class in tme.analyzer)</a>
+</li>
+      <li><a href="reference/api/tme.matching_scores.mcc_scoring.html#tme.matching_scores.mcc_scoring">mcc_scoring() (in module tme.matching_scores)</a>
+</li>
+      <li><a href="reference/api/tme.matching_scores.mcc_setup.html#tme.matching_scores.mcc_setup">mcc_setup() (in module tme.matching_scores)</a>
+</li>
+      <li><a href="reference/api/tme.memory.MCCMemoryUsage.html#tme.memory.MCCMemoryUsage">MCCMemoryUsage (class in tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.mean.html#tme.backends.CupyBackend.mean">mean() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.mean.html#tme.backends.JaxBackend.mean">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.mean.html#tme.backends.MatchingBackend.mean">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.mean.html#tme.backends.MLXBackend.mean">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.mean.html#tme.backends.NumpyFFTWBackend.mean">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.mean.html#tme.backends.PytorchBackend.mean">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.mean_filter.html#tme.preprocessor.Preprocessor.mean_filter">mean_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.median_filter.html#tme.preprocessor.Preprocessor.median_filter">median_filter() (Preprocessor method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.matching_utils.memmap_to_array.html#tme.matching_utils.memmap_to_array">memmap_to_array() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.AbstractAnalyzer.merge.html#tme.analyzer.AbstractAnalyzer.merge">merge() (AbstractAnalyzer class method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverRotations.merge.html#tme.analyzer.MaxScoreOverRotations.merge">(MaxScoreOverRotations class method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverRotationsConstrained.merge.html#tme.analyzer.MaxScoreOverRotationsConstrained.merge">(MaxScoreOverRotationsConstrained class method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverTranslations.merge.html#tme.analyzer.MaxScoreOverTranslations.merge">(MaxScoreOverTranslations class method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCaller.merge.html#tme.analyzer.PeakCaller.merge">(PeakCaller class method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerFast.merge.html#tme.analyzer.PeakCallerFast.merge">(PeakCallerFast class method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerMaximumFilter.merge.html#tme.analyzer.PeakCallerMaximumFilter.merge">(PeakCallerMaximumFilter class method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerRecursiveMasking.merge.html#tme.analyzer.PeakCallerRecursiveMasking.merge">(PeakCallerRecursiveMasking class method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerScipy.merge.html#tme.analyzer.PeakCallerScipy.merge">(PeakCallerScipy class method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerSort.merge.html#tme.analyzer.PeakCallerSort.merge">(PeakCallerSort class method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.metadata.html#tme.density.Density.metadata">metadata (Density property)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.structure.Structure.metadata.html#tme.structure.Structure.metadata">(Structure attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.method_to_id.html#tme.preprocessor.Preprocessor.method_to_id">method_to_id() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.min.html#tme.backends.CupyBackend.min">min() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.min.html#tme.backends.JaxBackend.min">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.min.html#tme.backends.MatchingBackend.min">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.min.html#tme.backends.MLXBackend.min">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.min.html#tme.backends.NumpyFFTWBackend.min">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.min.html#tme.backends.PytorchBackend.min">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.minimum.html#tme.backends.CupyBackend.minimum">minimum() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.minimum.html#tme.backends.JaxBackend.minimum">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.minimum.html#tme.backends.MatchingBackend.minimum">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.minimum.html#tme.backends.MLXBackend.minimum">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.minimum.html#tme.backends.NumpyFFTWBackend.minimum">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.minimum.html#tme.backends.PytorchBackend.minimum">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.minimum_enclosing_box.html#tme.density.Density.minimum_enclosing_box">minimum_enclosing_box() (Density method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.matching_utils.minimum_enclosing_box.html#tme.matching_utils.minimum_enclosing_box">(in module tme.matching_utils)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.mipmap_filter.html#tme.preprocessor.Preprocessor.mipmap_filter">mipmap_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.MLXBackend.html#tme.backends.MLXBackend">MLXBackend (class in tme.backends)</a>
+</li>
+      <li><a href="reference/api/tme.parser.MMCIFParser.html#tme.parser.MMCIFParser">MMCIFParser (class in tme.parser)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.mod.html#tme.backends.CupyBackend.mod">mod() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.mod.html#tme.backends.JaxBackend.mod">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.mod.html#tme.backends.MatchingBackend.mod">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.mod.html#tme.backends.MLXBackend.mod">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.mod.html#tme.backends.NumpyFFTWBackend.mod">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.mod.html#tme.backends.PytorchBackend.mod">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="index.html#module-project">|project|</a>
+</li>
+        <li><a href="reference/extensions.html#module-tme.extensions">tme.extensions</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.multiply.html#tme.backends.CupyBackend.multiply">multiply() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.multiply.html#tme.backends.JaxBackend.multiply">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.multiply.html#tme.backends.MatchingBackend.multiply">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.multiply.html#tme.backends.MLXBackend.multiply">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.multiply.html#tme.backends.NumpyFFTWBackend.multiply">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.multiply.html#tme.backends.PytorchBackend.multiply">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_optimization.MutualInformation.html#tme.matching_optimization.MutualInformation">MutualInformation (class in tme.matching_optimization)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.CupyBackend.norm_scores.html#tme.backends.CupyBackend.norm_scores">norm_scores() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.norm_scores.html#tme.backends.JaxBackend.norm_scores">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.norm_scores.html#tme.backends.MLXBackend.norm_scores">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.norm_scores.html#tme.backends.NumpyFFTWBackend.norm_scores">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.norm_scores.html#tme.backends.PytorchBackend.norm_scores">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.density.Density.normal_vectors.html#tme.density.Density.normal_vectors">normal_vectors() (Density method)</a>
+</li>
+      <li><a href="reference/api/tme.matching_utils.normalize_template.html#tme.matching_utils.normalize_template">normalize_template() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelation.html#tme.matching_optimization.NormalizedCrossCorrelation">NormalizedCrossCorrelation (class in tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelationMean.html#tme.matching_optimization.NormalizedCrossCorrelationMean">NormalizedCrossCorrelationMean (class in tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.NormalVectorScore.html#tme.matching_optimization.NormalVectorScore">NormalVectorScore (class in tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.backends.NumpyFFTWBackend.html#tme.backends.NumpyFFTWBackend">NumpyFFTWBackend (class in tme.backends)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.structure.Structure.occupancy.html#tme.structure.Structure.occupancy">occupancy (Structure attribute)</a>
+</li>
+      <li><a href="reference/extensions.html#tme.extensions.online_statistics">online_statistics() (in module tme.extensions)</a>
+</li>
+      <li><a href="reference/api/tme.filters.BandPass.opening_axis.html#tme.filters.BandPass.opening_axis">opening_axis (BandPass attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.BandPassReconstructed.opening_axis.html#tme.filters.BandPassReconstructed.opening_axis">(BandPassReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTF.opening_axis.html#tme.filters.CTF.opening_axis">(CTF attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.opening_axis.html#tme.filters.CTFReconstructed.opening_axis">(CTFReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.ReconstructFromTilt.opening_axis.html#tme.filters.ReconstructFromTilt.opening_axis">(ReconstructFromTilt attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.Wedge.opening_axis.html#tme.filters.Wedge.opening_axis">(Wedge attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.WedgeReconstructed.opening_axis.html#tme.filters.WedgeReconstructed.opening_axis">(WedgeReconstructed attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.matching_optimization.optimize_match.html#tme.matching_optimization.optimize_match">optimize_match() (in module tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.orientations.Orientations.html#tme.orientations.Orientations">Orientations (class in tme.orientations)</a>
+</li>
+      <li><a href="reference/api/tme.density.Density.origin.html#tme.density.Density.origin">origin (Density property)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.PeakCaller.oversample_peaks.html#tme.analyzer.PeakCaller.oversample_peaks">oversample_peaks() (PeakCaller static method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.analyzer.PeakCallerFast.oversample_peaks.html#tme.analyzer.PeakCallerFast.oversample_peaks">(PeakCallerFast static method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerMaximumFilter.oversample_peaks.html#tme.analyzer.PeakCallerMaximumFilter.oversample_peaks">(PeakCallerMaximumFilter static method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerRecursiveMasking.oversample_peaks.html#tme.analyzer.PeakCallerRecursiveMasking.oversample_peaks">(PeakCallerRecursiveMasking static method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerScipy.oversample_peaks.html#tme.analyzer.PeakCallerScipy.oversample_peaks">(PeakCallerScipy static method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerSort.oversample_peaks.html#tme.analyzer.PeakCallerSort.oversample_peaks">(PeakCallerSort static method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.density.Density.pad.html#tme.density.Density.pad">pad() (Density method)</a>
+</li>
+      <li><a href="reference/api/tme.parser.MMCIFParser.parse_input.html#tme.parser.MMCIFParser.parse_input">parse_input() (MMCIFParser method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.parser.Parser.parse_input.html#tme.parser.Parser.parse_input">(Parser method)</a>
+</li>
+        <li><a href="reference/api/tme.parser.PDBParser.parse_input.html#tme.parser.PDBParser.parse_input">(PDBParser method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.parser.Parser.html#tme.parser.Parser">Parser (class in tme.parser)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.PartialLeastSquareDifference.html#tme.matching_optimization.PartialLeastSquareDifference">PartialLeastSquareDifference (class in tme.matching_optimization)</a>
+</li>
+      <li><a href="reference/api/tme.parser.PDBParser.html#tme.parser.PDBParser">PDBParser (class in tme.parser)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.PeakCaller.html#tme.analyzer.PeakCaller">PeakCaller (class in tme.analyzer)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.PeakCallerFast.html#tme.analyzer.PeakCallerFast">PeakCallerFast (class in tme.analyzer)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.PeakCallerMaximumFilter.html#tme.analyzer.PeakCallerMaximumFilter">PeakCallerMaximumFilter (class in tme.analyzer)</a>
+</li>
+      <li><a href="reference/api/tme.memory.PeakCallerMaximumFilterMemoryUsage.html#tme.memory.PeakCallerMaximumFilterMemoryUsage">PeakCallerMaximumFilterMemoryUsage (class in tme.memory)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.PeakCallerRecursiveMasking.html#tme.analyzer.PeakCallerRecursiveMasking">PeakCallerRecursiveMasking (class in tme.analyzer)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.PeakCallerScipy.html#tme.analyzer.PeakCallerScipy">PeakCallerScipy (class in tme.analyzer)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.PeakCallerSort.html#tme.analyzer.PeakCallerSort">PeakCallerSort (class in tme.analyzer)</a>
+</li>
+      <li><a href="reference/api/tme.memory.CAMMemoryUsage.per_fork.html#tme.memory.CAMMemoryUsage.per_fork">per_fork() (CAMMemoryUsage method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.memory.CCMemoryUsage.per_fork.html#tme.memory.CCMemoryUsage.per_fork">(CCMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.CORRMemoryUsage.per_fork.html#tme.memory.CORRMemoryUsage.per_fork">(CORRMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.CupyBackendMemoryUsage.per_fork.html#tme.memory.CupyBackendMemoryUsage.per_fork">(CupyBackendMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.FLCMemoryUsage.per_fork.html#tme.memory.FLCMemoryUsage.per_fork">(FLCMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.FLCSphericalMaskMemoryUsage.per_fork.html#tme.memory.FLCSphericalMaskMemoryUsage.per_fork">(FLCSphericalMaskMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.LCCMemoryUsage.per_fork.html#tme.memory.LCCMemoryUsage.per_fork">(LCCMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.MatchingMemoryUsage.per_fork.html#tme.memory.MatchingMemoryUsage.per_fork">(MatchingMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.MaxScoreOverRotationsMemoryUsage.per_fork.html#tme.memory.MaxScoreOverRotationsMemoryUsage.per_fork">(MaxScoreOverRotationsMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.MCCMemoryUsage.per_fork.html#tme.memory.MCCMemoryUsage.per_fork">(MCCMemoryUsage method)</a>
+</li>
+        <li><a href="reference/api/tme.memory.PeakCallerMaximumFilterMemoryUsage.per_fork.html#tme.memory.PeakCallerMaximumFilterMemoryUsage.per_fork">(PeakCallerMaximumFilterMemoryUsage method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.filters.CTF.phase_shift.html#tme.filters.CTF.phase_shift">phase_shift (CTF attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.phase_shift.html#tme.filters.CTFReconstructed.phase_shift">(CTFReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.power.html#tme.backends.CupyBackend.power">power() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.power.html#tme.backends.JaxBackend.power">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.power.html#tme.backends.MatchingBackend.power">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.power.html#tme.backends.MLXBackend.power">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.power.html#tme.backends.NumpyFFTWBackend.power">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.power.html#tme.backends.PytorchBackend.power">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.html#tme.preprocessor.Preprocessor">Preprocessor (class in tme.preprocessor)</a>
+</li>
+      <li><a href="reference/api/tme.backends.PytorchBackend.html#tme.backends.PytorchBackend">PytorchBackend (class in tme.backends)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.rank_filter.html#tme.preprocessor.Preprocessor.rank_filter">rank_filter() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.ReconstructFromTilt.reconstruct.html#tme.filters.ReconstructFromTilt.reconstruct">reconstruct() (ReconstructFromTilt static method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.ReconstructFromTilt.html#tme.filters.ReconstructFromTilt">ReconstructFromTilt (class in tme.filters)</a>
+</li>
+      <li><a href="reference/api/tme.filters.ReconstructFromTilt.reconstruction_filter.html#tme.filters.ReconstructFromTilt.reconstruction_filter">reconstruction_filter (ReconstructFromTilt attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.WedgeReconstructed.reconstruction_filter.html#tme.filters.WedgeReconstructed.reconstruction_filter">(WedgeReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.structure.Structure.record_type.html#tme.structure.Structure.record_type">record_type (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.matching_exhaustive.register_matching_exhaustive.html#tme.matching_exhaustive.register_matching_exhaustive">register_matching_exhaustive() (in module tme.matching_exhaustive)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.repeat.html#tme.backends.CupyBackend.repeat">repeat() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.repeat.html#tme.backends.JaxBackend.repeat">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.repeat.html#tme.backends.MatchingBackend.repeat">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.repeat.html#tme.backends.MLXBackend.repeat">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.repeat.html#tme.backends.NumpyFFTWBackend.repeat">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.repeat.html#tme.backends.PytorchBackend.repeat">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.resample.html#tme.density.Density.resample">resample() (Density method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.reshape.html#tme.backends.CupyBackend.reshape">reshape() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.reshape.html#tme.backends.JaxBackend.reshape">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.reshape.html#tme.backends.MLXBackend.reshape">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.reshape.html#tme.backends.NumpyFFTWBackend.reshape">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.reshape.html#tme.backends.PytorchBackend.reshape">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.structure.Structure.residue_name.html#tme.structure.Structure.residue_name">residue_name (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.residue_sequence_number.html#tme.structure.Structure.residue_sequence_number">residue_sequence_number (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.analyzer.AbstractAnalyzer.result.html#tme.analyzer.AbstractAnalyzer.result">result() (AbstractAnalyzer method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverRotations.result.html#tme.analyzer.MaxScoreOverRotations.result">(MaxScoreOverRotations method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverRotationsConstrained.result.html#tme.analyzer.MaxScoreOverRotationsConstrained.result">(MaxScoreOverRotationsConstrained method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverTranslations.result.html#tme.analyzer.MaxScoreOverTranslations.result">(MaxScoreOverTranslations method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCaller.result.html#tme.analyzer.PeakCaller.result">(PeakCaller method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerFast.result.html#tme.analyzer.PeakCallerFast.result">(PeakCallerFast method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerMaximumFilter.result.html#tme.analyzer.PeakCallerMaximumFilter.result">(PeakCallerMaximumFilter method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerRecursiveMasking.result.html#tme.analyzer.PeakCallerRecursiveMasking.result">(PeakCallerRecursiveMasking method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerScipy.result.html#tme.analyzer.PeakCallerScipy.result">(PeakCallerScipy method)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerSort.result.html#tme.analyzer.PeakCallerSort.result">(PeakCallerSort method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.filters.BandPass.return_real_fourier.html#tme.filters.BandPass.return_real_fourier">return_real_fourier (BandPass attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.BandPassReconstructed.return_real_fourier.html#tme.filters.BandPassReconstructed.return_real_fourier">(BandPassReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTF.return_real_fourier.html#tme.filters.CTF.return_real_fourier">(CTF attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.return_real_fourier.html#tme.filters.CTFReconstructed.return_real_fourier">(CTFReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.ReconstructFromTilt.return_real_fourier.html#tme.filters.ReconstructFromTilt.return_real_fourier">(ReconstructFromTilt attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.reverse.html#tme.backends.CupyBackend.reverse">reverse() (CupyBackend static method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.reverse.html#tme.backends.JaxBackend.reverse">(JaxBackend static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.reverse.html#tme.backends.MatchingBackend.reverse">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.reverse.html#tme.backends.MLXBackend.reverse">(MLXBackend static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.reverse.html#tme.backends.NumpyFFTWBackend.reverse">(NumpyFFTWBackend static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.reverse.html#tme.backends.PytorchBackend.reverse">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.CupyBackend.rfftn.html#tme.backends.CupyBackend.rfftn">rfftn() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.rfftn.html#tme.backends.JaxBackend.rfftn">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.rfftn.html#tme.backends.MLXBackend.rfftn">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.rfftn.html#tme.backends.NumpyFFTWBackend.rfftn">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.rfftn.html#tme.backends.PytorchBackend.rfftn">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.rigid_transform.html#tme.backends.CupyBackend.rigid_transform">rigid_transform() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.density.Density.rigid_transform.html#tme.density.Density.rigid_transform">(Density method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_utils.rigid_transform.html#tme.matching_utils.rigid_transform">(in module tme.matching_utils)</a>
+</li>
+        <li><a href="reference/api/tme.backends.JaxBackend.rigid_transform.html#tme.backends.JaxBackend.rigid_transform">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.rigid_transform.html#tme.backends.MatchingBackend.rigid_transform">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.rigid_transform.html#tme.backends.MLXBackend.rigid_transform">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.rigid_transform.html#tme.backends.NumpyFFTWBackend.rigid_transform">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.rigid_transform.html#tme.backends.PytorchBackend.rigid_transform">(PytorchBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.structure.Structure.rigid_transform.html#tme.structure.Structure.rigid_transform">(Structure method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.roll.html#tme.backends.CupyBackend.roll">roll() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.roll.html#tme.backends.JaxBackend.roll">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.roll.html#tme.backends.MatchingBackend.roll">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.roll.html#tme.backends.MLXBackend.roll">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.roll.html#tme.backends.NumpyFFTWBackend.roll">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.roll.html#tme.backends.PytorchBackend.roll">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_optimization.Chamfer.rotate_array.html#tme.matching_optimization.Chamfer.rotate_array">rotate_array() (Chamfer method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.matching_optimization.CrossCorrelation.rotate_array.html#tme.matching_optimization.CrossCorrelation.rotate_array">(CrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.Envelope.rotate_array.html#tme.matching_optimization.Envelope.rotate_array">(Envelope method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.FLC.rotate_array.html#tme.matching_optimization.FLC.rotate_array">(FLC method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.LaplaceCrossCorrelation.rotate_array.html#tme.matching_optimization.LaplaceCrossCorrelation.rotate_array">(LaplaceCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.MaskedCrossCorrelation.rotate_array.html#tme.matching_optimization.MaskedCrossCorrelation.rotate_array">(MaskedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.MutualInformation.rotate_array.html#tme.matching_optimization.MutualInformation.rotate_array">(MutualInformation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelation.rotate_array.html#tme.matching_optimization.NormalizedCrossCorrelation.rotate_array">(NormalizedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelationMean.rotate_array.html#tme.matching_optimization.NormalizedCrossCorrelationMean.rotate_array">(NormalizedCrossCorrelationMean method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalVectorScore.rotate_array.html#tme.matching_optimization.NormalVectorScore.rotate_array">(NormalVectorScore method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.PartialLeastSquareDifference.rotate_array.html#tme.matching_optimization.PartialLeastSquareDifference.rotate_array">(PartialLeastSquareDifference method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.rotations.html#tme.matching_data.MatchingData.rotations">rotations (MatchingData property)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.orientations.Orientations.rotations.html#tme.orientations.Orientations.rotations">(Orientations attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.filters.BandPass.sampling_rate.html#tme.filters.BandPass.sampling_rate">sampling_rate (BandPass attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.BandPassReconstructed.sampling_rate.html#tme.filters.BandPassReconstructed.sampling_rate">(BandPassReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTF.sampling_rate.html#tme.filters.CTF.sampling_rate">(CTF attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.sampling_rate.html#tme.filters.CTFReconstructed.sampling_rate">(CTFReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.density.Density.sampling_rate.html#tme.density.Density.sampling_rate">(Density property)</a>
+</li>
+        <li><a href="reference/api/tme.filters.Wedge.sampling_rate.html#tme.filters.Wedge.sampling_rate">(Wedge attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_exhaustive.scan.html#tme.matching_exhaustive.scan">scan() (in module tme.matching_exhaustive)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.scan.html#tme.backends.JaxBackend.scan">(JaxBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_exhaustive.scan_subsets.html#tme.matching_exhaustive.scan_subsets">scan_subsets() (in module tme.matching_exhaustive)</a>
+</li>
+      <li><a href="reference/api/tme.matching_optimization.Chamfer.score.html#tme.matching_optimization.Chamfer.score">score() (Chamfer method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.matching_optimization.CrossCorrelation.score.html#tme.matching_optimization.CrossCorrelation.score">(CrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.Envelope.score.html#tme.matching_optimization.Envelope.score">(Envelope method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.FLC.score.html#tme.matching_optimization.FLC.score">(FLC method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.LaplaceCrossCorrelation.score.html#tme.matching_optimization.LaplaceCrossCorrelation.score">(LaplaceCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.MaskedCrossCorrelation.score.html#tme.matching_optimization.MaskedCrossCorrelation.score">(MaskedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.MutualInformation.score.html#tme.matching_optimization.MutualInformation.score">(MutualInformation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelation.score.html#tme.matching_optimization.NormalizedCrossCorrelation.score">(NormalizedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelationMean.score.html#tme.matching_optimization.NormalizedCrossCorrelationMean.score">(NormalizedCrossCorrelationMean method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalVectorScore.score.html#tme.matching_optimization.NormalVectorScore.score">(NormalVectorScore method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.PartialLeastSquareDifference.score.html#tme.matching_optimization.PartialLeastSquareDifference.score">(PartialLeastSquareDifference method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_optimization.Chamfer.score_angles.html#tme.matching_optimization.Chamfer.score_angles">score_angles() (Chamfer method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.matching_optimization.CrossCorrelation.score_angles.html#tme.matching_optimization.CrossCorrelation.score_angles">(CrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.Envelope.score_angles.html#tme.matching_optimization.Envelope.score_angles">(Envelope method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.FLC.score_angles.html#tme.matching_optimization.FLC.score_angles">(FLC method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.LaplaceCrossCorrelation.score_angles.html#tme.matching_optimization.LaplaceCrossCorrelation.score_angles">(LaplaceCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.MaskedCrossCorrelation.score_angles.html#tme.matching_optimization.MaskedCrossCorrelation.score_angles">(MaskedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.MutualInformation.score_angles.html#tme.matching_optimization.MutualInformation.score_angles">(MutualInformation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelation.score_angles.html#tme.matching_optimization.NormalizedCrossCorrelation.score_angles">(NormalizedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelationMean.score_angles.html#tme.matching_optimization.NormalizedCrossCorrelationMean.score_angles">(NormalizedCrossCorrelationMean method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalVectorScore.score_angles.html#tme.matching_optimization.NormalVectorScore.score_angles">(NormalVectorScore method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.PartialLeastSquareDifference.score_angles.html#tme.matching_optimization.PartialLeastSquareDifference.score_angles">(PartialLeastSquareDifference method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_optimization.Chamfer.score_translation.html#tme.matching_optimization.Chamfer.score_translation">score_translation() (Chamfer method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.matching_optimization.CrossCorrelation.score_translation.html#tme.matching_optimization.CrossCorrelation.score_translation">(CrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.Envelope.score_translation.html#tme.matching_optimization.Envelope.score_translation">(Envelope method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.FLC.score_translation.html#tme.matching_optimization.FLC.score_translation">(FLC method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.LaplaceCrossCorrelation.score_translation.html#tme.matching_optimization.LaplaceCrossCorrelation.score_translation">(LaplaceCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.MaskedCrossCorrelation.score_translation.html#tme.matching_optimization.MaskedCrossCorrelation.score_translation">(MaskedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.MutualInformation.score_translation.html#tme.matching_optimization.MutualInformation.score_translation">(MutualInformation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelation.score_translation.html#tme.matching_optimization.NormalizedCrossCorrelation.score_translation">(NormalizedCrossCorrelation method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalizedCrossCorrelationMean.score_translation.html#tme.matching_optimization.NormalizedCrossCorrelationMean.score_translation">(NormalizedCrossCorrelationMean method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.NormalVectorScore.score_translation.html#tme.matching_optimization.NormalVectorScore.score_translation">(NormalVectorScore method)</a>
+</li>
+        <li><a href="reference/api/tme.matching_optimization.PartialLeastSquareDifference.score_translation.html#tme.matching_optimization.PartialLeastSquareDifference.score_translation">(PartialLeastSquareDifference method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.orientations.Orientations.scores.html#tme.orientations.Orientations.scores">scores (Orientations attribute)</a>
+</li>
+      <li><a href="reference/api/tme.matching_utils.scramble_phases.html#tme.matching_utils.scramble_phases">scramble_phases() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.segment_identifier.html#tme.structure.Structure.segment_identifier">segment_identifier (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.set_device.html#tme.backends.CupyBackend.set_device">set_device() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.set_device.html#tme.backends.JaxBackend.set_device">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.set_device.html#tme.backends.MatchingBackend.set_device">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.set_device.html#tme.backends.MLXBackend.set_device">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.set_device.html#tme.backends.NumpyFFTWBackend.set_device">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.set_device.html#tme.backends.PytorchBackend.set_device">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.set_matching_dimension.html#tme.matching_data.MatchingData.set_matching_dimension">set_matching_dimension() (MatchingData method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.BandPass.shape.html#tme.filters.BandPass.shape">shape (BandPass attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.BandPassReconstructed.shape.html#tme.filters.BandPassReconstructed.shape">(BandPassReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTF.shape.html#tme.filters.CTF.shape">(CTF attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.shape.html#tme.filters.CTFReconstructed.shape">(CTFReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.density.Density.shape.html#tme.density.Density.shape">(Density property)</a>
+</li>
+        <li><a href="reference/api/tme.filters.ReconstructFromTilt.shape.html#tme.filters.ReconstructFromTilt.shape">(ReconstructFromTilt attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.Wedge.shape.html#tme.filters.Wedge.shape">(Wedge attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.analyzer.AbstractAnalyzer.shareable.html#tme.analyzer.AbstractAnalyzer.shareable">shareable (AbstractAnalyzer property)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverRotations.shareable.html#tme.analyzer.MaxScoreOverRotations.shareable">(MaxScoreOverRotations property)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverRotationsConstrained.shareable.html#tme.analyzer.MaxScoreOverRotationsConstrained.shareable">(MaxScoreOverRotationsConstrained property)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.MaxScoreOverTranslations.shareable.html#tme.analyzer.MaxScoreOverTranslations.shareable">(MaxScoreOverTranslations property)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCaller.shareable.html#tme.analyzer.PeakCaller.shareable">(PeakCaller property)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerFast.shareable.html#tme.analyzer.PeakCallerFast.shareable">(PeakCallerFast property)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerMaximumFilter.shareable.html#tme.analyzer.PeakCallerMaximumFilter.shareable">(PeakCallerMaximumFilter property)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerRecursiveMasking.shareable.html#tme.analyzer.PeakCallerRecursiveMasking.shareable">(PeakCallerRecursiveMasking property)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerScipy.shareable.html#tme.analyzer.PeakCallerScipy.shareable">(PeakCallerScipy property)</a>
+</li>
+        <li><a href="reference/api/tme.analyzer.PeakCallerSort.shareable.html#tme.analyzer.PeakCallerSort.shareable">(PeakCallerSort property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.CupyBackend.size.html#tme.backends.CupyBackend.size">size() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.size.html#tme.backends.JaxBackend.size">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.size.html#tme.backends.MatchingBackend.size">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.size.html#tme.backends.MLXBackend.size">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.size.html#tme.backends.NumpyFFTWBackend.size">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.size.html#tme.backends.PytorchBackend.size">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.filters.CTF.spherical_aberration.html#tme.filters.CTF.spherical_aberration">spherical_aberration (CTF attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.spherical_aberration.html#tme.filters.CTFReconstructed.spherical_aberration">(CTFReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_utils.split_shape.html#tme.matching_utils.split_shape">split_shape() (in module tme.matching_utils)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.sqrt.html#tme.backends.CupyBackend.sqrt">sqrt() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.sqrt.html#tme.backends.JaxBackend.sqrt">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.sqrt.html#tme.backends.MatchingBackend.sqrt">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.sqrt.html#tme.backends.MLXBackend.sqrt">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.sqrt.html#tme.backends.NumpyFFTWBackend.sqrt">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.sqrt.html#tme.backends.PytorchBackend.sqrt">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.square.html#tme.backends.CupyBackend.square">square() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.square.html#tme.backends.JaxBackend.square">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.square.html#tme.backends.MatchingBackend.square">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.square.html#tme.backends.MLXBackend.square">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.square.html#tme.backends.NumpyFFTWBackend.square">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.square.html#tme.backends.PytorchBackend.square">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.stack.html#tme.backends.CupyBackend.stack">stack() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.stack.html#tme.backends.JaxBackend.stack">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.stack.html#tme.backends.MatchingBackend.stack">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.stack.html#tme.backends.MLXBackend.stack">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.stack.html#tme.backends.NumpyFFTWBackend.stack">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.stack.html#tme.backends.PytorchBackend.stack">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.std.html#tme.backends.CupyBackend.std">std() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.std.html#tme.backends.JaxBackend.std">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.std.html#tme.backends.MatchingBackend.std">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.std.html#tme.backends.MLXBackend.std">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.std.html#tme.backends.NumpyFFTWBackend.std">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.std.html#tme.backends.PytorchBackend.std">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.filters.WedgeReconstructed.step_wedge.html#tme.filters.WedgeReconstructed.step_wedge">step_wedge() (WedgeReconstructed static method)</a>
+</li>
+      <li><a href="reference/api/tme.preprocessor.Preprocessor.step_wedge_mask.html#tme.preprocessor.Preprocessor.step_wedge_mask">step_wedge_mask() (Preprocessor method)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.html#tme.structure.Structure">Structure (class in tme.structure)</a>
+</li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.subset_array.html#tme.matching_data.MatchingData.subset_array">subset_array() (MatchingData method)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.subset_by_chain.html#tme.structure.Structure.subset_by_chain">subset_by_chain() (Structure method)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.subset_by_range.html#tme.structure.Structure.subset_by_range">subset_by_range() (Structure method)</a>
+</li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.subset_by_slice.html#tme.matching_data.MatchingData.subset_by_slice">subset_by_slice() (MatchingData method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.subtract.html#tme.backends.CupyBackend.subtract">subtract() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.subtract.html#tme.backends.JaxBackend.subtract">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.subtract.html#tme.backends.MatchingBackend.subtract">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.subtract.html#tme.backends.MLXBackend.subtract">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.subtract.html#tme.backends.NumpyFFTWBackend.subtract">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.subtract.html#tme.backends.PytorchBackend.subtract">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.sum.html#tme.backends.CupyBackend.sum">sum() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.sum.html#tme.backends.JaxBackend.sum">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.sum.html#tme.backends.MatchingBackend.sum">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.sum.html#tme.backends.MLXBackend.sum">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.sum.html#tme.backends.NumpyFFTWBackend.sum">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.sum.html#tme.backends.PytorchBackend.sum">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.surface_coordinates.html#tme.density.Density.surface_coordinates">surface_coordinates() (Density method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.matching_data.MatchingData.target.html#tme.matching_data.MatchingData.target">target (MatchingData property)</a>
+</li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.target_filter.html#tme.matching_data.MatchingData.target_filter">target_filter (MatchingData property)</a>
+</li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.target_mask.html#tme.matching_data.MatchingData.target_mask">target_mask (MatchingData property)</a>
+</li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.target_padding.html#tme.matching_data.MatchingData.target_padding">target_padding() (MatchingData method)</a>
+</li>
+      <li><a href="reference/api/tme.structure.Structure.temperature_factor.html#tme.structure.Structure.temperature_factor">temperature_factor (Structure attribute)</a>
+</li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.template.html#tme.matching_data.MatchingData.template">template (MatchingData property)</a>
+</li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.template_filter.html#tme.matching_data.MatchingData.template_filter">template_filter (MatchingData property)</a>
+</li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.template_mask.html#tme.matching_data.MatchingData.template_mask">template_mask (MatchingData property)</a>
+</li>
+      <li><a href="reference/api/tme.filters.BandPass.tilt_axis.html#tme.filters.BandPass.tilt_axis">tilt_axis (BandPass attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.BandPassReconstructed.tilt_axis.html#tme.filters.BandPassReconstructed.tilt_axis">(BandPassReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTF.tilt_axis.html#tme.filters.CTF.tilt_axis">(CTF attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.tilt_axis.html#tme.filters.CTFReconstructed.tilt_axis">(CTFReconstructed attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.ReconstructFromTilt.tilt_axis.html#tme.filters.ReconstructFromTilt.tilt_axis">(ReconstructFromTilt attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.Wedge.tilt_axis.html#tme.filters.Wedge.tilt_axis">(Wedge attribute)</a>
+</li>
+        <li><a href="reference/api/tme.filters.WedgeReconstructed.tilt_axis.html#tme.filters.WedgeReconstructed.tilt_axis">(WedgeReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li>
+    tme.extensions
+
+      <ul>
+        <li><a href="reference/extensions.html#module-tme.extensions">module</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_data.MatchingData.to_backend.html#tme.matching_data.MatchingData.to_backend">to_backend() (MatchingData method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.to_backend_array.html#tme.backends.CupyBackend.to_backend_array">to_backend_array() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.to_backend_array.html#tme.backends.JaxBackend.to_backend_array">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.to_backend_array.html#tme.backends.MatchingBackend.to_backend_array">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.to_backend_array.html#tme.backends.MLXBackend.to_backend_array">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.to_backend_array.html#tme.backends.NumpyFFTWBackend.to_backend_array">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.to_backend_array.html#tme.backends.PytorchBackend.to_backend_array">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.to_cpu_array.html#tme.backends.CupyBackend.to_cpu_array">to_cpu_array() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.to_cpu_array.html#tme.backends.JaxBackend.to_cpu_array">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.to_cpu_array.html#tme.backends.MatchingBackend.to_cpu_array">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.to_cpu_array.html#tme.backends.MLXBackend.to_cpu_array">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.to_cpu_array.html#tme.backends.NumpyFFTWBackend.to_cpu_array">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.to_cpu_array.html#tme.backends.PytorchBackend.to_cpu_array">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.to_file.html#tme.density.Density.to_file">to_file() (Density method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.orientations.Orientations.to_file.html#tme.orientations.Orientations.to_file">(Orientations method)</a>
+</li>
+        <li><a href="reference/api/tme.structure.Structure.to_file.html#tme.structure.Structure.to_file">(Structure method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.to_memmap.html#tme.density.Density.to_memmap">to_memmap() (Density method)</a>
+</li>
+      <li><a href="reference/api/tme.density.Density.to_numpy.html#tme.density.Density.to_numpy">to_numpy() (Density method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.to_numpy_array.html#tme.backends.CupyBackend.to_numpy_array">to_numpy_array() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.to_numpy_array.html#tme.backends.JaxBackend.to_numpy_array">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.to_numpy_array.html#tme.backends.MatchingBackend.to_numpy_array">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.to_numpy_array.html#tme.backends.MLXBackend.to_numpy_array">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.to_numpy_array.html#tme.backends.NumpyFFTWBackend.to_numpy_array">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.to_numpy_array.html#tme.backends.PytorchBackend.to_numpy_array">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.density.Density.to_pointcloud.html#tme.density.Density.to_pointcloud">to_pointcloud() (Density method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.to_sharedarr.html#tme.backends.CupyBackend.to_sharedarr">to_sharedarr() (CupyBackend static method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.to_sharedarr.html#tme.backends.JaxBackend.to_sharedarr">(JaxBackend static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.to_sharedarr.html#tme.backends.MatchingBackend.to_sharedarr">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.to_sharedarr.html#tme.backends.MLXBackend.to_sharedarr">(MLXBackend static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.to_sharedarr.html#tme.backends.NumpyFFTWBackend.to_sharedarr">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.to_sharedarr.html#tme.backends.PytorchBackend.to_sharedarr">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.structure.Structure.to_volume.html#tme.structure.Structure.to_volume">to_volume() (Structure method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.tobytes.html#tme.backends.CupyBackend.tobytes">tobytes() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.tobytes.html#tme.backends.JaxBackend.tobytes">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.tobytes.html#tme.backends.MatchingBackend.tobytes">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.tobytes.html#tme.backends.MLXBackend.tobytes">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.tobytes.html#tme.backends.NumpyFFTWBackend.tobytes">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.tobytes.html#tme.backends.PytorchBackend.tobytes">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.topk_indices.html#tme.backends.CupyBackend.topk_indices">topk_indices() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.topk_indices.html#tme.backends.JaxBackend.topk_indices">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.topk_indices.html#tme.backends.MatchingBackend.topk_indices">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.topk_indices.html#tme.backends.MLXBackend.topk_indices">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.topk_indices.html#tme.backends.NumpyFFTWBackend.topk_indices">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.topk_indices.html#tme.backends.PytorchBackend.topk_indices">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.topleft_pad.html#tme.backends.CupyBackend.topleft_pad">topleft_pad() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.topleft_pad.html#tme.backends.JaxBackend.topleft_pad">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.topleft_pad.html#tme.backends.MatchingBackend.topleft_pad">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.topleft_pad.html#tme.backends.MLXBackend.topleft_pad">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.topleft_pad.html#tme.backends.NumpyFFTWBackend.topleft_pad">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.topleft_pad.html#tme.backends.PytorchBackend.topleft_pad">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.orientations.Orientations.translations.html#tme.orientations.Orientations.translations">translations (Orientations attribute)</a>
+</li>
+      <li><a href="reference/api/tme.backends.CupyBackend.transpose.html#tme.backends.CupyBackend.transpose">transpose() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.transpose.html#tme.backends.JaxBackend.transpose">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.transpose.html#tme.backends.MatchingBackend.transpose">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.transpose.html#tme.backends.MLXBackend.transpose">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.transpose.html#tme.backends.NumpyFFTWBackend.transpose">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.transpose.html#tme.backends.PytorchBackend.transpose">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.tril_indices.html#tme.backends.CupyBackend.tril_indices">tril_indices() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.tril_indices.html#tme.backends.JaxBackend.tril_indices">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.tril_indices.html#tme.backends.MatchingBackend.tril_indices">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.tril_indices.html#tme.backends.MLXBackend.tril_indices">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.tril_indices.html#tme.backends.NumpyFFTWBackend.tril_indices">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.tril_indices.html#tme.backends.PytorchBackend.tril_indices">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.density.Density.trim_box.html#tme.density.Density.trim_box">trim_box() (Density method)</a>
+</li>
+      <li><a href="reference/api/tme.backends.PytorchBackend.triu_indices.html#tme.backends.PytorchBackend.triu_indices">triu_indices() (PytorchBackend method)</a>
+</li>
+      <li><a href="reference/api/tme.matching_utils.tube_mask.html#tme.matching_utils.tube_mask">tube_mask() (in module tme.matching_utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.CupyBackend.unique.html#tme.backends.CupyBackend.unique">unique() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.unique.html#tme.backends.JaxBackend.unique">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.unique.html#tme.backends.MatchingBackend.unique">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.unique.html#tme.backends.MLXBackend.unique">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.unique.html#tme.backends.NumpyFFTWBackend.unique">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.unique.html#tme.backends.PytorchBackend.unique">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.unravel_index.html#tme.backends.CupyBackend.unravel_index">unravel_index() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.unravel_index.html#tme.backends.JaxBackend.unravel_index">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.unravel_index.html#tme.backends.MatchingBackend.unravel_index">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.unravel_index.html#tme.backends.MLXBackend.unravel_index">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.unravel_index.html#tme.backends.NumpyFFTWBackend.unravel_index">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.unravel_index.html#tme.backends.PytorchBackend.unravel_index">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.filters.BandPass.use_gaussian.html#tme.filters.BandPass.use_gaussian">use_gaussian (BandPass attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.BandPassReconstructed.use_gaussian.html#tme.filters.BandPassReconstructed.use_gaussian">(BandPassReconstructed attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.parser.MMCIFParser.values.html#tme.parser.MMCIFParser.values">values() (MMCIFParser method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.parser.Parser.values.html#tme.parser.Parser.values">(Parser method)</a>
+</li>
+        <li><a href="reference/api/tme.parser.PDBParser.values.html#tme.parser.PDBParser.values">(PDBParser method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.CupyBackend.var.html#tme.backends.CupyBackend.var">var() (CupyBackend method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.filters.Wedge.html#tme.filters.Wedge">Wedge (class in tme.filters)</a>
+</li>
+      <li><a href="reference/api/tme.filters.WedgeReconstructed.html#tme.filters.WedgeReconstructed">WedgeReconstructed (class in tme.filters)</a>
+</li>
+      <li><a href="reference/api/tme.filters.CTF.weight.html#tme.filters.CTF.weight">weight() (CTF method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.CTFReconstructed.weight.html#tme.filters.CTFReconstructed.weight">(CTFReconstructed method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.filters.Wedge.weight_angle.html#tme.filters.Wedge.weight_angle">weight_angle() (Wedge static method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.Wedge.weight_grigorieff.html#tme.filters.Wedge.weight_grigorieff">weight_grigorieff() (Wedge method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.Wedge.weight_relion.html#tme.filters.Wedge.weight_relion">weight_relion() (Wedge method)</a>
+</li>
+      <li><a href="reference/api/tme.filters.Wedge.weight_type.html#tme.filters.Wedge.weight_type">weight_type (Wedge attribute)</a>
+</li>
+      <li><a href="reference/api/tme.filters.WedgeReconstructed.weight_wedge.html#tme.filters.WedgeReconstructed.weight_wedge">weight_wedge (WedgeReconstructed attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.filters.Wedge.weights.html#tme.filters.Wedge.weights">weights (Wedge attribute)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.filters.WedgeReconstructed.weights.html#tme.filters.WedgeReconstructed.weights">(WedgeReconstructed attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.backends.CupyBackend.where.html#tme.backends.CupyBackend.where">where() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.where.html#tme.backends.JaxBackend.where">(JaxBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.where.html#tme.backends.MatchingBackend.where">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.where.html#tme.backends.MLXBackend.where">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.where.html#tme.backends.NumpyFFTWBackend.where">(NumpyFFTWBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.where.html#tme.backends.PytorchBackend.where">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/api/tme.matching_utils.write_pickle.html#tme.matching_utils.write_pickle">write_pickle() (in module tme.matching_utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/api/tme.backends.CupyBackend.zeros.html#tme.backends.CupyBackend.zeros">zeros() (CupyBackend method)</a>
+
+      <ul>
+        <li><a href="reference/api/tme.backends.JaxBackend.zeros.html#tme.backends.JaxBackend.zeros">(JaxBackend static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MatchingBackend.zeros.html#tme.backends.MatchingBackend.zeros">(MatchingBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.MLXBackend.zeros.html#tme.backends.MLXBackend.zeros">(MLXBackend method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.NumpyFFTWBackend.zeros.html#tme.backends.NumpyFFTWBackend.zeros">(NumpyFFTWBackend static method)</a>
+</li>
+        <li><a href="reference/api/tme.backends.PytorchBackend.zeros.html#tme.backends.PytorchBackend.zeros">(PytorchBackend method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

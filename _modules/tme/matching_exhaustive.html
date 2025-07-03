@@ -1,0 +1,935 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tme.matching_exhaustive &#8212; pytme 0.3.b0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=2e4b593a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=97acad5b"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/tme/matching_exhaustive';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">tme.matching_exhaustive</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for tme.matching_exhaustive</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Implements cross-correlation based template matching using different metrics.</span>
+
+<span class="sd">Copyright (c) 2023 European Molecular Biology Laboratory</span>
+
+<span class="sd">Author: Valentin Maurer &lt;valentin.maurer@embl-hamburg.de&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">prod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing.managers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SharedMemoryManager</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Compose</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span> <span class="k">as</span> <span class="n">be</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.matching_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">split_shape</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallbackClass</span><span class="p">,</span> <span class="n">MatchingData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.analyzer.proxy</span><span class="w"> </span><span class="kn">import</span> <span class="n">SharedAnalyzerProxy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.matching_scores</span><span class="w"> </span><span class="kn">import</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.memory</span><span class="w"> </span><span class="kn">import</span> <span class="n">MatchingMemoryUsage</span><span class="p">,</span> <span class="n">MATCHING_MEMORY_REGISTRY</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_wrap_backend</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">backend_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">backend_args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">tme.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span> <span class="k">as</span> <span class="n">be</span>
+
+        <span class="n">be</span><span class="o">.</span><span class="n">change_backend</span><span class="p">(</span><span class="n">backend_name</span><span class="p">,</span> <span class="o">**</span><span class="n">backend_args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_setup_template_filter_apply_target_filter</span><span class="p">(</span>
+    <span class="n">matching_data</span><span class="p">:</span> <span class="n">MatchingData</span><span class="p">,</span>
+    <span class="n">fast_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">fast_ft_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">pad_template_filter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">target_filter</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">backend_arr</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">))</span>
+    <span class="n">template_filter</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span><span class="p">,</span> <span class="n">backend_arr</span><span class="p">):</span>
+        <span class="n">template_filter</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">target_filter</span><span class="p">,</span> <span class="n">backend_arr</span><span class="p">):</span>
+        <span class="n">target_filter</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">target_filter</span>
+
+    <span class="n">filter_template</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span><span class="p">,</span> <span class="n">Compose</span><span class="p">)</span>
+    <span class="n">filter_target</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">target_filter</span><span class="p">,</span> <span class="n">Compose</span><span class="p">)</span>
+
+    <span class="c1"># For now assume user-supplied template_filter is correctly padded</span>
+    <span class="k">if</span> <span class="n">filter_target</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">target_filter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">template_filter</span>
+
+    <span class="n">cmpl_template_shape_full</span><span class="p">,</span> <span class="n">batch_mask</span> <span class="o">=</span> <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_mask</span>
+    <span class="n">real_shape</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_shape</span><span class="p">(</span><span class="n">fast_shape</span><span class="p">,</span> <span class="n">batch_mask</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">cmpl_shape</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_shape</span><span class="p">(</span><span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">batch_mask</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">real_template_shape</span><span class="p">,</span> <span class="n">cmpl_template_shape</span> <span class="o">=</span> <span class="n">real_shape</span><span class="p">,</span> <span class="n">cmpl_shape</span>
+    <span class="n">cmpl_template_shape_full</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_shape</span><span class="p">(</span>
+        <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_target_batch</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">cmpl_target_shape_full</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_shape</span><span class="p">(</span>
+        <span class="n">fast_ft_shape</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_template_batch</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">filter_template</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pad_template_filter</span><span class="p">:</span>
+        <span class="n">out_shape</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_output_template_shape</span>
+        <span class="n">real_template_shape</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_shape</span><span class="p">(</span>
+            <span class="n">out_shape</span><span class="p">,</span> <span class="n">batch_mask</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="n">cmpl_template_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_shape</span><span class="p">(</span><span class="n">out_shape</span><span class="p">,</span> <span class="n">batch_mask</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">cmpl_template_shape_full</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span>
+        <span class="n">cmpl_template_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cmpl_template_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">cmpl_template_shape_full</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cmpl_template_shape_full</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># Setup composable filters</span>
+    <span class="n">target_temp</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">topleft_pad</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">fast_shape</span><span class="p">)</span>
+    <span class="n">target_temp_ft</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">target_temp</span><span class="p">)</span>
+    <span class="n">filter_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;return_real_fourier&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;shape_is_real_fourier&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;data_rfft&quot;</span><span class="p">:</span> <span class="n">target_temp_ft</span><span class="p">,</span>
+        <span class="s2">&quot;batch_dimension&quot;</span><span class="p">:</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_target_dim</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">filter_template</span><span class="p">:</span>
+        <span class="n">template_filter</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">template_filter</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">real_template_shape</span><span class="p">,</span> <span class="o">**</span><span class="n">filter_kwargs</span>
+        <span class="p">)[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+        <span class="n">template_filter_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">template_filter</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">template_filter_size</span> <span class="o">==</span> <span class="n">prod</span><span class="p">(</span><span class="n">cmpl_template_shape_full</span><span class="p">):</span>
+            <span class="n">cmpl_template_shape</span> <span class="o">=</span> <span class="n">cmpl_template_shape_full</span>
+        <span class="k">elif</span> <span class="n">template_filter_size</span> <span class="o">==</span> <span class="n">prod</span><span class="p">(</span><span class="n">cmpl_shape</span><span class="p">):</span>
+            <span class="n">cmpl_template_shape</span> <span class="o">=</span> <span class="n">cmpl_shape</span>
+        <span class="n">template_filter</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">template_filter</span><span class="p">,</span> <span class="n">cmpl_template_shape</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">filter_target</span><span class="p">:</span>
+        <span class="n">target_filter</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">target_filter</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">real_shape</span><span class="p">,</span> <span class="n">weight_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">filter_kwargs</span>
+        <span class="p">)[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">target_filter</span><span class="p">))</span> <span class="o">==</span> <span class="n">prod</span><span class="p">(</span><span class="n">cmpl_target_shape_full</span><span class="p">):</span>
+            <span class="n">cmpl_shape</span> <span class="o">=</span> <span class="n">cmpl_target_shape_full</span>
+
+        <span class="n">target_filter</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">target_filter</span><span class="p">,</span> <span class="n">cmpl_shape</span><span class="p">)</span>
+        <span class="n">target_temp_ft</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">target_temp_ft</span><span class="p">,</span> <span class="n">target_filter</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">target_temp_ft</span><span class="p">)</span>
+
+        <span class="n">target_temp</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="n">target_temp_ft</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">target_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">matching_data</span><span class="o">.</span><span class="n">_target</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">topleft_pad</span><span class="p">(</span><span class="n">target_temp</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">be</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">template_filter</span><span class="p">),</span> <span class="n">be</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">device_memory_handler</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorator function providing SharedMemory Handler.&quot;&quot;&quot;</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inner_function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">return_value</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">last_type</span><span class="p">,</span> <span class="n">last_value</span><span class="p">,</span> <span class="n">last_traceback</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">SharedMemoryManager</span><span class="p">()</span> <span class="k">as</span> <span class="n">smh</span><span class="p">:</span>
+                <span class="n">gpu_index</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gpu_index&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;gpu_index&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="k">with</span> <span class="n">be</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">gpu_index</span><span class="p">):</span>
+                    <span class="n">return_value</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">shm_handler</span><span class="o">=</span><span class="n">smh</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">last_type</span><span class="p">,</span> <span class="n">last_value</span><span class="p">,</span> <span class="n">last_traceback</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">last_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">last_value</span><span class="o">.</span><span class="n">with_traceback</span><span class="p">(</span><span class="n">last_traceback</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">return_value</span>
+
+    <span class="k">return</span> <span class="n">inner_function</span>
+
+
+<div class="viewcode-block" id="scan">
+<a class="viewcode-back" href="../../reference/api/tme.matching_exhaustive.scan.html#tme.matching_exhaustive.scan">[docs]</a>
+<span class="nd">@device_memory_handler</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">scan</span><span class="p">(</span>
+    <span class="n">matching_data</span><span class="p">:</span> <span class="n">MatchingData</span><span class="p">,</span>
+    <span class="n">matching_setup</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">matching_score</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">callback_class</span><span class="p">:</span> <span class="n">CallbackClass</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">callback_class_args</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{},</span>
+    <span class="n">pad_target</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">pad_template_filter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">interpolation_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">jobs_per_callback_class</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">shm_handler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">target_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">template_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run template matching.</span>
+
+<span class="sd">    .. warning:: ``matching_data`` might be altered or destroyed during computation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    matching_data : :py:class:`tme.matching_data.MatchingData`</span>
+<span class="sd">        Template matching data.</span>
+<span class="sd">    matching_setup : Callable</span>
+<span class="sd">        Function pointer to setup function.</span>
+<span class="sd">    matching_score : Callable</span>
+<span class="sd">        Function pointer to scoring function.</span>
+<span class="sd">    n_jobs : int, optional</span>
+<span class="sd">        Number of parallel jobs. Default is 4.</span>
+<span class="sd">    callback_class : type, optional</span>
+<span class="sd">        Analyzer class pointer to operate on computed scores.</span>
+<span class="sd">    callback_class_args : dict, optional</span>
+<span class="sd">        Arguments passed to the callback_class. Default is an empty dictionary.</span>
+<span class="sd">    pad_target: bool, optional</span>
+<span class="sd">        Whether to pad target to the full convolution shape.</span>
+<span class="sd">    pad_template_filter: bool, optional</span>
+<span class="sd">        Whether to pad potential template filters to the full convolution shape.</span>
+<span class="sd">    interpolation_order : int, optional</span>
+<span class="sd">        Order of spline interpolation for rotations.</span>
+<span class="sd">    jobs_per_callback_class : int, optional</span>
+<span class="sd">        Number of jobs a callback_class instance is shared between, 8 by default.</span>
+<span class="sd">    shm_handler : type, optional</span>
+<span class="sd">        Manager for shared memory objects, None by default.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Optional[Tuple]</span>
+<span class="sd">        The merged results from callback_class if provided otherwise None.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Schematically, :py:meth:`scan` is identical to :py:meth:`scan_subsets`,</span>
+<span class="sd">    with the distinction that the objects contained in ``matching_data`` are not</span>
+<span class="sd">    split and the search is only parallelized over angles.</span>
+<span class="sd">    Assuming you have followed the example in :py:meth:`scan_subsets`, :py:meth:`scan`</span>
+<span class="sd">    can be invoked like so</span>
+
+<span class="sd">    &gt;&gt;&gt; from tme.matching_exhaustive import scan</span>
+<span class="sd">    &gt;&gt;&gt; results = scan(</span>
+<span class="sd">    &gt;&gt;&gt;    matching_data=matching_data,</span>
+<span class="sd">    &gt;&gt;&gt;    matching_score=matching_score,</span>
+<span class="sd">    &gt;&gt;&gt;    matching_setup=matching_setup,</span>
+<span class="sd">    &gt;&gt;&gt;    callback_class=callback_class,</span>
+<span class="sd">    &gt;&gt;&gt;    callback_class_args=callback_class_args,</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matching_data</span><span class="p">,</span> <span class="n">translation_offset</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">subset_by_slice</span><span class="p">(</span>
+        <span class="n">target_slice</span><span class="o">=</span><span class="n">target_slice</span><span class="p">,</span>
+        <span class="n">template_slice</span><span class="o">=</span><span class="n">template_slice</span><span class="p">,</span>
+        <span class="n">target_pad</span><span class="o">=</span><span class="n">matching_data</span><span class="o">.</span><span class="n">target_padding</span><span class="p">(</span><span class="n">pad_target</span><span class="o">=</span><span class="n">pad_target</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">to_backend</span><span class="p">()</span>
+    <span class="n">template_shape</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_shape</span><span class="p">(</span>
+        <span class="n">matching_data</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_template_batch</span>
+    <span class="p">)</span>
+    <span class="n">conv</span><span class="p">,</span> <span class="n">fwd</span><span class="p">,</span> <span class="n">inv</span><span class="p">,</span> <span class="n">shift</span> <span class="o">=</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">fourier_padding</span><span class="p">(</span><span class="n">pad_target</span><span class="o">=</span><span class="n">pad_target</span><span class="p">)</span>
+
+    <span class="n">template_filter</span> <span class="o">=</span> <span class="n">_setup_template_filter_apply_target_filter</span><span class="p">(</span>
+        <span class="n">matching_data</span><span class="o">=</span><span class="n">matching_data</span><span class="p">,</span>
+        <span class="n">fast_shape</span><span class="o">=</span><span class="n">fwd</span><span class="p">,</span>
+        <span class="n">fast_ft_shape</span><span class="o">=</span><span class="n">inv</span><span class="p">,</span>
+        <span class="n">pad_template_filter</span><span class="o">=</span><span class="n">pad_template_filter</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">default_callback_args</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="n">fwd</span><span class="p">,</span>
+        <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="n">translation_offset</span><span class="p">,</span>
+        <span class="s2">&quot;fourier_shift&quot;</span><span class="p">:</span> <span class="n">shift</span><span class="p">,</span>
+        <span class="s2">&quot;fast_shape&quot;</span><span class="p">:</span> <span class="n">fwd</span><span class="p">,</span>
+        <span class="s2">&quot;targetshape&quot;</span><span class="p">:</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_output_shape</span><span class="p">,</span>
+        <span class="s2">&quot;templateshape&quot;</span><span class="p">:</span> <span class="n">template_shape</span><span class="p">,</span>
+        <span class="s2">&quot;convolution_shape&quot;</span><span class="p">:</span> <span class="n">conv</span><span class="p">,</span>
+        <span class="s2">&quot;thread_safe&quot;</span><span class="p">:</span> <span class="n">n_jobs</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;convolution_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;valid&quot;</span> <span class="k">if</span> <span class="n">pad_target</span> <span class="k">else</span> <span class="s2">&quot;same&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;shm_handler&quot;</span><span class="p">:</span> <span class="n">shm_handler</span><span class="p">,</span>
+        <span class="s2">&quot;only_unique_rotations&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;aggregate_axis&quot;</span><span class="p">:</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_axis</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_batch_mask</span><span class="p">),</span>
+        <span class="s2">&quot;n_rotations&quot;</span><span class="p">:</span> <span class="n">matching_data</span><span class="o">.</span><span class="n">rotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="p">}</span>
+    <span class="n">callback_class_args</span><span class="p">[</span><span class="s2">&quot;inversion_mapping&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_jobs</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">default_callback_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">callback_class_args</span><span class="p">)</span>
+
+    <span class="n">setup</span> <span class="o">=</span> <span class="n">matching_setup</span><span class="p">(</span>
+        <span class="n">matching_data</span><span class="o">=</span><span class="n">matching_data</span><span class="p">,</span>
+        <span class="n">template_filter</span><span class="o">=</span><span class="n">template_filter</span><span class="p">,</span>
+        <span class="n">fast_shape</span><span class="o">=</span><span class="n">fwd</span><span class="p">,</span>
+        <span class="n">fast_ft_shape</span><span class="o">=</span><span class="n">inv</span><span class="p">,</span>
+        <span class="n">shm_handler</span><span class="o">=</span><span class="n">shm_handler</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">setup</span><span class="p">[</span><span class="s2">&quot;interpolation_order&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interpolation_order</span>
+    <span class="n">setup</span><span class="p">[</span><span class="s2">&quot;template_filter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_sharedarr</span><span class="p">(</span><span class="n">template_filter</span><span class="p">,</span> <span class="n">shm_handler</span><span class="p">)</span>
+
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">_free_data</span><span class="p">()</span>
+    <span class="n">be</span><span class="o">.</span><span class="n">free_cache</span><span class="p">()</span>
+
+    <span class="n">n_callback_classes</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">n_jobs</span> <span class="o">//</span> <span class="n">jobs_per_callback_class</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">callback_classes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span>
+            <span class="n">SharedAnalyzerProxy</span><span class="p">(</span>
+                <span class="n">callback_class</span><span class="p">,</span>
+                <span class="n">default_callback_args</span><span class="p">,</span>
+                <span class="n">shm_handler</span><span class="o">=</span><span class="n">shm_handler</span> <span class="k">if</span> <span class="n">n_jobs</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">callback_class</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_callback_classes</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)(</span>
+        <span class="n">delayed</span><span class="p">(</span><span class="n">_wrap_backend</span><span class="p">(</span><span class="n">matching_score</span><span class="p">))(</span>
+            <span class="n">backend_name</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">_backend_name</span><span class="p">,</span>
+            <span class="n">backend_args</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">_backend_args</span><span class="p">,</span>
+            <span class="n">rotations</span><span class="o">=</span><span class="n">rotation</span><span class="p">,</span>
+            <span class="n">callback</span><span class="o">=</span><span class="n">callback_classes</span><span class="p">[</span><span class="n">index</span> <span class="o">%</span> <span class="n">n_callback_classes</span><span class="p">],</span>
+            <span class="o">**</span><span class="n">setup</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">rotation</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_split_rotations_on_jobs</span><span class="p">(</span><span class="n">n_jobs</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">callback</span><span class="o">.</span><span class="n">result</span><span class="p">(</span><span class="o">**</span><span class="n">default_callback_args</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">ret</span><span class="p">[:</span><span class="n">n_callback_classes</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">callback</span>
+    <span class="p">]</span>
+    <span class="n">be</span><span class="o">.</span><span class="n">free_cache</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">callback_class</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">callback_class</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">default_callback_args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+
+<div class="viewcode-block" id="scan_subsets">
+<a class="viewcode-back" href="../../reference/api/tme.matching_exhaustive.scan_subsets.html#tme.matching_exhaustive.scan_subsets">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">scan_subsets</span><span class="p">(</span>
+    <span class="n">matching_data</span><span class="p">:</span> <span class="n">MatchingData</span><span class="p">,</span>
+    <span class="n">matching_score</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">matching_setup</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">callback_class</span><span class="p">:</span> <span class="n">CallbackClass</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">callback_class_args</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{},</span>
+    <span class="n">job_schedule</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">target_splits</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{},</span>
+    <span class="n">template_splits</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{},</span>
+    <span class="n">pad_target_edges</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">pad_template_filter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">interpolation_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">jobs_per_callback_class</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">backend_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">backend_args</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{},</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper around :py:meth:`scan` that supports matching on splits</span>
+<span class="sd">    of ``matching_data``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    matching_data : :py:class:`tme.matching_data.MatchingData`</span>
+<span class="sd">        MatchingData instance containing relevant data.</span>
+<span class="sd">    matching_setup : type</span>
+<span class="sd">        Function pointer to setup function.</span>
+<span class="sd">    matching_score : type</span>
+<span class="sd">        Function pointer to scoring function.</span>
+<span class="sd">    callback_class : type, optional</span>
+<span class="sd">        Analyzer class pointer to operate on computed scores.</span>
+<span class="sd">    callback_class_args : dict, optional</span>
+<span class="sd">        Arguments passed to the callback_class. Default is an empty dictionary.</span>
+<span class="sd">    job_schedule : tuple of int, optional</span>
+<span class="sd">        Job scheduling scheme, default is (1, 1). First value corresponds</span>
+<span class="sd">        to the number of splits that are processed in parallel, the second</span>
+<span class="sd">        to the number of angles evaluated in parallel on each split.</span>
+<span class="sd">    target_splits : dict, optional</span>
+<span class="sd">        Splits for target. Default is an empty dictionary, i.e. no splits.</span>
+<span class="sd">        See :py:meth:`tme.matching_utils.compute_parallelization_schedule`.</span>
+<span class="sd">    template_splits : dict, optional</span>
+<span class="sd">        Splits for template. Default is an empty dictionary, i.e. no splits.</span>
+<span class="sd">        See :py:meth:`tme.matching_utils.compute_parallelization_schedule`.</span>
+<span class="sd">    pad_target_edges : bool, optional</span>
+<span class="sd">        Pad the target boundaries to avoid edge effects.</span>
+<span class="sd">    pad_template_filter: bool, optional</span>
+<span class="sd">        Whether to pad potential template filters to the full convolution shape.</span>
+<span class="sd">    interpolation_order : int, optional</span>
+<span class="sd">        Order of spline interpolation for rotations.</span>
+<span class="sd">    jobs_per_callback_class : int, optional</span>
+<span class="sd">        How many jobs should be processed by a single callback_class instance,</span>
+<span class="sd">        if ones is provided.</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        Indicate matching progress.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Optional[Tuple]</span>
+<span class="sd">        The merged results from callback_class if provided otherwise None.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    All data relevant to template matching will be contained in ``matching_data``, which</span>
+<span class="sd">    is a :py:class:`tme.matching_data.MatchingData` instance and can be created like so</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from tme.matching_data import MatchingData</span>
+<span class="sd">    &gt;&gt;&gt; from tme.matching_utils import get_rotation_matrices</span>
+<span class="sd">    &gt;&gt;&gt; target = np.random.rand(50,40,60)</span>
+<span class="sd">    &gt;&gt;&gt; template = target[15:25, 10:20, 30:40]</span>
+<span class="sd">    &gt;&gt;&gt; matching_data = MatchingData(target, template)</span>
+<span class="sd">    &gt;&gt;&gt; matching_data.rotations = get_rotation_matrices(</span>
+<span class="sd">    &gt;&gt;&gt;    angular_sampling=60, dim=target.ndim</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+
+<span class="sd">    The template matching procedure is determined by ``matching_setup`` and</span>
+<span class="sd">    ``matching_score``, which are unique to each score. In the following,</span>
+<span class="sd">    we will be using the `FLCSphericalMask` score, which is composed of</span>
+<span class="sd">    :py:meth:`tme.matching_scores.flcSphericalMask_setup` and</span>
+<span class="sd">    :py:meth:`tme.matching_scores.corr_scoring`</span>
+
+<span class="sd">    &gt;&gt;&gt; from tme.matching_exhaustive import MATCHING_EXHAUSTIVE_REGISTER</span>
+<span class="sd">    &gt;&gt;&gt; funcs = MATCHING_EXHAUSTIVE_REGISTER.get(&quot;FLCSphericalMask&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; matching_setup, matching_score = funcs</span>
+
+<span class="sd">    Computed scores are flexibly analyzed by being passed through an analyzer. In the</span>
+<span class="sd">    following, we will use :py:class:`tme.analyzer.MaxScoreOverRotations` to</span>
+<span class="sd">    aggregate sores over rotations</span>
+
+<span class="sd">    &gt;&gt;&gt; from tme.analyzer import MaxScoreOverRotations</span>
+<span class="sd">    &gt;&gt;&gt; callback_class = MaxScoreOverRotations</span>
+<span class="sd">    &gt;&gt;&gt; callback_class_args = {&quot;score_threshold&quot; : 0}</span>
+
+<span class="sd">    In case the entire template matching problem does not fit into memory, we can</span>
+<span class="sd">    determine the splitting procedure. In this case, we halv the first axis of the target</span>
+<span class="sd">    once. Splitting and ``job_schedule`` is typically computed using</span>
+<span class="sd">    :py:meth:`tme.matching_utils.compute_parallelization_schedule`.</span>
+
+<span class="sd">    &gt;&gt;&gt; target_splits = {0 : 1}</span>
+
+<span class="sd">    Finally, we can perform template matching. Note that the data</span>
+<span class="sd">    contained in ``matching_data`` will be destroyed when running the following</span>
+
+<span class="sd">    &gt;&gt;&gt; from tme.matching_exhaustive import scan_subsets</span>
+<span class="sd">    &gt;&gt;&gt; results = scan_subsets(</span>
+<span class="sd">    &gt;&gt;&gt;    matching_data=matching_data,</span>
+<span class="sd">    &gt;&gt;&gt;    matching_score=matching_score,</span>
+<span class="sd">    &gt;&gt;&gt;    matching_setup=matching_setup,</span>
+<span class="sd">    &gt;&gt;&gt;    callback_class=callback_class,</span>
+<span class="sd">    &gt;&gt;&gt;    callback_class_args=callback_class_args,</span>
+<span class="sd">    &gt;&gt;&gt;    target_splits=target_splits,</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+
+<span class="sd">    The ``results`` tuple contains the output of the chosen analyzer.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :py:meth:`tme.matching_utils.compute_parallelization_schedule`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template_splits</span> <span class="o">=</span> <span class="n">split_shape</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_template</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">splits</span><span class="o">=</span><span class="n">template_splits</span><span class="p">)</span>
+    <span class="n">target_splits</span> <span class="o">=</span> <span class="n">split_shape</span><span class="p">(</span><span class="n">matching_data</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">splits</span><span class="o">=</span><span class="n">target_splits</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">target_splits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pad_target_edges</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;Target splitting without padding target edges leads to unreliable &quot;</span>
+            <span class="s2">&quot;similarity estimates around the split border.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">splits</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="n">target_splits</span><span class="p">,</span> <span class="n">template_splits</span><span class="p">))</span>
+
+    <span class="n">outer_jobs</span><span class="p">,</span> <span class="n">inner_jobs</span> <span class="o">=</span> <span class="n">job_schedule</span>
+    <span class="k">if</span> <span class="n">be</span><span class="o">.</span><span class="n">_backend_name</span> <span class="o">==</span> <span class="s2">&quot;jax&quot;</span><span class="p">:</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">scan</span>
+
+        <span class="n">corr_scoring</span> <span class="o">=</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CORR&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span>
+            <span class="n">matching_data</span><span class="o">=</span><span class="n">matching_data</span><span class="p">,</span>
+            <span class="n">splits</span><span class="o">=</span><span class="n">splits</span><span class="p">,</span>
+            <span class="n">n_jobs</span><span class="o">=</span><span class="n">outer_jobs</span><span class="p">,</span>
+            <span class="n">rotate_mask</span><span class="o">=</span><span class="n">matching_score</span> <span class="o">!=</span> <span class="n">corr_scoring</span><span class="p">,</span>
+            <span class="n">callback_class</span><span class="o">=</span><span class="n">callback_class</span><span class="p">,</span>
+            <span class="n">callback_class_args</span><span class="o">=</span><span class="n">callback_class_args</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">outer_jobs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)(</span>
+            <span class="p">[</span>
+                <span class="n">delayed</span><span class="p">(</span><span class="n">_wrap_backend</span><span class="p">(</span><span class="n">scan</span><span class="p">))(</span>
+                    <span class="n">backend_name</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">_backend_name</span><span class="p">,</span>
+                    <span class="n">backend_args</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">_backend_args</span><span class="p">,</span>
+                    <span class="n">matching_data</span><span class="o">=</span><span class="n">matching_data</span><span class="p">,</span>
+                    <span class="n">matching_score</span><span class="o">=</span><span class="n">matching_score</span><span class="p">,</span>
+                    <span class="n">matching_setup</span><span class="o">=</span><span class="n">matching_setup</span><span class="p">,</span>
+                    <span class="n">n_jobs</span><span class="o">=</span><span class="n">inner_jobs</span><span class="p">,</span>
+                    <span class="n">callback_class</span><span class="o">=</span><span class="n">callback_class</span><span class="p">,</span>
+                    <span class="n">callback_class_args</span><span class="o">=</span><span class="n">callback_class_args</span><span class="p">,</span>
+                    <span class="n">interpolation_order</span><span class="o">=</span><span class="n">interpolation_order</span><span class="p">,</span>
+                    <span class="n">pad_target</span><span class="o">=</span><span class="n">pad_target_edges</span><span class="p">,</span>
+                    <span class="n">gpu_index</span><span class="o">=</span><span class="n">index</span> <span class="o">%</span> <span class="n">outer_jobs</span><span class="p">,</span>
+                    <span class="n">pad_template_filter</span><span class="o">=</span><span class="n">pad_template_filter</span><span class="p">,</span>
+                    <span class="n">target_slice</span><span class="o">=</span><span class="n">target_split</span><span class="p">,</span>
+                    <span class="n">template_slice</span><span class="o">=</span><span class="n">template_split</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">target_split</span><span class="p">,</span> <span class="n">template_split</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+    <span class="n">matching_data</span><span class="o">.</span><span class="n">_free_data</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">callback_class</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">callback_class</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="o">**</span><span class="n">callback_class_args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="register_matching_exhaustive">
+<a class="viewcode-back" href="../../reference/api/tme.matching_exhaustive.register_matching_exhaustive.html#tme.matching_exhaustive.register_matching_exhaustive">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_matching_exhaustive</span><span class="p">(</span>
+    <span class="n">matching</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">matching_setup</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">matching_scoring</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">memory_class</span><span class="p">:</span> <span class="n">MatchingMemoryUsage</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Registers a new matching scheme.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    matching : str</span>
+<span class="sd">        Name of the matching method.</span>
+<span class="sd">    matching_setup : Callable</span>
+<span class="sd">        Corresponding setup function.</span>
+<span class="sd">    matching_scoring : Callable</span>
+<span class="sd">        Corresponing scoring function.</span>
+<span class="sd">    memory_class : MatchingMemoryUsage</span>
+<span class="sd">        Child of :py:class:`tme.memory.MatchingMemoryUsage`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If a function with the name ``matching`` already exists in the registry, or</span>
+<span class="sd">        if ``memory_class`` is no child of :py:class:`tme.memory.MatchingMemoryUsage`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">matching</span> <span class="ow">in</span> <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A method with name &#39;</span><span class="si">{</span><span class="n">matching</span><span class="si">}</span><span class="s2">&#39; is already registered.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">memory_class</span><span class="p">,</span> <span class="n">MatchingMemoryUsage</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">memory_class</span><span class="si">}</span><span class="s2"> is not a subclass of </span><span class="si">{</span><span class="n">MatchingMemoryUsage</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="n">MATCHING_EXHAUSTIVE_REGISTER</span><span class="p">[</span><span class="n">matching</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">matching_setup</span><span class="p">,</span> <span class="n">matching_scoring</span><span class="p">)</span>
+    <span class="n">MATCHING_MEMORY_REGISTRY</span><span class="p">[</span><span class="n">matching</span><span class="p">]</span> <span class="o">=</span> <span class="n">memory_class</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

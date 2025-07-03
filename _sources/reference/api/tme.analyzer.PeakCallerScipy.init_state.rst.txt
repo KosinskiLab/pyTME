@@ -1,0 +1,6 @@
+PeakCallerScipy.init\_state
+=======================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerScipy.init_state
