@@ -615,7 +615,9 @@ def parse_args():
         "--gpu-count", type=int, default=1, help="Number of GPUs per job"
     )
     compute_group.add_argument(
-        "--gpu-type", help="GPU type constraint (e.g., '3090', 'A100')"
+        "--gpu-type",
+        default="3090",
+        help="GPU type constraint (e.g., '3090', 'A100')"
     )
     compute_group.add_argument(
         "--time-limit", default="05:00:00", help="Time limit (HH:MM:SS)"
@@ -649,7 +651,6 @@ def parse_args():
     if args.tomo_list is not None:
         with open(args.tomo_list, mode="r") as f:
             args.tomo_list = [line.strip() for line in f if line.strip()]
-        print(f"Processing {len(args.tomo_list)} specific tomograms")
 
     return args
 

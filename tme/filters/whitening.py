@@ -24,11 +24,6 @@ class LinearWhiteningFilter(ComposableFilter):
     """
     Compute Fourier power spectrums and perform whitening.
 
-    Parameters
-    ----------
-    **kwargs : Dict, optional
-        Additional keyword arguments.
-
     References
     ----------
     .. [1] de Teresa-Trueba, I.; Goetz, S. K.; Mattausch, A.; Stojanovska, F.; Zimmerli, C. E.;
@@ -39,7 +34,7 @@ class LinearWhiteningFilter(ComposableFilter):
         13375 (2023)
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         pass
 
     @staticmethod

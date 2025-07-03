@@ -79,27 +79,15 @@ CPU/GPU/TPU Support
 
          pip install "pytme[cupy]"
 
-      Alternatively, you can install CuPy directly
-
-      .. code-block:: bash
-
-         pip install cupy-cuda12x
-
       If your CUDA version is lower than 12 or you encounter any issues, please refer to CuPy's official `installation guide <https://docs.cupy.dev/en/stable/install.html>`_ for a version tailored to your system and detailed instructions.
 
-   .. tab-item:: JAX
+   .. tab-item:: JAX (Fastest)
 
       The following will install the JAX dependencies of |project|
 
       .. code-block:: bash
 
          pip install "pytme[jax]"
-
-      Alternatively, you can install JAX directly
-
-      .. code-block:: bash
-
-         pip install "jax[cuda12]"
 
       Setting up JAX might require additional attention on certain platforms. Consult the `JAX documentation <https://jax.readthedocs.io/en/latest/installation.html>`_ for tailored options.
 
@@ -111,12 +99,6 @@ CPU/GPU/TPU Support
 
          pip install "pytme[torch]"
 
-      Alternatively, you can install PyTorch directly
-
-      .. code-block:: bash
-
-         pip install torch torchvision
-
       PyTorch's installation might vary based on your system and the specific GPU in use. Consult the official `PyTorch website <https://pytorch.org/>`_ for detailed installation options tailored for your environment.
 
    .. tab-item:: MLX
@@ -125,7 +107,7 @@ CPU/GPU/TPU Support
 
       .. code-block:: bash
 
-         pip install mlx
+         pip install "pytme[mlx]"
 
       The MLX library is only available for Apple silicone chips.
 

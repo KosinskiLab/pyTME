@@ -306,10 +306,8 @@ class WedgeReconstructed:
         shape : tuple of int
             The shape of the reconstruction volume.
         return_real_fourier : tuple of int
-            Return a shape compliant with rfft, i.e., omit the negative frequencies
-            terms resulting in a return shape (*shape[:-1], shape[-1]//2+1). Defaults
-            to False.
-        **kwargs : Dict
+            Return a shape compliant with rfftn. Defaults to False.
+        **kwargs : dict
             Additional keyword arguments.
 
         Returns
