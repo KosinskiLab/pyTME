@@ -39,6 +39,11 @@ pytorch = ["torch", "torchvision"]
 jax = ["jax[cuda12]", "jaxlib"]
 jax_cpu = ["jax", "jaxlib"]
 mlx = ["mlx"]
+gui = [
+    "napari==0.4.19.post1",
+    "magicgui",
+    "napari-density-io @ git+https://github.com/maurerv/napari-density-io.git"
+]
 
 [project.scripts]
 match_template = "scripts:match_template.main"

@@ -520,7 +520,7 @@ def apply_convolution_mode(
     elif convolution_mode == "same":
         return func(arr, s1)
     elif convolution_mode == "valid":
-        valid_shape = [s1[i] - s2[i] + s2[i] % 2 for i in range(arr.ndim)]
+        valid_shape = [s1[i] - s2[i] + 1 for i in range(arr.ndim)]
         return func(arr, valid_shape)
 
 

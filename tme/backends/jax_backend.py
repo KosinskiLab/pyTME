@@ -220,7 +220,7 @@ class JaxBackend(NumpyFFTWBackend):
             target_shape=self.to_numpy_array(target_shape),
             template_shape=self.to_numpy_array(matching_data._template.shape),
             batch_mask=self.to_numpy_array(matching_data._batch_mask),
-            pad_fourier=False,
+            pad_target=pad_target,
         )
         analyzer_args = {
             "convolution_mode": convolution_mode,
@@ -263,7 +263,6 @@ class JaxBackend(NumpyFFTWBackend):
                 filter_args = {
                     "data_rfft": self.fft.rfftn(targets[0]),
                     "return_real_fourier": True,
-                    "shape_is_real_fourier": False,
                 }
 
             if create_template_filter:

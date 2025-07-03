@@ -121,8 +121,8 @@ class TomoDatasetDiscovery:
             tomo_files.append(
                 TomoFiles(
                     tomo_id=key,
-                    tomogram=value,
-                    metadata=meta_files[key],
+                    tomogram=value.absolute(),
+                    metadata=meta_files[key].absolute(),
                     mask=mask_files.get(key),
                 )
             )
@@ -198,6 +198,10 @@ class TMParameters:
 
     def __post_init__(self):
         """Validate parameters and convert units."""
+        self.template = self.template.absolute()
+        if self.template_mask:
+            self.template_mask = self.template_mask.absolute()
+
         if not self.template.exists():
             raise FileNotFoundError(f"Template not found: {self.template}")
         if self.template_mask and not self.template_mask.exists():
@@ -405,6 +409,7 @@ class SlurmBackend(ExecutionBackend):
 
     def __init__(
         self,
+        force: bool = True,
         dry_run: bool = False,
         script_dir: Path = Path("./slurm_scripts"),
         environment_setup: str = "module load pyTME",
@@ -414,6 +419,8 @@ class SlurmBackend(ExecutionBackend):
 
         Parameters
         ----------
+        force : bool, optional
+            Rerun completed jobs, defaults to True.
         dry_run : bool, optional
             Generate scripts but do not submit, defaults to False.
         script_dir: str, optional
@@ -421,6 +428,7 @@ class SlurmBackend(ExecutionBackend):
         environment_setup : str, optional
             Command to set up pyTME environment, defaults to module load pyTME.
         """
+        self.force = force
         self.dry_run = dry_run
         self.environment_setup = environment_setup
         self.script_dir = Path(script_dir) if script_dir else Path("./slurm_scripts")
@@ -472,7 +480,7 @@ class SlurmBackend(ExecutionBackend):
             f.write("\n".join(script_lines) + "\n")
         script_path.chmod(0o755)
 
-        print(f"Generated SLURM script: {script_path}")
+        print(f"Generated SLURM script: {Path(script_path).name}")
         return script_path
 
     def submit_job(self, task) -> str:
@@ -483,6 +491,9 @@ class SlurmBackend(ExecutionBackend):
             return f"DRY_RUN:{script_path}"
 
         try:
+            if Path(task.output_file).exists() and not self.force:
+                return "ERROR: File exists and force was not requested."
+
             result = subprocess.run(
                 ["sbatch", str(script_path)], capture_output=True, text=True, check=True
             )
@@ -615,9 +626,7 @@ def parse_args():
         "--gpu-count", type=int, default=1, help="Number of GPUs per job"
     )
     compute_group.add_argument(
-        "--gpu-type",
-        default="3090",
-        help="GPU type constraint (e.g., '3090', 'A100')"
+        "--gpu-type", default="3090", help="GPU type constraint (e.g., '3090', 'A100')"
     )
     compute_group.add_argument(
         "--time-limit", default="05:00:00", help="Time limit (HH:MM:SS)"
@@ -645,12 +654,15 @@ def parse_args():
     job_group.add_argument(
         "--dry-run", action="store_true", help="Generate scripts but do not submit jobs"
     )
-
+    job_group.add_argument("--force", action="store_true", help="Rerun completed jobs")
     args = parser.parse_args()
 
     if args.tomo_list is not None:
         with open(args.tomo_list, mode="r") as f:
             args.tomo_list = [line.strip() for line in f if line.strip()]
+
+    args.output_dir = args.output_dir.absolute()
+    args.script_dir = args.script_dir.absolute()
 
     return args
 
@@ -733,12 +745,12 @@ def main():
             tasks.append(task)
 
         backend = SlurmBackend(
+            force=args.force,
             dry_run=args.dry_run,
             script_dir=args.script_dir,
             environment_setup=args.environment_setup,
         )
         job_ids = backend.submit_jobs(tasks)
-
         if args.dry_run:
             print(
                 f"\nDry run complete. Generated {len(tasks)} scripts in {args.script_dir}"

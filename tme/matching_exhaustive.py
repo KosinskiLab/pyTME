@@ -149,7 +149,7 @@ def scan(
     n_jobs: int = 4,
     callback_class: CallbackClass = None,
     callback_class_args: Dict = {},
-    pad_fourier: bool = True,
+    pad_target: bool = True,
     pad_template_filter: bool = True,
     interpolation_order: int = 3,
     jobs_per_callback_class: int = 8,
@@ -176,8 +176,8 @@ def scan(
         Analyzer class pointer to operate on computed scores.
     callback_class_args : dict, optional
         Arguments passed to the callback_class. Default is an empty dictionary.
-    pad_fourier: bool, optional
-        Whether to pad target and template to the full convolution shape.
+    pad_target: bool, optional
+        Whether to pad target to the full convolution shape.
     pad_template_filter: bool, optional
         Whether to pad potential template filters to the full convolution shape.
     interpolation_order : int, optional
@@ -213,14 +213,14 @@ def scan(
     matching_data, translation_offset = matching_data.subset_by_slice(
         target_slice=target_slice,
         template_slice=template_slice,
-        target_pad=matching_data.target_padding(pad_target=pad_fourier),
+        target_pad=matching_data.target_padding(pad_target=pad_target),
     )
 
     matching_data.to_backend()
     template_shape = matching_data._batch_shape(
         matching_data.template.shape, matching_data._template_batch
     )
-    conv, fwd, inv, shift = matching_data.fourier_padding(pad_fourier=False)
+    conv, fwd, inv, shift = matching_data.fourier_padding(pad_target=pad_target)
 
     template_filter = _setup_template_filter_apply_target_filter(
         matching_data=matching_data,
@@ -238,7 +238,7 @@ def scan(
         "templateshape": template_shape,
         "convolution_shape": conv,
         "thread_safe": n_jobs > 1,
-        "convolution_mode": "valid" if pad_fourier else "same",
+        "convolution_mode": "valid" if pad_target else "same",
         "shm_handler": shm_handler,
         "only_unique_rotations": True,
         "aggregate_axis": matching_data._batch_axis(matching_data._batch_mask),
@@ -450,7 +450,7 @@ def scan_subsets(
                     callback_class=callback_class,
                     callback_class_args=callback_class_args,
                     interpolation_order=interpolation_order,
-                    pad_fourier=pad_target_edges,
+                    pad_target=pad_target_edges,
                     gpu_index=index % outer_jobs,
                     pad_template_filter=pad_template_filter,
                     target_slice=target_split,

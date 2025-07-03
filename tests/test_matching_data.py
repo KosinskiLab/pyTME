@@ -7,7 +7,7 @@ from tme.backends import backend as be
 from tme.matching_data import MatchingData
 
 
-class TestDensity:
+class TestMatchingData:
     def setup_method(self):
         target = np.zeros((50, 50, 50))
         target[20:30, 30:40, 12:17] = 1

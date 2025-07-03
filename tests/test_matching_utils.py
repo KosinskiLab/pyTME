@@ -139,7 +139,7 @@ class TestMatchingUtils:
             expected_size = np.subtract(
                 self.density.shape, self.structure_density.shape
             )
-            expected_size += np.mod(self.structure_density.shape, 2)
+            expected_size += 1
         assert np.allclose(ret.shape, expected_size)
 
     def test_apply_convolution_mode_error(self):

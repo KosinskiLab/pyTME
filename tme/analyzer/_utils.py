@@ -47,10 +47,7 @@ def _convmode_to_shape(
     if convolution_mode == "same":
         output_shape = targetshape
     elif convolution_mode == "valid":
-        output_shape = be.add(
-            be.subtract(targetshape, templateshape),
-            be.mod(templateshape, 2),
-        )
+        output_shape = be.subtract(targetshape, templateshape) + 1
     return be.to_backend_array(output_shape)
 
 

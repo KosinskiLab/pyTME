@@ -490,18 +490,14 @@ class MatchingData:
     def _fourier_padding(
         target_shape: Tuple[int],
         template_shape: Tuple[int],
-        pad_fourier: bool,
+        pad_target: bool = False,
         batch_mask: Tuple[int] = None,
     ) -> Tuple[Tuple, Tuple, Tuple, Tuple]:
-        fourier_pad = template_shape
-        fourier_shift = np.zeros_like(template_shape)
-
         if batch_mask is None:
             batch_mask = np.zeros_like(template_shape)
         batch_mask = np.asarray(batch_mask)
 
-        if not pad_fourier:
-            fourier_pad = np.ones(len(fourier_pad), dtype=int)
+        fourier_pad = np.ones(len(template_shape), dtype=int)
         fourier_pad = np.multiply(fourier_pad, 1 - batch_mask)
         fourier_pad = np.add(fourier_pad, batch_mask)
 
@@ -512,9 +508,8 @@ class MatchingData:
         conv_shape, fast_shape, fast_ft_shape = ret
 
         template_mod = np.mod(template_shape, 2)
-        if not pad_fourier:
-            fourier_shift = 1 - np.divide(template_shape, 2).astype(int)
-            fourier_shift = np.subtract(fourier_shift, template_mod)
+        fourier_shift = 1 - np.divide(template_shape, 2).astype(int)
+        fourier_shift = np.subtract(fourier_shift, template_mod)
 
         shape_diff = np.multiply(
             np.subtract(target_shape, template_shape), 1 - batch_mask
@@ -523,34 +518,27 @@ class MatchingData:
         if np.sum(shape_mask):
             shape_shift = np.divide(shape_diff, 2)
             offset = np.mod(shape_diff, 2)
-            if pad_fourier:
-                offset = -np.subtract(
-                    offset,
-                    np.logical_and(np.mod(target_shape, 2) == 0, template_mod == 1),
-                )
-            else:
-                warnings.warn(
-                    "Template is larger than target and padding is turned off. Consider "
-                    "swapping them or activate padding. Correcting the shift for now."
-                )
+            warnings.warn(
+                "Template is larger than target and padding is turned off. Consider "
+                "swapping them or activate padding. Correcting the shift for now."
+            )
             shape_shift = np.multiply(np.add(shape_shift, offset), shape_mask)
             fourier_shift = np.subtract(fourier_shift, shape_shift).astype(int)
 
-        fourier_shift = tuple(np.multiply(fourier_shift, 1 - batch_mask).astype(int))
+        if pad_target:
+            fourier_shift = np.subtract(fourier_shift, np.subtract(1, template_mod))
 
+        fourier_shift = tuple(np.multiply(fourier_shift, 1 - batch_mask).astype(int))
         return tuple(conv_shape), tuple(fast_shape), tuple(fast_ft_shape), fourier_shift
 
-    def fourier_padding(
-        self, pad_fourier: bool = False
-    ) -> Tuple[Tuple, Tuple, Tuple, Tuple]:
+    def fourier_padding(self, pad_target: bool = False) -> Tuple:
         """
         Computes efficient shape four Fourier transforms and potential associated shifts.
 
         Parameters
         ----------
-        pad_fourier : bool, optional
-            If true, returns the shape of the full-convolution defined as sum of target
-            shape and template shape minus one, False by default.
+        pad_target : bool, optional
+            Whether the target has been padded to the full convolution shape.
 
         Returns
         -------
@@ -565,7 +553,7 @@ class MatchingData:
             target_shape=be.to_numpy_array(self._output_target_shape),
             template_shape=be.to_numpy_array(self._output_template_shape),
             batch_mask=be.to_numpy_array(self._batch_mask),
-            pad_fourier=pad_fourier,
+            pad_target=pad_target,
         )
 
     def computation_schedule(
