@@ -112,7 +112,7 @@ def parse_args():
     peak_group.add_argument(
         "--peak-caller",
         choices=list(PEAK_CALLERS.keys()),
-        default="PeakCallerScipy",
+        default="PeakCallerMaximumFilter",
         help="Peak caller for local maxima identification.",
     )
     peak_group.add_argument(
@@ -367,6 +367,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
 
         scores = data_norm[0]
         scores -= scores.mean()
+
         indices = tuple(slice(0, x) for x in scores.shape)
         indices_update = scores > scores_norm[indices]
         scores_norm[indices][indices_update] = scores[indices_update]
@@ -375,7 +376,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
     update = tuple(slice(0, int(x)) for x in np.minimum(out_shape, scores.shape))
     scores_out = np.full(out_shape, fill_value=0, dtype=np.float32)
     scores_out[update] = data[0][update] - scores_norm[update]
-    scores_out[update] = np.divide(scores_out[update], 1 - scores_norm[update])
+    # scores_out[update] = np.divide(scores_out[update], 1 - scores_norm[update])
     scores_out = np.fmax(scores_out, 0, out=scores_out)
     data[0] = scores_out
 

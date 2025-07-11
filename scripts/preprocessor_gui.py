@@ -19,8 +19,8 @@ from magicgui import widgets
 from numpy.typing import NDArray
 from napari.layers import Image
 from scipy.fft import next_fast_len
-from qtpy.QtWidgets import QFileDialog
 from napari.utils.events import EventedList
+from qtpy.QtWidgets import QFileDialog, QMessageBox
 
 from tme.backends import backend
 from tme.rotations import align_vectors
@@ -392,7 +392,13 @@ class FilterWidget(widgets.Container):
             metadata = selected_layer_metadata.copy()
             if "filter_parameters" not in metadata:
                 metadata["filter_parameters"] = []
-            metadata["filter_parameters"].append({filter_name: kwargs.copy()})
+
+            payload = {filter_name: kwargs.copy()}
+            if isinstance(metadata["filter_parameters"], dict):
+                metadata["filter_parameters"].update(payload)
+            else:
+                metadata["filter_parameters"].append(payload)
+
             metadata["used_filter"] = filter_name
             new_layer.metadata = metadata
 
@@ -451,6 +457,28 @@ def box_mask(
         shape=template.shape,
         center=(center_x, center_y, center_z),
         height=(height_x, height_y, height_z),
+        sigma_decay=sigma_decay,
+    )
+
+
+def membrane_mask(
+    template: NDArray,
+    symmetry_axis: int,
+    center_x: float,
+    center_y: float,
+    center_z: float,
+    radius: float,
+    thickness: float = 1,
+    separation: float = 3,
+    sigma_decay: float = 0,
+    **kwargs,
+) -> NDArray:
+    return create_mask(
+        mask_type="membrane",
+        shape=template.shape,
+        radius=radius,
+        thickness=thickness,
+        separation=separation,
         sigma_decay=sigma_decay,
     )
 
@@ -584,6 +612,7 @@ class MaskWidget(widgets.Container):
             "Ellipsoid": ellipsod_mask,
             "Tube": tube_mask,
             "Box": box_mask,
+            "Membrane": membrane_mask,
             "Wedge": wedge_mask,
             "Threshold": threshold_mask,
             "Lowpass": lowpass_mask,
@@ -1140,6 +1169,8 @@ class MatchingWidget(widgets.Container):
         self.viewer = viewer
         self.dataframes = {}
 
+        self.load_target_checkbox = widgets.CheckBox(text="Load Target", value=False)
+        self.append(self.load_target_checkbox)
         self.import_button = widgets.PushButton(name="Import", text="Import Pickle")
         self.import_button.clicked.connect(self._get_load_path)
 
@@ -1159,6 +1190,26 @@ class MatchingWidget(widgets.Container):
         data = load_pickle(filename)
 
         fname = basename(filename).replace(".pickle", "")
+
+        if self.load_target_checkbox.value:
+            try:
+                target = Density.from_file(data[-1][-1].target)
+                _ = self.viewer.add_image(
+                    data=target.data,
+                    name=f"{fname}_target",
+                    metadata={
+                        "origin": target.origin,
+                        "sampling_rate": target.sampling_rate,
+                    },
+                )
+            except Exception as e:
+                msg = QMessageBox(self.native)
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Loading Error")
+                msg.setText(str(e))
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec_()
+
         if data[0].ndim == data[2].ndim:
             metadata = {"origin": data[-1][1], "sampling_rate": data[-1][2]}
             _ = self.viewer.add_image(
@@ -1174,11 +1225,8 @@ class MatchingWidget(widgets.Container):
                 metadata=metadata,
             )
             return None
-            detail = np.zeros_like(data[2])
-        else:
-            detail = data[3]
 
-        point_properties = {"score": data[2], "detail": detail}
+        point_properties = {"score": data[2], "detail": data[3]}
         point_properties["score_scaled"] = np.log1p(
             point_properties["score"] - point_properties["score"].min()
         )
@@ -1191,8 +1239,26 @@ class MatchingWidget(widgets.Container):
         )
 
 
+class CustomNapariViewer(napari.Viewer):
+    """
+    Custom viewer to ensure 3D image layers are by default shown as xy projection.
+    """
+
+    def add_image(self, data, **kwargs):
+        viewer_ndim = len(self.dims.order)
+        layer = super().add_image(data, **kwargs)
+
+        try:
+            # Set to xy view the first time data is opened
+            if viewer_ndim != 3 and data.ndim == 3:
+                self.dims.order = (2, 0, 1)
+        except Exception:
+            pass
+        return layer
+
+
 def main():
-    viewer = napari.Viewer()
+    viewer = CustomNapariViewer()
 
     filter_widget = FilterWidget(preprocessor, viewer)
     mask_widget = MaskWidget(viewer)

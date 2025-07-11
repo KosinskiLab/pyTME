@@ -166,12 +166,12 @@ Results are organized in the following manner
 .. code-block:: text
 
     ribosome_batch_001/results
-    ├── TS_037.pickle              # Template matching results
-    ├── TS_037_12345.out           # SLURM logs
-    ├── TS_041.pickle
-    ├── TS_041_12346.out
-    ├── TS_045.pickle
-    └── TS_045_12347.out
+    ├── TS_037_10.00Apx.pickle    # Template matching results
+    ├── TS_037_10.00Apx_12345.out # SLURM logs
+    ├── TS_041_10.00Apx.pickle
+    ├── TS_041_10.00Apx_12346.out
+    ├── TS_045_10.00Apx.pickle
+    └── TS_045_10.00Apx_12347.out
 
 
 Mixed Formats

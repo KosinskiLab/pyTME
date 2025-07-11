@@ -383,7 +383,8 @@ class TemplateMatchingTask:
 
     @property
     def output_file(self) -> Path:
-        return self.output_dir / f"{self.tomo_id}.pickle"
+        original_stem = self.tomo_files.tomogram.stem
+        return self.output_dir / f"{original_stem}.pickle"
 
     def create_output_dir(self) -> None:
         """Ensure output directory exists."""
@@ -699,8 +700,9 @@ def main():
             particle_diameter=args.particle_diameter,
             score=args.score,
             score_threshold=args.score_threshold,
-            acceleration_voltage=args.voltage * 1e3,  # keV to eV
-            spherical_aberration=args.spherical_aberration * 1e7,  # Convert mm to Å
+            acceleration_voltage=args.voltage,
+            spherical_aberration=args.spherical_aberration
+            * 1e7,  # Convert mm to Ångstrom
             amplitude_contrast=args.amplitude_contrast,
             lowpass=args.lowpass,
             highpass=args.highpass,

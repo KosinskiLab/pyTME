@@ -12,8 +12,8 @@ from sys import exit
 from time import time
 from typing import Tuple
 from copy import deepcopy
-from os.path import exists
 from tempfile import gettempdir
+from os.path import exists, abspath
 
 import numpy as np
 
@@ -778,6 +778,14 @@ def parse_args():
             orientations.translations, args.orientations_scaling
         )
         args.orientations = orientations
+
+    args.target = abspath(args.target)
+    if args.target_mask is not None:
+        args.target_mask = abspath(args.target_mask)
+
+    args.template = abspath(args.template)
+    if args.template_mask is not None:
+        args.template_mask = abspath(args.template_mask)
 
     return args
 
