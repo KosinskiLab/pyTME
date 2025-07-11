@@ -1,0 +1,6 @@
+BandPass.return\_real\_fourier
+========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: BandPass.return_real_fourier

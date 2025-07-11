@@ -1,0 +1,6 @@
+WedgeReconstructed.tilt\_axis
+========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: WedgeReconstructed.tilt_axis

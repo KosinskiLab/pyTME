@@ -1,0 +1,85 @@
+﻿CTF
+===
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: CTF
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            CTF.acceleration_voltage
+         
+         
+            CTF.amplitude_contrast
+         
+         
+            CTF.angles
+         
+         
+            CTF.correct_defocus_gradient
+         
+         
+            CTF.defocus_angle
+         
+         
+            CTF.defocus_x
+         
+         
+            CTF.defocus_y
+         
+         
+            CTF.flip_phase
+         
+         
+            CTF.opening_axis
+         
+         
+            CTF.phase_shift
+         
+         
+            CTF.return_real_fourier
+         
+         
+            CTF.sampling_rate
+         
+         
+            CTF.shape
+         
+         
+            CTF.spherical_aberration
+         
+         
+            CTF.tilt_axis
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            CTF.__call__
+      
+
+      
+         
+         
+            CTF.from_file
+         
+         
+            CTF.weight
+         
+
+   
+   

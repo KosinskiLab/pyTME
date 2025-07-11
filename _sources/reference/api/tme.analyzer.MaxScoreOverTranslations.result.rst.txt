@@ -1,0 +1,6 @@
+MaxScoreOverTranslations.result
+============================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: MaxScoreOverTranslations.result

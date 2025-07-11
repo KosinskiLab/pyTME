@@ -1,0 +1,6 @@
+ReconstructFromTilt.return\_real\_fourier
+===================================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: ReconstructFromTilt.return_real_fourier

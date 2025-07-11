@@ -1,0 +1,52 @@
+﻿PeakCallerRecursiveMasking
+==========================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: PeakCallerRecursiveMasking
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            PeakCallerRecursiveMasking.shareable
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            PeakCallerRecursiveMasking.__call__
+      
+
+      
+         
+         
+            PeakCallerRecursiveMasking.call_peaks
+         
+         
+            PeakCallerRecursiveMasking.init_state
+         
+         
+            PeakCallerRecursiveMasking.merge
+         
+         
+            PeakCallerRecursiveMasking.oversample_peaks
+         
+         
+            PeakCallerRecursiveMasking.result
+         
+
+   
+   

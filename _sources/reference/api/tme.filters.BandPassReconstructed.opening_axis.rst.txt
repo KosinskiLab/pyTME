@@ -1,0 +1,6 @@
+BandPassReconstructed.opening\_axis
+==============================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: BandPassReconstructed.opening_axis

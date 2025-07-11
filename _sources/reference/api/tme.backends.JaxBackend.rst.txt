@@ -1,0 +1,230 @@
+﻿JaxBackend
+==========
+
+.. currentmodule:: tme.backends
+
+.. autoclass:: JaxBackend
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            JaxBackend.abs
+         
+         
+            JaxBackend.add
+         
+         
+            JaxBackend.addat
+         
+         
+            JaxBackend.arange
+         
+         
+            JaxBackend.argsort
+         
+         
+            JaxBackend.astype
+         
+         
+            JaxBackend.at
+         
+         
+            JaxBackend.build_fft
+         
+         
+            JaxBackend.center_of_mass
+         
+         
+            JaxBackend.clip
+         
+         
+            JaxBackend.compute_convolution_shapes
+         
+         
+            JaxBackend.concatenate
+         
+         
+            JaxBackend.copy
+         
+         
+            JaxBackend.datatype_bytes
+         
+         
+            JaxBackend.device_count
+         
+         
+            JaxBackend.divide
+         
+         
+            JaxBackend.dot
+         
+         
+            JaxBackend.einsum
+         
+         
+            JaxBackend.eps
+         
+         
+            JaxBackend.extract_center
+         
+         
+            JaxBackend.fill
+         
+         
+            JaxBackend.free_cache
+         
+         
+            JaxBackend.from_sharedarr
+         
+         
+            JaxBackend.full
+         
+         
+            JaxBackend.get_available_memory
+         
+         
+            JaxBackend.get_fundamental_dtype
+         
+         
+            JaxBackend.identity
+         
+         
+            JaxBackend.indices
+         
+         
+            JaxBackend.irfftn
+         
+         
+            JaxBackend.max
+         
+         
+            JaxBackend.max_filter_coordinates
+         
+         
+            JaxBackend.max_score_over_rotations
+         
+         
+            JaxBackend.maximum
+         
+         
+            JaxBackend.mean
+         
+         
+            JaxBackend.min
+         
+         
+            JaxBackend.minimum
+         
+         
+            JaxBackend.mod
+         
+         
+            JaxBackend.multiply
+         
+         
+            JaxBackend.norm_scores
+         
+         
+            JaxBackend.power
+         
+         
+            JaxBackend.repeat
+         
+         
+            JaxBackend.reshape
+         
+         
+            JaxBackend.reverse
+         
+         
+            JaxBackend.rfftn
+         
+         
+            JaxBackend.rigid_transform
+         
+         
+            JaxBackend.roll
+         
+         
+            JaxBackend.scan
+         
+         
+            JaxBackend.set_device
+         
+         
+            JaxBackend.size
+         
+         
+            JaxBackend.sqrt
+         
+         
+            JaxBackend.square
+         
+         
+            JaxBackend.stack
+         
+         
+            JaxBackend.std
+         
+         
+            JaxBackend.subtract
+         
+         
+            JaxBackend.sum
+         
+         
+            JaxBackend.to_backend_array
+         
+         
+            JaxBackend.to_cpu_array
+         
+         
+            JaxBackend.to_numpy_array
+         
+         
+            JaxBackend.to_sharedarr
+         
+         
+            JaxBackend.tobytes
+         
+         
+            JaxBackend.topk_indices
+         
+         
+            JaxBackend.topleft_pad
+         
+         
+            JaxBackend.transpose
+         
+         
+            JaxBackend.tril_indices
+         
+         
+            JaxBackend.unique
+         
+         
+            JaxBackend.unravel_index
+         
+         
+            JaxBackend.where
+         
+         
+            JaxBackend.zeros
+         
+
+   
+   

@@ -1,0 +1,6 @@
+BandPassReconstructed.shape
+=======================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: BandPassReconstructed.shape

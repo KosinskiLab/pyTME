@@ -1,0 +1,6 @@
+PytorchBackend.eye
+===============================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: PytorchBackend.eye

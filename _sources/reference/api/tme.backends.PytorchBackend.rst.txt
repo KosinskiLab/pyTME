@@ -1,0 +1,236 @@
+﻿PytorchBackend
+==============
+
+.. currentmodule:: tme.backends
+
+.. autoclass:: PytorchBackend
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            PytorchBackend.abs
+         
+         
+            PytorchBackend.add
+         
+         
+            PytorchBackend.addat
+         
+         
+            PytorchBackend.arange
+         
+         
+            PytorchBackend.argsort
+         
+         
+            PytorchBackend.astype
+         
+         
+            PytorchBackend.at
+         
+         
+            PytorchBackend.build_fft
+         
+         
+            PytorchBackend.center_of_mass
+         
+         
+            PytorchBackend.clip
+         
+         
+            PytorchBackend.compute_convolution_shapes
+         
+         
+            PytorchBackend.concatenate
+         
+         
+            PytorchBackend.copy
+         
+         
+            PytorchBackend.datatype_bytes
+         
+         
+            PytorchBackend.device_count
+         
+         
+            PytorchBackend.divide
+         
+         
+            PytorchBackend.dot
+         
+         
+            PytorchBackend.einsum
+         
+         
+            PytorchBackend.eps
+         
+         
+            PytorchBackend.extract_center
+         
+         
+            PytorchBackend.eye
+         
+         
+            PytorchBackend.fill
+         
+         
+            PytorchBackend.flip
+         
+         
+            PytorchBackend.free_cache
+         
+         
+            PytorchBackend.from_sharedarr
+         
+         
+            PytorchBackend.full
+         
+         
+            PytorchBackend.get_available_memory
+         
+         
+            PytorchBackend.get_fundamental_dtype
+         
+         
+            PytorchBackend.identity
+         
+         
+            PytorchBackend.indices
+         
+         
+            PytorchBackend.irfftn
+         
+         
+            PytorchBackend.max
+         
+         
+            PytorchBackend.max_filter_coordinates
+         
+         
+            PytorchBackend.max_score_over_rotations
+         
+         
+            PytorchBackend.maximum
+         
+         
+            PytorchBackend.mean
+         
+         
+            PytorchBackend.min
+         
+         
+            PytorchBackend.minimum
+         
+         
+            PytorchBackend.mod
+         
+         
+            PytorchBackend.multiply
+         
+         
+            PytorchBackend.norm_scores
+         
+         
+            PytorchBackend.power
+         
+         
+            PytorchBackend.repeat
+         
+         
+            PytorchBackend.reshape
+         
+         
+            PytorchBackend.reverse
+         
+         
+            PytorchBackend.rfftn
+         
+         
+            PytorchBackend.rigid_transform
+         
+         
+            PytorchBackend.roll
+         
+         
+            PytorchBackend.set_device
+         
+         
+            PytorchBackend.size
+         
+         
+            PytorchBackend.sqrt
+         
+         
+            PytorchBackend.square
+         
+         
+            PytorchBackend.stack
+         
+         
+            PytorchBackend.std
+         
+         
+            PytorchBackend.subtract
+         
+         
+            PytorchBackend.sum
+         
+         
+            PytorchBackend.to_backend_array
+         
+         
+            PytorchBackend.to_cpu_array
+         
+         
+            PytorchBackend.to_numpy_array
+         
+         
+            PytorchBackend.to_sharedarr
+         
+         
+            PytorchBackend.tobytes
+         
+         
+            PytorchBackend.topk_indices
+         
+         
+            PytorchBackend.topleft_pad
+         
+         
+            PytorchBackend.transpose
+         
+         
+            PytorchBackend.tril_indices
+         
+         
+            PytorchBackend.triu_indices
+         
+         
+            PytorchBackend.unique
+         
+         
+            PytorchBackend.unravel_index
+         
+         
+            PytorchBackend.where
+         
+         
+            PytorchBackend.zeros
+         
+
+   
+   

@@ -1,0 +1,723 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Cluster Execution &#8212; pytme 0.3.b0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=2e4b593a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=97acad5b"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart/matching/cluster';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Summary" href="summary.html" />
+    <link rel="prev" title="Alignment of Densities" href="alignment.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Template Matching</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="motivation.html">Motivation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="example.html">Practical Example</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="particle_picking.html">Picking Ribosomes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constrained.html">Constrained Template Matching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting.html">Fitting Atomic Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alignment.html">Alignment of Densities</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Cluster Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">Summary</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Postprocessing</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../postprocessing/motivation.html">Motivation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../postprocessing/example.html">Practical Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../postprocessing/summary.html">Summary</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Further Reading</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing/masks.html">Masking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing/filters.html">Filtering Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing/gui.html">Using the GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Cluster Execution</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="cluster-execution">
+<h1>Cluster Execution<a class="headerlink" href="#cluster-execution" title="Link to this heading">#</a></h1>
+<p>This tutorial demonstrates how to scale template matching to large datasets. When processing dozens or hundreds of tomograms, manually creating and submitting individual jobs becomes impractical. The <code class="docutils literal notranslate"><span class="pre">pytme_runner</span></code> automates this workflow by discovering datasets, generating cluster scripts, and managing job submission.</p>
+<section id="dataset-organization">
+<h2>Dataset Organization<a class="headerlink" href="#dataset-organization" title="Link to this heading">#</a></h2>
+<p>For this tutorial, we extend the <a class="reference internal" href="particle_picking.html"><span class="doc">ribosome picking example</span></a> to a larger dataset. Your project directory will typically look like this</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>project_directory/
+├── tomograms/                      # Tomograms
+│   ├── TS_037_10.00Apx.rec
+│   ├── TS_041_10.00Apx.rec
+│   └── TS_045_10.00Apx.rec
+├── metadata/                       # Metadata files
+│   ├── TS_037.mdoc                 # Can also be Warp/M XMLs
+│   ├── TS_041.mdoc                 # or tomostar STAR files
+│   └── TS_045.mdoc
+├── masks/                          # Optional tomogram masks
+│   ├── TS_037_mask.mrc
+│   ├── TS_041_mask.mrc
+│   └── TS_045_mask.mrc
+└── templates/
+    ├── emd_3228_resampled.mrc      # 80S ribosome template
+    └── emd_3228_resampled_mask.mrc # 80S ribosome mask
+</pre></div>
+</div>
+<p>The batch runner automatically extracts tomogram identifiers by removing technical suffixes like pixel size information (<code class="docutils literal notranslate"><span class="pre">_10.00Apx</span></code>) and matches files across directories.</p>
+</section>
+<section id="basic-batch-processing">
+<h2>Basic Batch Processing<a class="headerlink" href="#basic-batch-processing" title="Link to this heading">#</a></h2>
+<p>The batch processing command identifies all tomograms and metadata files using glob patterns</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytme_runner<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tomograms<span class="w"> </span><span class="s2">&quot;project_directory/tomograms/*.rec&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--metadata<span class="w"> </span><span class="s2">&quot;project_directory/metadata/*.mdoc&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>templates/emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>templates/emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--particle-diameter<span class="w"> </span><span class="m">300</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output-dir<span class="w"> </span>ribosome_batch_001/results<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--script-dir<span class="w"> </span>ribosome_batch_001/scripts<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--dry-run
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The quotation marks are required for parsing of glob patterns. If your tomogram names end with <code class="docutils literal notranslate"><span class="pre">.mrc</span></code>, you would adapt the glob pattern to <code class="docutils literal notranslate"><span class="pre">&quot;project_directory/tomograms/*.mrc&quot;</span></code>.</p>
+</div>
+<p>This command will</p>
+<ol class="arabic simple">
+<li><p><strong>Discover</strong> all <code class="docutils literal notranslate"><span class="pre">.rec</span></code> files in the tomograms directory</p></li>
+<li><p><strong>Match</strong> each tomogram with its corresponding <code class="docutils literal notranslate"><span class="pre">.mdoc</span></code> metadata file</p></li>
+<li><p><strong>Generate</strong> individual SLURM scripts for each valid pair</p></li>
+</ol>
+<p>The generated scripts can be submitted manually, or automatically through the runner by omitting the <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code> flag.</p>
+<p>The scripts generated by the runner will generally follow this pattern</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="c1"># SLURM directives</span>
+<span class="c1">#SBATCH --ntasks=1</span>
+<span class="c1">#SBATCH --cpus-per-task=8</span>
+<span class="c1">#SBATCH --mem=256G</span>
+<span class="c1">#SBATCH --time=08:00:00</span>
+<span class="c1">#SBATCH --partition=gpu-el8</span>
+<span class="c1">#SBATCH --gres=gpu:1</span>
+<span class="c1">#SBATCH --job-name=pytme_TS_037</span>
+
+<span class="c1"># Environment setup</span>
+module<span class="w"> </span>load<span class="w"> </span>pyTME
+
+<span class="c1"># Run template matching</span>
+match_template<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target<span class="w"> </span>project_directory/tomograms/TS_037_10.00Apx.rec<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>templates/emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>templates/emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>results/TS_037/TS_037.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--particle-diameter<span class="w"> </span><span class="m">300</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tilt-angles<span class="w"> </span>project_directory/metadata/TS_037.mdoc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--amplitude-contrast<span class="w"> </span><span class="m">0</span>.08<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--spherical-aberration<span class="w"> </span><span class="m">27000000</span>.0<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--acceleration-voltage<span class="w"> </span><span class="m">300</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently only SLURM scripts are supported. Feel free to <a class="reference external" href="https://github.com/KosinskiLab/pyTME/issues">open an issue</a> if you require a different architecture, or create one yourself by inheriting from the ExecutionBackend defined in <code class="docutils literal notranslate"><span class="pre">pytme_runner</span></code>.</p>
+</div>
+</section>
+<section id="advanced-processing-options">
+<h2>Advanced Processing Options<a class="headerlink" href="#advanced-processing-options" title="Link to this heading">#</a></h2>
+<p>For production runs, you may want to include additional filters similar to those described in the ribosome picking tutorial</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytme_runner<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tomograms<span class="w"> </span><span class="s2">&quot;project_directory/tomograms/*.rec&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--metadata<span class="w"> </span><span class="s2">&quot;project_directory/metadata/*.mdoc&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--masks<span class="w"> </span><span class="s2">&quot;project_directory/masks/*mask.mrc&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>templates/emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>templates/emd_3228_resampled_mask.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--particle-diameter<span class="w"> </span><span class="m">300</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tilt-weighting<span class="w"> </span>relion<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--whiten-spectrum<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--amplitude-contrast<span class="w"> </span><span class="m">0</span>.08<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--spherical-aberration<span class="w"> </span><span class="m">2</span>.7<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--voltage<span class="w"> </span><span class="m">300</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cpus<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--memory<span class="w"> </span><span class="m">256</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gpu-count<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--time-limit<span class="w"> </span><span class="s2">&quot;08:00:00&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output-dir<span class="w"> </span>results/ribosome_batch_001
+</pre></div>
+</div>
+<p>Compared to the basic run above, this now includes</p>
+<ul class="simple">
+<li><p>Tomogram masks to exclude problematic regions</p></li>
+<li><p>Lowpass filtering to 40 Ångstrom</p></li>
+<li><p>Missing wedge correction with RELION-style tilt weighting</p></li>
+<li><p>Spectral whitening to enhance weak signals</p></li>
+<li><p>Resource specifications appropriate for your cluster</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can also switch between compute backends via <code class="docutils literal notranslate"><span class="pre">--backend</span></code>. By default, the runner will use cupy.</p>
+</div>
+</section>
+<section id="processing-subsets">
+<h2>Processing Subsets<a class="headerlink" href="#processing-subsets" title="Link to this heading">#</a></h2>
+<p>To process only specific tomograms, create a list file</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create tomogram selection</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;TS_037&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>selected_tomos.txt
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;TS_041&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>selected_tomos.txt
+
+<span class="c1"># Process only selected tomograms</span>
+pytme_runner<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tomograms<span class="w"> </span><span class="s2">&quot;project_directory/tomograms/*.rec&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--metadata<span class="w"> </span><span class="s2">&quot;project_directory/metadata/*&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>templates/emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tomo-list<span class="w"> </span>selected_tomos.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--particle-diameter<span class="w"> </span><span class="m">300</span>
+</pre></div>
+</div>
+</section>
+<section id="output-structure">
+<h2>Output Structure<a class="headerlink" href="#output-structure" title="Link to this heading">#</a></h2>
+<p>Results are organized in the following manner</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ribosome_batch_001/results
+├── TS_037_10.00Apx.pickle    # Template matching results
+├── TS_037_10.00Apx_12345.out # SLURM logs
+├── TS_041_10.00Apx.pickle
+├── TS_041_10.00Apx_12346.out
+├── TS_045_10.00Apx.pickle
+└── TS_045_10.00Apx_12347.out
+</pre></div>
+</div>
+</section>
+<section id="mixed-formats">
+<h2>Mixed Formats<a class="headerlink" href="#mixed-formats" title="Link to this heading">#</a></h2>
+<p>You can mix formats by adapting the glob patterns. For instance for metadata</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytme_runner<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tomograms<span class="w"> </span><span class="s2">&quot;project_directory/tomograms/*.rec&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--metadata<span class="w"> </span><span class="s2">&quot;project_directory/metadata/*&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template<span class="w"> </span>templates/emd_3228_resampled.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--particle-diameter<span class="w"> </span><span class="m">300</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">metadata/*</span></code> pattern will match <code class="docutils literal notranslate"><span class="pre">.mdoc</span></code>, <code class="docutils literal notranslate"><span class="pre">.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">.star</span></code>, and other supported formats, automatically pairing each tomogram with its corresponding metadata file. However, note that when multiple metadata files exist for a given tomogram, the runner will default to the first one it encountered.</p>
+</section>
+<section id="monitoring-progress">
+<h2>Monitoring Progress<a class="headerlink" href="#monitoring-progress" title="Link to this heading">#</a></h2>
+<p>Use standard SLURM commands to monitor your batch jobs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check all your jobs</span>
+squeue<span class="w"> </span>--me
+
+<span class="c1"># Count running/pending jobs</span>
+squeue<span class="w"> </span>--me<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>pytme<span class="w"> </span><span class="p">|</span><span class="w"> </span>wc<span class="w"> </span>-l
+
+<span class="c1"># Check specific job details</span>
+scontrol<span class="w"> </span>show<span class="w"> </span>job<span class="w"> </span><span class="m">12345</span>
+
+<span class="c1"># Monitor resource usage</span>
+sacct<span class="w"> </span>-j<span class="w"> </span><span class="m">12345</span><span class="w"> </span>--format<span class="o">=</span>JobID,JobName,MaxRSS,Elapsed
+</pre></div>
+</div>
+</section>
+<section id="environment-configuration">
+<h2>Environment Configuration<a class="headerlink" href="#environment-configuration" title="Link to this heading">#</a></h2>
+<p>Different clusters require different environment setups. Configure this for your specific cluster</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using environment modules (default)</span>
+pytme_runner<span class="w"> </span>--environment-setup<span class="w"> </span><span class="s2">&quot;module load pyTME; export \$PYTHONPATH&quot;</span><span class="w"> </span>...
+
+<span class="c1"># Using conda environments</span>
+pytme_runner<span class="w"> </span>--environment-setup<span class="w"> </span><span class="s2">&quot;source ~/.bashrc; conda activate pytme_env&quot;</span><span class="w"> </span>...
+
+<span class="c1"># Complex setup with GPU modules</span>
+pytme_runner<span class="w"> </span>--environment-setup<span class="w"> </span><span class="s2">&quot;module load CUDA/11.7; conda activate pytme&quot;</span><span class="w"> </span>...
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="alignment.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Alignment of Densities</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="summary.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Summary</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-organization">Dataset Organization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-batch-processing">Basic Batch Processing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-processing-options">Advanced Processing Options</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#processing-subsets">Processing Subsets</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#output-structure">Output Structure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mixed-formats">Mixed Formats</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring-progress">Monitoring Progress</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-configuration">Environment Configuration</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/quickstart/matching/cluster.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

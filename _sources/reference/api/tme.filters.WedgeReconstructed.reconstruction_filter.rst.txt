@@ -1,0 +1,6 @@
+WedgeReconstructed.reconstruction\_filter
+====================================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: WedgeReconstructed.reconstruction_filter

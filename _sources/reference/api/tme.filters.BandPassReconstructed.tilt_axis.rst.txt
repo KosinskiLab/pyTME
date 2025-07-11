@@ -1,0 +1,6 @@
+BandPassReconstructed.tilt\_axis
+===========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: BandPassReconstructed.tilt_axis

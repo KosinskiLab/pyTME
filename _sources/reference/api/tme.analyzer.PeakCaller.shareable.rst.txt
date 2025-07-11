@@ -1,0 +1,6 @@
+PeakCaller.shareable
+=================================
+
+.. currentmodule:: tme.analyzer
+
+.. autoproperty:: PeakCaller.shareable

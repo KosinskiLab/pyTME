@@ -1,0 +1,46 @@
+﻿MaxScoreOverRotationsConstrained
+================================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: MaxScoreOverRotationsConstrained
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            MaxScoreOverRotationsConstrained.shareable
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            MaxScoreOverRotationsConstrained.__call__
+      
+
+      
+         
+         
+            MaxScoreOverRotationsConstrained.init_state
+         
+         
+            MaxScoreOverRotationsConstrained.merge
+         
+         
+            MaxScoreOverRotationsConstrained.result
+         
+
+   
+   

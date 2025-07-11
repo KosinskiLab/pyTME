@@ -1,0 +1,6 @@
+CTF.return\_real\_fourier
+===================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.return_real_fourier

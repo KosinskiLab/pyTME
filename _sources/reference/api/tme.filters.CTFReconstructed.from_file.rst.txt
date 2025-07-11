@@ -1,0 +1,6 @@
+CTFReconstructed.from\_file
+======================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: CTFReconstructed.from_file

@@ -1,0 +1,6 @@
+MaxScoreOverRotations.init\_state
+=============================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: MaxScoreOverRotations.init_state

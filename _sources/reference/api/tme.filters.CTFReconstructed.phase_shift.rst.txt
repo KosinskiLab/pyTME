@@ -1,0 +1,6 @@
+CTFReconstructed.phase\_shift
+========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.phase_shift

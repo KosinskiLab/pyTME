@@ -1,0 +1,6 @@
+CTF.tilt\_axis
+=========================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.tilt_axis

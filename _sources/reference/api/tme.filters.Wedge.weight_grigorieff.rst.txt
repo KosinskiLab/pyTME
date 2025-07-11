@@ -1,0 +1,6 @@
+Wedge.weight\_grigorieff
+===================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: Wedge.weight_grigorieff

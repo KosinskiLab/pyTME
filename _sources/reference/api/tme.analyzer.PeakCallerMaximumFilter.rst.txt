@@ -1,0 +1,52 @@
+﻿PeakCallerMaximumFilter
+=======================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: PeakCallerMaximumFilter
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            PeakCallerMaximumFilter.shareable
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            PeakCallerMaximumFilter.__call__
+      
+
+      
+         
+         
+            PeakCallerMaximumFilter.call_peaks
+         
+         
+            PeakCallerMaximumFilter.init_state
+         
+         
+            PeakCallerMaximumFilter.merge
+         
+         
+            PeakCallerMaximumFilter.oversample_peaks
+         
+         
+            PeakCallerMaximumFilter.result
+         
+
+   
+   

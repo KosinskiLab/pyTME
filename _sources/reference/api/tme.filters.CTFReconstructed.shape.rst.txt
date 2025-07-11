@@ -1,0 +1,6 @@
+CTFReconstructed.shape
+==================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.shape

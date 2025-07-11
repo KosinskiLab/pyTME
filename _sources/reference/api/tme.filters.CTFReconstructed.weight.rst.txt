@@ -1,0 +1,6 @@
+CTFReconstructed.weight
+===================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: CTFReconstructed.weight

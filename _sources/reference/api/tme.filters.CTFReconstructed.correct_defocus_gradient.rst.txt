@@ -1,0 +1,6 @@
+CTFReconstructed.correct\_defocus\_gradient
+=====================================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.correct_defocus_gradient

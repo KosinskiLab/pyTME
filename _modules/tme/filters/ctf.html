@@ -1,0 +1,1098 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tme.filters.ctf &#8212; pytme 0.3.b0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/general.css?v=2e4b593a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=97acad5b"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/tme/filters/ctf';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">tme.filters.ctf</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for tme.filters.ctf</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Implements class CTF and CTFReconstruced.</span>
+
+<span class="sd">Copyright (c) 2024 European Molecular Biology Laboratory</span>
+
+<span class="sd">Author: Valentin Maurer &lt;valentin.maurer@embl-hamburg.de&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..types</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span> <span class="k">as</span> <span class="n">be</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.compose</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComposableFilter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">StarParser</span><span class="p">,</span> <span class="n">XMLParser</span><span class="p">,</span> <span class="n">MDOCParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">frequency_grid_at_angle</span><span class="p">,</span>
+    <span class="n">compute_tilt_shape</span><span class="p">,</span>
+    <span class="n">crop_real_fourier</span><span class="p">,</span>
+    <span class="n">fftfreqn</span><span class="p">,</span>
+    <span class="n">shift_fourier</span><span class="p">,</span>
+    <span class="n">pad_to_length</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;CTF&quot;</span><span class="p">,</span> <span class="s2">&quot;CTFReconstructed&quot;</span><span class="p">,</span> <span class="s2">&quot;create_ctf&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="CTF">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.CTF.html#tme.filters.CTF">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CTF</span><span class="p">(</span><span class="n">ComposableFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a per-tilt contrast transfer function mask.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: The shape of the to-be created mask.</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: The defocus value in x direction (in units of sampling rate).</span>
+    <span class="n">defocus_x</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: The tilt angles.</span>
+    <span class="n">angles</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: The microscope projection axis, defaults to 2 (z).</span>
+    <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="c1">#: The axis along which the tilt is applied, defaults to 0 (x).</span>
+    <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1">#: Whether to correct defocus gradient, defaults False.</span>
+    <span class="n">correct_defocus_gradient</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1">#: The sampling rate, defaults to 1 Ångstrom / voxel.</span>
+    <span class="n">sampling_rate</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="c1">#: The acceleration voltage in Volts, defaults to 300e3.</span>
+    <span class="n">acceleration_voltage</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">300e3</span>
+    <span class="c1">#: The spherical aberration, defaults to 2.7e7 (in units of sampling rate).</span>
+    <span class="n">spherical_aberration</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.7e7</span>
+    <span class="c1">#: The amplitude contrast, defaults to 0.07.</span>
+    <span class="n">amplitude_contrast</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.07</span>
+    <span class="c1">#: The phase shift in degrees, defaults to 0.</span>
+    <span class="n">phase_shift</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1">#: The defocus angle in degrees, defaults to 0.</span>
+    <span class="n">defocus_angle</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1">#: The defocus value in y direction, defaults to None (in units of sampling rate).</span>
+    <span class="n">defocus_y</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: Whether the returned CTF should be phase-flipped, defaults to True.</span>
+    <span class="n">flip_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1">#: Whether to return a ctf mask for rfft (for :py:class:`CTFReconstructed`).</span>
+    <span class="n">return_real_fourier</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="CTF.from_file">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.CTF.from_file.html#tme.filters.CTF.from_file">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CTF&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize :py:class:`CTF` from file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            The path to a file with ctf parameters. Supports extensions are:</span>
+
+<span class="sd">            +-------+---------------------------------------------------------+</span>
+<span class="sd">            | .star | GCTF file                                               |</span>
+<span class="sd">            +-------+---------------------------------------------------------+</span>
+<span class="sd">            | .xml  | WARP/M XML file                                         |</span>
+<span class="sd">            +-------+---------------------------------------------------------+</span>
+<span class="sd">            | .mdoc | SerialEM file                                           |</span>
+<span class="sd">            +-------+---------------------------------------------------------+</span>
+<span class="sd">            | .*    | CTFFIND4 file                                           |</span>
+<span class="sd">            +-------+---------------------------------------------------------+</span>
+<span class="sd">        **kwargs : optional</span>
+<span class="sd">            Overwrite fields that cannot be extracted from input file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">_from_ctffind</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;star&quot;</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">_from_star</span>
+        <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;xml&quot;</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">_from_xml</span>
+        <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;mdoc&quot;</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">_from_mdoc</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="c1"># Pixel size needs to be overwritten by pixel size the ctf is generated for</span>
+        <span class="n">init_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;angles&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;angles&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;defocus_x&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;defocus_1&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;sampling_rate&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;pixel_size&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;acceleration_voltage&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;acceleration_voltage&quot;</span><span class="p">],</span> <span class="mf">1e3</span><span class="p">),</span>
+            <span class="s2">&quot;spherical_aberration&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;spherical_aberration&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;amplitude_contrast&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;amplitude_contrast&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;phase_shift&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;additional_phase_shift&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;defocus_angle&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;azimuth_astigmatism&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;defocus_y&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;defocus_2&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">init_kwargs</span> <span class="ow">and</span> <span class="n">init_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">init_kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="n">init_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">init_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">init_kwargs</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defocus_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">defocus_angle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase_shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_shift</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CTF.__call__">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.CTF.__call__.html#tme.filters.CTF.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a CTF stack of chosen parameters with DC component in the center.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">func_args</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">func_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">(</span><span class="o">**</span><span class="n">func_args</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">ret</span><span class="p">),</span> <span class="n">be</span><span class="o">.</span><span class="n">_float_dtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">ret</span><span class="p">,</span>
+            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="n">func_args</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;return_real_fourier&quot;</span><span class="p">:</span> <span class="n">func_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;return_real_fourier&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;is_multiplicative_filter&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="CTF.weight">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.CTF.weight.html#tme.filters.CTF.weight">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">weight</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">defocus_x</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">angles</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">amplitude_contrast</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.07</span><span class="p">,</span>
+        <span class="n">phase_shift</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">defocus_angle</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">defocus_y</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">correct_defocus_gradient</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">sampling_rate</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">acceleration_voltage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">300e3</span><span class="p">,</span>
+        <span class="n">spherical_aberration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.7e3</span><span class="p">,</span>
+        <span class="n">flip_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">return_real_fourier</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cutoff_frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the CTF weight tilt stack.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        shape : tuple of int</span>
+<span class="sd">            The shape of the CTF.</span>
+<span class="sd">        defocus_x : tuple of float</span>
+<span class="sd">            The defocus value in x direction.</span>
+<span class="sd">        angles : tuple of float</span>
+<span class="sd">            The tilt angles.</span>
+<span class="sd">        opening_axis : int, optional</span>
+<span class="sd">            The axis around which the wedge is opened, defaults to 2.</span>
+<span class="sd">        tilt_axis : int, optional</span>
+<span class="sd">            The axis along which the tilt is applied, defaults to 0.</span>
+<span class="sd">        amplitude_contrast : tuple of float, optional</span>
+<span class="sd">            The amplitude contrast, defaults to 0.07.</span>
+<span class="sd">        phase_shift : tuple of float, optional</span>
+<span class="sd">            The phase shift in radians, defaults to 0.</span>
+<span class="sd">        defocus_angle : tuple of float, optional</span>
+<span class="sd">            The defocus angle in radians, defaults to 0.</span>
+<span class="sd">        defocus_y : tuple of float, optional</span>
+<span class="sd">            The defocus value in y direction, defaults to None.</span>
+<span class="sd">        correct_defocus_gradient : bool, optional</span>
+<span class="sd">            Whether to correct defocus gradient, defaults to False.</span>
+<span class="sd">        sampling_rate : tuple of float, optional</span>
+<span class="sd">            The sampling rate, defaults to 1.</span>
+<span class="sd">        acceleration_voltage : float, optional</span>
+<span class="sd">            The acceleration voltage in electron microscopy, defaults to 300e3.</span>
+<span class="sd">        spherical_aberration : float, optional</span>
+<span class="sd">            The spherical aberration coefficient, defaults to 2.7e3.</span>
+<span class="sd">        flip_phase : bool, optional</span>
+<span class="sd">            Whether the returned CTF should be phase-flipped, defaults to True.</span>
+<span class="sd">        **kwargs : Dict</span>
+<span class="sd">            Additional keyword arguments.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            A stack containing the CTF weight.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+        <span class="n">defoci_x</span> <span class="o">=</span> <span class="n">pad_to_length</span><span class="p">(</span><span class="n">defocus_x</span><span class="p">,</span> <span class="n">angles</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">defoci_y</span> <span class="o">=</span> <span class="n">pad_to_length</span><span class="p">(</span><span class="n">defocus_y</span><span class="p">,</span> <span class="n">angles</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">phase_shift</span> <span class="o">=</span> <span class="n">pad_to_length</span><span class="p">(</span><span class="n">phase_shift</span><span class="p">,</span> <span class="n">angles</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">defocus_angle</span> <span class="o">=</span> <span class="n">pad_to_length</span><span class="p">(</span><span class="n">defocus_angle</span><span class="p">,</span> <span class="n">angles</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">spherical_aberration</span> <span class="o">=</span> <span class="n">pad_to_length</span><span class="p">(</span><span class="n">spherical_aberration</span><span class="p">,</span> <span class="n">angles</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">amplitude_contrast</span> <span class="o">=</span> <span class="n">pad_to_length</span><span class="p">(</span><span class="n">amplitude_contrast</span><span class="p">,</span> <span class="n">angles</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">acceleration_voltage</span> <span class="o">=</span> <span class="n">pad_to_length</span><span class="p">(</span><span class="n">acceleration_voltage</span><span class="p">,</span> <span class="n">angles</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">sampling_rate</span><span class="p">)</span>
+        <span class="n">ctf_shape</span> <span class="o">=</span> <span class="n">compute_tilt_shape</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">opening_axis</span><span class="o">=</span><span class="n">opening_axis</span><span class="p">,</span> <span class="n">reduce_dim</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">),</span> <span class="o">*</span><span class="n">ctf_shape</span><span class="p">))</span>
+
+        <span class="c1"># Shift tilt axis forward</span>
+        <span class="n">corrected_tilt_axis</span> <span class="o">=</span> <span class="n">tilt_axis</span>
+        <span class="k">if</span> <span class="n">opening_axis</span> <span class="ow">and</span> <span class="n">tilt_axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">opening_axis</span> <span class="o">&lt;</span> <span class="n">tilt_axis</span><span class="p">:</span>
+                <span class="n">corrected_tilt_axis</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">angle</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">angles</span><span class="p">):</span>
+            <span class="n">defocus_x</span><span class="p">,</span> <span class="n">defocus_y</span> <span class="o">=</span> <span class="n">defoci_x</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">defoci_y</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+            <span class="n">correction</span> <span class="o">=</span> <span class="n">correct_defocus_gradient</span> <span class="ow">and</span> <span class="n">angle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="n">chi</span> <span class="o">=</span> <span class="n">create_ctf</span><span class="p">(</span>
+                <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">ctf_shape</span><span class="p">,</span>
+                <span class="n">defocus_x</span><span class="o">=</span><span class="n">defocus_x</span><span class="p">,</span>
+                <span class="n">defocus_y</span><span class="o">=</span><span class="n">defocus_y</span><span class="p">,</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span>
+                <span class="n">acceleration_voltage</span><span class="o">=</span><span class="n">acceleration_voltage</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                <span class="n">correct_defocus_gradient</span><span class="o">=</span><span class="n">correction</span><span class="p">,</span>
+                <span class="n">spherical_aberration</span><span class="o">=</span><span class="n">spherical_aberration</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                <span class="n">cutoff_frequency</span><span class="o">=</span><span class="n">cutoff_frequency</span><span class="p">,</span>
+                <span class="n">phase_shift</span><span class="o">=</span><span class="n">phase_shift</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                <span class="n">defocus_angle</span><span class="o">=</span><span class="n">defocus_angle</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                <span class="n">amplitude_contrast</span><span class="o">=</span><span class="n">amplitude_contrast</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                <span class="n">tilt_axis</span><span class="o">=</span><span class="n">corrected_tilt_axis</span><span class="p">,</span>
+                <span class="n">opening_axis</span><span class="o">=</span><span class="n">opening_axis</span><span class="p">,</span>
+                <span class="n">full_shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">stack</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">chi</span>
+
+        <span class="c1"># Avoid contrast inversion</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">negative</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">stack</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">flip_phase</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">stack</span><span class="p">)</span>
+
+        <span class="n">stack</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">stack</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">stack</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CTFReconstructed">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.CTFReconstructed.html#tme.filters.CTFReconstructed">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CTFReconstructed</span><span class="p">(</span><span class="n">CTF</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a simple contrast transfer function mask without the ability to specify</span>
+<span class="sd">    per-tilt parameters like in :py:class:`CTF`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CTFReconstructed.weight">
+<a class="viewcode-back" href="../../../reference/api/tme.filters.CTFReconstructed.weight.html#tme.filters.CTFReconstructed.weight">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">weight</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">defocus_x</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">amplitude_contrast</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.07</span><span class="p">,</span>
+        <span class="n">phase_shift</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">defocus_angle</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">defocus_y</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sampling_rate</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">acceleration_voltage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">300e3</span><span class="p">,</span>
+        <span class="n">spherical_aberration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.7e3</span><span class="p">,</span>
+        <span class="n">flip_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">return_real_fourier</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cutoff_frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the CTF weight tilt stack.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        shape : tuple of int</span>
+<span class="sd">            The shape of the CTF.</span>
+<span class="sd">        defocus_x : tuple of float</span>
+<span class="sd">            The defocus value in x direction.</span>
+<span class="sd">        opening_axis : int, optional</span>
+<span class="sd">            The axis around which the wedge is opened, defaults to 2.</span>
+<span class="sd">        amplitude_contrast : float, optional</span>
+<span class="sd">            The amplitude contrast, defaults to 0.07.</span>
+<span class="sd">        phase_shift : tuple of float, optional</span>
+<span class="sd">            The phase shift in radians, defaults to 0.</span>
+<span class="sd">        defocus_angle : tuple of float, optional</span>
+<span class="sd">            The defocus angle in radians, defaults to 0.</span>
+<span class="sd">        defocus_y : tuple of float, optional</span>
+<span class="sd">            The defocus value in y direction, defaults to None.</span>
+<span class="sd">        sampling_rate : tuple of float, optional</span>
+<span class="sd">            The sampling rate, defaults to 1.</span>
+<span class="sd">        acceleration_voltage : float, optional</span>
+<span class="sd">            The acceleration voltage in electron microscopy, defaults to 300e3.</span>
+<span class="sd">        spherical_aberration : float, optional</span>
+<span class="sd">            The spherical aberration coefficient, defaults to 2.7e3.</span>
+<span class="sd">        flip_phase : bool, optional</span>
+<span class="sd">            Whether the returned CTF should be phase-flipped.</span>
+<span class="sd">        **kwargs : Dict</span>
+<span class="sd">            Additional keyword arguments.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NDArray</span>
+<span class="sd">            A stack containing the CTF weight.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="n">create_ctf</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+            <span class="n">defocus_x</span><span class="o">=</span><span class="n">defocus_x</span><span class="p">,</span>
+            <span class="n">defocus_y</span><span class="o">=</span><span class="n">defocus_y</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">sampling_rate</span><span class="p">),</span>
+            <span class="n">acceleration_voltage</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">acceleration_voltage</span><span class="p">,</span>
+            <span class="n">correct_defocus_gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">spherical_aberration</span><span class="o">=</span><span class="n">spherical_aberration</span><span class="p">,</span>
+            <span class="n">cutoff_frequency</span><span class="o">=</span><span class="n">cutoff_frequency</span><span class="p">,</span>
+            <span class="n">phase_shift</span><span class="o">=</span><span class="n">phase_shift</span><span class="p">,</span>
+            <span class="n">defocus_angle</span><span class="o">=</span><span class="n">defocus_angle</span><span class="p">,</span>
+            <span class="n">amplitude_contrast</span><span class="o">=</span><span class="n">amplitude_contrast</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="n">shift_fourier</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">stack</span><span class="p">,</span> <span class="n">shape_is_real_fourier</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Avoid contrast inversion</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">negative</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">stack</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">flip_phase</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">stack</span><span class="p">)</span>
+
+        <span class="n">stack</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">stack</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">return_real_fourier</span><span class="p">:</span>
+            <span class="n">stack</span> <span class="o">=</span> <span class="n">crop_real_fourier</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">stack</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_xml</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">XMLParser</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;PhaseShift&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;Amplitude&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;Defocus&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;Voltage&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;Cs&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;DefocusAngle&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;PixelSize&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;Angles&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Angles&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+
+    <span class="n">ctf_options</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;CTF&quot;</span><span class="p">][</span><span class="s2">&quot;Param&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">ctf_options</span><span class="p">:</span>
+        <span class="n">option</span> <span class="o">=</span> <span class="n">option</span><span class="p">[</span><span class="s2">&quot;@attributes&quot;</span><span class="p">]</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">option</span><span class="p">[</span><span class="s2">&quot;Name&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">option</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s2">&quot;GridCTF&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">ctf</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;GridCTF&quot;</span><span class="p">][</span><span class="s2">&quot;Node&quot;</span><span class="p">]</span>
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Defocus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctf</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;@attributes&quot;</span><span class="p">][</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ctf</span><span class="p">))]</span>
+        <span class="n">ctf_phase</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;GridCTFPhase&quot;</span><span class="p">][</span><span class="s2">&quot;Node&quot;</span><span class="p">]</span>
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;PhaseShift&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ctf_phase</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;@attributes&quot;</span><span class="p">][</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ctf_phase</span><span class="p">))</span>
+        <span class="p">]</span>
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;PhaseShift&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;PhaseShift&quot;</span><span class="p">])</span>
+        <span class="n">ctf_ast</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;GridCTFDefocusAngle&quot;</span><span class="p">][</span><span class="s2">&quot;Node&quot;</span><span class="p">]</span>
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;DefocusAngle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ctf_ast</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;@attributes&quot;</span><span class="p">][</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ctf_ast</span><span class="p">))</span>
+        <span class="p">]</span>
+
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">missing</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Convert units to sampling rate (we assume it is Angstrom)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Cs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;Cs&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e7</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Defocus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Defocus&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e4</span>
+
+    <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;angles&quot;</span><span class="p">:</span> <span class="s2">&quot;Angles&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;defocus_1&quot;</span><span class="p">:</span> <span class="s2">&quot;Defocus&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;defocus_2&quot;</span><span class="p">:</span> <span class="s2">&quot;Defocus&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;azimuth_astigmatism&quot;</span><span class="p">:</span> <span class="s2">&quot;DefocusAngle&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;additional_phase_shift&quot;</span><span class="p">:</span> <span class="s2">&quot;PhaseShift&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;acceleration_voltage&quot;</span><span class="p">:</span> <span class="s2">&quot;Voltage&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;spherical_aberration&quot;</span><span class="p">:</span> <span class="s2">&quot;Cs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;amplitude_contrast&quot;</span><span class="p">:</span> <span class="s2">&quot;Amplitude&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pixel_size&quot;</span><span class="p">:</span> <span class="s2">&quot;PixelSize&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_ctffind</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="n">parameter_regex</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;pixel_size&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;Pixel size: ([0-9.]+) Angstroms&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;acceleration_voltage&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;acceleration voltage: ([0-9.]+) keV&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;spherical_aberration&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;spherical aberration: ([0-9.]+) mm&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;amplitude_contrast&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;amplitude contrast: ([0-9.]+)&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">infile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)]</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_screen_params</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">regex_pattern</span> <span class="ow">in</span> <span class="n">parameter_regex</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">regex_pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="n">output</span><span class="p">[</span><span class="n">parameter</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">columns</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;micrograph_number&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;defocus_1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;defocus_2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;azimuth_astigmatism&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;additional_phase_shift&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="s2">&quot;cross_correlation&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="s2">&quot;spacing&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">columns</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+            <span class="n">_screen_params</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">parameter_regex</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">values</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">columns</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">value</span><span class="p">]))</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+        <span class="n">output</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+    <span class="n">output</span><span class="p">[</span><span class="s2">&quot;additional_phase_shift&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;additional_phase_shift&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_star</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">StarParser</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;data_stopgap_wedgelist&quot;</span> <span class="ow">in</span> <span class="n">parser</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;data_stopgap_wedgelist&quot;</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;angles&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_tilt_angle&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;defocus_1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_defocus&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">1e4</span><span class="p">),</span>
+            <span class="s2">&quot;defocus_2&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">1e4</span><span class="p">),</span>
+            <span class="s2">&quot;pixel_size&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_pixelsize&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;acceleration_voltage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_voltage&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;spherical_aberration&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_cs&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">1e7</span><span class="p">),</span>
+            <span class="s2">&quot;amplitude_contrast&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_amp_contrast&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;additional_phase_shift&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;azimuth_astigmatism&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;data_&quot;</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;defocus_1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnDefocusU&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;defocus_2&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnDefocusV&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;pixel_size&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnDetectorPixelSize&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;acceleration_voltage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnVoltage&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;spherical_aberration&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnSphericalAberration&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;amplitude_contrast&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnAmplitudeContrast&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;additional_phase_shift&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;azimuth_astigmatism&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnDefocusAngle&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">ctf_data</span> <span class="o">=</span> <span class="n">parser</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">out_key</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key_dtype</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">key_value</span> <span class="o">=</span> <span class="n">ctf_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">key_value</span> <span class="o">=</span> <span class="p">[</span><span class="n">key_dtype</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">key_value</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="n">output</span><span class="p">[</span><span class="n">out_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">key_value</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_mdoc</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">MDOCParser</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;angles&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;TiltAngle&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+        <span class="s2">&quot;defocus_1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Defocus&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+        <span class="s2">&quot;acceleration_voltage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Voltage&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+        <span class="c1"># These will be None, but on purpose</span>
+        <span class="s2">&quot;pixel_size&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnDetectorPixelSize&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+        <span class="s2">&quot;defocus_2&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Defocus2&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+        <span class="s2">&quot;spherical_aberration&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnSphericalAberration&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+        <span class="s2">&quot;amplitude_contrast&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnAmplitudeContrast&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+        <span class="s2">&quot;additional_phase_shift&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+        <span class="s2">&quot;azimuth_astigmatism&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;_rlnDefocusAngle&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">out_key</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key_dtype</span><span class="p">)</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">output</span><span class="p">[</span><span class="n">out_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># Adjust convention and convert to Angstrom</span>
+    <span class="n">output</span><span class="p">[</span><span class="s2">&quot;defocus_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;defocus_1&quot;</span><span class="p">],</span> <span class="o">-</span><span class="mf">1e4</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_electron_wavelength</span><span class="p">(</span><span class="n">acceleration_voltage</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the wavelength of an electron in angstrom.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Physical constants expressed in SI units</span>
+    <span class="n">planck_constant</span> <span class="o">=</span> <span class="mf">6.62606896e-34</span>
+    <span class="n">electron_charge</span> <span class="o">=</span> <span class="mf">1.60217646e-19</span>
+    <span class="n">electron_mass</span> <span class="o">=</span> <span class="mf">9.10938215e-31</span>
+    <span class="n">light_velocity</span> <span class="o">=</span> <span class="mi">299792458</span>
+
+    <span class="n">energy</span> <span class="o">=</span> <span class="n">electron_charge</span> <span class="o">*</span> <span class="n">acceleration_voltage</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="n">energy</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">denominator</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">energy</span> <span class="o">*</span> <span class="n">electron_mass</span> <span class="o">*</span> <span class="n">light_velocity</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">electron_wavelength</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+        <span class="n">planck_constant</span> <span class="o">*</span> <span class="n">light_velocity</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">denominator</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="c1"># Convert to Ångstrom</span>
+    <span class="n">electron_wavelength</span> <span class="o">*=</span> <span class="mf">1e10</span>
+    <span class="k">return</span> <span class="n">electron_wavelength</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_ctf</span><span class="p">(</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">defocus_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">acceleration_voltage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="n">defocus_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">phase_shift</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">defocus_y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">spherical_aberration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.7e7</span><span class="p">,</span>
+    <span class="n">amplitude_contrast</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.07</span><span class="p">,</span>
+    <span class="n">correct_defocus_gradient</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">cutoff_frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tilt_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">opening_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">full_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create CTF representation using the definition from [1]_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape : Tuple[int]</span>
+<span class="sd">        Shape of the returned CTF mask.</span>
+<span class="sd">    defocus_x : float</span>
+<span class="sd">        Defocus in x in units of sampling rate, e.g. 30000 Angstrom.</span>
+<span class="sd">    acceleration_voltage : float, optional</span>
+<span class="sd">        Acceleration voltage in keV, defaults to 300.</span>
+<span class="sd">    defocus_angle : float, optional</span>
+<span class="sd">        Astigmatism in radians, defaults to 0.</span>
+<span class="sd">    phase_shift : float, optional</span>
+<span class="sd">       Phase shift from phase plate in radians, defaults to 0.</span>
+<span class="sd">    defocus_y : float, optional</span>
+<span class="sd">        Defocus in y in units of sampling rate.</span>
+<span class="sd">    tilt_axis : int, optional</span>
+<span class="sd">        Axes the specimen was tilted over, defaults to 0 (x-axis).</span>
+<span class="sd">    sampling_rate : float or tuple of floats</span>
+<span class="sd">        Sampling rate throughout shape, e.g., 4 Angstrom per voxel.</span>
+<span class="sd">    amplitude_contrast : float, optional</span>
+<span class="sd">        Amplitude contrast of microscope, defaults to 0.07.</span>
+<span class="sd">    spherical_aberration : float, optional</span>
+<span class="sd">        Spherical aberration of microscope in Angstrom.</span>
+<span class="sd">    angle : float, optional</span>
+<span class="sd">        Assume the created CTF is a projection over opening_axis observed at angle.</span>
+<span class="sd">    opening_axis : int, optional</span>
+<span class="sd">        Projection axis, only relevant if angle is given.</span>
+<span class="sd">    full_shape : tuple of ints</span>
+<span class="sd">        Shape of the entire volume we are observing a projection of. This is required</span>
+<span class="sd">        to compute aspect ratios for correct scaling. For instance, the 2D CTF slice</span>
+<span class="sd">        could be (50,50), while the final 3D CTF volume is (50,50,25) with the</span>
+<span class="sd">        opening_axis being 2, i.e., the z-axis.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    NDArray</span>
+<span class="sd">        CTF mask.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  CTFFIND4: Fast and accurate defocus estimation from electron micrographs.</span>
+<span class="sd">            Alexis Rohou and Nikolaus Grigorieff. Journal of Structural Biology 2015.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">electron_wavelength</span> <span class="o">=</span> <span class="n">_compute_electron_wavelength</span><span class="p">(</span><span class="n">acceleration_voltage</span><span class="p">)</span>
+    <span class="n">electron_wavelength</span> <span class="o">/=</span> <span class="n">sampling_rate</span>
+    <span class="n">aberration</span> <span class="o">=</span> <span class="p">(</span><span class="n">spherical_aberration</span> <span class="o">/</span> <span class="n">sampling_rate</span><span class="p">)</span> <span class="o">*</span> <span class="n">electron_wavelength</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">if</span> <span class="n">correct_defocus_gradient</span> <span class="ow">or</span> <span class="n">defocus_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Length of shape needs to be at least 2, got </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">sampling</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">shape</span><span class="p">))</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">fftfreqn</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
+            <span class="n">return_sparse_grid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># This should be done after defocus_x computation</span>
+    <span class="k">if</span> <span class="n">correct_defocus_gradient</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">angle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot correct for defocus gradient without angle.&quot;</span><span class="p">)</span>
+
+        <span class="n">angle_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">defocus_gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="n">tilt_axis</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">tilt_axis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">defocus_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">defocus_x</span><span class="p">,</span> <span class="n">defocus_gradient</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">tilt_axis</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">defocus_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">defocus_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">defocus_y</span><span class="p">,</span> <span class="n">defocus_gradient</span><span class="p">)</span>
+
+    <span class="c1"># 0.5 * (dx + dy) + cos(2 * (azimuth - astigmatism) * (dx - dy))</span>
+    <span class="k">if</span> <span class="n">defocus_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">defocus_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">defocus_x</span><span class="p">,</span> <span class="n">defocus_y</span><span class="p">)</span>
+        <span class="n">defocus_difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">defocus_x</span><span class="p">,</span> <span class="n">defocus_y</span><span class="p">)</span>
+
+        <span class="n">angular_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">defocus_difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+            <span class="n">defocus_difference</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">angular_grid</span> <span class="o">-</span> <span class="n">defocus_angle</span><span class="p">)),</span>
+        <span class="p">)</span>
+        <span class="n">defocus_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">defocus_sum</span><span class="p">,</span> <span class="n">defocus_difference</span><span class="p">)</span>
+        <span class="n">defocus_x</span> <span class="o">*=</span> <span class="mf">0.5</span>
+
+    <span class="n">frequency_grid</span> <span class="o">=</span> <span class="n">fftfreqn</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">compute_euclidean_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">angle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">opening_axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">full_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">frequency_grid</span> <span class="o">=</span> <span class="n">frequency_grid_at_angle</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">full_shape</span><span class="p">,</span>
+            <span class="n">tilt_axis</span><span class="o">=</span><span class="n">tilt_axis</span><span class="p">,</span>
+            <span class="n">opening_axis</span><span class="o">=</span><span class="n">opening_axis</span><span class="p">,</span>
+            <span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">frequency_mask</span> <span class="o">=</span> <span class="n">frequency_grid</span> <span class="o">&lt;</span> <span class="n">cutoff_frequency</span>
+
+    <span class="c1"># k^2*π*λ(dx - 0.5 * sph_abb * λ^2 * k^2) + phase_shift + ampl_contrast_term)</span>
+    <span class="n">frequency_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">frequency_grid</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">frequency_grid</span><span class="p">)</span>
+    <span class="n">chi</span> <span class="o">=</span> <span class="n">defocus_x</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">aberration</span> <span class="o">*</span> <span class="n">frequency_grid</span>
+    <span class="n">chi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">chi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">electron_wavelength</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">chi</span><span class="p">)</span>
+    <span class="n">chi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">chi</span><span class="p">,</span> <span class="n">frequency_grid</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">chi</span><span class="p">)</span>
+    <span class="n">chi</span> <span class="o">+=</span> <span class="n">phase_shift</span>
+    <span class="n">chi</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+            <span class="n">amplitude_contrast</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">amplitude_contrast</span><span class="p">)),</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">chi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="o">-</span><span class="n">chi</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">chi</span><span class="p">)</span>
+    <span class="n">chi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">chi</span><span class="p">,</span> <span class="n">frequency_mask</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">chi</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">chi</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,1803 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tme.matching_utils &#8212; pytme 0.3.b0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=2e4b593a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=97acad5b"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/tme/matching_utils';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">tme.matching_utils</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for tme.matching_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Utility functions for template matching.</span>
+
+<span class="sd">Copyright (c) 2023 European Molecular Biology Laboratory</span>
+
+<span class="sd">Author: Valentin Maurer &lt;valentin.maurer@embl-hamburg.de&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shutil</span><span class="w"> </span><span class="kn">import</span> <span class="n">move</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">mkstemp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConvexHull</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">gaussian_filter</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span> <span class="k">as</span> <span class="n">be</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.memory</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_memory_usage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">BackendArray</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">noop</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">arr</span>
+
+
+<div class="viewcode-block" id="conditional_execute">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.conditional_execute.html#tme.matching_utils.conditional_execute">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">conditional_execute</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">execute_operation</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">alt_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">noop</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the given function or a no-op function based on execute_operation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : Callable</span>
+<span class="sd">        Callable.</span>
+<span class="sd">    alt_func : Callable</span>
+<span class="sd">        Callable to return if ``execute_operation`` is False, no-op by default.</span>
+<span class="sd">    execute_operation : bool</span>
+<span class="sd">        Whether to return ``func`` or a ``alt_func`` function.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Callable</span>
+<span class="sd">        ``func`` if ``execute_operation`` else ``alt_func``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">func</span> <span class="k">if</span> <span class="n">execute_operation</span> <span class="k">else</span> <span class="n">alt_func</span></div>
+
+
+
+<div class="viewcode-block" id="normalize_template">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.normalize_template.html#tme.matching_utils.normalize_template">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_template</span><span class="p">(</span>
+    <span class="n">template</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">,</span> <span class="n">n_observations</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Standardizes ``template`` to zero mean and unit standard deviation in ``mask``.</span>
+
+<span class="sd">    .. warning:: ``template`` is modified during the operation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    template : BackendArray</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    mask : BackendArray</span>
+<span class="sd">        Mask of the same shape as ``template``.</span>
+<span class="sd">    n_observations : float</span>
+<span class="sd">        Sum of mask elements.</span>
+<span class="sd">    axis : tuple of floats, optional</span>
+<span class="sd">        Axis to normalize over, all axis by default.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    BackendArray</span>
+<span class="sd">        Standardized input data.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  Hrabe T. et al, J. Struct. Biol. 178, 177 (2012).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">masked_mean</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">mask</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">masked_mean</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">masked_mean</span><span class="p">,</span> <span class="n">n_observations</span><span class="p">)</span>
+    <span class="n">masked_std</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="n">be</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">template</span><span class="p">),</span> <span class="n">mask</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">masked_std</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">masked_std</span> <span class="o">/</span> <span class="n">n_observations</span><span class="p">,</span> <span class="n">be</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">masked_mean</span><span class="p">))</span>
+    <span class="n">masked_std</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">masked_std</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="n">template</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">masked_mean</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">masked_std</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">be</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">template</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_template_overflow_safe</span><span class="p">(</span>
+    <span class="n">template</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">,</span> <span class="n">n_observations</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendArray</span><span class="p">:</span>
+    <span class="n">_template</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">be</span><span class="o">.</span><span class="n">_overflow_safe_dtype</span><span class="p">)</span>
+    <span class="n">_mask</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">be</span><span class="o">.</span><span class="n">_overflow_safe_dtype</span><span class="p">)</span>
+    <span class="n">normalize_template</span><span class="p">(</span>
+        <span class="n">template</span><span class="o">=</span><span class="n">_template</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">_mask</span><span class="p">,</span> <span class="n">n_observations</span><span class="o">=</span><span class="n">n_observations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span>
+    <span class="p">)</span>
+    <span class="n">template</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">_template</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span>
+
+
+<div class="viewcode-block" id="generate_tempfile_name">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.generate_tempfile_name.html#tme.matching_utils.generate_tempfile_name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_tempfile_name</span><span class="p">(</span><span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the path to a temporary file with given suffix. If defined. the</span>
+<span class="sd">    environment variable TMPDIR is used as base.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    suffix : str, optional</span>
+<span class="sd">        File suffix. By default the file has no suffix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The generated filename</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="array_to_memmap">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.array_to_memmap.html#tme.matching_utils.array_to_memmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">array_to_memmap</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a obj:`numpy.ndarray` to a obj:`numpy.memmap`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arr : obj:`numpy.ndarray`</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    filename : str, optional</span>
+<span class="sd">        Path to new memmap, :py:meth:`generate_tempfile_name` is used by default.</span>
+<span class="sd">    mode : str, optional</span>
+<span class="sd">        Mode to open the returned memmap object in, defautls to &#39;r&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    obj:`numpy.memmap`</span>
+<span class="sd">        Memmaped array in reading mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">generate_tempfile_name</span><span class="p">()</span>
+
+    <span class="n">arr</span><span class="o">.</span><span class="n">tofile</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="memmap_to_array">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.memmap_to_array.html#tme.matching_utils.memmap_to_array">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">memmap_to_array</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a obj:`numpy.memmap` to a obj:`numpy.ndarray` and delete the memmap.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arr : obj:`numpy.memmap`</span>
+<span class="sd">        Input data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    obj:`numpy.ndarray`</span>
+<span class="sd">        In-memory version of ``arr``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">):</span>
+        <span class="n">memmap_filepath</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">filename</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">memmap_filepath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arr</span></div>
+
+
+
+<div class="viewcode-block" id="write_pickle">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.write_pickle.html#tme.matching_utils.write_pickle">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_pickle</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serialize and write data to a file invalidating the input data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : iterable or object</span>
+<span class="sd">        The data to be serialized.</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The name of the file where the serialized data will be written.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :py:meth:`load_pickle`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">,)</span>
+
+    <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ofile</span><span class="p">,</span> <span class="n">ThreadPoolExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+            <span class="n">futures</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">):</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">new_filename</span> <span class="o">=</span> <span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.mm&quot;</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">dirname</span><span class="p">)</span>
+                <span class="n">new_item</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;np.memmap&quot;</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">new_filename</span><span class="p">)</span>
+                <span class="n">futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">move</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">new_filename</span><span class="p">))</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">new_item</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">ofile</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
+            <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="load_pickle">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.load_pickle.html#tme.matching_utils.load_pickle">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_pickle</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load and deserialize data written by :py:meth:`write_pickle`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The name of the file to read and deserialize data from.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    object or iterable</span>
+<span class="sd">        The deserialized data.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :py:meth:`write_pickle`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_pickle</span><span class="p">(</span><span class="n">file_handle</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_handle</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">EOFError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_pickle_memmap</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;np.memmap&quot;</span><span class="p">:</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="n">items</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ifile</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">_load_pickle</span><span class="p">(</span><span class="n">ifile</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">_is_pickle_memmap</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">data</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">items</span></div>
+
+
+
+<div class="viewcode-block" id="compute_parallelization_schedule">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.compute_parallelization_schedule.html#tme.matching_utils.compute_parallelization_schedule">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_parallelization_schedule</span><span class="p">(</span>
+    <span class="n">shape1</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">shape2</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">max_cores</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">max_ram</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">matching_method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">split_axes</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">split_only_outer</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">shape1_padding</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">analyzer_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_splits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+    <span class="n">float_nbytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">complex_nbytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">integer_nbytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes a parallelization schedule for a given computation.</span>
+
+<span class="sd">    This function estimates the amount of memory that would be used by a computation</span>
+<span class="sd">    and breaks down the computation into smaller parts that can be executed in parallel</span>
+<span class="sd">    without exceeding the specified limits on the number of cores and memory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape1 : NDArray</span>
+<span class="sd">        The shape of the first input array.</span>
+<span class="sd">    shape1_padding : NDArray, optional</span>
+<span class="sd">        Padding for shape1, None by default.</span>
+<span class="sd">    shape2 : NDArray</span>
+<span class="sd">        The shape of the second input array.</span>
+<span class="sd">    max_cores : int</span>
+<span class="sd">        The maximum number of cores that can be used.</span>
+<span class="sd">    max_ram : int</span>
+<span class="sd">        The maximum amount of memory that can be used.</span>
+<span class="sd">    matching_method : str</span>
+<span class="sd">        The metric used for scoring the computations.</span>
+<span class="sd">    split_axes : tuple</span>
+<span class="sd">        Axes that can be used for splitting. By default all are considered.</span>
+<span class="sd">    backend : str, optional</span>
+<span class="sd">        Backend used for computations.</span>
+<span class="sd">    split_only_outer : bool, optional</span>
+<span class="sd">        Whether only outer splits sould be considered.</span>
+<span class="sd">    analyzer_method : str</span>
+<span class="sd">        The method used for score analysis.</span>
+<span class="sd">    max_splits : int, optional</span>
+<span class="sd">        The maximum number of parts that the computation can be split into,</span>
+<span class="sd">        by default 256.</span>
+<span class="sd">    float_nbytes : int</span>
+<span class="sd">        Number of bytes of the used float, e.g. 4 for float32.</span>
+<span class="sd">    complex_nbytes : int</span>
+<span class="sd">        Number of bytes of the used complex, e.g. 8 for complex64.</span>
+<span class="sd">    integer_nbytes : int</span>
+<span class="sd">        Number of bytes of the used integer, e.g. 4 for int32.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">        This function assumes that no residual memory remains after each split,</span>
+<span class="sd">        which not always holds true, e.g. when using</span>
+<span class="sd">        :py:class:`tme.analyzer.MaxScoreOverRotations`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The optimal splits for each axis of the first input tensor.</span>
+<span class="sd">    int</span>
+<span class="sd">        The number of outer jobs.</span>
+<span class="sd">    int</span>
+<span class="sd">        The number of inner jobs per outer job.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shape1</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shape1</span><span class="p">)</span>
+    <span class="n">shape2</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shape2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">shape1_padding</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">shape1_padding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">shape1</span><span class="p">)</span>
+    <span class="n">core_assignments</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_cores</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">max_cores</span> <span class="o">%</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">core_assignments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">max_cores</span> <span class="o">//</span> <span class="n">i</span><span class="p">))</span>
+            <span class="n">core_assignments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">max_cores</span> <span class="o">//</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">split_only_outer</span><span class="p">:</span>
+        <span class="n">core_assignments</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_cores</span><span class="p">)]</span>
+
+    <span class="n">possible_params</span><span class="p">,</span> <span class="n">split_axis</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">shape1</span><span class="p">)</span>
+
+    <span class="n">split_axis_index</span> <span class="o">=</span> <span class="n">split_axis</span>
+    <span class="k">if</span> <span class="n">split_axes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">split_axis</span><span class="p">,</span> <span class="n">split_axis_index</span> <span class="o">=</span> <span class="n">split_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">split_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape1</span><span class="p">)))</span>
+
+    <span class="n">split_factor</span><span class="p">,</span> <span class="n">n_splits</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape1</span><span class="p">))],</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">n_splits</span> <span class="o">&lt;=</span> <span class="n">max_splits</span><span class="p">:</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">split_factor</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">split_factor</span><span class="p">))}</span>
+        <span class="n">array_slices</span> <span class="o">=</span> <span class="n">split_shape</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">shape1</span><span class="p">,</span> <span class="n">splits</span><span class="o">=</span><span class="n">splits</span><span class="p">)</span>
+        <span class="n">array_widths</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">split</span><span class="p">)</span> <span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="n">array_slices</span>
+        <span class="p">]</span>
+        <span class="n">n_splits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">splits</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+        <span class="k">for</span> <span class="n">inner_cores</span><span class="p">,</span> <span class="n">outer_cores</span> <span class="ow">in</span> <span class="n">core_assignments</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">outer_cores</span> <span class="o">&gt;</span> <span class="n">n_splits</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">ram_usage</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">estimate_memory_usage</span><span class="p">(</span>
+                    <span class="n">shape1</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">shape1_padding</span><span class="p">)),</span>
+                    <span class="n">shape2</span><span class="o">=</span><span class="n">shape2</span><span class="p">,</span>
+                    <span class="n">matching_method</span><span class="o">=</span><span class="n">matching_method</span><span class="p">,</span>
+                    <span class="n">analyzer_method</span><span class="o">=</span><span class="n">analyzer_method</span><span class="p">,</span>
+                    <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span>
+                    <span class="n">ncores</span><span class="o">=</span><span class="n">inner_cores</span><span class="p">,</span>
+                    <span class="n">float_nbytes</span><span class="o">=</span><span class="n">float_nbytes</span><span class="p">,</span>
+                    <span class="n">complex_nbytes</span><span class="o">=</span><span class="n">complex_nbytes</span><span class="p">,</span>
+                    <span class="n">integer_nbytes</span><span class="o">=</span><span class="n">integer_nbytes</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">shp</span> <span class="ow">in</span> <span class="n">array_widths</span>
+            <span class="p">]</span>
+            <span class="n">max_usage</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ram_usage</span><span class="p">),</span> <span class="n">outer_cores</span><span class="p">):</span>
+                <span class="n">usage</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ram_usage</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">outer_cores</span><span class="p">)])</span>
+                <span class="k">if</span> <span class="n">usage</span> <span class="o">&gt;</span> <span class="n">max_usage</span><span class="p">:</span>
+                    <span class="n">max_usage</span> <span class="o">=</span> <span class="n">usage</span>
+
+            <span class="n">inits</span> <span class="o">=</span> <span class="n">n_splits</span> <span class="o">//</span> <span class="n">outer_cores</span>
+            <span class="k">if</span> <span class="n">max_usage</span> <span class="o">&lt;</span> <span class="n">max_ram</span><span class="p">:</span>
+                <span class="n">possible_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">(</span><span class="o">*</span><span class="n">split_factor</span><span class="p">,</span> <span class="n">outer_cores</span><span class="p">,</span> <span class="n">inner_cores</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">,</span> <span class="n">inits</span><span class="p">)</span>
+                <span class="p">)</span>
+        <span class="n">split_factor</span><span class="p">[</span><span class="n">split_axis</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">split_axis_index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">split_axis_index</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_axes</span><span class="p">):</span>
+            <span class="n">split_axis_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">split_axis</span> <span class="o">=</span> <span class="n">split_axes</span><span class="p">[</span><span class="n">split_axis_index</span><span class="p">]</span>
+
+    <span class="n">possible_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">possible_params</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">possible_params</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;No suitable assignment found. Consider increasing &quot;</span>
+            <span class="s2">&quot;max_ram or decrease max_cores.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">init</span> <span class="o">=</span> <span class="n">possible_params</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">possible_params</span> <span class="o">=</span> <span class="n">possible_params</span><span class="p">[</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">lexsort</span><span class="p">((</span><span class="n">possible_params</span><span class="p">[:,</span> <span class="n">init</span><span class="p">],</span> <span class="n">possible_params</span><span class="p">[:,</span> <span class="p">(</span><span class="n">init</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]))</span>
+    <span class="p">]</span>
+    <span class="n">splits</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">possible_params</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape1</span><span class="p">))}</span>
+    <span class="n">core_assignment</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">possible_params</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape1</span><span class="p">)],</span>
+        <span class="n">possible_params</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">splits</span><span class="p">,</span> <span class="n">core_assignment</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_center_slice</span><span class="p">(</span><span class="n">current_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">new_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract the center slice of ``current_shape`` to retrieve ``new_shape``.&quot;&quot;&quot;</span>
+    <span class="n">new_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">new_shape</span><span class="p">)</span>
+    <span class="n">current_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">current_shape</span><span class="p">)</span>
+    <span class="n">starts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">current_shape</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">))</span>
+    <span class="n">stops</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span> <span class="k">for</span> <span class="n">stop</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">))</span>
+    <span class="n">box</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">stops</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">box</span>
+
+
+<div class="viewcode-block" id="centered">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.centered.html#tme.matching_utils.centered">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">centered</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BackendArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract the centered portion of an array based on a new shape.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arr : BackendArray</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    new_shape : tuple of ints</span>
+<span class="sd">        Desired shape for the central portion.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    BackendArray</span>
+<span class="sd">        Central portion of the array with shape ``new_shape``.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] https://github.com/scipy/scipy/blob/v1.11.2/scipy/signal/_signaltools.py#L388</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">box</span> <span class="o">=</span> <span class="n">_center_slice</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">new_shape</span><span class="o">=</span><span class="n">new_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arr</span><span class="p">[</span><span class="n">box</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="centered_mask">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.centered_mask.html#tme.matching_utils.centered_mask">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">centered_mask</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BackendArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mask the centered portion of an array based on a new shape.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arr : BackendArray</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    new_shape : tuple of ints</span>
+<span class="sd">        Desired shape for the mask.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    BackendArray</span>
+<span class="sd">        Array with central portion unmasked and the rest set to 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">box</span> <span class="o">=</span> <span class="n">_center_slice</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">new_shape</span><span class="o">=</span><span class="n">new_shape</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">mask</span><span class="p">[</span><span class="n">box</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">arr</span> <span class="o">*=</span> <span class="n">mask</span>
+    <span class="k">return</span> <span class="n">arr</span></div>
+
+
+
+<div class="viewcode-block" id="apply_convolution_mode">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.apply_convolution_mode.html#tme.matching_utils.apply_convolution_mode">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_convolution_mode</span><span class="p">(</span>
+    <span class="n">arr</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">,</span>
+    <span class="n">convolution_mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">s1</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">s2</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">convolution_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">mask_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies convolution_mode to ``arr``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arr : BackendArray</span>
+<span class="sd">        Array containing convolution result of arrays with shape s1 and s2.</span>
+<span class="sd">    convolution_mode : str</span>
+<span class="sd">        Analogous to mode in obj:`scipy.signal.convolve`:</span>
+
+<span class="sd">        +---------+----------------------------------------------------------+</span>
+<span class="sd">        | &#39;full&#39;  | returns full template matching result of the inputs.     |</span>
+<span class="sd">        +---------+----------------------------------------------------------+</span>
+<span class="sd">        | &#39;valid&#39; | returns elements that do not rely on zero-padding..      |</span>
+<span class="sd">        +---------+----------------------------------------------------------+</span>
+<span class="sd">        | &#39;same&#39;  | output is the same size as s1.                           |</span>
+<span class="sd">        +---------+----------------------------------------------------------+</span>
+<span class="sd">    s1 : tuple of ints</span>
+<span class="sd">        Tuple of integers corresponding to shape of convolution array 1.</span>
+<span class="sd">    s2 : tuple of ints</span>
+<span class="sd">        Tuple of integers corresponding to shape of convolution array 2.</span>
+<span class="sd">    convolution_shape : tuple of ints, optional</span>
+<span class="sd">        Size of the actually computed convolution. s1 + s2 - 1 by default.</span>
+<span class="sd">    mask_output : bool, optional</span>
+<span class="sd">        Whether to mask values outside of convolution_mode rather than</span>
+<span class="sd">        removing them. Defaults to False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    BackendArray</span>
+<span class="sd">        The array after applying the convolution mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Remove padding to next fast Fourier length</span>
+    <span class="k">if</span> <span class="n">convolution_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">convolution_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">s2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s1</span><span class="p">))]</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">convolution_shape</span><span class="p">)]</span>
+
+    <span class="k">if</span> <span class="n">convolution_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;full&quot;</span><span class="p">,</span> <span class="s2">&quot;same&quot;</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Supported convolution_mode are &#39;full&#39;, &#39;same&#39; and &#39;valid&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="n">func</span> <span class="o">=</span> <span class="n">centered_mask</span> <span class="k">if</span> <span class="n">mask_output</span> <span class="k">else</span> <span class="n">centered</span>
+    <span class="k">if</span> <span class="n">convolution_mode</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">arr</span>
+    <span class="k">elif</span> <span class="n">convolution_mode</span> <span class="o">==</span> <span class="s2">&quot;same&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">convolution_mode</span> <span class="o">==</span> <span class="s2">&quot;valid&quot;</span><span class="p">:</span>
+        <span class="n">valid_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">s2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">valid_shape</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="compute_full_convolution_index">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.compute_full_convolution_index.html#tme.matching_utils.compute_full_convolution_index">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_full_convolution_index</span><span class="p">(</span>
+    <span class="n">outer_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">inner_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">outer_split</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">],</span>
+    <span class="n">inner_split</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the position of the convolution of pieces in the full convolution.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    outer_shape : tuple</span>
+<span class="sd">        Tuple of integers corresponding to the shape of the outer array.</span>
+<span class="sd">    inner_shape : tuple</span>
+<span class="sd">        Tuple of integers corresponding to the shape of the inner array.</span>
+<span class="sd">    outer_split : tuple</span>
+<span class="sd">        Tuple of slices used to split outer array (see :py:meth:`split_shape`).</span>
+<span class="sd">    inner_split : tuple</span>
+<span class="sd">        Tuple of slices used to split inner array (see :py:meth:`split_shape`).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        Tuple of slices corresponding to the position of the given convolution</span>
+<span class="sd">        in the full convolution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">outer_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">outer_shape</span><span class="p">)</span>
+    <span class="n">inner_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">inner_shape</span><span class="p">)</span>
+
+    <span class="n">outer_width</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">outer</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">outer</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">outer</span> <span class="ow">in</span> <span class="n">outer_split</span><span class="p">])</span>
+    <span class="n">inner_width</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">inner</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">inner</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">inner</span> <span class="ow">in</span> <span class="n">inner_split</span><span class="p">])</span>
+    <span class="n">convolution_shape</span> <span class="o">=</span> <span class="n">outer_width</span> <span class="o">+</span> <span class="n">inner_width</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="n">end_inner</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">inner</span><span class="o">.</span><span class="n">stop</span> <span class="k">for</span> <span class="n">inner</span> <span class="ow">in</span> <span class="n">inner_split</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">start_outer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">outer</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">outer</span> <span class="ow">in</span> <span class="n">outer_split</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">offsets</span> <span class="o">=</span> <span class="n">start_outer</span> <span class="o">+</span> <span class="n">inner_shape</span> <span class="o">-</span> <span class="n">end_inner</span>
+
+    <span class="n">score_slice</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">shape</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">offset</span><span class="p">,</span> <span class="n">shape</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">offsets</span><span class="p">,</span> <span class="n">convolution_shape</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">score_slice</span></div>
+
+
+
+<div class="viewcode-block" id="split_shape">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.split_shape.html#tme.matching_utils.split_shape">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_shape</span><span class="p">(</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">splits</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">equal_shape</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Splits ``shape`` into equally sized and potentially overlapping subsets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape : tuple of ints</span>
+<span class="sd">        Shape to split.</span>
+<span class="sd">    splits : dict</span>
+<span class="sd">        Dictionary mapping axis number to number of splits.</span>
+<span class="sd">    equal_shape : dict</span>
+<span class="sd">        Whether the subsets should be of equal shape, True by default.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        Tuple of slice with requested split combinations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">splits</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="n">splits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">)}</span>
+    <span class="n">ret_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">splits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">equal_shape</span><span class="p">:</span>
+        <span class="n">ret_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">ret_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">ret_shape</span> <span class="o">=</span> <span class="n">ret_shape</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">slice_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">tuple</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="p">(</span><span class="nb">slice</span><span class="p">((</span><span class="n">n_splits</span> <span class="o">*</span> <span class="n">length</span><span class="p">),</span> <span class="p">(</span><span class="n">n_splits</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">length</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">n_splits</span> <span class="o">&lt;</span> <span class="n">splits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="k">else</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">-</span> <span class="n">length</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]))</span>
+                    <span class="k">if</span> <span class="n">equal_shape</span>
+                    <span class="k">else</span> <span class="p">(</span><span class="nb">slice</span><span class="p">((</span><span class="n">n_splits</span> <span class="o">*</span> <span class="n">length</span><span class="p">),</span> <span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]))</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">n_splits</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">splits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">length</span><span class="p">,</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ret_shape</span><span class="p">,</span> <span class="n">splits</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="p">]</span>
+
+    <span class="n">splits</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">slice_list</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">splits</span></div>
+
+
+
+<div class="viewcode-block" id="rigid_transform">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.rigid_transform.html#tme.matching_utils.rigid_transform">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">rigid_transform</span><span class="p">(</span>
+    <span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">translation</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">use_geometric_center</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">coordinates_mask</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_mask</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">center</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a rigid transformation (rotation and translation) to given coordinates.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coordinates : NDArray</span>
+<span class="sd">        An array representing the coordinates to be transformed (d,n).</span>
+<span class="sd">    rotation_matrix : NDArray</span>
+<span class="sd">        The rotation matrix to be applied (d,d).</span>
+<span class="sd">    translation : NDArray</span>
+<span class="sd">        The translation vector to be applied (d,).</span>
+<span class="sd">    out : NDArray</span>
+<span class="sd">        The output array to store the transformed coordinates (d,n).</span>
+<span class="sd">    coordinates_mask : NDArray, optional</span>
+<span class="sd">        An array representing the mask for the coordinates (d,t).</span>
+<span class="sd">    out_mask : NDArray, optional</span>
+<span class="sd">        The output array to store the transformed coordinates mask (d,t).</span>
+<span class="sd">    use_geometric_center : bool, optional</span>
+<span class="sd">        Whether to use geometric or coordinate center.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">coordinate_dtype</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">center</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">use_geometric_center</span><span class="p">:</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span> <span class="o">-</span> <span class="n">center</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">use_geometric_center</span><span class="p">:</span>
+        <span class="n">axis_max</span><span class="p">,</span> <span class="n">axis_min</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">out</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">axis_difference</span> <span class="o">=</span> <span class="n">axis_max</span> <span class="o">-</span> <span class="n">axis_min</span>
+        <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">center</span> <span class="o">-</span> <span class="n">axis_max</span> <span class="o">+</span> <span class="p">(</span><span class="n">axis_difference</span> <span class="o">//</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span>
+
+    <span class="n">out</span> <span class="o">+=</span> <span class="n">translation</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">coordinates_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">out_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">use_geometric_center</span><span class="p">:</span>
+            <span class="n">coordinates_mask</span> <span class="o">=</span> <span class="n">coordinates_mask</span> <span class="o">-</span> <span class="n">center</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="n">coordinates_mask</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out_mask</span><span class="p">)</span>
+        <span class="n">out_mask</span> <span class="o">+=</span> <span class="n">translation</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">use_geometric_center</span> <span class="ow">and</span> <span class="n">coordinate_dtype</span> <span class="o">!=</span> <span class="n">out</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">out</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">out</span><span class="o">=</span><span class="n">translation</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="n">translation</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="minimum_enclosing_box">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.minimum_enclosing_box.html#tme.matching_utils.minimum_enclosing_box">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">minimum_enclosing_box</span><span class="p">(</span>
+    <span class="n">coordinates</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">margin</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_geometric_center</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the minimal enclosing box around coordinates with margin.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coordinates : NDArray</span>
+<span class="sd">        Coordinates of shape (d,n) to compute the enclosing box of.</span>
+<span class="sd">    margin : NDArray, optional</span>
+<span class="sd">        Box margin, zero by default.</span>
+<span class="sd">    use_geometric_center : bool, optional</span>
+<span class="sd">        Whether box accommodates the geometric or coordinate center, False by default.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple of ints</span>
+<span class="sd">        Minimum enclosing box shape.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">max_euclidean_distance</span>
+
+    <span class="n">point_cloud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">point_cloud</span> <span class="o">=</span> <span class="n">point_cloud</span> <span class="o">-</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="n">margin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span> <span class="k">if</span> <span class="n">margin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">margin</span>
+    <span class="n">margin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">margin</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">norm_cloud</span> <span class="o">=</span> <span class="n">point_cloud</span> <span class="o">-</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="c1"># Adding one avoids clipping during scipy.ndimage.affine_transform</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">norm_cloud</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">use_geometric_center</span><span class="p">:</span>
+        <span class="n">hull</span> <span class="o">=</span> <span class="n">ConvexHull</span><span class="p">(</span><span class="n">point_cloud</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">distance</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">max_euclidean_distance</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">[:,</span> <span class="n">hull</span><span class="o">.</span><span class="n">vertices</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">distance</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">dim</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">shape</span></div>
+
+
+
+<div class="viewcode-block" id="create_mask">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.create_mask.html#tme.matching_utils.create_mask">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_mask</span><span class="p">(</span><span class="n">mask_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sigma_decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a mask of the specified type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mask_type : str</span>
+<span class="sd">        Type of the mask to be created. Can be one of:</span>
+
+<span class="sd">            +----------+---------------------------------------------------------+</span>
+<span class="sd">            | box      | Box mask (see :py:meth:`box_mask`)                      |</span>
+<span class="sd">            +----------+---------------------------------------------------------+</span>
+<span class="sd">            | tube     | Cylindrical mask (see :py:meth:`tube_mask`)             |</span>
+<span class="sd">            +----------+---------------------------------------------------------+</span>
+<span class="sd">            | membrane | Cylindrical mask (see :py:meth:`membrane_mask`)         |</span>
+<span class="sd">            +----------+---------------------------------------------------------+</span>
+<span class="sd">            | ellipse  | Ellipsoidal mask (see :py:meth:`elliptical_mask`)       |</span>
+<span class="sd">            +----------+---------------------------------------------------------+</span>
+<span class="sd">    sigma_decay : float, optional</span>
+<span class="sd">        Smoothing along mask edges using a Gaussian filter, 0 by default.</span>
+<span class="sd">    kwargs : dict</span>
+<span class="sd">        Parameters passed to the indivdual mask creation funcitons.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    NDArray</span>
+<span class="sd">        The created mask.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the mask_type is invalid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;ellipse&quot;</span><span class="p">:</span> <span class="n">elliptical_mask</span><span class="p">,</span>
+        <span class="s2">&quot;box&quot;</span><span class="p">:</span> <span class="n">box_mask</span><span class="p">,</span>
+        <span class="s2">&quot;tube&quot;</span><span class="p">:</span> <span class="n">tube_mask</span><span class="p">,</span>
+        <span class="s2">&quot;membrane&quot;</span><span class="p">:</span> <span class="n">membrane_mask</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">mask_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mask_type has to be one of </span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">mask_type</span><span class="p">](</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">sigma_decay</span><span class="o">=</span><span class="n">sigma_decay</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+
+<div class="viewcode-block" id="elliptical_mask">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.elliptical_mask.html#tme.matching_utils.elliptical_mask">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">elliptical_mask</span><span class="p">(</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">radius</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">orientation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sigma_decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">cutoff_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates an ellipsoidal mask.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape : tuple of ints</span>
+<span class="sd">        Shape of the mask to be created.</span>
+<span class="sd">    radius : tuple of floats</span>
+<span class="sd">        Radius of the mask.</span>
+<span class="sd">    center : tuple of floats, optional</span>
+<span class="sd">        Center of the mask, default to shape // 2.</span>
+<span class="sd">    orientation : NDArray, optional.</span>
+<span class="sd">        Orientation of the mask as rotation matrix with shape (d,d).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    NDArray</span>
+<span class="sd">        The created ellipsoidal mask.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the length of center and radius is not one or the same as shape.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from tme.matching_utils import elliptical_mask</span>
+<span class="sd">    &gt;&gt;&gt; mask = elliptical_mask(shape=(20,20), radius=(5,5), center=(10,10))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shape</span><span class="p">,</span> <span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
+
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">shape</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">radius</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">shape</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">center</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">radius</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Length of radius has to be either one or match shape.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">center</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Length of center has to be either one or match shape.&quot;</span><span class="p">)</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">center</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">radius</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-</span> <span class="n">center</span>
+    <span class="k">if</span> <span class="n">orientation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">return_shape</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">rigid_transform</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span>
+            <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">orientation</span><span class="p">),</span>
+            <span class="n">out</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span>
+            <span class="n">translation</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+            <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">return_shape</span><span class="p">)</span>
+
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">indices</span> <span class="o">/</span> <span class="n">radius</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sigma_decay</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">sigma_decay</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">sigma_decay</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">radius</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dist</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">mask</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma_decay</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">*=</span> <span class="n">mask</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">cutoff_sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">dist</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">tube_mask2</span><span class="p">(</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">inner_radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">outer_radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">symmetry_axis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">orientation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a tube mask.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape : tuple</span>
+<span class="sd">        Shape of the mask to be created.</span>
+<span class="sd">    inner_radius : float</span>
+<span class="sd">        Inner radius of the tube.</span>
+<span class="sd">    outer_radius : float</span>
+<span class="sd">        Outer radius of the tube.</span>
+<span class="sd">    height : int</span>
+<span class="sd">        Height of the tube.</span>
+<span class="sd">    symmetry_axis : int, optional</span>
+<span class="sd">        The axis of symmetry for the tube, defaults to 2.</span>
+<span class="sd">    center : tuple of float, optional.</span>
+<span class="sd">        Center of the mask, defaults to shape // 2.</span>
+<span class="sd">    orientation : NDArray, optional.</span>
+<span class="sd">        Orientation of the mask as rotation matrix with shape (d,d).</span>
+<span class="sd">    epsilon : float, optional</span>
+<span class="sd">        Tolerance to handle discretization errors, defaults to 0.5.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    NDArray</span>
+<span class="sd">        The created tube mask.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``inner_radius`` is larger than ``outer_radius``.</span>
+<span class="sd">        If ``center`` and ``shape`` do not have the same length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">shape</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">center</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">inner_radius</span> <span class="o">&gt;</span> <span class="n">outer_radius</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;inner_radius should be smaller than outer_radius.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">symmetry_axis</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;symmetry_axis can be not larger than </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">center</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Length of center has to be either one or match shape.&quot;</span><span class="p">)</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">center</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-</span> <span class="n">center</span>
+    <span class="k">if</span> <span class="n">orientation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">return_shape</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">rigid_transform</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span>
+            <span class="n">rotation_matrix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">orientation</span><span class="p">),</span>
+            <span class="n">out</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span>
+            <span class="n">translation</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+            <span class="n">use_geometric_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">return_shape</span><span class="p">)</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">sq_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">symmetry_axis</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">sq_dist</span> <span class="o">+=</span> <span class="n">indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="n">sym_coord</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">]</span>
+    <span class="n">half_height</span> <span class="o">=</span> <span class="n">height</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">height_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sym_coord</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">half_height</span>
+
+    <span class="n">inner_mask</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">inner_radius</span> <span class="o">&gt;</span> <span class="n">epsilon</span><span class="p">:</span>
+        <span class="n">inner_mask</span> <span class="o">=</span> <span class="n">sq_dist</span> <span class="o">&gt;=</span> <span class="p">((</span><span class="n">inner_radius</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span>
+
+    <span class="n">height_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sym_coord</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">half_height</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+    <span class="n">outer_mask</span> <span class="o">=</span> <span class="n">sq_dist</span> <span class="o">&lt;=</span> <span class="p">((</span><span class="n">outer_radius</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">height_mask</span> <span class="o">&amp;</span> <span class="n">inner_mask</span> <span class="o">&amp;</span> <span class="n">outer_mask</span>
+    <span class="k">return</span> <span class="n">mask</span>
+
+
+<div class="viewcode-block" id="box_mask">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.box_mask.html#tme.matching_utils.box_mask">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">box_mask</span><span class="p">(</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">center</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">height</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">sigma_decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">cutoff_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a box mask centered around the provided center point.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape : tuple of ints</span>
+<span class="sd">        Shape of the output array.</span>
+<span class="sd">    center : tuple of ints</span>
+<span class="sd">        Center point coordinates of the box.</span>
+<span class="sd">    height : tuple of ints</span>
+<span class="sd">        Height (side length) of the box along each axis.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    NDArray</span>
+<span class="sd">        The created box mask.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``shape`` and ``center`` do not have the same length.</span>
+<span class="sd">        If ``center`` and ``height`` do not have the same length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">center</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">center</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">height</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The length of shape, center, and height must be consistent.&quot;</span><span class="p">)</span>
+
+    <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">)</span>
+    <span class="n">center</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">half_heights</span> <span class="o">=</span> <span class="n">height</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">center</span> <span class="o">-</span> <span class="n">half_heights</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">stops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">center</span> <span class="o">+</span> <span class="n">half_heights</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+    <span class="n">slice_indices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="o">*</span><span class="n">coord</span><span class="p">)</span> <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">stops</span><span class="p">))</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">slice_indices</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">sigma_decay</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">mask_filter</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma_decay</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">out</span><span class="p">)</span> <span class="o">*</span> <span class="n">mask_filter</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">*=</span> <span class="n">out</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">cutoff_sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<div class="viewcode-block" id="tube_mask">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.tube_mask.html#tme.matching_utils.tube_mask">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tube_mask</span><span class="p">(</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">symmetry_axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">base_center</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">inner_radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">outer_radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">sigma_decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a tube mask.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape : tuple</span>
+<span class="sd">        Shape of the mask to be created.</span>
+<span class="sd">    symmetry_axis : int</span>
+<span class="sd">        The axis of symmetry for the tube.</span>
+<span class="sd">    base_center : tuple</span>
+<span class="sd">        Center of the tube.</span>
+<span class="sd">    inner_radius : float</span>
+<span class="sd">        Inner radius of the tube.</span>
+<span class="sd">    outer_radius : float</span>
+<span class="sd">        Outer radius of the tube.</span>
+<span class="sd">    height : int</span>
+<span class="sd">        Height of the tube.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    NDArray</span>
+<span class="sd">        The created tube mask.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``inner_radius`` is larger than ``outer_radius``.</span>
+<span class="sd">        If ``height`` is larger than the symmetry axis.</span>
+<span class="sd">        If ``base_center`` and ``shape`` do not have the same length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">inner_radius</span> <span class="o">&gt;</span> <span class="n">outer_radius</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;inner_radius should be smaller than outer_radius.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="n">shape</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Height can be no larger than </span><span class="si">{</span><span class="n">shape</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">symmetry_axis</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;symmetry_axis can be not larger than </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_center</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;shape and base_center need to have the same length.&quot;</span><span class="p">)</span>
+
+    <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">)</span>
+    <span class="n">circle_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">b</span> <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="k">if</span> <span class="n">ix</span> <span class="o">!=</span> <span class="n">symmetry_axis</span><span class="p">)</span>
+    <span class="n">circle_center</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">b</span> <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">base_center</span><span class="p">)</span> <span class="k">if</span> <span class="n">ix</span> <span class="o">!=</span> <span class="n">symmetry_axis</span><span class="p">)</span>
+
+    <span class="n">inner_circle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">circle_shape</span><span class="p">)</span>
+    <span class="n">outer_circle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">inner_circle</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">inner_radius</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">inner_circle</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+            <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">circle_shape</span><span class="p">,</span>
+            <span class="n">radius</span><span class="o">=</span><span class="n">inner_radius</span><span class="p">,</span>
+            <span class="n">center</span><span class="o">=</span><span class="n">circle_center</span><span class="p">,</span>
+            <span class="n">sigma_decay</span><span class="o">=</span><span class="n">sigma_decay</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">outer_radius</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">outer_circle</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+            <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">circle_shape</span><span class="p">,</span>
+            <span class="n">radius</span><span class="o">=</span><span class="n">outer_radius</span><span class="p">,</span>
+            <span class="n">center</span><span class="o">=</span><span class="n">circle_center</span><span class="p">,</span>
+            <span class="n">sigma_decay</span><span class="o">=</span><span class="n">sigma_decay</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">circle</span> <span class="o">=</span> <span class="n">outer_circle</span> <span class="o">-</span> <span class="n">inner_circle</span>
+    <span class="n">circle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">circle</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">symmetry_axis</span><span class="p">)</span>
+
+    <span class="n">center</span> <span class="o">=</span> <span class="n">base_center</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">]</span>
+    <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">center</span> <span class="o">-</span> <span class="n">height</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">stop_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">center</span> <span class="o">+</span> <span class="n">height</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">height</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">start_idx</span><span class="p">,</span> <span class="n">stop_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">start_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">stop_idx</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">])</span>
+
+    <span class="n">slice_indices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">symmetry_axis</span> <span class="k">else</span> <span class="nb">slice</span><span class="p">(</span><span class="n">start_idx</span><span class="p">,</span> <span class="n">stop_idx</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="n">tube</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">tube</span><span class="p">[</span><span class="n">slice_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">circle</span>
+
+    <span class="k">return</span> <span class="n">tube</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">membrane_mask</span><span class="p">(</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">thickness</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">separation</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">symmetry_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sigma_decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">cutoff_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a membrane mask consisting of two parallel disks with Gaussian intensity profile.</span>
+<span class="sd">    Uses efficient broadcasting approach: flat disk mask × height profile.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape : tuple of ints</span>
+<span class="sd">        Shape of the mask to be created.</span>
+<span class="sd">    radius : float</span>
+<span class="sd">        Radius of the membrane disks.</span>
+<span class="sd">    thickness : float</span>
+<span class="sd">        Thickness of each disk in the membrane.</span>
+<span class="sd">    separation : float</span>
+<span class="sd">        Distance between the centers of the two disks.</span>
+<span class="sd">    symmetry_axis : int, optional</span>
+<span class="sd">        The axis perpendicular to the membrane disks, defaults to 2.</span>
+<span class="sd">    center : tuple of floats, optional</span>
+<span class="sd">        Center of the membrane (midpoint between the two disks), defaults to shape // 2.</span>
+<span class="sd">    sigma_decay : float, optional</span>
+<span class="sd">        Controls edge sharpness relative to radius, defaults to 0.5.</span>
+<span class="sd">    cutoff_sigma : float, optional</span>
+<span class="sd">        Cutoff for height profile in standard deviations, defaults to 3.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    NDArray</span>
+<span class="sd">        The created membrane mask with Gaussian intensity profile.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``thickness`` is negative.</span>
+<span class="sd">        If ``separation`` is negative.</span>
+<span class="sd">        If ``center`` and ``shape`` do not have the same length.</span>
+<span class="sd">        If ``symmetry_axis`` is out of bounds.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from tme.matching_utils import membrane_mask</span>
+<span class="sd">    &gt;&gt;&gt; mask = membrane_mask(shape=(50,50,50), radius=10, thickness=2, separation=15)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">shape</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">center</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">thickness</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;thickness must be non-negative.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">separation</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;separation must be non-negative.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">symmetry_axis</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;symmetry_axis must be less than </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">center</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Length of center has to be either one or match shape.&quot;</span><span class="p">)</span>
+
+    <span class="n">disk_mask</span> <span class="o">=</span> <span class="n">elliptical_mask</span><span class="p">(</span>
+        <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">symmetry_axis</span><span class="p">],</span>
+        <span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span>
+        <span class="n">sigma_decay</span><span class="o">=</span><span class="n">sigma_decay</span><span class="p">,</span>
+        <span class="n">cutoff_sigma</span><span class="o">=</span><span class="n">cutoff_sigma</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">axial_coord</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">])</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">]</span>
+    <span class="n">height_profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">shape</span><span class="p">[</span><span class="n">symmetry_axis</span><span class="p">],),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">leaflet_pos</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="n">separation</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">separation</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]:</span>
+        <span class="n">leaflet_profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+            <span class="o">-</span><span class="p">((</span><span class="n">axial_coord</span> <span class="o">-</span> <span class="n">leaflet_pos</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">thickness</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">cutoff_threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">cutoff_sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">leaflet_profile</span> <span class="o">*=</span> <span class="n">leaflet_profile</span> <span class="o">&gt;</span> <span class="n">cutoff_threshold</span>
+
+        <span class="n">height_profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">height_profile</span><span class="p">,</span> <span class="n">leaflet_profile</span><span class="p">)</span>
+
+    <span class="n">disk_mask</span> <span class="o">=</span> <span class="n">disk_mask</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">x</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">symmetry_axis</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">)]</span>
+    <span class="p">)</span>
+    <span class="n">height_profile</span> <span class="o">=</span> <span class="n">height_profile</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+        <span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">symmetry_axis</span> <span class="k">else</span> <span class="n">x</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">)]</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">disk_mask</span> <span class="o">*</span> <span class="n">height_profile</span>
+
+
+<div class="viewcode-block" id="scramble_phases">
+<a class="viewcode-back" href="../../reference/api/tme.matching_utils.scramble_phases.html#tme.matching_utils.scramble_phases">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">scramble_phases</span><span class="p">(</span>
+    <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">noise_proportion</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
+    <span class="n">normalize_power</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform random phase scrambling of ``arr``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arr : NDArray</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    noise_proportion : float, optional</span>
+<span class="sd">        Proportion of scrambled phases, 1.0 by default.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        The seed for the random phase scrambling, 42 by default.</span>
+<span class="sd">    normalize_power : bool, optional</span>
+<span class="sd">        Return value has same sum of squares as ``arr``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    NDArray</span>
+<span class="sd">        Phase scrambled version of ``arr``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tme.filters._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">fftfreqn</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">noise_proportion</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">noise_proportion</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">arr_fft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftn</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">amp</span><span class="p">,</span> <span class="n">ph</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">arr_fft</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">arr_fft</span><span class="p">)</span>
+
+    <span class="c1"># Scrambling up to nyquist gives more uniform noise distribution</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span>
+        <span class="n">fftfreqn</span><span class="p">(</span><span class="n">arr_fft</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">compute_euclidean_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">0.5</span>
+    <span class="p">)</span>
+
+    <span class="n">ph_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">ph</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+    <span class="n">ph</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">ph</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">noise_proportion</span><span class="p">)</span> <span class="o">+</span> <span class="n">ph_noise</span> <span class="o">*</span> <span class="n">noise_proportion</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftn</span><span class="p">(</span><span class="n">amp</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">ph</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">normalize_power</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">ret</span> <span class="o">-</span> <span class="n">ret</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">ret</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">ret</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">arr</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">scaling</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">scaling</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">ret</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_extraction_box</span><span class="p">(</span>
+    <span class="n">centers</span><span class="p">:</span> <span class="n">BackendArray</span><span class="p">,</span> <span class="n">extraction_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">original_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute coordinates for extracting fixed-size regions around points.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    centers : BackendArray</span>
+<span class="sd">        Array of shape (n, d) containing n center coordinates in d dimensions.</span>
+<span class="sd">    extraction_shape : tuple of int</span>
+<span class="sd">        Desired shape of the extraction box.</span>
+<span class="sd">    original_shape : tuple of int</span>
+<span class="sd">        Shape of the original array from which extractions will be made.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    obs_beg : BackendArray</span>
+<span class="sd">        Starting coordinates for extraction, shape (n, d).</span>
+<span class="sd">    obs_end : BackendArray</span>
+<span class="sd">        Ending coordinates for extraction, shape (n, d).</span>
+<span class="sd">    cand_beg : BackendArray</span>
+<span class="sd">        Starting coordinates in output array, shape (n, d).</span>
+<span class="sd">    cand_end : BackendArray</span>
+<span class="sd">        Ending coordinates in output array, shape (n, d).</span>
+<span class="sd">    keep : BackendArray</span>
+<span class="sd">        Boolean mask of valid extraction boxes, shape (n,).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">target_shape</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="n">extraction_shape</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">to_backend_array</span><span class="p">(</span><span class="n">extraction_shape</span><span class="p">)</span>
+
+    <span class="n">left_pad</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">extraction_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
+    <span class="n">right_pad</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">left_pad</span><span class="p">,</span> <span class="n">be</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">extraction_shape</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">obs_beg</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">left_pad</span><span class="p">)</span>
+    <span class="n">obs_end</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">right_pad</span><span class="p">)</span>
+
+    <span class="n">obs_beg_clamp</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">obs_beg</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">obs_end_clamp</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">obs_end</span><span class="p">,</span> <span class="n">target_shape</span><span class="p">)</span>
+
+    <span class="n">clamp_change</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="n">be</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">obs_beg</span> <span class="o">!=</span> <span class="n">obs_beg_clamp</span><span class="p">,</span> <span class="n">obs_end</span> <span class="o">!=</span> <span class="n">obs_end_clamp</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+
+    <span class="n">cand_beg</span> <span class="o">=</span> <span class="n">left_pad</span> <span class="o">-</span> <span class="n">be</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">obs_beg_clamp</span><span class="p">)</span>
+    <span class="n">cand_end</span> <span class="o">=</span> <span class="n">left_pad</span> <span class="o">+</span> <span class="n">be</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">obs_end_clamp</span><span class="p">,</span> <span class="n">centers</span><span class="p">)</span>
+
+    <span class="n">stops</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">cand_end</span><span class="p">,</span> <span class="n">extraction_shape</span><span class="p">)</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">cand_beg</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stops</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">centers</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">keep</span><span class="p">,</span> <span class="n">clamp_change</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">obs_beg_clamp</span><span class="p">,</span> <span class="n">obs_end_clamp</span><span class="p">,</span> <span class="n">cand_beg</span><span class="p">,</span> <span class="n">cand_end</span><span class="p">,</span> <span class="n">keep</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TqdmParallel</span><span class="p">(</span><span class="n">Parallel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A minimal Parallel implementation using tqdm for progress reporting.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    tqdm_args : dict, optional</span>
+<span class="sd">        Dictionary of arguments passed to tqdm.tqdm</span>
+<span class="sd">    *args, **kwargs:</span>
+<span class="sd">        Arguments to pass to joblib.Parallel</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqdm_args</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{},</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="o">**</span><span class="n">tqdm_args</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">print_progress</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">total</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_completed_tasks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_completed_tasks</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

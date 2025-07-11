@@ -1,0 +1,6 @@
+CTFReconstructed.flip\_phase
+=======================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.flip_phase

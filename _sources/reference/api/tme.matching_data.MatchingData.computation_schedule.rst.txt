@@ -1,0 +1,6 @@
+MatchingData.computation\_schedule
+===================================================
+
+.. currentmodule:: tme.matching_data
+
+.. automethod:: MatchingData.computation_schedule
