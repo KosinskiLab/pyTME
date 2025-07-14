@@ -26,18 +26,7 @@ You can optionally install `Mosaic <https://github.com/maurerv/mosaic>`_ to gene
 
 .. note::
 
-    Constrained template matching is currently only available in the beta-release. You can acquire it by installing from GitHub
-
-    .. code-block:: bash
-
-        pip install git+https://github.com/KosinskiLab/pyTME.git
-
-    or from PyPi via
-
-    .. code-block:: bash
-
-        pip install "pytme==0.3.0b"
-
+    Constrained template matching is available from version 0.3.0 and above.
 
 Data Structure
 --------------
