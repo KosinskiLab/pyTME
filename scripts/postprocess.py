@@ -88,6 +88,11 @@ def parse_args():
         "added with respect to chosen output format.",
     )
     output_group.add_argument(
+        "--angles-clockwise",
+        action="store_true",
+        help="Report Euler angles in clockwise format expected by RELION.",
+    )
+    output_group.add_argument(
         "--output-format",
         choices=[
             "orientations",
@@ -611,6 +616,9 @@ def main():
             orientations.translations[index] = np.add(translation, center)
             orientations.rotations[index] = angles
             orientations.scores[index] = score * -1
+
+    if args.angles_clockwise:
+        orientations.rotations *= -1
 
     if args.output_format in ("orientations", "relion4", "relion5"):
         file_format, extension = "text", "tsv"

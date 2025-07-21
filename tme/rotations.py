@@ -250,7 +250,7 @@ def get_rotation_matrices(
     """
     if dim == 3 and use_optimized_set:
         quaternions, *_ = _load_quaternions_by_angle(angular_sampling)
-        ret = Rotation.from_quat(quaternions).as_matrix()
+        ret = Rotation.from_quat(quaternions, scalar_first=True).as_matrix()
     else:
         num_rotations = dim * (dim - 1) // 2
         k = int((360 / angular_sampling) ** num_rotations)

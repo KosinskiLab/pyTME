@@ -36,6 +36,7 @@ from .matching_utils import (
     array_to_memmap,
     memmap_to_array,
     minimum_enclosing_box,
+    is_gzipped,
 )
 
 __all__ = ["Density"]
@@ -2257,9 +2258,3 @@ class Density:
         coordinates = np.array(np.where(data > 0))
         weights = self.data[tuple(coordinates)]
         return align_to_axis(coordinates.T, weights=weights, axis=axis, flip=flip)
-
-
-def is_gzipped(filename: str) -> bool:
-    """Check if a file is a gzip file by reading its magic number."""
-    with open(filename, "rb") as f:
-        return f.read(2) == b"\x1f\x8b"

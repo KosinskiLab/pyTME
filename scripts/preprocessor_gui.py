@@ -1181,7 +1181,7 @@ class MatchingWidget(widgets.Container):
             self.native,
             "Open Pickle File...",
             "",
-            "Pickle Files (*.pickle);;All Files (*)",
+            "Pickle Files (*.pickle *pickle.gz);;All Files (*)",
         )
         if filename:
             self._load_data(filename)

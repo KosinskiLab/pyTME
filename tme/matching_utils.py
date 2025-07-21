@@ -12,6 +12,7 @@ from shutil import move
 from joblib import Parallel
 from tempfile import mkstemp
 from itertools import product
+from gzip import open as gzip_open
 from concurrent.futures import ThreadPoolExecutor
 from typing import Tuple, Dict, Callable, Optional
 
@@ -208,6 +209,12 @@ def write_pickle(data: object, filename: str) -> None:
             future.result()
 
 
+def is_gzipped(filename: str) -> bool:
+    """Check if a file is a gzip file by reading its magic number."""
+    with open(filename, "rb") as f:
+        return f.read(2) == b"\x1f\x8b"
+
+
 def load_pickle(filename: str) -> object:
     """
     Load and deserialize data written by :py:meth:`write_pickle`.
@@ -242,7 +249,11 @@ def load_pickle(filename: str) -> object:
         return ret
 
     items = []
-    with open(filename, "rb") as ifile:
+    func = open
+    if is_gzipped(filename):
+        func = gzip_open
+
+    with func(filename, "rb") as ifile:
         for data in _load_pickle(ifile):
             if isinstance(data, tuple):
                 if _is_pickle_memmap(data):
