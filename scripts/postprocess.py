@@ -320,7 +320,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
 
         # We could normalize to unit sdev, but that might lead to unexpected
         # results for flat background distributions
-        scores -= scores.mean()
+        # scores -= scores.mean()
         indices = tuple(slice(0, x) for x in scores.shape)
 
         indices_update = scores > scores_out[indices]
@@ -371,7 +371,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
         data_norm = load_matching_output(background)
 
         scores = data_norm[0]
-        scores -= scores.mean()
+        # scores -= scores.mean()
 
         indices = tuple(slice(0, x) for x in scores.shape)
         indices_update = scores > scores_norm[indices]
