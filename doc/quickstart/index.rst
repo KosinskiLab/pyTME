@@ -12,7 +12,6 @@ User Guide
    :caption: Template Matching
    :maxdepth: 2
 
-   matching/motivation
    matching/example
    matching/cluster
    matching/summary

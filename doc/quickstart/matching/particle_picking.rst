@@ -111,7 +111,7 @@ For demonstration purposes we are going to process a subset of the data. However
     # Save the subset for template matching
     dens.to_file("TS_037_subset.mrc")
 
-The code below will run template matching, taking about 1-2 minutes on a consumer-level GPU or 5-10 minutes on CPU (if you are running on CPU, make sure to set the number of cores via ``--cores``).
+The code below will run template matching, taking about 1-2 minutes on a consumer-level GPU or 5-10 minutes on CPU (if you are running on CPU, make sure to set the number of cores via ``--cores``). For GPU acceleration: add ``--backend cupy`` (NVIDIA, or pytorch/jax) or ``--backend jax`` (M-series Mac).
 
 .. code-block:: bash
 
@@ -123,12 +123,11 @@ The code below will run template matching, taking about 1-2 minutes on a consume
         --angular-sampling 8 \
         --output output_default.pickle
 
-.. tip::
+.. warning::
 
-    For GPU acceleration: add ``--backend cupy`` (NVIDIA, or pytorch/jax) or ``--backend jax`` (M-series Mac).
+    When using non-spherical masks, add ``--score FLC``, or consult the :ref:`scoring functions <scoring-table>`.
 
-
-You can inspect the results in the GUI by clicking the *Import Pickle* button. The figure below shows a lowpass-filtered representation of the tomogram subset on the left and the corresponding template matching scores on the right. Bright spots in the score map indicate potential ribosome locations, the brighter the spot the better the match.
+You can inspect the results in the GUI by clicking the *Import Pickle* button. The figure below shows the deconvolved data on the left and the corresponding template matching scores on the right. Bright spots in the score map indicate potential ribosome locations, the brighter the spot the better the match.
 
 Overall, the majority of ribosomes appear to be accounted for. However, note that
 

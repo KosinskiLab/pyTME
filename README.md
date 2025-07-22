@@ -32,8 +32,8 @@ You can find alternative installation methods in the [documentation](https://kos
 
 Learn how to get started with
 
-- [Installation:](https://kosinskilab.github.io/pyTME/quickstart/installation.html).
-- [Template matching:](https://kosinskilab.github.io/pyTME/quickstart/matching/particle_picking.html) Find your template of interest.
+- [Installation](https://kosinskilab.github.io/pyTME/quickstart/installation.html)
+- [Template matching](https://kosinskilab.github.io/pyTME/quickstart/matching/particle_picking.html) Find your template of interest.
 - [Postprocessing](https://kosinskilab.github.io/pyTME/quickstart/postprocessing/motivation.html) Analyze template matching results and downstream integrations.
 
 ## How to Cite
