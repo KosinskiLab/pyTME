@@ -93,28 +93,29 @@ def cart_to_score(
     templateshape = be.to_backend_array(templateshape)
     convolution_shape = be.to_backend_array(convolution_shape)
 
-    # Compute removed padding
     output_shape = _convmode_to_shape(
         convolution_mode=convolution_mode,
         targetshape=targetshape,
         templateshape=templateshape,
         convolution_shape=convolution_shape,
     )
-    valid_positions = be.multiply(positions >= 0, positions < output_shape)
-    valid_positions = be.sum(valid_positions, axis=1) == positions.shape[1]
 
+    # Offset from padding the target
     starts = be.astype(
         be.divide(be.subtract(convolution_shape, output_shape), 2),
         be._int_dtype,
     )
-
     positions = be.add(positions, starts)
+
+    valid_positions = be.multiply(positions >= 0, positions < fast_shape)
+    valid_positions = be.sum(valid_positions, axis=1) == positions.shape[1]
     if fourier_shift is not None:
         fourier_shift = be.to_backend_array(fourier_shift)
         positions = be.subtract(positions, fourier_shift)
         positions = be.mod(positions, fast_shape)
 
     return positions, valid_positions
+
 
 
 def score_to_cart(
