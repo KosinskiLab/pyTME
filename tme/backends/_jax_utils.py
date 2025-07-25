@@ -115,7 +115,8 @@ def _identity(arr: BackendArray, arr_filter: BackendArray) -> BackendArray:
 @partial(
     pmap,
     in_axes=(0,) + (None,) * 6,
-    static_broadcasted_argnums=[6, 7],
+    static_broadcasted_argnums=[6, 7, 8, 9],
+    axis_name="batch",
 )
 def scan(
     target: BackendArray,
@@ -126,8 +127,16 @@ def scan(
     target_filter: BackendArray,
     fast_shape: Tuple[int],
     rotate_mask: bool,
+    analyzer_class: object,
+    analyzer_kwargs: Tuple[Tuple],
 ) -> Tuple[BackendArray, BackendArray]:
     eps = jnp.finfo(template.dtype).resolution
+
+    kwargs = lax.switch(
+        lax.axis_index("batch"),
+        [lambda: analyzer_kwargs[i] for i in range(len(analyzer_kwargs))],
+    )
+    analyzer = analyzer_class(**be._tuple_to_dict(kwargs))
 
     if hasattr(target_filter, "shape"):
         target = _apply_fourier_filter(target, target_filter)
@@ -151,7 +160,7 @@ def scan(
         _template_filter_func = _apply_fourier_filter
 
     def _sample_transform(ret, rotation_matrix):
-        max_scores, rotations, index = ret
+        state, index = ret
         template_rot, template_mask_rot = be.rigid_transform(
             arr=template,
             arr_mask=template_mask,
@@ -176,15 +185,8 @@ def scan(
             n_observations=n_observations,
             eps=eps,
         )
-        max_scores, rotations = be.max_score_over_rotations(
-            scores, max_scores, rotations, index
-        )
-        return (max_scores, rotations, index + 1), None
+        state = analyzer(state, scores, rotation_matrix, rotation_index=index)
+        return (state, index + 1), None
 
-    score_space = jnp.zeros(fast_shape)
-    rotation_space = jnp.full(shape=fast_shape, dtype=jnp.int32, fill_value=-1)
-    (score_space, rotation_space, _), _ = lax.scan(
-        _sample_transform, (score_space, rotation_space, 0), rotations
-    )
-
-    return score_space, rotation_space
+    (state, _), _ = lax.scan(_sample_transform, (analyzer.init_state(), 0), rotations)
+    return state

@@ -6,9 +6,9 @@ Copyright (c) 2023 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
+from typing import Tuple, List
 from importlib.util import find_spec
 from contextlib import contextmanager
-from typing import Tuple, Callable, List
 
 from .npfftw_backend import NumpyFFTWBackend
 from ..types import CupyArray, NDArray, shm_type
@@ -111,53 +111,14 @@ class CupyBackend(NumpyFFTWBackend):
     def unravel_index(self, indices, shape):
         return self._array_backend.unravel_index(indices=indices, dims=shape)
 
-    def build_fft(
-        self,
-        fwd_shape: Tuple[int],
-        inv_shape: Tuple[int],
-        inv_output_shape: Tuple[int] = None,
-        fwd_axes: Tuple[int] = None,
-        inv_axes: Tuple[int] = None,
-        **kwargs,
-    ) -> Tuple[Callable, Callable]:
-        cache = self._array_backend.fft.config.get_plan_cache()
-        current_device = self._array_backend.cuda.device.get_device_id()
-
-        previous_transform = [fwd_shape, inv_shape]
-        if current_device in PLAN_CACHE:
-            previous_transform = PLAN_CACHE[current_device]
-
-        real_diff, cmplx_diff = True, True
-        if len(fwd_shape) == len(previous_transform[0]):
-            real_diff = fwd_shape == previous_transform[0]
-        if len(inv_shape) == len(previous_transform[1]):
-            cmplx_diff = inv_shape == previous_transform[1]
-
-        if real_diff or cmplx_diff:
-            cache.clear()
-
-        rfft_shape = self._format_fft_shape(fwd_shape, fwd_axes)
-        irfft_shape = fwd_shape if inv_output_shape is None else inv_output_shape
-        irfft_shape = self._format_fft_shape(irfft_shape, inv_axes)
-
-        def rfftn(
-            arr: CupyArray, out: CupyArray = None, s=rfft_shape, axes=fwd_axes
-        ) -> CupyArray:
-            return self.rfftn(arr, s=s, axes=fwd_axes, overwrite_x=True)
-
-        def irfftn(
-            arr: CupyArray, out: CupyArray = None, s=irfft_shape, axes=inv_axes
-        ) -> CupyArray:
-            return self.irfftn(arr, s=s, axes=inv_axes, overwrite_x=True)
-
-        PLAN_CACHE[current_device] = [fwd_shape, inv_shape]
-        return rfftn, irfftn
+    def free_cache(self):
+        self._array_backend.fft.config.get_plan_cache().clear()
 
     def rfftn(self, arr: CupyArray, out: CupyArray = None, **kwargs) -> CupyArray:
         return self._cufft.rfftn(arr, **kwargs)
 
     def irfftn(self, arr: CupyArray, out: CupyArray = None, **kwargs) -> CupyArray:
-        return self._cufft.irfftn(arr, **kwargs)
+        return self._cufft.irfftn(arr, **kwargs).astype(self._float_dtype)
 
     def compute_convolution_shapes(
         self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
@@ -235,7 +196,7 @@ class CupyBackend(NumpyFFTWBackend):
             )
             return None
 
-        if data.ndim == 3 and cache and self.texture_available:
+        if data.ndim == 3 and cache and self.texture_available and not batched:
             # Device memory pool (should) come to rescue performance
             temp = self.zeros(data.shape, data.dtype)
             texture = self._get_texture(data, order=order, prefilter=prefilter)

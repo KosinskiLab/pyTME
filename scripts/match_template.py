@@ -576,7 +576,7 @@ def parse_args():
         "'angles', or a single column file without header. Exposure will be taken from "
         "the input file , if you are using a tab-separated file, the column names "
         "'angles' and 'weights' need to be present. It is also possible to specify a "
-        "continuous wedge mask using e.g., -50,45.",
+        "continuous wedge mask using e.g., 50,45.",
     )
     filter_group.add_argument(
         "--tilt-weighting",
@@ -686,26 +686,12 @@ def parse_args():
         "activated automatically if splitting is required to avoid boundary artifacts.",
     )
     performance_group.add_argument(
-        "--pad-filter",
-        action="store_true",
-        default=False,
-        help="Pad the template filter to the shape of the target. Useful for fast "
-        "oscilating filters to avoid aliasing effects.",
-    )
-    performance_group.add_argument(
         "--interpolation-order",
         required=False,
         type=int,
         default=None,
         help="Spline interpolation used for rotations. Defaults to 3, and 1 for jax "
         "and pytorch backends.",
-    )
-    performance_group.add_argument(
-        "--use-mixed-precision",
-        action="store_true",
-        default=False,
-        help="Use float16 for real values operations where possible. Not supported "
-        "for jax backend.",
     )
     performance_group.add_argument(
         "--use-memmap",
@@ -742,6 +728,7 @@ def parse_args():
         args.interpolation_order = 3
         if args.backend in ("jax", "pytorch"):
             args.interpolation_order = 1
+            args.reconstruction_interpolation_order = 1
 
     if args.interpolation_order < 0:
         args.interpolation_order = None
@@ -804,15 +791,23 @@ def main():
             sampling_rate=target.sampling_rate,
         )
 
+    if np.allclose(target.sampling_rate, 1):
+        warnings.warn(
+            "Target sampling rate is 1.0, which may indicate missing or incorrect "
+            "metadata. Verify that your target file contains proper sampling rate "
+            "information, as filters (CTF, BandPass) require accurate sampling rates "
+            "to function correctly."
+        )
+
     if target.sampling_rate.size == template.sampling_rate.size:
         if not np.allclose(
             np.round(target.sampling_rate, 2), np.round(template.sampling_rate, 2)
         ):
-            print(
-                f"Resampling template to {target.sampling_rate}. "
-                "Consider providing a template with the same sampling rate as the target."
+            warnings.warn(
+                f"Sampling rate mismatch detected: target={target.sampling_rate} "
+                f"template={template.sampling_rate}. Proceeding with user-provided "
+                f"values. Make sure this is intentional. "
             )
-            template = template.resample(target.sampling_rate, order=3)
 
     template_mask = load_and_validate_mask(
         mask_target=template, mask_path=args.template_mask
@@ -889,16 +884,13 @@ def main():
     print("\n" + "-" * 80)
 
     if args.scramble_phases:
-        template.data = scramble_phases(
-            template.data, noise_proportion=1.0, normalize_power=False
-        )
+        template.data = scramble_phases(template.data, noise_proportion=1.0)
 
     callback_class = MaxScoreOverRotations
-    if args.peak_calling:
-        callback_class = PeakCallerMaximumFilter
-
     if args.orientations is not None:
         callback_class = MaxScoreOverRotationsConstrained
+    elif args.peak_calling:
+        callback_class = PeakCallerMaximumFilter
 
     # Determine suitable backend for the selected operation
     available_backends = be.available_backends()
@@ -947,16 +939,6 @@ def main():
             args.use_gpu = False
             be.change_backend("pytorch", device=device)
 
-    # TODO: Make the inverse casting from complex64 -> float 16 stable
-    # if args.use_mixed_precision:
-    #     be.change_backend(
-    #         backend_name=args.backend,
-    #         float_dtype=be._array_backend.float16,
-    #         complex_dtype=be._array_backend.complex64,
-    #         int_dtype=be._array_backend.int16,
-    #         device=device,
-    #     )
-
     available_memory = be.get_available_memory() * be.device_count()
     if args.memory is None:
         args.memory = int(args.memory_scaling * available_memory)
@@ -984,6 +966,8 @@ def main():
         target_dim=target.metadata.get("batch_dimension", None),
         template_dim=template.metadata.get("batch_dimension", None),
     )
+    args.batch_dims = tuple(int(x) for x in np.where(matching_data._batch_mask)[0])
+
     splits, schedule = compute_schedule(args, matching_data, callback_class)
 
     n_splits = np.prod(list(splits.values()))
@@ -1012,7 +996,6 @@ def main():
     compute_options = {
         "Backend": be._BACKEND_REGISTRY[be._backend_name],
         "Compute Devices": f"CPU [{args.cores}], GPU [{gpus_used}]",
-        "Use Mixed Precision": args.use_mixed_precision,
         "Assigned Memory [MB]": f"{args.memory // 1e6} [out of {available_memory//1e6}]",
         "Temporary Directory": args.temp_directory,
         "Target Splits": f"{target_split} [N={n_splits}]",
@@ -1033,7 +1016,6 @@ def main():
         "Tilt Angles": args.tilt_angles,
         "Tilt Weighting": args.tilt_weighting,
         "Reconstruction Filter": args.reconstruction_filter,
-        "Extend Filter Grid": args.pad_filter,
     }
     if args.ctf_file is not None or args.defocus is not None:
         filter_args["CTF File"] = args.ctf_file
@@ -1089,7 +1071,6 @@ def main():
         callback_class_args=analyzer_args,
         target_splits=splits,
         pad_target_edges=args.pad_edges,
-        pad_template_filter=args.pad_filter,
         interpolation_order=args.interpolation_order,
     )
 

@@ -292,15 +292,9 @@ class TestBackends:
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     @pytest.mark.parametrize("fast_shape", ((10, 15, 100), (55, 23, 17)))
-    def test_build_fft(self, backend, fast_shape):
+    def test_fft(self, backend, fast_shape):
         _, fast_shape, fast_ft_shape = backend.compute_convolution_shapes(
             fast_shape, (1 for _ in range(len(fast_shape)))
-        )
-        rfftn, irfftn = backend.build_fft(
-            fwd_shape=fast_shape,
-            inv_shape=fast_ft_shape,
-            real_dtype=backend._float_dtype,
-            cmpl_dtype=backend._complex_dtype,
         )
         arr = np.random.rand(*fast_shape)
         out = np.zeros(fast_ft_shape)
@@ -310,11 +304,11 @@ class TestBackends:
             backend.to_backend_array(out), backend._complex_dtype
         )
 
-        rfftn(
+        backend.rfftn(
             backend.astype(backend.to_backend_array(arr), backend._float_dtype),
             complex_arr,
         )
-        irfftn(complex_arr, real_arr)
+        backend.irfftn(complex_arr, real_arr)
         assert np.allclose(arr, backend.to_numpy_array(real_arr), rtol=0.3)
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)

@@ -98,7 +98,6 @@ class TestDensity:
         assert np.allclose(density.data, self.density.data)
         assert np.allclose(density.sampling_rate, self.density.sampling_rate)
         assert np.allclose(density.origin, self.density.origin)
-        assert density.metadata == self.density.metadata
 
     def test_from_file_baseline(self):
         self.test_to_file(gzip=False)

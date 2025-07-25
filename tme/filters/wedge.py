@@ -15,7 +15,7 @@ import numpy as np
 from ..types import NDArray
 from ..backends import backend as be
 from .compose import ComposableFilter
-from ..matching_utils import centered
+from ..matching_utils import center_slice
 from ..rotations import euler_to_rotationmatrix
 from ..parser import XMLParser, StarParser, MDOCParser
 from ._utils import (
@@ -207,11 +207,10 @@ class Wedge(ComposableFilter):
             )
             sigma = np.sqrt(self.weights[index] * 4 / (8 * np.pi**2))
             sigma = -2 * np.pi**2 * sigma**2
-            np.square(frequency_grid, out=frequency_grid)
-            np.multiply(sigma, frequency_grid, out=frequency_grid)
-            np.exp(frequency_grid, out=frequency_grid)
-            np.multiply(frequency_grid, np.cos(np.radians(angle)), out=frequency_grid)
-            wedges[index] = frequency_grid
+            frequency_grid = np.square(frequency_grid, out=frequency_grid)
+            frequency_grid = np.multiply(sigma, frequency_grid, out=frequency_grid)
+            frequency_grid = np.exp(frequency_grid, out=frequency_grid)
+            wedges[index] = np.multiply(frequency_grid, np.cos(np.radians(angle)))
 
         return wedges
 
@@ -490,7 +489,11 @@ class WedgeReconstructed:
             )
             wedge_volume += plane_rotated * weights[index]
 
-        wedge_volume = centered(wedge_volume, (shape[opening_axis], shape[tilt_axis]))
+        subset = center_slice(
+            wedge_volume.shape, (shape[opening_axis], shape[tilt_axis])
+        )
+        wedge_volume = wedge_volume[subset]
+
         np.fmin(wedge_volume, np.max(weights), wedge_volume)
 
         if opening_axis > tilt_axis:

@@ -140,7 +140,8 @@ Template matching
 
 .. autosummary::
 
-   MatchingBackend.build_fft
+   MatchingBackend.rfftn
+   MatchingBackend.irfftn
    MatchingBackend.topleft_pad
    MatchingBackend.to_sharedarr
    MatchingBackend.from_sharedarr

@@ -8,7 +8,7 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 
 from abc import ABC, abstractmethod
 from multiprocessing import shared_memory
-from typing import Tuple, Callable, List, Any, Union, Optional, Generator, Dict
+from typing import Tuple, Callable, List, Any, Union, Optional, Generator
 
 from ..types import BackendArray, NDArray, Scalar, shm_type
 
@@ -1087,57 +1087,12 @@ class MatchingBackend(ABC):
         """
 
     @abstractmethod
-    def build_fft(
-        self,
-        fwd_shape: Tuple[int],
-        inv_shape: Tuple[int],
-        real_dtype: type,
-        cmpl_dtype: type,
-        inv_output_shape: Tuple[int] = None,
-        temp_fwd: NDArray = None,
-        temp_inv: NDArray = None,
-        fwd_axes: Tuple[int] = None,
-        inv_axes: Tuple[int] = None,
-        fftargs: Dict = {},
-    ) -> Tuple[Callable, Callable]:
-        """
-        Build forward and inverse real fourier transform functions. The returned
-        callables have two parameters ``arr`` and ``out`` which correspond to the
-        input and output of the Fourier transform. The methods return the output
-        of the respective function call, regardless of ``out`` being provided or not,
-        analogous to most numpy functions.
+    def rfftn(self, **kwargs):
+        """Perform an n-D real FFT."""
 
-        Parameters
-        ----------
-        fwd_shape : tuple
-            Input shape for the forward Fourier transform.
-            (see `compute_convolution_shapes`).
-        inv_shape : tuple
-            Input shape for the inverse Fourier transform.
-        real_dtype : dtype
-            Data type of the forward Fourier transform.
-        complex_dtype : dtype
-            Data type of the inverse Fourier transform.
-        inv_output_shape : tuple, optional
-            Output shape of the inverse Fourier transform. By default fast_shape.
-        fftargs : dict, optional
-            Dictionary passed to pyFFTW builders.
-        temp_fwd : NDArray, optional
-            Temporary array to build the forward transform. Superseeds shape defined by
-            fwd_shape if provided.
-        temp_inv : NDArray, optional
-            Temporary array to build the inverse transform. Superseeds shape defined by
-            inv_shape if provided.
-        fwd_axes : tuple of int
-            Axes to perform the forward Fourier transform over.
-        inv_axes : tuple of int
-            Axes to perform the inverse Fourier transform over.
-
-        Returns
-        -------
-        tuple
-            Tuple of callables for forward and inverse real Fourier transform.
-        """
+    @abstractmethod
+    def irfftn(self, **kwargs):
+        """Perform an n-D real inverse FFT."""
 
     def extract_center(self, arr: BackendArray, newshape: Tuple[int]) -> BackendArray:
         """

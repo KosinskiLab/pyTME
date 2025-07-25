@@ -51,6 +51,24 @@ class TestPreprocessUtils:
         assert fgrid.shape == tuple(tilt_shape)
         assert fgrid.max() <= np.sqrt(1 / sampling_rate * len(shape))
 
+    @pytest.mark.parametrize("shape", ((15, 15, 15), (31, 31, 31), (64, 64, 64)))
+    @pytest.mark.parametrize("sampling_rate", (0.5, 1, 2))
+    @pytest.mark.parametrize("angle", (-5, 0, 5))
+    def test_freqgrid_comparison(self, shape, sampling_rate, angle):
+        grid = frequency_grid_at_angle(
+            shape=shape,
+            angle=angle,
+            sampling_rate=sampling_rate,
+            opening_axis=2,
+            tilt_axis=0,
+        )
+        grid2 = fftfreqn(
+            shape=shape[1:], sampling_rate=sampling_rate, compute_euclidean_norm=True
+        )
+
+        # These should be equal for cubical input shapes
+        assert np.allclose(grid, grid2)
+
     @pytest.mark.parametrize("n", [10, 100, 1000])
     @pytest.mark.parametrize("sampling_rate", range(1, 4))
     def test_fftfreqn(self, n, sampling_rate):

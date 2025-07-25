@@ -228,10 +228,15 @@ class PeakCaller(AbstractAnalyzer):
         translations = be.full(
             (self.num_peaks, ndim), fill_value=-1, dtype=be._int_dtype
         )
+
+        rdim = len(self.shape)
+        if self.batch_dims:
+            rdim -= len(self.batch_dims)
+
         rotations = be.full(
-            (self.num_peaks, ndim, ndim), fill_value=0, dtype=be._float_dtype
+            (self.num_peaks, rdim, rdim), fill_value=0, dtype=be._float_dtype
         )
-        for i in range(ndim):
+        for i in range(rdim):
             rotations[:, i, i] = 1.0
 
         scores = be.full((self.num_peaks,), fill_value=-1, dtype=be._float_dtype)
@@ -750,8 +755,7 @@ class PeakCallerRecursiveMasking(PeakCaller):
             Dictionary mapping values in rotations to Euler angles.
             By default None
         min_score : float
-            Minimum score value to consider. If provided, superseeds limit given
-            by :py:attr:`PeakCaller.num_peaks`.
+            Minimum score value to consider.
 
         Returns
         -------
@@ -774,10 +778,7 @@ class PeakCallerRecursiveMasking(PeakCaller):
             mask = be.to_backend_array(mask)
             mask_buffer = be.zeros(mask.shape, dtype=mask.dtype)
 
-        peak_limit = self.num_peaks
-        if min_score is not None:
-            peak_limit = be.size(scores)
-        else:
+        if min_score is None:
             min_score = be.min(scores) - 1
 
         _scores = be.zeros(scores.shape, dtype=scores.dtype)
@@ -815,7 +816,7 @@ class PeakCallerRecursiveMasking(PeakCaller):
                 score_mask = mask_buffer[tmpl_slice] <= 0.1
 
             _scores[score_slice] = be.multiply(_scores[score_slice], score_mask)
-            if len(peaks) >= peak_limit:
+            if len(peaks) >= self.num_peaks:
                 break
 
         return be.to_backend_array(peaks), None
@@ -851,7 +852,7 @@ class PeakCallerRecursiveMasking(PeakCaller):
 
         rotation = rotation_mapping[rotation_space[tuple(peak)]]
 
-        # TODO: Newer versions of rotation mapping contain rotation matrices not angles
+        # Old versions of rotation mapping contained Euler angles
         if rotation.ndim != 2:
             rotation = be.to_backend_array(
                 euler_to_rotationmatrix(be.to_numpy_array(rotation))

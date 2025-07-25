@@ -1104,7 +1104,8 @@ def create_score_object(score: str, **kwargs) -> object:
     Examples
     --------
     >>> from tme import Density
-    >>> from tme.matching_utils import create_mask, euler_to_rotationmatrix
+    >>> from tme.mask import create_mask
+    >>> from tme.matching_utils import euler_to_rotationmatrix
     >>> from tme.matching_optimization import CrossCorrelation, optimize_match
     >>> translation, rotation = (5, -2, 7), (5, -10, 2)
     >>> target = create_mask(

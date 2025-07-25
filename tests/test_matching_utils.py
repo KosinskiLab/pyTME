@@ -10,9 +10,6 @@ from tme.backends import backend as be
 from tme.memory import MATCHING_MEMORY_REGISTRY
 from tme.matching_utils import (
     compute_parallelization_schedule,
-    elliptical_mask,
-    box_mask,
-    tube_mask,
     create_mask,
     scramble_phases,
     apply_convolution_mode,
@@ -50,72 +47,25 @@ class TestMatchingUtils:
             max_splits=256,
         )
 
-    def test_create_mask(self):
+    @pytest.mark.parametrize("mask_type", ["ellipse", "box", "tube", "membrane"])
+    def test_create_mask(self, mask_type: str):
         create_mask(
-            mask_type="ellipse",
+            mask_type=mask_type,
             shape=self.density.shape,
             radius=5,
             center=np.divide(self.density.shape, 2),
+            height=np.max(self.density.shape) // 2,
+            size=np.divide(self.density.shape, 2).astype(int),
+            thickness=2,
+            separation=2,
+            symmetry_axis=1,
+            inner_radius=5,
+            outer_radius=10,
         )
 
     def test_create_mask_error(self):
         with pytest.raises(ValueError):
             create_mask(mask_type=None)
-
-    def test_elliptical_mask(self):
-        elliptical_mask(
-            shape=self.density.shape,
-            radius=5,
-            center=np.divide(self.density.shape, 2),
-        )
-
-    def test_box_mask(self):
-        box_mask(
-            shape=self.density.shape,
-            height=[5, 10, 20],
-            center=np.divide(self.density.shape, 2),
-        )
-
-    def test_tube_mask(self):
-        tube_mask(
-            shape=self.density.shape,
-            outer_radius=10,
-            inner_radius=5,
-            height=5,
-            base_center=np.divide(self.density.shape, 2),
-            symmetry_axis=1,
-        )
-
-    def test_tube_mask_error(self):
-        with pytest.raises(ValueError):
-            tube_mask(
-                shape=self.density.shape,
-                outer_radius=5,
-                inner_radius=10,
-                height=5,
-                base_center=np.divide(self.density.shape, 2),
-                symmetry_axis=1,
-            )
-
-        with pytest.raises(ValueError):
-            tube_mask(
-                shape=self.density.shape,
-                outer_radius=5,
-                inner_radius=10,
-                height=10 * np.max(self.density.shape),
-                base_center=np.divide(self.density.shape, 2),
-                symmetry_axis=1,
-            )
-
-        with pytest.raises(ValueError):
-            tube_mask(
-                shape=self.density.shape,
-                outer_radius=5,
-                inner_radius=10,
-                height=10 * np.max(self.density.shape),
-                base_center=np.divide(self.density.shape, 2),
-                symmetry_axis=len(self.density.shape) + 1,
-            )
 
     def test_scramble_phases(self):
         scramble_phases(arr=self.density.data, noise_proportion=0.5)

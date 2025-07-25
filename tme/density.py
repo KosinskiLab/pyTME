@@ -332,6 +332,7 @@ class Density:
         if non_standard_crs:
             data = np.transpose(data, crs_index)
             origin = np.take(origin, crs_index)
+            sampling_rate = np.take(sampling_rate, crs_index)
 
         return data.T, origin[::-1], sampling_rate[::-1], metadata
 

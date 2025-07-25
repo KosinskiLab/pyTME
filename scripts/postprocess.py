@@ -17,7 +17,7 @@ from scipy.special import erfcinv
 
 from tme import Density, Structure, Orientations
 from tme.cli import sanitize_name, print_block, print_entry
-from tme.matching_utils import load_pickle, centered_mask, write_pickle
+from tme.matching_utils import load_pickle, center_slice, write_pickle
 from tme.matching_optimization import create_score_object, optimize_match
 from tme.rotations import euler_to_rotationmatrix, euler_from_rotationmatrix
 from tme.analyzer import (
@@ -381,6 +381,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
     update = tuple(slice(0, int(x)) for x in np.minimum(out_shape, scores.shape))
     scores_out = np.full(out_shape, fill_value=0, dtype=np.float32)
     scores_out[update] = data[0][update] - scores_norm[update]
+
     # scores_out[update] = np.divide(scores_out[update], 1 - scores_norm[update])
     scores_out = np.fmax(scores_out, 0, out=scores_out)
     data[0] = scores_out
@@ -492,7 +493,10 @@ def main():
         ).astype(int)
 
         if args.min_boundary_distance > 0:
-            scores = centered_mask(scores, new_shape=cropped_shape)
+            _scores = np.zeros_like(scores)
+            subset = center_slice(scores.shape, cropped_shape)
+            _scores[subset] = scores[subset]
+            scores = _scores
 
         if args.n_false_positives is not None:
             # Rickgauer et al. 2017
@@ -514,8 +518,8 @@ def main():
             args.min_score = minimum_score
 
         args.batch_dims = None
-        if hasattr(cli_args, "target_batch"):
-            args.batch_dims = cli_args.target_batch
+        if hasattr(cli_args, "batch_dims"):
+            args.batch_dims = cli_args.batch_dims
 
         peak_caller_kwargs = {
             "shape": scores.shape,
@@ -523,8 +527,8 @@ def main():
             "min_distance": args.min_distance,
             "min_boundary_distance": args.min_boundary_distance,
             "batch_dims": args.batch_dims,
-            "minimum_score": args.min_score,
-            "maximum_score": args.max_score,
+            "min_score": args.min_score,
+            "max_score": args.max_score,
         }
 
         peak_caller = PEAK_CALLERS[args.peak_caller](**peak_caller_kwargs)

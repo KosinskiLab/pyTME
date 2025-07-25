@@ -7,7 +7,9 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from functools import wraps
-from typing import Tuple, List, Callable, Dict
+from typing import Tuple, List, Dict, Any
+
+import numpy as np
 
 from ..types import BackendArray
 from .npfftw_backend import NumpyFFTWBackend, shm_type
@@ -64,6 +66,10 @@ class JaxBackend(NumpyFFTWBackend):
         arr = arr.at[idx].set(value)
         return arr
 
+    def addat(self, arr, indices, values):
+        arr = arr.at[indices].add(values)
+        return arr
+
     def topleft_pad(
         self, arr: BackendArray, shape: Tuple[int], padval: int = 0
     ) -> BackendArray:
@@ -88,6 +94,7 @@ class JaxBackend(NumpyFFTWBackend):
             "sqrt",
             "maximum",
             "exp",
+            "mod",
         ]
         for ufunc in ufuncs:
             backend_method = emulate_out(getattr(self._array_backend, ufunc))
@@ -102,27 +109,6 @@ class JaxBackend(NumpyFFTWBackend):
         return self._array_backend.full(
             shape=arr.shape, dtype=arr.dtype, fill_value=value
         )
-
-    def build_fft(
-        self,
-        fwd_shape: Tuple[int],
-        inv_shape: Tuple[int] = None,
-        inv_output_shape: Tuple[int] = None,
-        fwd_axes: Tuple[int] = None,
-        inv_axes: Tuple[int] = None,
-        **kwargs,
-    ) -> Tuple[Callable, Callable]:
-        rfft_shape = self._format_fft_shape(fwd_shape, fwd_axes)
-        irfft_shape = fwd_shape if inv_output_shape is None else inv_output_shape
-        irfft_shape = self._format_fft_shape(irfft_shape, inv_axes)
-
-        def rfftn(arr, out=None, s=rfft_shape, axes=fwd_axes):
-            return self._array_backend.fft.rfftn(arr, s=s, axes=axes)
-
-        def irfftn(arr, out=None, s=irfft_shape, axes=inv_axes):
-            return self._array_backend.fft.irfftn(arr, s=s, axes=axes)
-
-        return rfftn, irfftn
 
     def rfftn(self, arr: BackendArray, *args, **kwargs) -> BackendArray:
         return self._array_backend.fft.rfftn(arr, **kwargs)
@@ -194,12 +180,30 @@ class JaxBackend(NumpyFFTWBackend):
 
         return convolution_shape, fast_shape, fast_ft_shape
 
+    def _to_hashable(self, obj: Any) -> Tuple[str, Tuple]:
+        if isinstance(obj, np.ndarray):
+            return ("array", (tuple(obj.flatten().tolist()), obj.shape))
+        return ("other", obj)
+
+    def _from_hashable(self, type_info: str, data: Any) -> Any:
+        if type_info == "array":
+            data, shape = data
+            return self.array(data).reshape(shape)
+        return data
+
+    def _dict_to_tuple(self, data: Dict) -> Tuple:
+        return tuple((k, self._to_hashable(v)) for k, v in data.items())
+
+    def _tuple_to_dict(self, data: Tuple) -> Dict:
+        return {x[0]: self._from_hashable(*x[1]) for x in data}
+
     def scan(
         self,
         matching_data: type,
         splits: Tuple[Tuple[slice, slice]],
         n_jobs: int,
-        callback_class,
+        callback_class: object,
+        callback_class_args: Dict,
         rotate_mask: bool = False,
         **kwargs,
     ) -> List:
@@ -220,16 +224,20 @@ class JaxBackend(NumpyFFTWBackend):
             target_shape=self.to_numpy_array(target_shape),
             template_shape=self.to_numpy_array(matching_data._template.shape),
             batch_mask=self.to_numpy_array(matching_data._batch_mask),
-            pad_target=pad_target,
         )
         analyzer_args = {
-            "convolution_mode": convolution_mode,
+            "shape": fast_shape,
             "fourier_shift": shift,
+            "fast_shape": fast_shape,
             "targetshape": target_shape,
             "templateshape": matching_data.template.shape,
             "convolution_shape": conv_shape,
+            "convolution_mode": convolution_mode,
+            "thread_safe": False,
+            "aggregate_axis": matching_data._batch_axis(matching_data._batch_mask),
+            "n_rotations": matching_data.rotations.shape[0],
+            "jax_mode": True,
         }
-
         create_target_filter = matching_data.target_filter is not None
         create_template_filter = matching_data.template_filter is not None
         create_filter = create_target_filter or create_template_filter
@@ -245,6 +253,9 @@ class JaxBackend(NumpyFFTWBackend):
             for i in range(matching_data.rotations.shape[0])
         }
         for split_start in range(0, len(splits), n_jobs):
+
+            analyzer_kwargs = []
+
             split_subset = splits[split_start : (split_start + n_jobs)]
             if not len(split_subset):
                 continue
@@ -256,8 +267,15 @@ class JaxBackend(NumpyFFTWBackend):
                     target_pad=target_pad,
                     template_slice=template_split,
                 )
+                cur_args = analyzer_args.copy()
+                cur_args["offset"] = translation_offset
+                cur_args.update(callback_class_args)
+
+                analyzer_kwargs.append(self._dict_to_tuple(cur_args))
+
+                _target = self.astype(base._target, self._float_dtype)
                 translation_offsets.append(translation_offset)
-                targets.append(self.topleft_pad(base._target, fast_shape))
+                targets.append(self.topleft_pad(_target, fast_shape))
 
             if create_filter:
                 filter_args = {
@@ -279,24 +297,27 @@ class JaxBackend(NumpyFFTWBackend):
 
             create_filter, create_template_filter, create_target_filter = (False,) * 3
             base, targets = None, self._array_backend.stack(targets)
-            scores, rotations = scan_inner(
+
+            analyzer_kwargs = tuple(analyzer_kwargs)
+            states = scan_inner(
                 self.astype(targets, self._float_dtype),
-                matching_data.template,
-                matching_data.template_mask,
+                self.astype(matching_data.template, self._float_dtype),
+                self.astype(matching_data.template_mask, self._float_dtype),
                 matching_data.rotations,
                 template_filter,
                 target_filter,
                 fast_shape,
                 rotate_mask,
+                callback_class,
+                analyzer_kwargs,
             )
 
-            for index in range(scores.shape[0]):
-                temp = callback_class(
-                    shape=scores[index].shape,
-                    offset=translation_offsets[index],
-                )
-                state = (scores[index], rotations[index], rotation_mapping)
-                ret.append(temp.result(state, **analyzer_args))
+            for index in range(targets.shape[0]):
+                kwargs = self._tuple_to_dict(analyzer_kwargs[index])
+                analyzer = callback_class(**kwargs)
+
+                state = (states[0][index], states[1][index], rotation_mapping)
+                ret.append(analyzer.result(state, **kwargs))
         return ret
 
     def get_available_memory(self) -> int:

@@ -545,13 +545,19 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
                 )
 
     def __call__(
-        self, state: Tuple, scores: BackendArray, rotation_matrix: BackendArray
+        self,
+        state: Tuple,
+        scores: BackendArray,
+        rotation_matrix: BackendArray,
+        **kwargs,
     ) -> Tuple:
         mask = self._get_constraint(rotation_matrix)
         mask = self._get_score_mask(mask=mask, scores=scores)
 
         scores = be.multiply(scores, mask, out=scores)
-        return super().__call__(state, scores=scores, rotation_matrix=rotation_matrix)
+        return super().__call__(
+            state, scores=scores, rotation_matrix=rotation_matrix, **kwargs
+        )
 
     def _get_constraint(self, rotation_matrix: BackendArray) -> BackendArray:
         """
@@ -636,7 +642,11 @@ class MaxScoreOverTranslations(MaxScoreOverRotations):
         return scores, rotations, {}
 
     def __call__(
-        self, state, scores: BackendArray, rotation_matrix: BackendArray
+        self,
+        state,
+        scores: BackendArray,
+        rotation_matrix: BackendArray,
+        **kwargs,
     ) -> Tuple:
         prev_scores, rotations, rotation_mapping = state
 

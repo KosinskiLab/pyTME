@@ -9,16 +9,22 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 import os
 from psutil import virtual_memory
 from contextlib import contextmanager
-from typing import Tuple, Dict, List, Type
+from typing import Tuple, List, Type
 
 import scipy
 import numpy as np
 from scipy.ndimage import maximum_filter, affine_transform
-from pyfftw.builders import rfftn as rfftn_builder, irfftn as irfftn_builder
-from pyfftw import zeros_aligned, simd_alignment, FFTW, next_fast_len, interfaces
+from pyfftw import (
+    zeros_aligned,
+    simd_alignment,
+    next_fast_len,
+    interfaces,
+    config,
+)
 
 from ..types import NDArray, BackendArray, shm_type
 from .matching_backend import MatchingBackend, _create_metafunction
+
 
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -103,6 +109,19 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         self.solve_triangular = self._solve_triangular
         self.linalg.solve_triangular = scipy.linalg.solve_triangular
 
+        try:
+            from ._numpyfftw_utils import rfftn as rfftn_cache
+            from ._numpyfftw_utils import irfftn as irfftn_cache
+            self._rfftn = rfftn_cache
+            self._irfftn = irfftn_cache
+        except Exception as e:
+            print(e)
+
+        config.NUM_THREADS = 1
+        config.PLANNER_EFFORT = "FFTW_MEASURE"
+        interfaces.cache.enable()
+        interfaces.cache.set_keepalive_time(360)
+
     def _linalg_cholesky(self, arr, lower=False, *args, **kwargs):
         # Upper argument is not supported until numpy 2.0
         ret = self._array_backend.linalg.cholesky(arr, *args, **kwargs)
@@ -138,7 +157,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         return float
 
     def free_cache(self):
-        pass
+        interfaces.cache.disable()
 
     def transpose(self, arr: NDArray, *args, **kwargs) -> NDArray:
         return self._array_backend.transpose(arr, *args, **kwargs)
@@ -240,70 +259,53 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         b[tuple(bind)] = arr[tuple(aind)]
         return b
 
-    def build_fft(
+    def _rfftn(self, arr, out = None, **kwargs):
+        ret = interfaces.numpy_fft.rfftn(arr, **kwargs)
+        if out is not None:
+            out[:] = ret
+            return out
+        return ret
+
+    def _irfftn(self, arr, out = None, **kwargs):
+        ret = interfaces.numpy_fft.irfftn(arr, **kwargs)
+        if out is not None:
+            out[:] = ret
+            return out
+        return ret
+
+    def rfftn(
         self,
-        fwd_shape: Tuple[int],
-        inv_shape: Tuple[int],
-        real_dtype: type,
-        cmpl_dtype: type,
-        fftargs: Dict = {},
-        inv_output_shape: Tuple[int] = None,
-        temp_fwd: NDArray = None,
-        temp_inv: NDArray = None,
-        fwd_axes: Tuple[int] = None,
-        inv_axes: Tuple[int] = None,
-    ) -> Tuple[FFTW, FFTW]:
-        if temp_fwd is None:
-            temp_fwd = (
-                self.zeros(fwd_shape, real_dtype) if temp_fwd is None else temp_fwd
-            )
-        if temp_inv is None:
-            temp_inv = (
-                self.zeros(inv_shape, cmpl_dtype) if temp_inv is None else temp_inv
-            )
+        arr: NDArray,
+        out=None,
+        auto_align_input: bool = False,
+        auto_contiguous: bool = False,
+        overwrite_input: bool = True,
+        **kwargs,
+    ) -> NDArray:
+        return self._rfftn(
+            arr,
+            auto_align_input=auto_align_input,
+            auto_contiguous=auto_contiguous,
+            overwrite_input=overwrite_input,
+            **kwargs,
+        )
 
-        default_values = {
-            "planner_effort": "FFTW_MEASURE",
-            "auto_align_input": False,
-            "auto_contiguous": False,
-            "avoid_copy": True,
-            "overwrite_input": True,
-            "threads": 1,
-        }
-        for key in default_values:
-            if key in fftargs:
-                continue
-            fftargs[key] = default_values[key]
-
-        rfft_shape = self._format_fft_shape(temp_fwd.shape, fwd_axes)
-        _rfftn = rfftn_builder(temp_fwd, s=rfft_shape, axes=fwd_axes, **fftargs)
-        overwrite_input = fftargs.pop("overwrite_input", None)
-
-        irfft_shape = fwd_shape if inv_output_shape is None else inv_output_shape
-        irfft_shape = self._format_fft_shape(irfft_shape, inv_axes)
-        _irfftn = irfftn_builder(temp_inv, s=irfft_shape, axes=inv_axes, **fftargs)
-
-        def _rfftn_wrapper(arr, out, *args, **kwargs):
-            return _rfftn(arr, out)
-
-        def _irfftn_wrapper(arr, out, *args, **kwargs):
-            return _irfftn(arr, out)
-
-        fftargs["overwrite_input"] = overwrite_input
-        return _rfftn_wrapper, _irfftn_wrapper
-
-    @staticmethod
-    def _format_fft_shape(shape: Tuple[int], axes: Tuple[int] = None):
-        if axes is None:
-            return shape
-        axes = tuple(sorted(range(len(shape))[i] for i in axes))
-        return tuple(shape[i] for i in axes)
-
-    def rfftn(self, arr: NDArray, *args, **kwargs) -> NDArray:
-        return interfaces.numpy_fft.rfftn(arr, **kwargs)
-
-    def irfftn(self, arr: NDArray, *args, **kwargs) -> NDArray:
-        return interfaces.numpy_fft.irfftn(arr, **kwargs)
+    def irfftn(
+        self,
+        arr: NDArray,
+        out=None,
+        auto_align_input: bool = False,
+        auto_contiguous: bool = False,
+        overwrite_input: bool = True,
+        **kwargs,
+    ) -> NDArray:
+        return self._irfftn(
+            arr,
+            auto_align_input=auto_align_input,
+            auto_contiguous=auto_contiguous,
+            overwrite_input=overwrite_input,
+            **kwargs,
+        )
 
     def extract_center(self, arr: NDArray, newshape: Tuple[int]) -> NDArray:
         new_shape = self.to_backend_array(newshape)

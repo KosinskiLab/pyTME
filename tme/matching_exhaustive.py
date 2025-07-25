@@ -40,7 +40,7 @@ def _setup_template_filter_apply_target_filter(
     matching_data: MatchingData,
     fast_shape: Tuple[int],
     fast_ft_shape: Tuple[int],
-    pad_template_filter: bool = True,
+    pad_template_filter: bool = False,
 ):
     target_filter = None
     backend_arr = type(be.zeros((1), dtype=be._float_dtype))
@@ -146,11 +146,10 @@ def scan(
     matching_data: MatchingData,
     matching_setup: Callable,
     matching_score: Callable,
-    n_jobs: int = 4,
-    callback_class: CallbackClass = None,
+    callback_class: CallbackClass,
     callback_class_args: Dict = {},
+    n_jobs: int = 4,
     pad_target: bool = True,
-    pad_template_filter: bool = True,
     interpolation_order: int = 3,
     jobs_per_callback_class: int = 8,
     shm_handler=None,
@@ -172,20 +171,22 @@ def scan(
         Function pointer to scoring function.
     n_jobs : int, optional
         Number of parallel jobs. Default is 4.
-    callback_class : type, optional
+    callback_class : type
         Analyzer class pointer to operate on computed scores.
     callback_class_args : dict, optional
         Arguments passed to the callback_class. Default is an empty dictionary.
     pad_target: bool, optional
         Whether to pad target to the full convolution shape.
-    pad_template_filter: bool, optional
-        Whether to pad potential template filters to the full convolution shape.
     interpolation_order : int, optional
         Order of spline interpolation for rotations.
     jobs_per_callback_class : int, optional
         Number of jobs a callback_class instance is shared between, 8 by default.
     shm_handler : type, optional
         Manager for shared memory objects, None by default.
+    target_slice : tuple of slice, optional
+        Target subset to process.
+    template_slice : tuple of slice, optional
+        Template subset to process.
 
     Returns
     -------
@@ -220,13 +221,13 @@ def scan(
     template_shape = matching_data._batch_shape(
         matching_data.template.shape, matching_data._template_batch
     )
-    conv, fwd, inv, shift = matching_data.fourier_padding(pad_target=pad_target)
+    conv, fwd, inv, shift = matching_data.fourier_padding()
 
     template_filter = _setup_template_filter_apply_target_filter(
         matching_data=matching_data,
         fast_shape=fwd,
         fast_ft_shape=inv,
-        pad_template_filter=pad_template_filter,
+        pad_template_filter=False,
     )
 
     default_callback_args = {
@@ -240,11 +241,10 @@ def scan(
         "thread_safe": n_jobs > 1,
         "convolution_mode": "valid" if pad_target else "same",
         "shm_handler": shm_handler,
-        "only_unique_rotations": True,
         "aggregate_axis": matching_data._batch_axis(matching_data._batch_mask),
         "n_rotations": matching_data.rotations.shape[0],
+        "inversion_mapping": n_jobs == 1,
     }
-    callback_class_args["inversion_mapping"] = n_jobs == 1
     default_callback_args.update(callback_class_args)
 
     setup = matching_setup(
@@ -254,22 +254,14 @@ def scan(
         fast_ft_shape=inv,
         shm_handler=shm_handler,
     )
-    setup["interpolation_order"] = interpolation_order
-    setup["template_filter"] = be.to_sharedarr(template_filter, shm_handler)
 
     matching_data._free_data()
-    be.free_cache()
-
     n_callback_classes = max(n_jobs // jobs_per_callback_class, 1)
     callback_classes = [
-        (
-            SharedAnalyzerProxy(
-                callback_class,
-                default_callback_args,
-                shm_handler=shm_handler if n_jobs > 1 else None,
-            )
-            if callback_class
-            else None
+        SharedAnalyzerProxy(
+            callback_class,
+            default_callback_args,
+            shm_handler=shm_handler if n_jobs > 1 else None,
         )
         for _ in range(n_callback_classes)
     ]
@@ -277,35 +269,32 @@ def scan(
         delayed(_wrap_backend(matching_score))(
             backend_name=be._backend_name,
             backend_args=be._backend_args,
+            fast_shape=fwd,
+            fast_ft_shape=inv,
             rotations=rotation,
             callback=callback_classes[index % n_callback_classes],
+            interpolation_order=interpolation_order,
+            template_filter=be.to_sharedarr(template_filter, shm_handler),
             **setup,
         )
         for index, rotation in enumerate(matching_data._split_rotations_on_jobs(n_jobs))
     )
-    callbacks = [
-        callback.result(**default_callback_args)
-        for callback in ret[:n_callback_classes]
-        if callback
-    ]
     be.free_cache()
 
-    if callback_class:
-        ret = callback_class.merge(callbacks, **default_callback_args)
-    return ret
+    callbacks = [x.result(**default_callback_args) for x in ret[:n_callback_classes]]
+    return callback_class.merge(callbacks, **default_callback_args)
 
 
 def scan_subsets(
     matching_data: MatchingData,
     matching_score: Callable,
     matching_setup: Callable,
-    callback_class: CallbackClass = None,
+    callback_class: CallbackClass,
     callback_class_args: Dict = {},
     job_schedule: Tuple[int] = (1, 1),
     target_splits: Dict = {},
     template_splits: Dict = {},
     pad_target_edges: bool = False,
-    pad_template_filter: bool = True,
     interpolation_order: int = 3,
     jobs_per_callback_class: int = 8,
     backend_name: str = None,
@@ -325,7 +314,7 @@ def scan_subsets(
         Function pointer to setup function.
     matching_score : type
         Function pointer to scoring function.
-    callback_class : type, optional
+    callback_class : type
         Analyzer class pointer to operate on computed scores.
     callback_class_args : dict, optional
         Arguments passed to the callback_class. Default is an empty dictionary.
@@ -341,8 +330,6 @@ def scan_subsets(
         See :py:meth:`tme.matching_utils.compute_parallelization_schedule`.
     pad_target_edges : bool, optional
         Pad the target boundaries to avoid edge effects.
-    pad_template_filter: bool, optional
-        Whether to pad potential template filters to the full convolution shape.
     interpolation_order : int, optional
         Order of spline interpolation for rotations.
     jobs_per_callback_class : int, optional
@@ -424,18 +411,24 @@ def scan_subsets(
         )
     splits = tuple(product(target_splits, template_splits))
 
+    kwargs = {
+        "matching_data": matching_data,
+        "callback_class": callback_class,
+        "callback_class_args": callback_class_args,
+    }
+
     outer_jobs, inner_jobs = job_schedule
     if be._backend_name == "jax":
         func = be.scan
+        if kwargs.get("projection_matching", False):
+            func = be.scan_projections
 
         corr_scoring = MATCHING_EXHAUSTIVE_REGISTER.get("CORR", (None, None))[1]
         results = func(
-            matching_data=matching_data,
             splits=splits,
             n_jobs=outer_jobs,
             rotate_mask=matching_score != corr_scoring,
-            callback_class=callback_class,
-            callback_class_args=callback_class_args,
+            **kwargs,
         )
     else:
         results = Parallel(n_jobs=outer_jobs, verbose=verbose)(
@@ -443,26 +436,20 @@ def scan_subsets(
                 delayed(_wrap_backend(scan))(
                     backend_name=be._backend_name,
                     backend_args=be._backend_args,
-                    matching_data=matching_data,
                     matching_score=matching_score,
                     matching_setup=matching_setup,
                     n_jobs=inner_jobs,
-                    callback_class=callback_class,
-                    callback_class_args=callback_class_args,
                     interpolation_order=interpolation_order,
                     pad_target=pad_target_edges,
                     gpu_index=index % outer_jobs,
-                    pad_template_filter=pad_template_filter,
                     target_slice=target_split,
                     template_slice=template_split,
+                    **kwargs,
                 )
                 for index, (target_split, template_split) in enumerate(splits)
             ]
         )
-    matching_data._free_data()
-    if callback_class is not None:
-        return callback_class.merge(results, **callback_class_args)
-    return None
+    return callback_class.merge(results, **callback_class_args)
 
 
 def register_matching_exhaustive(

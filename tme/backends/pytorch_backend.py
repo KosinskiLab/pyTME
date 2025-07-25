@@ -7,7 +7,7 @@ Copyright (c) 2023 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-from typing import Tuple, Callable
+from typing import Tuple
 from contextlib import contextmanager
 from multiprocessing import shared_memory
 from multiprocessing.managers import SharedMemoryManager
@@ -272,31 +272,6 @@ class PytorchBackend(NumpyFFTWBackend):
         if "device" not in kwargs:
             kwargs["device"] = self.device
         return self._array_backend.eye(*args, **kwargs)
-
-    def build_fft(
-        self,
-        fwd_shape: Tuple[int],
-        inv_shape: Tuple[int],
-        inv_output_shape: Tuple[int] = None,
-        fwd_axes: Tuple[int] = None,
-        inv_axes: Tuple[int] = None,
-        **kwargs,
-    ) -> Tuple[Callable, Callable]:
-        rfft_shape = self._format_fft_shape(fwd_shape, fwd_axes)
-        irfft_shape = fwd_shape if inv_output_shape is None else inv_output_shape
-        irfft_shape = self._format_fft_shape(irfft_shape, inv_axes)
-
-        def rfftn(
-            arr: TorchTensor, out: TorchTensor, s=rfft_shape, axes=fwd_axes
-        ) -> TorchTensor:
-            return self._array_backend.fft.rfftn(arr, s=s, out=out, dim=axes)
-
-        def irfftn(
-            arr: TorchTensor, out: TorchTensor = None, s=irfft_shape, axes=inv_axes
-        ) -> TorchTensor:
-            return self._array_backend.fft.irfftn(arr, s=s, out=out, dim=axes)
-
-        return rfftn, irfftn
 
     def rfftn(self, arr: NDArray, *args, **kwargs) -> NDArray:
         kwargs["dim"] = kwargs.pop("axes", None)

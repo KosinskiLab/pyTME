@@ -82,7 +82,7 @@ class Orientations:
         self.translations = np.array(self.translations).astype(np.float32)
         self.rotations = np.array(self.rotations).astype(np.float32)
         self.scores = np.array(self.scores).astype(np.float32)
-        self.details = np.array(self.details)
+        self.details = np.array(self.details).astype(np.float32)
         n_orientations = set(
             [
                 self.translations.shape[0],
@@ -471,10 +471,7 @@ class Orientations:
             rotation = np.zeros(translation.shape, dtype=np.float32)
 
         header_order = tuple(x for x in header if x in NAMES)
-        header_order = zip(header_order, range(len(header_order)))
-        sort_order = tuple(
-            x[1] for x in sorted(header_order, key=lambda x: x[0], reverse=False)
-        )
+        sort_order = tuple(NAMES.index(x) for x in header_order)
         translation = translation[..., sort_order]
 
         header_order = tuple(
@@ -518,8 +515,9 @@ class Orientations:
 
         default = np.zeros(translation.shape[0])
 
+        details = ret.get("_rlnClassNumber", default)
         scores = ret.get("_pytmeScore", default)
-        return translation, rotation, scores, default
+        return translation, rotation, scores, details
 
     @staticmethod
     def _from_tbl(

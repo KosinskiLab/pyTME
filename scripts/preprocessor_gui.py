@@ -22,10 +22,10 @@ from scipy.fft import next_fast_len
 from napari.utils.events import EventedList
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
-from tme.backends import backend
+from tme.backends import backend as be
 from tme.rotations import align_vectors
-from tme import Preprocessor, Density, Orientations
 from tme.matching_utils import create_mask, load_pickle
+from tme import Preprocessor, Density, Orientations
 from tme.filters import BandPassReconstructed, CTFReconstructed
 
 preprocessor = Preprocessor()
@@ -69,7 +69,7 @@ def ctf_filter(
     flip_phase: bool = False,
 ) -> NDArray:
     fast_shape = [next_fast_len(x) for x in np.multiply(template.shape, 2)]
-    template_pad = backend.topleft_pad(template, fast_shape)
+    template_pad = be.topleft_pad(template, fast_shape)
     template_ft = np.fft.rfftn(template_pad, s=template_pad.shape)
     ctf = CTFReconstructed(
         shape=fast_shape,
@@ -85,7 +85,7 @@ def ctf_filter(
     )
     np.multiply(template_ft, ctf()["data"], out=template_ft)
     template_pad = np.fft.irfftn(template_ft, s=template_pad.shape).real
-    template = backend.topleft_pad(template_pad, template.shape)
+    template = be.topleft_pad(template_pad, template.shape)
     return template
 
 
@@ -456,7 +456,7 @@ def box_mask(
         mask_type="box",
         shape=template.shape,
         center=(center_x, center_y, center_z),
-        height=(height_x, height_y, height_z),
+        size=(height_x, height_y, height_z),
         sigma_decay=sigma_decay,
     )
 
@@ -499,7 +499,7 @@ def tube_mask(
         mask_type="tube",
         shape=template.shape,
         symmetry_axis=symmetry_axis,
-        base_center=(center_x, center_y, center_z),
+        center=(center_x, center_y, center_z),
         inner_radius=inner_radius,
         outer_radius=outer_radius,
         height=height,
@@ -846,7 +846,7 @@ class AlignmentWidget(widgets.Container):
         principal_eigenvector = eigenvectors[:, np.argmax(eigenvalues)]
 
         rotation_matrix = align_vectors(principal_eigenvector, alignment_axis)
-        rotated_data, _ = backend.rigid_transform(
+        rotated_data, _ = be.rigid_transform(
             arr=active_layer.data,
             rotation_matrix=rotation_matrix,
             use_geometric_center=False,
@@ -982,7 +982,6 @@ class PointCloudWidget(widgets.Container):
             if not isinstance(layer, napari.layers.Points):
                 continue
 
-            layer.face_color = "white"
             if event == "Label":
                 if len(layer.properties.get("detail", ())) == 0:
                     continue
@@ -999,9 +998,7 @@ class PointCloudWidget(widgets.Container):
                 layer.face_color = "score_scaled"
                 layer.face_colormap = "turbo"
                 layer.face_color_mode = "colormap"
-
             layer.refresh_colors()
-
         return None
 
     def _set_positive(self, event):
@@ -1169,11 +1166,18 @@ class MatchingWidget(widgets.Container):
         self.viewer = viewer
         self.dataframes = {}
 
+        option_container = widgets.Container(layout="horizontal")
         self.load_target_checkbox = widgets.CheckBox(text="Load Target", value=False)
-        self.append(self.load_target_checkbox)
+        self.load_rotations_checkbox = widgets.CheckBox(
+            text="Load Rotations", value=False
+        )
+        option_container.append(self.load_target_checkbox)
+        option_container.append(self.load_rotations_checkbox)
+
         self.import_button = widgets.PushButton(name="Import", text="Import Pickle")
         self.import_button.clicked.connect(self._get_load_path)
 
+        self.append(option_container)
         self.append(self.import_button)
 
     def _get_load_path(self, event):
@@ -1212,12 +1216,13 @@ class MatchingWidget(widgets.Container):
 
         if data[0].ndim == data[2].ndim:
             metadata = {"origin": data[-1][1], "sampling_rate": data[-1][2]}
-            _ = self.viewer.add_image(
-                data=data[2],
-                name=f"{fname}_rotations",
-                colormap="orange",
-                metadata=metadata,
-            )
+            if self.load_rotations_checkbox.value:
+                _ = self.viewer.add_image(
+                    data=data[2],
+                    name=f"{fname}_rotations",
+                    colormap="orange",
+                    metadata=metadata,
+                )
             _ = self.viewer.add_image(
                 data=data[0],
                 name=f"{fname}_scores",

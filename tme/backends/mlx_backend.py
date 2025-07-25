@@ -6,7 +6,7 @@ Copyright (c) 2024 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-from typing import Tuple, List, Callable
+from typing import Tuple, List
 
 import numpy as np
 
@@ -143,32 +143,6 @@ class MLXBackend(NumpyFFTWBackend):
         starts, stops = starts.tolist(), stops.tolist()
         box = tuple(slice(start, stop) for start, stop in zip(starts, stops))
         return arr[box]
-
-    def build_fft(
-        self,
-        fwd_shape: Tuple[int],
-        inv_shape: Tuple[int] = None,
-        inv_output_shape: Tuple[int] = None,
-        fwd_axes: Tuple[int] = None,
-        inv_axes: Tuple[int] = None,
-        **kwargs,
-    ) -> Tuple[Callable, Callable]:
-        # Runs on mlx.core.cpu until Metal support is available
-        rfft_shape = self._format_fft_shape(fwd_shape, fwd_axes)
-        irfft_shape = fwd_shape if inv_output_shape is None else inv_output_shape
-        irfft_shape = self._format_fft_shape(irfft_shape, inv_axes)
-
-        def rfftn(arr: MlxArray, out: MlxArray = None, s=rfft_shape, axes=fwd_axes):
-            out[:] = self._array_backend.fft.rfftn(
-                arr, s=s, axes=axes, stream=self._array_backend.cpu
-            )
-
-        def irfftn(arr: MlxArray, out: MlxArray = None, s=irfft_shape, axes=inv_axes):
-            out[:] = self._array_backend.fft.irfftn(
-                arr, s=s, axes=axes, stream=self._array_backend.cpu
-            )
-
-        return rfftn, irfftn
 
     def rfftn(self, arr, *args, **kwargs):
         return self.fft.rfftn(arr, stream=self._array_backend.cpu, **kwargs)

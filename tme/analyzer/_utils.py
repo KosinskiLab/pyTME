@@ -117,7 +117,6 @@ def cart_to_score(
     return positions, valid_positions
 
 
-
 def score_to_cart(
     positions,
     fast_shape: Tuple[int] = None,

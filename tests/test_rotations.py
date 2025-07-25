@@ -8,6 +8,7 @@ from tme import Density
 from scipy.spatial.transform import Rotation
 from scipy.signal import correlate
 
+from tme.mask import elliptical_mask
 from tme.rotations import (
     euler_from_rotationmatrix,
     euler_to_rotationmatrix,
@@ -16,7 +17,6 @@ from tme.rotations import (
     get_rotation_matrices,
 )
 from tme.matching_utils import (
-    elliptical_mask,
     split_shape,
     compute_full_convolution_index,
 )

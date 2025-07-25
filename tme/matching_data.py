@@ -128,11 +128,8 @@ class MatchingData:
         slice_start = np.array([x.start for x in arr_slice], dtype=int)
         slice_stop = np.array([x.stop for x in arr_slice], dtype=int)
 
-        # We are deviating from our typical right_pad + mod here
-        # because cropping from full convolution mode to target shape
-        # is defined from the perspective of the origin
-        right_pad = np.divide(padding, 2).astype(int)
-        left_pad = np.add(right_pad, np.mod(padding, 2))
+        left_pad = np.divide(padding, 2).astype(int)
+        right_pad = np.add(left_pad, np.mod(padding, 2))
 
         data_voxels_left = np.minimum(slice_start, left_pad)
         data_voxels_right = np.minimum(
@@ -253,7 +250,7 @@ class MatchingData:
         target_offset[mask] = [x.start for x in target_slice]
         mask = np.subtract(1, self._target_batch).astype(bool)
         template_offset = np.zeros(len(self._output_template_shape), dtype=int)
-        template_offset[mask] = [x.start for x, b in zip(template_slice, mask) if b]
+        template_offset[mask] = [x.start for x in template_slice]
 
         translation_offset = tuple(x for x in target_offset)
 
@@ -299,7 +296,7 @@ class MatchingData:
 
     def set_matching_dimension(self, target_dim: int = None, template_dim: int = None):
         """
-        Sets matching dimensions for target and template.
+        Sets matching batch dimensions for target and template.
 
         Parameters
         ----------
@@ -490,8 +487,8 @@ class MatchingData:
     def _fourier_padding(
         target_shape: Tuple[int],
         template_shape: Tuple[int],
-        pad_target: bool = False,
         batch_mask: Tuple[int] = None,
+        **kwargs,
     ) -> Tuple[Tuple, Tuple, Tuple, Tuple]:
         if batch_mask is None:
             batch_mask = np.zeros_like(template_shape)
@@ -503,7 +500,7 @@ class MatchingData:
 
         # Avoid padding batch dimensions
         pad_shape = np.maximum(target_shape, template_shape)
-        pad_shape = np.maximum(target_shape, np.multiply(1 - batch_mask, pad_shape))
+        pad_shape = np.maximum(pad_shape, np.multiply(1 - batch_mask, pad_shape))
         ret = be.compute_convolution_shapes(pad_shape, fourier_pad)
         conv_shape, fast_shape, fast_ft_shape = ret
 
@@ -525,20 +522,12 @@ class MatchingData:
             shape_shift = np.multiply(np.add(shape_shift, offset), shape_mask)
             fourier_shift = np.subtract(fourier_shift, shape_shift).astype(int)
 
-        if pad_target:
-            fourier_shift = np.subtract(fourier_shift, np.subtract(1, template_mod))
-
         fourier_shift = tuple(np.multiply(fourier_shift, 1 - batch_mask).astype(int))
         return tuple(conv_shape), tuple(fast_shape), tuple(fast_ft_shape), fourier_shift
 
-    def fourier_padding(self, pad_target: bool = False) -> Tuple:
+    def fourier_padding(self, **kwargs) -> Tuple:
         """
         Computes efficient shape four Fourier transforms and potential associated shifts.
-
-        Parameters
-        ----------
-        pad_target : bool, optional
-            Whether the target has been padded to the full convolution shape.
 
         Returns
         -------
@@ -553,7 +542,6 @@ class MatchingData:
             target_shape=be.to_numpy_array(self._output_target_shape),
             template_shape=be.to_numpy_array(self._output_template_shape),
             batch_mask=be.to_numpy_array(self._batch_mask),
-            pad_target=pad_target,
         )
 
     def computation_schedule(

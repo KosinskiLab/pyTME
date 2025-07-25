@@ -36,7 +36,7 @@ class CTF(ComposableFilter):
 
     #: The shape of the to-be created mask.
     shape: Tuple[int] = None
-    #: The defocus value in x direction (in units of sampling rate).
+    #: The defocus in x direction (in units of sampling rate).
     defocus_x: Tuple[float] = None
     #: The tilt angles.
     angles: Tuple[float] = None
@@ -164,7 +164,7 @@ class CTF(ComposableFilter):
         shape : tuple of int
             The shape of the CTF.
         defocus_x : tuple of float
-            The defocus value in x direction.
+            The defocus in x direction (in units of sampling rate).
         angles : tuple of float
             The tilt angles.
         opening_axis : int, optional
@@ -178,7 +178,7 @@ class CTF(ComposableFilter):
         defocus_angle : tuple of float, optional
             The defocus angle in radians, defaults to 0.
         defocus_y : tuple of float, optional
-            The defocus value in y direction, defaults to None.
+            The defocus in x direction (in units of sampling rate).
         correct_defocus_gradient : bool, optional
             Whether to correct defocus gradient, defaults to False.
         sampling_rate : tuple of float, optional
@@ -219,14 +219,12 @@ class CTF(ComposableFilter):
                 corrected_tilt_axis -= 1
 
         for index, angle in enumerate(angles):
-            defocus_x, defocus_y = defoci_x[index], defoci_y[index]
-
             correction = correct_defocus_gradient and angle is not None
             chi = create_ctf(
                 angle=angle,
                 shape=ctf_shape,
-                defocus_x=defocus_x,
-                defocus_y=defocus_y,
+                defocus_x=defoci_x[index],
+                defocus_y=defoci_y[index],
                 sampling_rate=sampling_rate,
                 acceleration_voltage=acceleration_voltage[index],
                 correct_defocus_gradient=correction,
@@ -243,12 +241,10 @@ class CTF(ComposableFilter):
             stack[index] = chi
 
         # Avoid contrast inversion
-        np.negative(stack, out=stack)
+        stack = np.negative(stack, out=stack)
         if flip_phase:
-            np.abs(stack, out=stack)
-
-        stack = be.to_backend_array(np.squeeze(stack))
-        return stack
+            stack = np.abs(stack, out=stack)
+        return be.to_backend_array(np.squeeze(stack))
 
 
 class CTFReconstructed(CTF):
@@ -281,7 +277,7 @@ class CTFReconstructed(CTF):
         shape : tuple of int
             The shape of the CTF.
         defocus_x : tuple of float
-            The defocus value in x direction.
+            The defocus in x direction in units of sampling rate.
         opening_axis : int, optional
             The axis around which the wedge is opened, defaults to 2.
         amplitude_contrast : float, optional
@@ -291,7 +287,7 @@ class CTFReconstructed(CTF):
         defocus_angle : tuple of float, optional
             The defocus angle in radians, defaults to 0.
         defocus_y : tuple of float, optional
-            The defocus value in y direction, defaults to None.
+            The defocus in y direction in units of sampling rate.
         sampling_rate : tuple of float, optional
             The sampling rate, defaults to 1.
         acceleration_voltage : float, optional
@@ -321,18 +317,15 @@ class CTFReconstructed(CTF):
             defocus_angle=defocus_angle,
             amplitude_contrast=amplitude_contrast,
         )
-        stack = shift_fourier(data=stack, shape_is_real_fourier=False)
-
         # Avoid contrast inversion
         np.negative(stack, out=stack)
         if flip_phase:
             np.abs(stack, out=stack)
 
-        stack = be.to_backend_array(np.squeeze(stack))
+        stack = shift_fourier(data=stack, shape_is_real_fourier=False)
         if return_real_fourier:
             stack = crop_real_fourier(stack)
-
-        return stack
+        return be.to_backend_array(np.squeeze(stack))
 
 
 def _from_xml(filename: str) -> Dict:
@@ -566,7 +559,7 @@ def create_ctf(
     amplitude_contrast : float, optional
         Amplitude contrast of microscope, defaults to 0.07.
     spherical_aberration : float, optional
-        Spherical aberration of microscope in Angstrom.
+        Spherical aberration of microscope in units of sampling rate.
     angle : float, optional
         Assume the created CTF is a projection over opening_axis observed at angle.
     opening_axis : int, optional
@@ -590,10 +583,14 @@ def create_ctf(
     electron_wavelength = _compute_electron_wavelength(acceleration_voltage)
     electron_wavelength /= sampling_rate
     aberration = (spherical_aberration / sampling_rate) * electron_wavelength**2
+
+    defocus_x = defocus_x / sampling_rate if defocus_x is not None else None
+    defocus_y = defocus_y / sampling_rate if defocus_y is not None else None
     if correct_defocus_gradient or defocus_y is not None:
         if len(shape) < 2:
             raise ValueError(f"Length of shape needs to be at least 2, got {shape}")
 
+        # Axial distance from grid center in multiples of sampling rate
         sampling = tuple(float(x) for x in np.divide(sampling_rate, shape))
         grid = fftfreqn(
             shape=shape,
@@ -619,6 +616,7 @@ def create_ctf(
         defocus_sum = np.add(defocus_x, defocus_y)
         defocus_difference = np.subtract(defocus_x, defocus_y)
 
+        # Reusing grid, but in principle pure frequencies would suffice
         angular_grid = np.arctan2(grid[1], grid[0])
         defocus_difference = np.multiply(
             defocus_difference,
@@ -627,7 +625,7 @@ def create_ctf(
         defocus_x = np.add(defocus_sum, defocus_difference)
         defocus_x *= 0.5
 
-    frequency_grid = fftfreqn(shape, sampling_rate=True, compute_euclidean_norm=True)
+    frequency_grid = fftfreqn(shape, sampling_rate=1, compute_euclidean_norm=True)
     if angle is not None and opening_axis is not None and full_shape is not None:
         frequency_grid = frequency_grid_at_angle(
             shape=full_shape,

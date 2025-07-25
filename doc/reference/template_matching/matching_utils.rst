@@ -1,21 +1,11 @@
 .. include:: ../../substitutions.rst
-.. currentmodule:: tme.matching_utils
 
 Utilities
 =========
 
 Functions that are used in exhaustive and non-exhaustive template matching or are specific to template matching in general are grouped in the utilities module.
 
-
-Masks
-~~~~~
-.. autosummary::
-   :toctree: ../api/
-
-   box_mask
-   create_mask
-   tube_mask
-   elliptical_mask
+.. currentmodule:: tme.matching_utils
 
 Subsetting
 ~~~~~~~~~~
@@ -44,6 +34,7 @@ Utilities
 .. autosummary::
    :toctree: ../api/
 
+   create_mask
    scramble_phases
    rigid_transform
    array_to_memmap
@@ -67,3 +58,15 @@ Rotations
    euler_from_rotationmatrix
    get_cone_rotations
    get_rotation_matrices
+
+.. currentmodule:: tme.mask
+
+Masks
+~~~~~
+.. autosummary::
+   :toctree: ../api/
+
+   box_mask
+   tube_mask
+   elliptical_mask
+   membrane_mask

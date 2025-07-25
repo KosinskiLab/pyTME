@@ -244,7 +244,7 @@ MATCHING_MEMORY_REGISTRY = {
     "PeakCallerMaximumFilter": PeakCallerMaximumFilterMemoryUsage,
     "cupy": CupyBackendMemoryUsage,
     "pytorch": CupyBackendMemoryUsage,
-    "batchFLCSpherical": FLCSphericalMaskMemoryUsage,
+    "batchFLCSphericalMask": FLCSphericalMaskMemoryUsage,
     "batchFLC": FLCMemoryUsage,
 }
 
