@@ -12,9 +12,8 @@ Subsetting
 .. autosummary::
    :toctree: ../api/
 
-   centered
    split_shape
-   centered_mask
+   center_slice
    apply_convolution_mode
    compute_full_convolution_index
    compute_parallelization_schedule

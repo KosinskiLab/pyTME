@@ -38,30 +38,40 @@ class TomoFiles:
             raise FileNotFoundError(f"Mask not found: {self.mask}")
 
 
-class TomoDatasetDiscovery:
-    """Find and match tomogram files using glob patterns."""
+@dataclass
+class AnalysisFiles:
+    """Container for files related to analysis of a single tomogram."""
 
-    def __init__(
-        self,
-        mrc_pattern: str,
-        metadata_pattern: str,
-        mask_pattern: Optional[str] = None,
-    ):
-        """
-        Initialize with glob patterns for file discovery.
+    #: Tomogram identifier.
+    tomo_id: str
+    #: List of TM pickle result files for this tomo_id.
+    input_files: List[Path]
+    #: Background pickle files for normalization (optional).
+    background_files: List[Path] = None
+    #: Target mask file (optional).
+    mask: Optional[Path] = None
 
-        Parameters
-        ----------
-        mrc_pattern: str
-            Glob pattern for tomogram files, e.g., "/data/tomograms/*.mrc"
-        metadata_pattern: str
-            Glob pattern for metadata files, e.g., "/data/metadata/*.xml"
-        mask_pattern: str
-            Optional glob pattern for mask files, e.g., "/data/masks/*.mrc"
-        """
-        self.mrc_pattern = mrc_pattern
-        self.metadata_pattern = metadata_pattern
-        self.mask_pattern = mask_pattern
+    def __post_init__(self):
+        """Validate that required files exist."""
+        for input_file in self.input_files:
+            if not input_file.exists():
+                raise FileNotFoundError(f"Input file not found: {input_file}")
+
+        if self.background_files:
+            for bg_file in self.background_files:
+                if not bg_file.exists():
+                    raise FileNotFoundError(f"Background file not found: {bg_file}")
+
+        if self.mask and not self.mask.exists():
+            raise FileNotFoundError(f"Mask not found: {self.mask}")
+
+
+class DatasetDiscovery(ABC):
+    """Base class for dataset discovery using glob patterns."""
+
+    @abstractmethod
+    def discover(self, tomo_list: Optional[List[str]] = None) -> List:
+        pass
 
     @staticmethod
     def parse_id_from_filename(filename: str) -> str:
@@ -78,7 +88,7 @@ class TomoDatasetDiscovery:
                 break
         return base
 
-    def _create_mapping_table(self, pattern: str) -> Dict:
+    def create_mapping_table(self, pattern: str) -> Dict[str, List[Path]]:
         """Create a mapping table between tomogram ids and file paths."""
         if pattern is None:
             return {}
@@ -91,21 +101,25 @@ class TomoDatasetDiscovery:
                 ret[file_id] = []
             ret[file_id].append(file)
 
-        # This could all be done in one line but we want the messages.
-        for key in ret.keys():
-            value = ret[key]
-            if len(value) > 1:
-                print(f"Found id {key} multiple times at {value}. Using {value[0]}.")
-            ret[key] = value[0]
         return ret
 
-    def discover_tomograms(
-        self, tomo_list: Optional[List[str]] = None, require_mask: bool = False
-    ) -> List[TomoFiles]:
+
+@dataclass
+class TomoDatasetDiscovery(DatasetDiscovery):
+    """Find and match tomogram files using glob patterns."""
+
+    #: Glob pattern for tomogram files, e.g., "/data/tomograms/*.mrc"
+    mrc_pattern: str
+    #: Glob pattern for metadata files, e.g., "/data/metadata/*.xml"
+    metadata_pattern: str
+    #: Optional glob pattern for mask files, e.g., "/data/masks/*.mrc"
+    mask_pattern: Optional[str] = None
+
+    def discover(self, tomo_list: Optional[List[str]] = None) -> List[TomoFiles]:
         """Find all matching tomogram files."""
-        mrc_files = self._create_mapping_table(self.mrc_pattern)
-        meta_files = self._create_mapping_table(self.metadata_pattern)
-        mask_files = self._create_mapping_table(self.mask_pattern)
+        mrc_files = self.create_mapping_table(self.mrc_pattern)
+        meta_files = self.create_mapping_table(self.metadata_pattern)
+        mask_files = self.create_mapping_table(self.mask_pattern)
 
         if tomo_list:
             mrc_files = {k: v for k, v in mrc_files.items() if k in tomo_list}
@@ -127,6 +141,77 @@ class TomoDatasetDiscovery:
                 )
             )
         return tomo_files
+
+
+@dataclass
+class AnalysisDatasetDiscovery(DatasetDiscovery):
+    """Find and match analysis files using glob patterns."""
+
+    #: Glob pattern for TM pickle files, e.g., "/data/results/*.pickle"
+    input_patterns: List[str]
+    #: List of glob patterns for background files, e.g., ["/data/bg1/*.pickle", "/data/bg2/*.pickle"]
+    background_patterns: List[str] = None
+    #: Target masks, e.g., "/data/masks/*.mrc"
+    mask_patterns: Optional[str] = None
+
+    def __post_init__(self):
+        """Ensure patterns are lists."""
+        if isinstance(self.input_patterns, str):
+            self.input_patterns = [self.input_patterns]
+        if self.background_patterns and isinstance(self.background_patterns, str):
+            self.background_patterns = [self.background_patterns]
+
+    def discover(self, tomo_list: Optional[List[str]] = None) -> List[AnalysisFiles]:
+        """Find all matching analysis files."""
+
+        input_files_by_id = {}
+        for pattern in self.input_patterns:
+            files = self.create_mapping_table(pattern)
+            for tomo_id, file_list in files.items():
+                if tomo_id not in input_files_by_id:
+                    input_files_by_id[tomo_id] = []
+                input_files_by_id[tomo_id].extend(file_list)
+
+        background_files_by_id = {}
+        if self.background_patterns:
+            for pattern in self.background_patterns:
+                bg_files = self.create_mapping_table(pattern)
+                for tomo_id, file_list in bg_files.items():
+                    if tomo_id not in background_files_by_id:
+                        background_files_by_id[tomo_id] = []
+                    background_files_by_id[tomo_id].extend(file_list)
+
+        mask_files_by_id = {}
+        if self.mask_patterns:
+            mask_files_by_id = self.create_mapping_table(self.mask_patterns)
+
+        if tomo_list:
+            input_files_by_id = {
+                k: v for k, v in input_files_by_id.items() if k in tomo_list
+            }
+            background_files_by_id = {
+                k: v for k, v in background_files_by_id.items() if k in tomo_list
+            }
+            mask_files_by_id = {
+                k: v for k, v in mask_files_by_id.items() if k in tomo_list
+            }
+
+        analysis_files = []
+        for tomo_id, input_file_list in input_files_by_id.items():
+            background_files = background_files_by_id.get(tomo_id, [])
+            mask_file = mask_files_by_id.get(tomo_id, [None])[0]
+
+            analysis_file = AnalysisFiles(
+                tomo_id=tomo_id,
+                input_files=[f.absolute() for f in input_file_list],
+                background_files=(
+                    [f.absolute() for f in background_files] if background_files else []
+                ),
+                mask=mask_file.absolute() if mask_file else None,
+            )
+            analysis_files.append(analysis_file)
+
+        return analysis_files
 
 
 @dataclass
@@ -225,12 +310,10 @@ class TMParameters:
                 f"Invalid backend: {self.backend}. Choose from {valid_backends}"
             )
 
-    def to_command_args(
-        self, tomo_files: TomoFiles, output_path: Path
-    ) -> Dict[str, Any]:
+    def to_command_args(self, files: TomoFiles, output_path: Path) -> Dict[str, Any]:
         """Convert parameters to pyTME command arguments."""
         args = {
-            "target": str(tomo_files.tomogram),
+            "target": str(files.tomogram),
             "template": str(self.template),
             "output": str(output_path),
             "acceleration-voltage": self.acceleration_voltage,
@@ -248,11 +331,11 @@ class TMParameters:
         # Optional file arguments
         if self.template_mask:
             args["template-mask"] = str(self.template_mask)
-        if tomo_files.mask:
-            args["target-mask"] = str(tomo_files.mask)
-        if tomo_files.metadata:
-            args["ctf-file"] = str(tomo_files.metadata)
-            args["tilt-angles"] = str(tomo_files.metadata)
+        if files.mask:
+            args["target-mask"] = str(files.mask)
+        if files.metadata:
+            args["ctf-file"] = str(files.metadata)
+            args["tilt-angles"] = str(files.metadata)
 
         # Optional parameters
         if self.lowpass:
@@ -292,7 +375,7 @@ class TMParameters:
             args["angular-sampling"] = 15.0
 
         args["num-peaks"] = self.num_peaks
-        return args
+        return {k: v for k, v in args.items() if v is not None}
 
     def get_flags(self) -> List[str]:
         """Get boolean flags for pyTME command."""
@@ -327,6 +410,71 @@ class TMParameters:
             flags.append("no-use-optimized-set")
         if self.no_filter_target:
             flags.append("no-filter-target")
+        return flags
+
+
+@dataclass
+class AnalysisParameters:
+    """Parameters for template matching analysis and peak calling."""
+
+    # Peak calling
+    peak_caller: str = "PeakCallerMaximumFilter"
+    num_peaks: int = 1000
+    min_score: float = 0.0
+    max_score: Optional[float] = None
+    min_distance: int = 5
+    min_boundary_distance: int = 0
+    mask_edges: bool = False
+    n_false_positives: Optional[int] = None
+
+    # Output format
+    output_format: str = "relion4"
+    output_directory: Optional[str] = None
+    angles_clockwise: bool = False
+
+    # Advanced options
+    extraction_box_size: Optional[int] = None
+
+    def to_command_args(
+        self, files: AnalysisFiles, output_path: Path
+    ) -> Dict[str, Any]:
+        """Convert parameters to analyze_template_matching command arguments."""
+        args = {
+            "input-files": ",".join([str(f) for f in files.input_files]),
+            "output-prefix": str(output_path.parent / output_path.stem),
+            "peak-caller": self.peak_caller,
+            "num-peaks": self.num_peaks,
+            "min-score": self.min_score,
+            "min-distance": self.min_distance,
+            "min-boundary-distance": self.min_boundary_distance,
+            "output-format": self.output_format,
+        }
+
+        # Optional parameters
+        if self.max_score is not None:
+            args["max-score"] = self.max_score
+        if self.n_false_positives is not None:
+            args["n-false-positives"] = self.n_false_positives
+        if self.extraction_box_size is not None:
+            args["extraction-box-size"] = self.extraction_box_size
+        if files.mask:
+            args["target-mask"] = str(files.mask)
+
+        # Background files
+        if files.background_files:
+            args["background-files"] = ",".join(
+                [str(f) for f in files.background_files]
+            )
+
+        return {k: v for k, v in args.items() if v is not None}
+
+    def get_flags(self) -> List[str]:
+        """Get boolean flags for analyze_template_matching command."""
+        flags = []
+        if self.mask_edges:
+            flags.append("mask-edges")
+        if self.angles_clockwise:
+            flags.append("angles-clockwise")
         return flags
 
 
@@ -369,26 +517,73 @@ class ComputeResources:
 
 
 @dataclass
-class TemplateMatchingTask:
-    """A complete template matching task."""
+class AbstractTask(ABC):
+    """Abstract task specification"""
 
-    tomo_files: TomoFiles
-    parameters: TMParameters
+    files: object
+    parameters: object
     resources: ComputeResources
     output_dir: Path
 
     @property
     def tomo_id(self) -> str:
-        return self.tomo_files.tomo_id
+        return self.files.tomo_id
+
+    @abstractmethod
+    def executable(self) -> str:
+        pass
 
     @property
+    @abstractmethod
     def output_file(self) -> Path:
-        original_stem = self.tomo_files.tomogram.stem
-        return self.output_dir / f"{original_stem}.pickle"
+        pass
+
+    def to_command_args(self):
+        return self.parameters.to_command_args(self.files, self.output_file)
 
     def create_output_dir(self) -> None:
         """Ensure output directory exists."""
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+
+@dataclass
+class TemplateMatchingTask(AbstractTask):
+    """Template matching task."""
+
+    @property
+    def output_file(self) -> Path:
+        original_stem = self.files.tomogram.stem
+        return self.output_dir / f"{original_stem}.pickle"
+
+    @property
+    def executable(self):
+        return "match_template"
+
+
+class AnalysisTask(AbstractTask):
+    """Analysis task for processing TM results."""
+
+    @property
+    def output_file(self) -> Path:
+        """Generate output filename based on format."""
+        prefix = self.files.input_files[0].stem
+
+        format_extensions = {
+            "orientations": ".tsv",
+            "relion4": ".star",
+            "relion5": ".star",
+            "pickle": ".pickle",
+            "alignment": "",
+            "extraction": "",
+            "average": ".mrc",
+        }
+
+        extension = format_extensions.get(self.parameters.output_format, ".tsv")
+        return self.output_dir / f"{prefix}{extension}"
+
+    @property
+    def executable(self):
+        return "postprocess"
 
 
 class ExecutionBackend(ABC):
@@ -447,7 +642,7 @@ class SlurmBackend(ExecutionBackend):
             {
                 "output": f"{task.output_dir}/{task.tomo_id}_%j.out",
                 "error": f"{task.output_dir}/{task.tomo_id}_%j.err",
-                "job-name": f"pytme_{task.tomo_id}",
+                "job-name": f"pytme_{task.executable}_{task.tomo_id}",
                 "chdir": str(task.output_dir),
             }
         )
@@ -466,8 +661,8 @@ class SlurmBackend(ExecutionBackend):
             ]
         )
 
-        command_parts = ["match_template"]
-        cmd_args = task.parameters.to_command_args(task.tomo_files, task.output_file)
+        command_parts = [task.executable]
+        cmd_args = task.to_command_args()
         for arg, value in cmd_args.items():
             command_parts.append(f"--{arg} {value}")
 
@@ -493,7 +688,7 @@ class SlurmBackend(ExecutionBackend):
 
         try:
             if Path(task.output_file).exists() and not self.force:
-                return "ERROR: File exists and force was not requested."
+                return f"ERROR: {str(task.output_file)} exists and force was not set."
 
             result = subprocess.run(
                 ["sbatch", str(script_path)], capture_output=True, text=True, check=True
@@ -521,37 +716,116 @@ class SlurmBackend(ExecutionBackend):
         return job_ids
 
 
+def add_compute_resources(
+    parser,
+    default_cpus=4,
+    default_memory=32,
+    default_time="02:00:00",
+    default_partition="cpu",
+    include_gpu=False,
+):
+    """Add compute resource arguments to a parser."""
+    compute_group = parser.add_argument_group("Compute Resources")
+    compute_group.add_argument(
+        "--cpus", type=int, default=default_cpus, help="Number of CPUs per job"
+    )
+    compute_group.add_argument(
+        "--memory", type=int, default=default_memory, help="Memory per job in GB"
+    )
+    compute_group.add_argument(
+        "--time-limit", default=default_time, help="Time limit (HH:MM:SS)"
+    )
+    compute_group.add_argument(
+        "--partition", default=default_partition, help="SLURM partition"
+    )
+    compute_group.add_argument(
+        "--qos", default="normal", help="SLURM quality of service"
+    )
+
+    if include_gpu:
+        compute_group.add_argument(
+            "--gpu-count", type=int, default=1, help="Number of GPUs per job"
+        )
+        compute_group.add_argument(
+            "--gpu-type",
+            default="3090",
+            help="GPU type constraint (e.g., '3090', 'A100')",
+        )
+
+    return compute_group
+
+
+def add_job_submission(parser, default_output_dir="./results"):
+    """Add job submission arguments to a parser."""
+    job_group = parser.add_argument_group("Job Submission")
+    job_group.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(default_output_dir),
+        help="Output directory for results",
+    )
+    job_group.add_argument(
+        "--script-dir",
+        type=Path,
+        default=Path("./scripts"),
+        help="Directory for generated SLURM scripts",
+    )
+    job_group.add_argument(
+        "--environment-setup",
+        default="module load pyTME",
+        help="Command(s) to set up pyTME environment",
+    )
+    job_group.add_argument(
+        "--dry-run", action="store_true", help="Generate scripts but do not submit jobs"
+    )
+    job_group.add_argument("--force", action="store_true", help="Rerun completed jobs")
+
+    return job_group
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Batch runner for match_template.py",
+        description="Batch runner for PyTME.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    input_group = parser.add_argument_group("Input Files")
-    input_group.add_argument(
+    subparsers = parser.add_subparsers(
+        dest="command", help="Available commands", required=True
+    )
+
+    matching_parser = subparsers.add_parser(
+        "matching",
+        help="Run template matching",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    # Input files for matching
+    tm_input_group = matching_parser.add_argument_group("Input Files")
+    tm_input_group.add_argument(
         "--tomograms",
         required=True,
         help="Glob pattern for tomogram files (e.g., '/data/tomograms/*.mrc')",
     )
-    input_group.add_argument(
+    tm_input_group.add_argument(
         "--metadata",
         required=True,
         help="Glob pattern for metadata files (e.g., '/data/metadata/*.xml')",
     )
-    input_group.add_argument(
-        "--masks", help="Glob pattern for mask files (e.g., '/data/masks/*.mrc')"
+    tm_input_group.add_argument(
+        "--masks", help="Glob pattern for target mask files (e.g., '/data/masks/*.mrc')"
     )
-    input_group.add_argument(
+    tm_input_group.add_argument(
         "--template", required=True, type=Path, help="Template file (MRC, PDB, etc.)"
     )
-    input_group.add_argument("--template-mask", type=Path, help="Template mask file")
-    input_group.add_argument(
+    tm_input_group.add_argument("--template-mask", type=Path, help="Template mask file")
+    tm_input_group.add_argument(
         "--tomo-list",
         type=Path,
         help="File with list of tomogram IDs to process (one per line)",
     )
 
-    tm_group = parser.add_argument_group("Template Matching")
+    # Template matching parameters
+    tm_group = matching_parser.add_argument_group("Template Matching")
     angular_group = tm_group.add_mutually_exclusive_group()
     angular_group.add_argument(
         "--angular-sampling", type=float, help="Angular sampling in degrees"
@@ -571,7 +845,8 @@ def parse_args():
         "--score-threshold", type=float, default=0.0, help="Minimum score threshold"
     )
 
-    scope_group = parser.add_argument_group("Microscope Parameters")
+    # Microscope parameters
+    scope_group = matching_parser.add_argument_group("Microscope Parameters")
     scope_group.add_argument(
         "--voltage", type=float, default=300.0, help="Acceleration voltage in kV"
     )
@@ -585,7 +860,8 @@ def parse_args():
         "--amplitude-contrast", type=float, default=0.07, help="Amplitude contrast"
     )
 
-    proc_group = parser.add_argument_group("Processing Options")
+    # Processing options
+    proc_group = matching_parser.add_argument_group("Processing Options")
     proc_group.add_argument(
         "--lowpass",
         type=float,
@@ -616,155 +892,331 @@ def parse_args():
         help="Scramble template phases for noise estimation",
     )
 
-    compute_group = parser.add_argument_group("Compute Resources")
-    compute_group.add_argument(
-        "--cpus", type=int, default=4, help="Number of CPUs per job"
+    _ = add_compute_resources(
+        matching_parser,
+        default_cpus=4,
+        default_memory=64,
+        include_gpu=True,
+        default_time="05:00:00",
+        default_partition="gpu-el8",
     )
-    compute_group.add_argument(
-        "--memory", type=int, default=64, help="Memory per job in GB"
-    )
-    compute_group.add_argument(
-        "--gpu-count", type=int, default=1, help="Number of GPUs per job"
-    )
-    compute_group.add_argument(
-        "--gpu-type", default="3090", help="GPU type constraint (e.g., '3090', 'A100')"
-    )
-    compute_group.add_argument(
-        "--time-limit", default="05:00:00", help="Time limit (HH:MM:SS)"
-    )
-    compute_group.add_argument("--partition", default="gpu-el8", help="SLURM partition")
+    _ = add_job_submission(matching_parser, "./matching_results")
 
-    job_group = parser.add_argument_group("Job Submission")
-    job_group.add_argument(
-        "--output-dir",
+    analysis_parser = subparsers.add_parser(
+        "analysis",
+        help="Analyze template matching results",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    # Input files for analysis
+    analysis_input_group = analysis_parser.add_argument_group("Input Files")
+    analysis_input_group.add_argument(
+        "--input-file",
+        "--input-files",
+        required=True,
+        nargs="+",
+        help="Path to one or multiple runs of match_template.py.",
+    )
+    analysis_input_group.add_argument(
+        "--background-file",
+        "--background-files",
+        required=False,
+        nargs="+",
+        default=[],
+        help="Path to one or multiple runs of match_template.py for normalization. "
+        "For instance from --scramble_phases or a different template.",
+    )
+    analysis_input_group.add_argument(
+        "--masks", help="Glob pattern for target mask files (e.g., '/data/masks/*.mrc')"
+    )
+    analysis_input_group.add_argument(
+        "--tomo-list",
         type=Path,
-        default=Path("./batch_results"),
-        help="Output directory for results",
+        help="File with list of tomogram IDs to process (one per line)",
     )
-    job_group.add_argument(
-        "--script-dir",
-        type=Path,
-        default=Path("./slurm_scripts"),
-        help="Directory for generated SLURM scripts",
+
+    # Peak calling parameters
+    peak_group = analysis_parser.add_argument_group("Peak Calling")
+    peak_group.add_argument(
+        "--peak-caller",
+        choices=[
+            "PeakCallerSort",
+            "PeakCallerMaximumFilter",
+            "PeakCallerFast",
+            "PeakCallerRecursiveMasking",
+            "PeakCallerScipy",
+        ],
+        default="PeakCallerMaximumFilter",
+        help="Peak caller for local maxima identification",
     )
-    job_group.add_argument(
-        "--environment-setup",
-        default="module load pyTME",
-        help="Command(s) to set up pyTME environment",
+    peak_group.add_argument(
+        "--num-peaks",
+        type=int,
+        default=1000,
+        help="Maximum number of peaks to identify",
     )
-    job_group.add_argument(
-        "--dry-run", action="store_true", help="Generate scripts but do not submit jobs"
+    peak_group.add_argument(
+        "--min-score",
+        type=float,
+        default=None,
+        help="Minimum score from which peaks will be considered",
     )
-    job_group.add_argument("--force", action="store_true", help="Rerun completed jobs")
+    peak_group.add_argument(
+        "--max-score",
+        type=float,
+        default=None,
+        help="Maximum score until which peaks will be considered",
+    )
+    peak_group.add_argument(
+        "--min-distance", type=int, default=None, help="Minimum distance between peaks"
+    )
+    peak_group.add_argument(
+        "--min-boundary-distance",
+        type=int,
+        default=None,
+        help="Minimum distance of peaks to target edges",
+    )
+    peak_group.add_argument(
+        "--mask-edges",
+        action="store_true",
+        default=False,
+        help="Whether candidates should not be identified from scores that were "
+        "computed from padded densities. Superseded by min_boundary_distance.",
+    )
+    peak_group.add_argument(
+        "--n-false-positives",
+        type=int,
+        default=None,
+        help="Number of accepted false-positive picks to determine minimum score",
+    )
+
+    # Output options
+    output_group = analysis_parser.add_argument_group("Output Options")
+    output_group.add_argument(
+        "--output-format",
+        choices=[
+            "orientations",
+            "relion4",
+            "relion5",
+            "alignment",
+            "extraction",
+            "average",
+            "pickle",
+        ],
+        default="relion4",
+        help="Output format for analysis results",
+    )
+    output_group.add_argument(
+        "--angles-clockwise",
+        action="store_true",
+        help="Report Euler angles in clockwise format expected by RELION",
+    )
+
+    advanced_group = analysis_parser.add_argument_group("Advanced Options")
+    advanced_group.add_argument(
+        "--extraction-box-size",
+        type=int,
+        default=None,
+        help="Box size for extracted subtomograms (for extraction output format)",
+    )
+
+    _ = add_compute_resources(
+        analysis_parser,
+        default_cpus=2,
+        default_memory=16,
+        include_gpu=False,
+        default_time="01:00:00",
+        default_partition="htc-el8",
+    )
+    _ = add_job_submission(analysis_parser, "./analysis_results")
+
     args = parser.parse_args()
-
     if args.tomo_list is not None:
         with open(args.tomo_list, mode="r") as f:
             args.tomo_list = [line.strip() for line in f if line.strip()]
 
     args.output_dir = args.output_dir.absolute()
     args.script_dir = args.script_dir.absolute()
-
     return args
+
+
+def run_matching(args, resources):
+    discovery = TomoDatasetDiscovery(
+        mrc_pattern=args.tomograms,
+        metadata_pattern=args.metadata,
+        mask_pattern=args.masks,
+    )
+    files = discovery.discover(tomo_list=args.tomo_list)
+    print_block(
+        name="Discovering Dataset",
+        data={
+            "Tomogram Pattern": args.tomograms,
+            "Metadata Pattern": args.metadata,
+            "Mask Pattern": args.masks,
+            "Valid Runs": len(files),
+        },
+        label_width=30,
+    )
+    if not files:
+        print("No tomograms found! Check your patterns.")
+        return
+
+    params = TMParameters(
+        template=args.template,
+        template_mask=args.template_mask,
+        angular_sampling=args.angular_sampling,
+        particle_diameter=args.particle_diameter,
+        score=args.score,
+        score_threshold=args.score_threshold,
+        acceleration_voltage=args.voltage,
+        spherical_aberration=args.spherical_aberration * 1e7,  # mm to Ångstrom
+        amplitude_contrast=args.amplitude_contrast,
+        lowpass=args.lowpass,
+        highpass=args.highpass,
+        tilt_weighting=args.tilt_weighting,
+        backend=args.backend,
+        whiten_spectrum=args.whiten_spectrum,
+        scramble_phases=args.scramble_phases,
+    )
+    print_params = params.to_command_args(files[0], "")
+    _ = print_params.pop("target")
+    _ = print_params.pop("output")
+    print_params.update({k: True for k in params.get_flags()})
+    print_params = {
+        sanitize_name(k): print_params[k] for k in sorted(list(print_params.keys()))
+    }
+    print_block(name="Matching Parameters", data=print_params, label_width=30)
+    print("\n" + "-" * 80)
+
+    tasks = []
+    for tomo_file in files:
+        task = TemplateMatchingTask(
+            files=tomo_file,
+            parameters=params,
+            resources=resources,
+            output_dir=args.output_dir,
+        )
+        tasks.append(task)
+
+    return tasks
+
+
+def run_analysis(args, resources):
+    discovery = AnalysisDatasetDiscovery(
+        input_patterns=args.input_file,
+        background_patterns=args.background_file,
+        mask_patterns=args.masks,
+    )
+    files = discovery.discover(tomo_list=args.tomo_list)
+    print_block(
+        name="Discovering Dataset",
+        data={
+            "Input Patterns": args.input_file,
+            "Background Patterns": args.background_file,
+            "Mask Pattern": args.masks,
+            "Valid Runs": len(files),
+        },
+        label_width=30,
+    )
+    if not files:
+        print("No TM results found! Check your patterns.")
+        return
+
+    params = AnalysisParameters(
+        peak_caller=args.peak_caller,
+        num_peaks=args.num_peaks,
+        min_score=args.min_score,
+        max_score=args.max_score,
+        min_distance=args.min_distance,
+        min_boundary_distance=args.min_boundary_distance,
+        mask_edges=args.mask_edges,
+        n_false_positives=args.n_false_positives,
+        output_format=args.output_format,
+        angles_clockwise=args.angles_clockwise,
+        extraction_box_size=args.extraction_box_size,
+    )
+    print_params = params.to_command_args(files[0], Path(""))
+    _ = print_params.pop("input-files", None)
+    _ = print_params.pop("background-files", None)
+    _ = print_params.pop("output-prefix", None)
+    print_params.update({k: True for k in params.get_flags()})
+    print_params = {
+        sanitize_name(k): print_params[k] for k in sorted(list(print_params.keys()))
+    }
+    print_block(name="Analysis Parameters", data=print_params, label_width=30)
+    print("\n" + "-" * 80)
+
+    tasks = []
+    for file in files:
+        task = AnalysisTask(
+            files=file,
+            parameters=params,
+            resources=resources,
+            output_dir=args.output_dir,
+        )
+        tasks.append(task)
+
+    return tasks
 
 
 def main():
     print_entry()
 
     args = parse_args()
+
+    resources = ComputeResources(
+        cpus=args.cpus,
+        memory_gb=args.memory,
+        time_limit=args.time_limit,
+        partition=args.partition,
+        gpu_count=getattr(args, "gpu_count", 0),
+        gpu_type=getattr(args, "gpu_type", None),
+    )
+
+    func = run_matching
+    if args.command == "analysis":
+        func = run_analysis
+
     try:
-        discovery = TomoDatasetDiscovery(
-            mrc_pattern=args.tomograms,
-            metadata_pattern=args.metadata,
-            mask_pattern=args.masks,
-        )
-        tomo_files = discovery.discover_tomograms(tomo_list=args.tomo_list)
-        print_block(
-            name="Discovering Dataset",
-            data={
-                "Tomogram Pattern": args.tomograms,
-                "Metadata Pattern": args.metadata,
-                "Mask Pattern": args.masks,
-                "Valid Runs": len(tomo_files),
-            },
-            label_width=30,
-        )
-        if not tomo_files:
-            print("No tomograms found! Check your patterns.")
-            return
-
-        params = TMParameters(
-            template=args.template,
-            template_mask=args.template_mask,
-            angular_sampling=args.angular_sampling,
-            particle_diameter=args.particle_diameter,
-            score=args.score,
-            score_threshold=args.score_threshold,
-            acceleration_voltage=args.voltage,
-            spherical_aberration=args.spherical_aberration
-            * 1e7,  # Convert mm to Ångstrom
-            amplitude_contrast=args.amplitude_contrast,
-            lowpass=args.lowpass,
-            highpass=args.highpass,
-            tilt_weighting=args.tilt_weighting,
-            backend=args.backend,
-            whiten_spectrum=args.whiten_spectrum,
-            scramble_phases=args.scramble_phases,
-        )
-        print_params = params.to_command_args(tomo_files[0], "")
-        _ = print_params.pop("target")
-        _ = print_params.pop("output")
-        print_params.update({k: True for k in params.get_flags()})
-        print_params = {
-            sanitize_name(k): print_params[k] for k in sorted(list(print_params.keys()))
-        }
-        print_block(name="Matching Parameters", data=print_params, label_width=30)
-        print("\n" + "-" * 80)
-
-        resources = ComputeResources(
-            cpus=args.cpus,
-            memory_gb=args.memory,
-            gpu_count=args.gpu_count,
-            gpu_type=args.gpu_type,
-            time_limit=args.time_limit,
-            partition=args.partition,
-        )
-        print_params = resources.to_slurm_args()
-        print_params = {
-            sanitize_name(k): print_params[k] for k in sorted(list(print_params.keys()))
-        }
-        print_block(name="Compute Resources", data=print_params, label_width=30)
-        print("\n" + "-" * 80 + "\n")
-
-        tasks = []
-        for tomo_file in tomo_files:
-            task = TemplateMatchingTask(
-                tomo_files=tomo_file,
-                parameters=params,
-                resources=resources,
-                output_dir=args.output_dir,
-            )
-            tasks.append(task)
-
-        backend = SlurmBackend(
-            force=args.force,
-            dry_run=args.dry_run,
-            script_dir=args.script_dir,
-            environment_setup=args.environment_setup,
-        )
-        job_ids = backend.submit_jobs(tasks)
-        if args.dry_run:
-            print(
-                f"\nDry run complete. Generated {len(tasks)} scripts in {args.script_dir}"
-            )
-        else:
-            successful_jobs = [j for j in job_ids if not j.startswith("ERROR")]
-            print(f"\nSubmitted {len(successful_jobs)} jobs successfully.")
-            if successful_jobs:
-                print(f"Job IDs:\n{','.join(successful_jobs).strip()}")
-
+        tasks = func(args, resources)
     except Exception as e:
-        print(f"Error: {e}")
+        exit(f"Error: {e}")
+
+    if tasks is None:
+        exit(-1)
+
+    print_params = resources.to_slurm_args()
+    print_params = {
+        sanitize_name(k): print_params[k] for k in sorted(list(print_params.keys()))
+    }
+    print_block(name="Compute Resources", data=print_params, label_width=30)
+    print("\n" + "-" * 80 + "\n")
+
+    backend = SlurmBackend(
+        force=args.force,
+        dry_run=args.dry_run,
+        script_dir=args.script_dir,
+        environment_setup=args.environment_setup,
+    )
+    job_ids = backend.submit_jobs(tasks)
+    if args.dry_run:
+        print(
+            f"\nDry run complete. Generated {len(tasks)} scripts in {args.script_dir}"
+        )
+        return 0
+
+    successful_jobs = [j for j in job_ids if not j.startswith("ERROR")]
+    print(f"\nSubmitted {len(successful_jobs)} jobs successfully.")
+    if successful_jobs:
+        print(f"Job IDs:\n{','.join(successful_jobs).strip()}")
+
+    if len(successful_jobs) == len(job_ids):
+        return 0
+
+    print("\nThe following issues arose during submission:")
+    for j in job_ids:
+        if j.startswith("ERROR"):
+            print(j)
 
 
 if __name__ == "__main__":

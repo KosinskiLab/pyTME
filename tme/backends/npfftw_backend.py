@@ -112,6 +112,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         try:
             from ._numpyfftw_utils import rfftn as rfftn_cache
             from ._numpyfftw_utils import irfftn as irfftn_cache
+
             self._rfftn = rfftn_cache
             self._irfftn = irfftn_cache
         except Exception as e:
@@ -259,14 +260,14 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         b[tuple(bind)] = arr[tuple(aind)]
         return b
 
-    def _rfftn(self, arr, out = None, **kwargs):
+    def _rfftn(self, arr, out=None, **kwargs):
         ret = interfaces.numpy_fft.rfftn(arr, **kwargs)
         if out is not None:
             out[:] = ret
             return out
         return ret
 
-    def _irfftn(self, arr, out = None, **kwargs):
+    def _irfftn(self, arr, out=None, **kwargs):
         ret = interfaces.numpy_fft.irfftn(arr, **kwargs)
         if out is not None:
             out[:] = ret
