@@ -40,12 +40,12 @@ The ``postprocess.py`` tool processes the output of  ``match_template.py`` to id
                 --output-format relion4 \
                 --mask-edges \
                 --min-boundary-distance 20 \
-                --clockwise-angles \
+                --angles-clockwise \
                 --num-peaks 1000
 
         .. note::
 
-            RELION expects ``--clockwise-angles``, which need to be multiplied with negative one to be compatible with our format again.
+            RELION expects ``--angles-clockwise``, which need to be multiplied with negative one to be compatible with our format again.
 
 
     .. tab-item:: Alignments

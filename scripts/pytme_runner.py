@@ -440,7 +440,7 @@ class AnalysisParameters:
     ) -> Dict[str, Any]:
         """Convert parameters to analyze_template_matching command arguments."""
         args = {
-            "input-files": ",".join([str(f) for f in files.input_files]),
+            "input-files": " ".join([str(f) for f in files.input_files]),
             "output-prefix": str(output_path.parent / output_path.stem),
             "peak-caller": self.peak_caller,
             "num-peaks": self.num_peaks,
@@ -462,7 +462,7 @@ class AnalysisParameters:
 
         # Background files
         if files.background_files:
-            args["background-files"] = ",".join(
+            args["background-files"] = " ".join(
                 [str(f) for f in files.background_files]
             )
 
