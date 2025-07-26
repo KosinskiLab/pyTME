@@ -166,7 +166,8 @@ To process only specific tomograms, create a list file
         --metadata "project_directory/metadata/*" \
         --template templates/emd_3228_resampled.mrc \
         --tomo-list selected_tomos.txt \
-        --particle-diameter 300
+        --particle-diameter 300 \
+        --dry-run
 
 
 Advanced Options
@@ -198,7 +199,8 @@ For production runs, you may want to include additional filters similar to those
         --memory 256 \
         --gpu-count 1 \
         --time-limit "08:00:00" \
-        --output-dir results/ribosome_batch_001
+        --output-dir results/ribosome_batch_001 \
+        --dry-run
 
 
 Compared to the basic run above, this now includes
@@ -225,7 +227,8 @@ You can mix formats by adapting the glob patterns. For instance for metadata
         --tomograms "project_directory/tomograms/*.rec" \
         --metadata "project_directory/metadata/*" \
         --template templates/emd_3228_resampled.mrc \
-        --particle-diameter 300
+        --particle-diameter 300 \
+        --dry-run
 
 The ``metadata/*`` pattern will match ``.mdoc``, ``.xml``, ``.star``, and other supported formats, automatically pairing each tomogram with its corresponding metadata file. However, note that when multiple metadata files exist for a given tomogram, the runner will default to the first one it encountered.
 

@@ -135,9 +135,9 @@ class TomoDatasetDiscovery(DatasetDiscovery):
             tomo_files.append(
                 TomoFiles(
                     tomo_id=key,
-                    tomogram=value.absolute(),
-                    metadata=meta_files[key].absolute(),
-                    mask=mask_files.get(key),
+                    tomogram=value[0].absolute(),
+                    metadata=meta_files[key][0].absolute(),
+                    mask=mask_files.get(key, [""])[0],
                 )
             )
         return tomo_files

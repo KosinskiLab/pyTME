@@ -429,6 +429,9 @@ def _from_ctffind(filename: str) -> Dict:
         output[key] = np.array(output[key])
 
     output["additional_phase_shift"] = np.degrees(output["additional_phase_shift"])
+    cs = output.get("spherical_aberration")
+    if cs is not None:
+        output["spherical_aberration"] = float(cs) * 1e7
     return output
 
 
