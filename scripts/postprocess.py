@@ -188,7 +188,7 @@ def parse_args():
     )
     additional_group.add_argument(
         "--n-false-positives",
-        type=int,
+        type=float,
         default=None,
         required=False,
         help="Number of accepted false-positives picks to determine minimum score.",
@@ -318,11 +318,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
         data = load_matching_output(foreground)
         scores, _, rotations, rotation_mapping, *_ = data
 
-        # We could normalize to unit sdev, but that might lead to unexpected
-        # results for flat background distributions
-        # scores -= scores.mean()
         indices = tuple(slice(0, x) for x in scores.shape)
-
         indices_update = scores > scores_out[indices]
         scores_out[indices][indices_update] = scores[indices_update]
 
@@ -369,9 +365,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
     scores_norm = np.full(out_shape_norm, fill_value=0, dtype=np.float32)
     for background in backgrounds:
         data_norm = load_matching_output(background)
-
-        scores = data_norm[0]
-        # scores -= scores.mean()
+        scores, _, rotations, rotation_mapping, *_ = data_norm
 
         indices = tuple(slice(0, x) for x in scores.shape)
         indices_update = scores > scores_norm[indices]
@@ -381,6 +375,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
     update = tuple(slice(0, int(x)) for x in np.minimum(out_shape, scores.shape))
     scores_out = np.full(out_shape, fill_value=0, dtype=np.float32)
     scores_out[update] = data[0][update] - scores_norm[update]
+    scores_out[update] += scores_norm[update].mean()
 
     # scores_out[update] = np.divide(scores_out[update], 1 - scores_norm[update])
     scores_out = np.fmax(scores_out, 0, out=scores_out)
@@ -485,8 +480,11 @@ def main():
     if orientations is None:
         translations, rotations, scores, details = [], [], [], []
 
-        # Data processed by normalize_input is guaranteed to have this shape
-        scores, offset, rotation_array, rotation_mapping, meta = data
+        var = None
+        # Data processed by normalize_input is guaranteed to have this shape)
+        scores, _, rotation_array, rotation_mapping, *_ = data
+        if len(data) == 6:
+            scores, _, rotation_array, rotation_mapping, var, *_ = data
 
         cropped_shape = np.subtract(
             scores.shape, np.multiply(args.min_boundary_distance, 2)
@@ -509,13 +507,16 @@ def main():
             )
             args.n_false_positives = max(args.n_false_positives, 1)
             n_correlations = np.size(scores[cropped_slice]) * len(rotation_mapping)
+            std = np.std(scores[cropped_slice])
+            if var is not None:
+                std = np.asarray(np.sqrt(var)).reshape(())
+
             minimum_score = np.multiply(
                 erfcinv(2 * args.n_false_positives / n_correlations),
-                np.sqrt(2) * np.std(scores[cropped_slice]),
+                np.sqrt(2) * std,
             )
-            print(f"Determined minimum score cutoff: {minimum_score}.")
-            minimum_score = max(minimum_score, 0)
-            args.min_score = minimum_score
+            print(f"Determined cutoff --min-score {minimum_score}.")
+            args.min_score = max(minimum_score, 0)
 
         args.batch_dims = None
         if hasattr(cli_args, "batch_dims"):

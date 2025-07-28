@@ -81,6 +81,17 @@ class CupyBackend(NumpyFFTWBackend):
             """,
             "norm_scores",
         )
+
+        # Sum of square computation similar to the demeaned variance in pytom
+        self.ssum = cp.ReductionKernel(
+            f"{ftype} arr",
+            f"{ftype} ret",
+            "arr * arr",
+            "a + b",
+            "ret = a",
+            "0",
+            f"ssum_{ftype}",
+        )
         self.texture_available = find_spec("voltools") is not None
 
     def to_backend_array(self, arr: NDArray) -> CupyArray:
@@ -138,17 +149,6 @@ class CupyBackend(NumpyFFTWBackend):
 
         peaks = self._array_backend.array(self._array_backend.nonzero(max_filter)).T
         return peaks
-
-    # The default methods in Cupy were oddly slow
-    def var(self, a, *args, **kwargs):
-        out = a - self._array_backend.mean(a, *args, **kwargs)
-        self._array_backend.square(out, out)
-        out = self._array_backend.mean(out, *args, **kwargs)
-        return out
-
-    def std(self, a, *args, **kwargs):
-        out = self.var(a, *args, **kwargs)
-        return self._array_backend.sqrt(out)
 
     def _get_texture(self, arr: CupyArray, order: int = 3, prefilter: bool = False):
         key = id(arr)

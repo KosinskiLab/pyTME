@@ -863,6 +863,17 @@ class MatchingBackend(ABC):
             Indices of ``k`` largest elements in ``arr``.
         """
 
+    @abstractmethod
+    def ssum(self, arr, *args, **kwargs) -> BackendArray:
+        """
+        Compute the sum of squares of ``arr``.
+
+        Returns
+        -------
+        BackendArray
+            Sum of squares with shape ().
+        """
+
     def indices(self, *args, **kwargs) -> BackendArray:
         """
         Creates an array representing the index grid of an input.

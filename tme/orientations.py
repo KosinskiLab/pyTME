@@ -327,11 +327,18 @@ class Orientations:
             "_rlnAnglePsi",
             "_rlnClassNumber",
         ]
+
+        target_identifer = "_rlnMicrographName"
+        if version == "# version 50001":
+            header[3] = "_rlnCenteredCoordinateXAngst"
+            header[4] = "_rlnCenteredCoordinateYAngst"
+            header[5] = "_rlnCenteredCoordinateZAngst"
+            target_identifer = "_rlnTomoName"
+
         if source_path is not None:
-            header.append("_rlnMicrographName")
+            header.append(target_identifer)
 
         header.append("_pytmeScore")
-
         header = "\n".join(header)
         with open(filename, mode="w", encoding="utf-8") as ofile:
             if version is not None:

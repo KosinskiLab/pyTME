@@ -223,6 +223,10 @@ def scan(
     )
     conv, fwd, inv, shift = matching_data.fourier_padding()
 
+    score_mask = be.full(shape=(1,), fill_value=1, dtype=bool)
+    if pad_target:
+        score_mask = matching_data._score_mask(fwd, shift)
+
     template_filter = _setup_template_filter_apply_target_filter(
         matching_data=matching_data,
         fast_shape=fwd,
@@ -275,6 +279,7 @@ def scan(
             callback=callback_classes[index % n_callback_classes],
             interpolation_order=interpolation_order,
             template_filter=be.to_sharedarr(template_filter, shm_handler),
+            score_mask=be.to_sharedarr(score_mask, shm_handler),
             **setup,
         )
         for index, rotation in enumerate(matching_data._split_rotations_on_jobs(n_jobs))
@@ -420,8 +425,6 @@ def scan_subsets(
     outer_jobs, inner_jobs = job_schedule
     if be._backend_name == "jax":
         func = be.scan
-        if kwargs.get("projection_matching", False):
-            func = be.scan_projections
 
         corr_scoring = MATCHING_EXHAUSTIVE_REGISTER.get("CORR", (None, None))[1]
         results = func(

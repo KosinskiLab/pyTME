@@ -4,7 +4,7 @@
 Summary
 =======
 
-The ``postprocess.py`` tool processes the output of  ``match_template.py`` to identify the highest-scoring orientations (peaks). Depending on the downstream use case, different ``output-format`` options are available and outlined below.
+The ``postprocess.py`` tool analyzes the output of ``match_template.py``. Depending on the downstream use case, different ``output-format`` options are available and outlined below.
 
 .. code-block:: bash
 
@@ -99,13 +99,3 @@ The ``postprocess.py`` tool processes the output of  ``match_template.py`` to id
                 --output-prefix output_norm \
                 --output-format pickle \
                 --background-file background1.pickle background2.pickle
-
-.. note::
-
-    Orientations are following the conventions outlined in [1]_. We use a right-handed coordinate system with orthogonal X, Y and Z axes. Euler angles are expressed counter-clockwise using intrinsic ZYZ convention, with the first rotation around the Z-axis, the second around the new Y-axis and the third around the new Z-axis (see :py:meth:`euler_to_rotationmatrix <tme.rotations.euler_to_rotationmatrix>`). The default orientation is the z-unit vector (0, 0, 1).
-
-
-References
-----------
-
-.. [1] Heymann, J.B.; Chagoyen, M.; Belnap, D.M. Common conventions for interchange and archiving of three-dimensional electron microscopy information in structural biology. J Struct Biol 2005, 151, 196-207.

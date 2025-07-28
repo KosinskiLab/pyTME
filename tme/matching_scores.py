@@ -356,6 +356,7 @@ def corr_scoring(
     callback: CallbackClass,
     interpolation_order: int,
     template_mask: shm_type = None,
+    score_mask: shm_type = None,
 ) -> CallbackClass:
     """
     Calculates a normalized cross-correlation between a target f and a template g.
@@ -394,6 +395,8 @@ def corr_scoring(
         Spline order for template rotations.
     template_mask : Union[Tuple[type, tuple of ints, type], BackendArray], optional
         Template mask data buffer, its shape and datatype, None by default.
+    score_mask : Union[Tuple[type, tuple of ints, type], BackendArray], optional
+        Score mask data buffer, its shape and datatype, None by default.
 
     Returns
     -------
@@ -404,6 +407,7 @@ def corr_scoring(
     inv_denominator = be.from_sharedarr(inv_denominator)
     numerator = be.from_sharedarr(numerator)
     template_filter = be.from_sharedarr(template_filter)
+    score_mask = be.from_sharedarr(score_mask)
 
     n_obs = None
     if template_mask is not None:
@@ -413,6 +417,7 @@ def corr_scoring(
     norm_template = conditional_execute(normalize_template, n_obs is not None)
     norm_sub = conditional_execute(be.subtract, numerator.shape != (1,))
     norm_mul = conditional_execute(be.multiply, inv_denominator.shape != (1))
+    norm_mask = conditional_execute(be.multiply, score_mask.shape != (1,))
 
     arr = be.zeros(fast_shape, be._float_dtype)
     ft_temp = be.zeros(fast_ft_shape, be._complex_dtype)
@@ -447,6 +452,8 @@ def corr_scoring(
 
         arr = norm_sub(arr, numerator, out=arr)
         arr = norm_mul(arr, inv_denominator, out=arr)
+        arr = norm_mask(arr, score_mask, out=arr)
+
         callback(arr, rotation_matrix=rotation)
 
     return callback
@@ -463,6 +470,7 @@ def flc_scoring(
     rotations: BackendArray,
     callback: CallbackClass,
     interpolation_order: int,
+    score_mask: shm_type = None,
 ) -> CallbackClass:
     """
     Computes a normalized cross-correlation between ``target`` (f),
@@ -522,6 +530,7 @@ def flc_scoring(
     ft_target = be.from_sharedarr(ft_target)
     ft_target2 = be.from_sharedarr(ft_target2)
     template_filter = be.from_sharedarr(template_filter)
+    score_mask = be.from_sharedarr(score_mask)
 
     arr = be.zeros(fast_shape, float_dtype)
     temp = be.zeros(fast_shape, float_dtype)
@@ -532,6 +541,7 @@ def flc_scoring(
     template_mask_rot = be.zeros(template.shape, be._float_dtype)
 
     tmpl_filter_func = _create_filter_func(template.shape, template_filter.shape)
+    norm_mask = conditional_execute(be.multiply, score_mask.shape != (1,))
 
     eps = be.eps(float_dtype)
     center = be.divide(be.to_backend_array(template.shape) - 1, 2)
@@ -567,6 +577,8 @@ def flc_scoring(
         arr = _correlate_fts(ft_target, ft_temp, ft_temp, arr, fast_shape)
 
         arr = be.norm_scores(arr, temp2, temp, n_obs, eps, arr)
+        arr = norm_mask(arr, score_mask, out=arr)
+
         callback(arr, rotation_matrix=rotation)
 
     return callback
@@ -585,6 +597,7 @@ def mcc_scoring(
     callback: CallbackClass,
     interpolation_order: int,
     overlap_ratio: float = 0.3,
+    score_mask: shm_type = None,
 ) -> CallbackClass:
     """
     Computes a normalized cross-correlation score between ``target`` (f),
@@ -755,12 +768,14 @@ def flc_scoring2(
     rotations: BackendArray,
     callback: CallbackClass,
     interpolation_order: int,
+    score_mask: shm_type = None,
 ) -> CallbackClass:
     template = be.from_sharedarr(template)
     template_mask = be.from_sharedarr(template_mask)
     ft_target = be.from_sharedarr(ft_target)
     ft_target2 = be.from_sharedarr(ft_target2)
     template_filter = be.from_sharedarr(template_filter)
+    score_mask = be.from_sharedarr(score_mask)
 
     tar_batch, tmpl_batch = _get_batch_dim(ft_target, template)
 
@@ -785,6 +800,7 @@ def flc_scoring2(
         filter_shape=template_filter.shape,
         arr_padded=True,
     )
+    norm_mask = conditional_execute(be.multiply, score_mask.shape != (1,))
 
     eps = be.eps(be._float_dtype)
     for index in range(rotations.shape[0]):
@@ -816,6 +832,8 @@ def flc_scoring2(
         arr = _correlate_fts(ft_target, ft_temp, ft_denom, arr, shape, axes)
 
         arr = be.norm_scores(arr, temp2, temp, n_obs, eps, arr)
+        arr = norm_mask(arr, score_mask, out=arr)
+
         callback(arr, rotation_matrix=rotation)
 
     return callback
@@ -834,12 +852,14 @@ def corr_scoring2(
     interpolation_order: int,
     target_filter: shm_type = None,
     template_mask: shm_type = None,
+    score_mask: shm_type = None,
 ) -> CallbackClass:
     template = be.from_sharedarr(template)
     ft_target = be.from_sharedarr(ft_target)
     inv_denominator = be.from_sharedarr(inv_denominator)
     numerator = be.from_sharedarr(numerator)
     template_filter = be.from_sharedarr(template_filter)
+    score_mask = be.from_sharedarr(score_mask)
 
     tar_batch, tmpl_batch = _get_batch_dim(ft_target, template)
 
@@ -869,6 +889,7 @@ def corr_scoring2(
     norm_template = conditional_execute(normalize_template, n_obs is not None)
     norm_sub = conditional_execute(be.subtract, numerator.shape != (1,))
     norm_mul = conditional_execute(be.multiply, inv_denominator.shape != (1,))
+    norm_mask = conditional_execute(be.multiply, score_mask.shape != (1,))
 
     template_filter_func = _create_filter_func(
         arr_shape=template.shape,
@@ -896,6 +917,8 @@ def corr_scoring2(
 
         arr = norm_sub(arr, numerator, out=arr)
         arr = norm_mul(arr, inv_denominator, out=arr)
+        arr = norm_mask(arr, score_mask, out=arr)
+
         callback(arr, rotation_matrix=rotation)
 
     return callback

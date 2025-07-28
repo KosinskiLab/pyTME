@@ -544,6 +544,30 @@ class MatchingData:
             batch_mask=be.to_numpy_array(self._batch_mask),
         )
 
+    def _score_mask(self, fast_shape: Tuple[int], shift: Tuple[int]) -> BackendArray:
+        """
+        Create a boolean mask to exclude scores derived from padding in template matching.
+        """
+        padding = self.target_padding(True)
+        offset = tuple(x // 2 for x in padding)
+        shape = tuple(y - x for x, y in zip(padding, self.target.shape))
+
+        subset = []
+        for i in range(len(offset)):
+            if self._batch_mask[i]:
+                subset.append(slice(None))
+            else:
+                subset.append(slice(offset[i], offset[i] + shape[i]))
+
+        score_mask = np.zeros(fast_shape, dtype=bool)
+        score_mask[tuple(subset)] = 1
+        score_mask = np.roll(
+            score_mask,
+            shift=tuple(-x for x in shift),
+            axis=tuple(i for i in range(len(shift))),
+        )
+        return be.to_backend_array(score_mask)
+
     def computation_schedule(
         self,
         matching_method: str = "FLCSphericalMask",

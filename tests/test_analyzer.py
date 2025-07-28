@@ -165,7 +165,6 @@ class TestMaxScoreOverRotations:
         assert res[0].dtype == be._float_dtype
         assert res[1].size == self.data.ndim
         assert np.allclose(res[2].shape, self.data.shape)
-        assert len(res) == 4
 
     @pytest.mark.parametrize("use_memmap", [False, True])
     @pytest.mark.parametrize("score_threshold", [0, 1e10, -1e10])
@@ -181,7 +180,7 @@ class TestMaxScoreOverRotations:
 
         data2 = self.data * 2
         score_analyzer(state, data2, rotation_matrix=self.rotation_matrix)
-        scores, translation_offset, rotations, mapping = score_analyzer.result(state)
+        scores, offset, rotations, mapping, *_ = score_analyzer.result(state)
 
         assert np.all(scores >= score_threshold)
         max_scores = np.maximum(self.data, data2)
@@ -214,7 +213,7 @@ class TestMaxScoreOverRotations:
         ret = MaxScoreOverRotations.merge(
             results=states, use_memmap=use_memmap, score_threshold=score_threshold
         )
-        scores, translation, rotations, mapping = ret
+        scores, translation, rotations, mapping, *_ = ret
         assert np.all(scores >= score_threshold)
         max_scores = np.maximum(self.data, data2)
         max_scores = np.maximum(max_scores, score_threshold)

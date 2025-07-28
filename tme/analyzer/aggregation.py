@@ -132,12 +132,14 @@ class MaxScoreOverRotations(AbstractAnalyzer):
             - scores : BackendArray of shape `self._shape` filled with `score_threshold`.
             - rotations : BackendArray of shape `self._shape` filled with -1.
             - rotation_mapping : dict, empty mapping from rotation bytes to indices.
+            - ssum : BackendArray, accumulator for sum of squared scores.
         """
         scores = be.full(
             shape=self._shape, dtype=be._float_dtype, fill_value=self._score_threshold
         )
         rotations = be.full(self._shape, dtype=be._int_dtype, fill_value=-1)
-        return scores, rotations, {}
+        ssum = be.full((1), dtype=be._float_dtype, fill_value=0)
+        return scores, rotations, {}, ssum
 
     def __call__(
         self,
@@ -156,6 +158,7 @@ class MaxScoreOverRotations(AbstractAnalyzer):
             - scores : BackendArray, current maximum scores.
             - rotations : BackendArray, current rotation indices.
             - rotation_mapping : dict, mapping from rotation bytes to indices.
+            - ssum : BackendArray, accumulator for sum of squared scores.
         scores : BackendArray
             Array of new scores to update analyzer with.
         rotation_matrix : BackendArray
@@ -168,7 +171,7 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         # be.tobytes behaviour caused overhead for certain GPU/CUDA combinations
         # If the analyzer is not shared and each rotation is unique, we can
         # use index to rotation mapping and invert prior to merging.
-        prev_scores, rotations, rotation_mapping = state
+        prev_scores, rotations, rotation_mapping, ssum = state
 
         rotation_index = len(rotation_mapping)
         rotation_matrix = be.astype(rotation_matrix, be._float_dtype)
@@ -180,13 +183,14 @@ class MaxScoreOverRotations(AbstractAnalyzer):
             rotation = be.tobytes(rotation_matrix)
             rotation_index = rotation_mapping.setdefault(rotation, rotation_index)
 
+        ssum = be.add(ssum, be.ssum(scores), out=ssum)
         scores, rotations = be.max_score_over_rotations(
             scores=scores,
             max_scores=prev_scores,
             rotations=rotations,
             rotation_index=rotation_index,
         )
-        return scores, rotations, rotation_mapping
+        return scores, rotations, rotation_mapping, ssum
 
     @staticmethod
     def _invert_rmap(rotation_mapping: dict) -> dict:
@@ -224,6 +228,7 @@ class MaxScoreOverRotations(AbstractAnalyzer):
             - scores : BackendArray, current maximum scores.
             - rotations : BackendArray, current rotation indices.
             - rotation_mapping : dict, mapping from rotation indices to matrices.
+            - ssum : BackendArray, accumulator for sum of squared scores.
         targetshape : Tuple[int], optional
             Shape of the target for convolution mode correction.
         templateshape : Tuple[int], optional
@@ -240,9 +245,9 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         Returns
         -------
         tuple
-            Final result tuple (scores, offset, rotations, rotation_mapping).
+            Final result tuple (scores, offset, rotations, rotation_mapping, ssum).
         """
-        scores, rotations, rotation_mapping = state
+        scores, rotations, rotation_mapping, ssum = state
 
         # Apply postprocessing if parameters are provided
         if fourier_shift is not None:
@@ -269,11 +274,13 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         if self._inversion_mapping:
             rotation_mapping = {be.tobytes(v): k for k, v in rotation_mapping.items()}
 
+        n_rotations = max(len(rotation_mapping), 1)
         return (
             scores,
             be.to_numpy_array(self._offset),
             rotations,
             self._invert_rmap(rotation_mapping),
+            be.to_numpy_array(ssum) / (scores.size * n_rotations),
         )
 
     def _harmonize_states(states: List[Tuple]):
@@ -287,18 +294,18 @@ class MaxScoreOverRotations(AbstractAnalyzer):
             if states[i] is None:
                 continue
 
-            scores, offset, rotations, rotation_mapping = states[i]
+            scores, offset, rotations, rotation_mapping, ssum = states[i]
             if out_shape is None:
                 out_shape = np.zeros(scores.ndim, int)
             out_shape = np.maximum(out_shape, np.add(offset, scores.shape))
 
             new_param = {}
             for key, value in rotation_mapping.items():
-                rotation_bytes = be.tobytes(value)
+                rotation_bytes = np.asarray(value).tobytes()
                 new_param[rotation_bytes] = key
                 if rotation_bytes not in new_rotation_mapping:
                     new_rotation_mapping[rotation_bytes] = len(new_rotation_mapping)
-            states[i] = (scores, offset, rotations, new_param)
+            states[i] = (scores, offset, rotations, new_param, ssum)
         out_shape = tuple(int(x) for x in out_shape)
         return new_rotation_mapping, out_shape, states
 
@@ -329,11 +336,10 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         if len(results) == 1:
             ret = results[0]
             if use_memmap:
-                scores, offset, rotations, rotation_mapping = ret
+                scores, offset, rotations, rotation_mapping, ssum = ret
                 scores = array_to_memmap(scores)
                 rotations = array_to_memmap(rotations)
-                ret = (scores, offset, rotations, rotation_mapping)
-
+                ret = (scores, offset, rotations, rotation_mapping, ssum)
             return ret
 
         # Determine output array shape and create consistent rotation map
@@ -368,6 +374,7 @@ class MaxScoreOverRotations(AbstractAnalyzer):
             )
             rotations_out = np.full(out_shape, fill_value=-1, dtype=rotations_dtype)
 
+        total_ssum = 0
         for i in range(len(results)):
             if results[i] is None:
                 continue
@@ -385,7 +392,9 @@ class MaxScoreOverRotations(AbstractAnalyzer):
                     shape=out_shape,
                     dtype=rotations_dtype,
                 )
-            scores, offset, rotations, rotation_mapping = results[i]
+            scores, offset, rotations, rotation_mapping, ssum = results[i]
+
+            total_ssum = np.add(total_ssum, ssum)
             stops = np.add(offset, scores.shape).astype(int)
             indices = tuple(slice(*pos) for pos in zip(offset, stops))
 
@@ -428,6 +437,7 @@ class MaxScoreOverRotations(AbstractAnalyzer):
             np.zeros(scores_out.ndim, dtype=int),
             rotations_out,
             cls._invert_rmap(master_rotation_mapping),
+            total_ssum / len(results),
         )
 
 

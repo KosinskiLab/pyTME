@@ -112,10 +112,14 @@ def _identity(arr: BackendArray, arr_filter: BackendArray) -> BackendArray:
     return arr
 
 
+def _mask_scores(arr, mask):
+    return arr.at[:].multiply(mask)
+
+
 @partial(
     pmap,
-    in_axes=(0,) + (None,) * 6,
-    static_broadcasted_argnums=[6, 7, 8, 9],
+    in_axes=(0,) + (None,) * 7,
+    static_broadcasted_argnums=[7, 8, 9, 10],
     axis_name="batch",
 )
 def scan(
@@ -125,6 +129,7 @@ def scan(
     rotations: BackendArray,
     template_filter: BackendArray,
     target_filter: BackendArray,
+    score_mask: BackendArray,
     fast_shape: Tuple[int],
     rotate_mask: bool,
     analyzer_class: object,
@@ -159,6 +164,10 @@ def scan(
     if template_filter.shape != ():
         _template_filter_func = _apply_fourier_filter
 
+    _score_mask_func = _identity
+    if score_mask.shape != ():
+        _score_mask_func = _mask_scores
+
     def _sample_transform(ret, rotation_matrix):
         state, index = ret
         template_rot, template_mask_rot = be.rigid_transform(
@@ -185,6 +194,8 @@ def scan(
             n_observations=n_observations,
             eps=eps,
         )
+        scores = _score_mask_func(scores, score_mask)
+
         state = analyzer(state, scores, rotation_matrix, rotation_index=index)
         return (state, index + 1), None
 

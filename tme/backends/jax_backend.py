@@ -197,6 +197,13 @@ class JaxBackend(NumpyFFTWBackend):
     def _tuple_to_dict(self, data: Tuple) -> Dict:
         return {x[0]: self._from_hashable(*x[1]) for x in data}
 
+    def _unbatch(self, data, target_ndim, index):
+        if not isinstance(data, type(self.zeros(1))):
+            return data
+        elif data.ndim <= target_ndim:
+            return data
+        return data[index]
+
     def scan(
         self,
         matching_data: type,
@@ -212,11 +219,13 @@ class JaxBackend(NumpyFFTWBackend):
         :py:class:`tme.analyzer.MaxScoreOverRotations`.
         """
         from ._jax_utils import scan as scan_inner
+        from ..analyzer import MaxScoreOverRotations
 
         pad_target = True if len(splits) > 1 else False
         convolution_mode = "valid" if pad_target else "same"
         target_pad = matching_data.target_padding(pad_target=pad_target)
 
+        score_mask = self.full((1,), fill_value=1, dtype=bool)
         target_shape = tuple(
             (x.stop - x.start + p) for x, p in zip(splits[0][0], target_pad)
         )
@@ -273,6 +282,9 @@ class JaxBackend(NumpyFFTWBackend):
 
                 analyzer_kwargs.append(self._dict_to_tuple(cur_args))
 
+                if pad_target:
+                    score_mask = base._score_mask(fast_shape, shift)
+
                 _target = self.astype(base._target, self._float_dtype)
                 translation_offsets.append(translation_offset)
                 targets.append(self.topleft_pad(_target, fast_shape))
@@ -306,17 +318,23 @@ class JaxBackend(NumpyFFTWBackend):
                 matching_data.rotations,
                 template_filter,
                 target_filter,
+                score_mask,
                 fast_shape,
                 rotate_mask,
                 callback_class,
                 analyzer_kwargs,
             )
 
+            ndim = targets.ndim - 1
             for index in range(targets.shape[0]):
                 kwargs = self._tuple_to_dict(analyzer_kwargs[index])
                 analyzer = callback_class(**kwargs)
 
-                state = (states[0][index], states[1][index], rotation_mapping)
+                state = [self._unbatch(x, ndim, index) for x in states]
+
+                if isinstance(analyzer, MaxScoreOverRotations):
+                    state[2] = rotation_mapping
+
                 ret.append(analyzer.result(state, **kwargs))
         return ret
 

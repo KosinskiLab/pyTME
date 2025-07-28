@@ -201,6 +201,9 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         sorted_indices = self.unravel_index(indices=sorted_indices, shape=arr.shape)
         return sorted_indices
 
+    def ssum(self, arr, *args, **kwargs):
+        return self.sum(self.square(arr), *args, **kwargs)
+
     def indices(self, *args, **kwargs) -> NDArray:
         return self._array_backend.indices(*args, **kwargs)
 
