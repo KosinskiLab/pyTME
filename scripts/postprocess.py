@@ -375,10 +375,10 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
     update = tuple(slice(0, int(x)) for x in np.minimum(out_shape, scores.shape))
     scores_out = np.full(out_shape, fill_value=0, dtype=np.float32)
     scores_out[update] = data[0][update] - scores_norm[update]
+    scores_out = np.fmax(scores_out, 0, out=scores_out)
     scores_out[update] += scores_norm[update].mean()
 
     # scores_out[update] = np.divide(scores_out[update], 1 - scores_norm[update])
-    scores_out = np.fmax(scores_out, 0, out=scores_out)
     data[0] = scores_out
 
     fg, bg = simple_stats(data[0]), simple_stats(scores_norm)

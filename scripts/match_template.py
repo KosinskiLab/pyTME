@@ -359,8 +359,8 @@ def parse_args():
         "--invert-target-contrast",
         action="store_true",
         default=False,
-        help="Invert the target's contrast for cases where templates to-be-matched have "
-        "negative values, e.g. tomograms.",
+        help="Invert the target contrast. Useful for matching on tomograms if the "
+        "template has not been inverted.",
     )
     io_group.add_argument(
         "--scramble-phases",

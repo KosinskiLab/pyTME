@@ -95,18 +95,6 @@ class TestDensity:
             self.orientations.rotations, orientations_new.rotations, atol=1e-3
         )
 
-    @pytest.mark.parametrize("input_format", ("text", "star", "tbl"))
-    @pytest.mark.parametrize("output_format", ("text", "star", "tbl"))
-    def test_file_format_io(self, input_format: str, output_format: str):
-        _, output_file = mkstemp(suffix=f".{input_format}")
-        _, output_file2 = mkstemp(suffix=f".{output_format}")
-
-        self.orientations.to_file(output_file)
-        orientations_new = Orientations.from_file(output_file)
-        orientations_new.to_file(output_file2)
-
-        assert True
-
     @pytest.mark.parametrize("drop_oob", (True, False))
     @pytest.mark.parametrize("shape", (10, 40, 80))
     @pytest.mark.parametrize("odd", (True, False))

@@ -4,15 +4,13 @@
 Summary
 =======
 
-The ``postprocess.py`` tool analyzes the output of ``match_template.py``. Depending on the downstream use case, different ``output-format`` options are available and outlined below.
+The ``postprocess.py`` tool analyzes the output of ``match_template.py``.
 
 .. code-block:: bash
 
     postprocess.py --help
 
-.. tip::
-
-    From version 0.3.0 onwards, postprocessing supports advanced multi-input and background correction. Multiple input files can be specified to distinguish between different macromolecular species, with corresponding class identifiers made available in orientations and RELION output formats. Additionally, multiple background corrections can be applied simultaneously via ``--background-file``, enabling users to account for various noise sources beyond single backgrounds (e.g., from ``--scramble-phases``) and incorporate complex cellular environments such as membrane backgrounds.
+Depending on the downstream use case, different ``output-format`` options are available and outlined below.
 
 .. tab-set::
 
@@ -99,3 +97,7 @@ The ``postprocess.py`` tool analyzes the output of ``match_template.py``. Depend
                 --output-prefix output_norm \
                 --output-format pickle \
                 --background-file background1.pickle background2.pickle
+
+.. tip::
+
+    From version 0.3.0 onwards, postprocessing supports advanced multi-input and background correction. Multiple input files can be specified to distinguish between different macromolecular species, with corresponding class identifiers made available in orientations and RELION output formats. Additionally, multiple background corrections can be applied simultaneously via ``--background-file``, enabling users to account for various noise sources beyond single backgrounds (e.g., from ``--scramble-phases``) and incorporate complex cellular environments such as membrane backgrounds.

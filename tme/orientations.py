@@ -494,16 +494,22 @@ class Orientations:
 
     @classmethod
     def _from_star(
-        cls, filename: str, delimiter: str = "\t"
+        cls, filename: str, delimiter: str = None
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         parser = StarParser(filename, delimiter=delimiter)
 
-        ret = parser.get("data_particles", None)
-        if ret is None:
-            ret = parser.get("data_", None)
+        keyword_order = ("data_particles", "particles", "data")
+        for keyword in keyword_order:
+            ret = parser.get(keyword, None)
+            if ret is None:
+                ret = parser.get(f"{keyword}_", None)
+            if ret is not None:
+                break
 
         if ret is None:
-            raise ValueError(f"No data_particles section found in {filename}.")
+            raise ValueError(
+                f"Could not find either {keyword_order} section found in {filename}."
+            )
 
         translation = np.vstack(
             (ret["_rlnCoordinateX"], ret["_rlnCoordinateY"], ret["_rlnCoordinateZ"])

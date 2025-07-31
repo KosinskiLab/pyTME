@@ -10,14 +10,14 @@ from typing import Tuple
 from functools import partial
 
 import jax.numpy as jnp
-from jax import pmap, lax, vmap
+from jax import pmap, lax, vmap, jit
 
 from ..types import BackendArray
 from ..backends import backend as be
 from ..matching_utils import normalize_template as _normalize_template
 
 
-__all__ = ["scan"]
+__all__ = ["scan", "setup_scan"]
 
 
 def _correlate(template: BackendArray, ft_target: BackendArray) -> BackendArray:
@@ -116,12 +116,52 @@ def _mask_scores(arr, mask):
     return arr.at[:].multiply(mask)
 
 
-@partial(
-    pmap,
-    in_axes=(0,) + (None,) * 7,
-    static_broadcasted_argnums=[7, 8, 9, 10],
-    axis_name="batch",
-)
+def _select_config(analyzer_kwargs, device_idx):
+    return analyzer_kwargs[device_idx]
+
+
+def setup_scan(analyzer_kwargs, callback_class, fast_shape, rotate_mask):
+    """Create separate scan function with initialized analyzer for each device"""
+    device_scans = [
+        partial(
+            scan,
+            fast_shape=fast_shape,
+            rotate_mask=rotate_mask,
+            analyzer=callback_class(**device_config),
+        )
+        for device_config in analyzer_kwargs
+    ]
+
+    @partial(
+        pmap,
+        in_axes=(0,) + (None,) * 6,
+        axis_name="batch",
+    )
+    def scan_combined(
+        target,
+        template,
+        template_mask,
+        rotations,
+        template_filter,
+        target_filter,
+        score_mask,
+    ):
+        return lax.switch(
+            lax.axis_index("batch"),
+            device_scans,
+            target,
+            template,
+            template_mask,
+            rotations,
+            template_filter,
+            target_filter,
+            score_mask,
+        )
+
+    return scan_combined
+
+
+@partial(jit, static_argnums=(7, 8, 9))
 def scan(
     target: BackendArray,
     template: BackendArray,
@@ -132,16 +172,9 @@ def scan(
     score_mask: BackendArray,
     fast_shape: Tuple[int],
     rotate_mask: bool,
-    analyzer_class: object,
-    analyzer_kwargs: Tuple[Tuple],
+    analyzer: object,
 ) -> Tuple[BackendArray, BackendArray]:
     eps = jnp.finfo(template.dtype).resolution
-
-    kwargs = lax.switch(
-        lax.axis_index("batch"),
-        [lambda: analyzer_kwargs[i] for i in range(len(analyzer_kwargs))],
-    )
-    analyzer = analyzer_class(**be._tuple_to_dict(kwargs))
 
     if hasattr(target_filter, "shape"):
         target = _apply_fourier_filter(target, target_filter)

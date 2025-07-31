@@ -218,7 +218,7 @@ class JaxBackend(NumpyFFTWBackend):
         Emulates output of :py:meth:`tme.matching_exhaustive.scan` using
         :py:class:`tme.analyzer.MaxScoreOverRotations`.
         """
-        from ._jax_utils import scan as scan_inner
+        from ._jax_utils import setup_scan
         from ..analyzer import MaxScoreOverRotations
 
         pad_target = True if len(splits) > 1 else False
@@ -279,8 +279,7 @@ class JaxBackend(NumpyFFTWBackend):
                 cur_args = analyzer_args.copy()
                 cur_args["offset"] = translation_offset
                 cur_args.update(callback_class_args)
-
-                analyzer_kwargs.append(self._dict_to_tuple(cur_args))
+                analyzer_kwargs.append(cur_args)
 
                 if pad_target:
                     score_mask = base._score_mask(fast_shape, shift)
@@ -310,7 +309,13 @@ class JaxBackend(NumpyFFTWBackend):
             create_filter, create_template_filter, create_target_filter = (False,) * 3
             base, targets = None, self._array_backend.stack(targets)
 
-            analyzer_kwargs = tuple(analyzer_kwargs)
+            scan_inner = setup_scan(
+                analyzer_kwargs=analyzer_kwargs,
+                callback_class=callback_class,
+                fast_shape=fast_shape,
+                rotate_mask=rotate_mask,
+            )
+
             states = scan_inner(
                 self.astype(targets, self._float_dtype),
                 self.astype(matching_data.template, self._float_dtype),
@@ -319,17 +324,12 @@ class JaxBackend(NumpyFFTWBackend):
                 template_filter,
                 target_filter,
                 score_mask,
-                fast_shape,
-                rotate_mask,
-                callback_class,
-                analyzer_kwargs,
             )
 
             ndim = targets.ndim - 1
             for index in range(targets.shape[0]):
-                kwargs = self._tuple_to_dict(analyzer_kwargs[index])
+                kwargs = analyzer_kwargs[index]
                 analyzer = callback_class(**kwargs)
-
                 state = [self._unbatch(x, ndim, index) for x in states]
 
                 if isinstance(analyzer, MaxScoreOverRotations):

@@ -2196,7 +2196,7 @@ class Density:
 
         Parameters
         ----------
-        target : Density
+        target : :py:class:`Density`
             The target map for template matching.
         template : Structure
             The template that should be aligned to the target.
@@ -2259,3 +2259,60 @@ class Density:
         coordinates = np.array(np.where(data > 0))
         weights = self.data[tuple(coordinates)]
         return align_to_axis(coordinates.T, weights=weights, axis=axis, flip=flip)
+
+    @staticmethod
+    def fourier_shell_correlation(density1: "Density", density2: "Density") -> NDArray:
+        """
+        Computes the Fourier Shell Correlation (FSC) between two instances of `Density`.
+
+        The Fourier transforms of the input maps are divided into shells
+        based on their spatial frequency. The correlation between corresponding shells
+        in the two maps is computed to give the FSC.
+
+        Parameters
+        ----------
+        density1 : :py:class:`Density`
+            Reference for comparison.
+        density2 : :py:class:`Density`
+            Target for comparison.
+
+        Returns
+        -------
+        NDArray
+            An array of shape (N, 2), where N is the number of shells.
+            The first column represents the spatial frequency for each shell
+            and the second column represents the corresponding FSC.
+
+        References
+        ----------
+        .. [1] https://github.com/tdgrant1/denss/blob/master/saxstats/saxstats.py
+        """
+        side = density1.data.shape[0]
+        df = 1.0 / side
+
+        qx_ = np.fft.fftfreq(side) * side * df
+        qx, qy, qz = np.meshgrid(qx_, qx_, qx_, indexing="ij")
+        qr = np.sqrt(qx**2 + qy**2 + qz**2)
+
+        qmax = np.max(qr)
+        qstep = np.min(qr[qr > 0])
+        nbins = int(qmax / qstep)
+        qbins = np.linspace(0, nbins * qstep, nbins + 1)
+        qbin_labels = np.searchsorted(qbins, qr, "right") - 1
+
+        F1 = np.fft.fftn(density1.data)
+        F2 = np.fft.fftn(density2.data)
+
+        qbin_labels = qbin_labels.reshape(-1)
+        numerator = np.bincount(
+            qbin_labels, weights=np.real(F1 * np.conj(F2)).reshape(-1)
+        )
+        term1 = np.bincount(qbin_labels, weights=np.abs(F1).reshape(-1) ** 2)
+        term2 = np.bincount(qbin_labels, weights=np.abs(F2).reshape(-1) ** 2)
+        np.multiply(term1, term2, out=term1)
+        denominator = np.sqrt(term1)
+        FSC = np.divide(numerator, denominator)
+
+        qidx = np.where(qbins < qx.max())
+
+        return np.vstack((qbins[qidx], FSC[qidx])).T

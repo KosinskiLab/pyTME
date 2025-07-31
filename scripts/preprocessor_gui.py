@@ -474,6 +474,7 @@ def membrane_mask(
     **kwargs,
 ) -> NDArray:
     return create_mask(
+        center=(center_x, center_y, center_z),
         mask_type="membrane",
         shape=template.shape,
         radius=radius,
