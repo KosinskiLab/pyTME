@@ -1,5 +1,5 @@
 """
-Utilities for the generation of frequency grids.
+Utilities for the creation of composable filters.
 
 Copyright (c) 2024 European Molecular Biology Laboratory
 
@@ -79,6 +79,7 @@ def frequency_grid_at_angle(
     sampling_rate: Tuple[float],
     opening_axis: int = None,
     tilt_axis: int = None,
+    fftshift: bool = False,
 ) -> NDArray:
     """
     Generate a frequency grid from 0 to 1/(2 * sampling_rate) in each axis.
@@ -94,13 +95,16 @@ def frequency_grid_at_angle(
     shape : tuple of int
         The shape of the grid.
     angle : float
-        The angle at which to generate the grid.
+        The angle at which to generate the grid in degrees.
     sampling_rate : tuple of float
         The sampling rate for each dimension.
     opening_axis : int, optional
         The projection axis, defaults to None.
     tilt_axis : int, optional
         The axis along which the grid is tilted, defaults to None.
+    fftshift : bool, optional
+        Whether to return a grid centered at shape // 2. Default is grid centered around
+        origin, which is compliant with the rfftn definitions used in this project
 
     Returns
     -------
@@ -114,14 +118,17 @@ def frequency_grid_at_angle(
         shape=shape, opening_axis=opening_axis, reduce_dim=False
     )
 
-    if angle == 0:
+    missing_axes = opening_axis is None or tilt_axis is None
+    if angle == 0 or missing_axes or len(set(shape)) == 1:
+        # Crop the sampling rate to tilt shape
         sampling_rate = compute_tilt_shape(
             shape=sampling_rate, opening_axis=opening_axis, reduce_dim=True
         )
-        index_grid = fftfreqn(
+        return fftfreqn(
             tuple(x for x in tilt_shape if x != 1),
             sampling_rate=sampling_rate,
             compute_euclidean_norm=True,
+            fftshift=fftshift,
         )
 
     if angle != 0:
@@ -130,9 +137,11 @@ def frequency_grid_at_angle(
 
         angles = np.zeros(len(shape))
         angles[tilt_axis] = angle
-        rotation_matrix = euler_to_rotationmatrix(np.roll(angles, opening_axis - 1))
+        rotation_matrix = euler_to_rotationmatrix(
+            np.roll(angles, opening_axis - 1), seq="zyz"
+        )
 
-        index_grid = fftfreqn(tilt_shape, sampling_rate=None)
+        index_grid = fftfreqn(tilt_shape, sampling_rate=None, fftshift=fftshift)
         index_grid = np.einsum("ij,j...->i...", rotation_matrix, index_grid)
         norm = np.multiply(sampling_rate, shape).astype(int)
 
@@ -146,19 +155,25 @@ def frequency_grid_at_angle(
 def fftfreqn(
     shape: Tuple[int],
     sampling_rate: Tuple[float],
+    fftshift: bool = False,
     compute_euclidean_norm: bool = False,
     shape_is_real_fourier: bool = False,
     return_sparse_grid: bool = False,
 ) -> NDArray:
     """
-    Generate the n-dimensional discrete Fourier transform sample frequencies.
+    Generate n-dimensional (frequency) grids.
 
     Parameters
     ----------
     shape : Tuple[int]
         The shape of the data.
     sampling_rate : float or Tuple[float]
-        The sampling rate.
+        Sets the maximum value along each axis in shape to x=1/(2*sampling_rate), e.g.,
+        a sampling_rate of 1 yields a grid from -n/x * 1/n to (n)/x -1 * 1/n. A sampling
+        rate of None returns a grid from -n/2 to n/2 - 1
+    fftshift : bool, optional
+        Whether to return a grid centered at shape // 2. Default is grid centered around
+        origin, which is compliant with the rfftn definitions used in this project.
     compute_euclidean_norm : bool, optional
         Whether to compute the Euclidean norm, defaults to False.
     shape_is_real_fourier : bool, optional
@@ -181,10 +196,18 @@ def fftfreqn(
         if sampling_rate is not None:
             norm[-1] = (shape[-1] - 1) * 2 * sampling_rate
 
-    grids = []
+    ndim, grids = len(shape), []
     for i, x in enumerate(shape):
         baseline_dims = tuple(1 if i != t else x for t in range(len(shape)))
         grid = (np_be.arange(x, dtype=np_be._int_dtype) - center[i]) / norm[i]
+
+        # We have to invert because we build the grid centered around shape // 2
+        if not fftshift:
+            if shape_is_real_fourier and i == (ndim - 1):
+                pass
+            else:
+                grid = np.fft.ifftshift(grid)
+
         grid = np_be.astype(grid, np_be._float_dtype)
         grids.append(np_be.reshape(grid, baseline_dims))
 
@@ -197,9 +220,7 @@ def fftfreqn(
         return grids
 
     grid_flesh = np_be.full(shape, fill_value=1, dtype=np_be._float_dtype)
-    grids = np_be.stack(tuple(grid * grid_flesh for grid in grids))
-
-    return grids
+    return np_be.stack(tuple(grid * grid_flesh for grid in grids))
 
 
 def crop_real_fourier(data: BackendArray) -> BackendArray:
@@ -231,27 +252,28 @@ def compute_fourier_shape(
 
 
 def shift_fourier(
-    data: BackendArray, shape_is_real_fourier: bool = False
+    data: BackendArray, shape_is_real_fourier: bool = False, ifftshift: bool = True
 ) -> BackendArray:
     comp = be
     if isinstance(data, np.ndarray):
         comp = NumpyFFTWBackend()
+
     shape = comp.to_backend_array(data.shape)
-    shift = comp.add(comp.divide(shape, 2), comp.mod(shape, 2))
+    shift = comp.divide(shape, 2)
+    if ifftshift:
+        shift = comp.add(shift, comp.mod(shape, 2))
+
     shift = [int(x) for x in shift]
     if shape_is_real_fourier:
         shift[-1] = 0
-
-    data = comp.roll(data, shift, tuple(i for i in range(len(shift))))
-    return data
+    return comp.roll(data, shift, tuple(i for i in range(len(shift))))
 
 
 def create_reconstruction_filter(
-    filter_shape: Tuple[int], filter_type: str, **kwargs: Dict
+    filter_shape: Tuple[int], filter_type: str, fftshift: bool = True, **kwargs: Dict
 ):
     """
-    Create a reconstruction filter of given filter_type. The DC component of
-    the filter will be located in the array center.
+    Create a reconstruction filter of given filter_type.
 
     Parameters
     ----------
@@ -274,6 +296,8 @@ def create_reconstruction_filter(
         +---------------+----------------------------------------------------+
         | hamming       | |w| * (.54 + .46 ( cos(|w| * pi))) [2]_            |
         +---------------+----------------------------------------------------+
+    fftshift : bool, optional
+        Should the DC component be located at the center, default is True.
     kwargs: Dict
         Keyword arguments for particular filter_types.
 
@@ -288,7 +312,9 @@ def create_reconstruction_filter(
     .. [2]  https://odlgroup.github.io/odl/index.html
     """
     filter_type = str(filter_type).lower()
-    freq = fftfreqn(filter_shape, sampling_rate=0.5, compute_euclidean_norm=True)
+    freq = fftfreqn(
+        filter_shape, sampling_rate=0.5, compute_euclidean_norm=True, fftshift=fftshift
+    )
 
     if filter_type == "ram-lak":
         ret = np.copy(freq)
@@ -297,8 +323,8 @@ def create_reconstruction_filter(
         for dim, size in enumerate(filter_shape):
             n = np.concatenate(
                 (
-                    np.arange(1, size / 2 + 1, 2, dtype=int),
-                    np.arange(size / 2 - 1, 0, -2, dtype=int),
+                    np.arange(1, size // 2 + 1, 2, dtype=int),
+                    np.arange(size // 2 - 1, 0, -2, dtype=int),
                 )
             )
             ret1d = np.zeros(size)
@@ -316,7 +342,9 @@ def create_reconstruction_filter(
         if tilt_angles is False:
             raise ValueError("'ramp' filter requires specifying tilt angles.")
         size = filter_shape[0]
-        ret = fftfreqn((size,), sampling_rate=1, compute_euclidean_norm=True)
+        ret = fftfreqn(
+            (size,), sampling_rate=1, compute_euclidean_norm=True, fftshift=fftshift
+        )
         min_increment = np.radians(np.min(np.abs(np.diff(np.sort(tilt_angles)))))
         ret *= min_increment * size
         ret = np.fmin(ret, 1, out=ret)

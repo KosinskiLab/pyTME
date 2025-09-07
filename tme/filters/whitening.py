@@ -1,5 +1,5 @@
 """
-Implements class BandPassFilter to create Fourier filter representations.
+Implements class LinearWhiteningFilter
 
 Copyright (c) 2024 European Molecular Biology Laboratory
 
@@ -7,22 +7,26 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from typing import Tuple, Dict
+from dataclasses import dataclass
 
 import numpy as np
 from scipy.ndimage import mean as ndimean
 from scipy.ndimage import map_coordinates
 
+from ._utils import fftfreqn
 from ..types import BackendArray
+from ..analyzer.peaks import batchify
 from ..backends import backend as be
 from .compose import ComposableFilter
-from ._utils import fftfreqn, compute_fourier_shape, shift_fourier
+
 
 __all__ = ["LinearWhiteningFilter"]
 
 
+@dataclass
 class LinearWhiteningFilter(ComposableFilter):
     """
-    Compute Fourier power spectrums and perform whitening.
+    Generate Fourier whitening filters.
 
     References
     ----------
@@ -34,12 +38,9 @@ class LinearWhiteningFilter(ComposableFilter):
         13375 (2023)
     """
 
-    def __init__(self, *args, **kwargs):
-        pass
-
     @staticmethod
     def _compute_spectrum(
-        data_rfft: BackendArray, n_bins: int = None, batch_dimension: int = None
+        data_rfft: BackendArray, n_bins: int = None
     ) -> Tuple[BackendArray, BackendArray]:
         """
         Compute the power spectrum of the input data.
@@ -50,8 +51,6 @@ class LinearWhiteningFilter(ComposableFilter):
             The Fourier transform of the input data.
         n_bins : int, optional
             The number of bins for computing the spectrum, defaults to None.
-        batch_dimension : int, optional
-            Batch dimension to average over.
 
         Returns
         -------
@@ -60,7 +59,7 @@ class LinearWhiteningFilter(ComposableFilter):
         radial_averages : BackendArray
             Array containing the radial averages of the spectrum.
         """
-        shape = tuple(x for i, x in enumerate(data_rfft.shape) if i != batch_dimension)
+        shape = data_rfft.shape
 
         max_bins = max(max(shape[:-1]) // 2 + 1, shape[-1])
         n_bins = max_bins if n_bins is None else n_bins
@@ -71,25 +70,22 @@ class LinearWhiteningFilter(ComposableFilter):
             sampling_rate=0.5,
             shape_is_real_fourier=True,
             compute_euclidean_norm=True,
+            fftshift=False,
         )
         bins = be.to_numpy_array(bins)
-
-        # Implicit lowpass to nyquist
         bins = np.floor(bins * (n_bins - 1) + 0.5).astype(int)
-        fft_shift_axes = tuple(
-            i for i in range(data_rfft.ndim - 1) if i != batch_dimension
-        )
-        fourier_spectrum = np.fft.fftshift(data_rfft, axes=fft_shift_axes)
-        fourier_spectrum = np.abs(fourier_spectrum)
-        np.square(fourier_spectrum, out=fourier_spectrum)
+
+        fourier_spectrum = np.abs(data_rfft)
+        fourier_spectrum = np.square(fourier_spectrum, out=fourier_spectrum)
 
         radial_averages = ndimean(
             fourier_spectrum, labels=bins, index=np.arange(n_bins)
         )
-        np.sqrt(radial_averages, out=radial_averages)
-        np.reciprocal(radial_averages, out=radial_averages)
-        np.divide(radial_averages, radial_averages.max(), out=radial_averages)
-
+        radial_averages = np.sqrt(radial_averages, out=radial_averages)
+        radial_averages = np.where(radial_averages != 0, 1 / radial_averages, 0)
+        norm_factor = radial_averages.max()
+        if norm_factor != 0:
+            radial_averages = np.divide(radial_averages, norm_factor)
         return bins, radial_averages
 
     @staticmethod
@@ -104,21 +100,19 @@ class LinearWhiteningFilter(ComposableFilter):
             sampling_rate=0.5,
             shape_is_real_fourier=shape_is_real_fourier,
             compute_euclidean_norm=True,
+            fftshift=False,
         )
         grid = be.to_numpy_array(grid)
-        np.multiply(grid, (spectrum.shape[0] - 1), out=grid) + 0.5
+        grid = np.floor(np.multiply(grid, spectrum.shape[0] - 1) + 0.5)
         spectrum = map_coordinates(spectrum, grid.reshape(1, -1), order=order)
         return spectrum.reshape(grid.shape)
 
-    def __call__(
+    def _evaluate(
         self,
-        shape: Tuple[int],
-        data: BackendArray = None,
-        data_rfft: BackendArray = None,
-        n_bins: int = None,
-        batch_dimension: int = None,
+        shape: Tuple[int, ...],
+        data_rfft: BackendArray,
+        axes: Tuple[int] = (),
         order: int = 1,
-        return_real_fourier: bool = True,
         **kwargs: Dict,
     ) -> Dict:
         """
@@ -128,59 +122,29 @@ class LinearWhiteningFilter(ComposableFilter):
         ----------
         shape : tuple of ints
             Shape of the returned whitening filter.
-        data : BackendArray, optional
-            The input data, defaults to None.
         data_rfft : BackendArray, optional
             The Fourier transform of the input data, defaults to None.
-        n_bins : int, optional
-            The number of bins for computing the spectrum, defaults to None.
-        batch_dimension : int, optional
-            Batch dimension to average over.
-        return_real_fourier : tuple of int
-            Return a shape compliant with rfft, i.e., omit the negative frequencies
-            terms resulting in a return shape (*shape[:-1], shape[-1]//2+1)
+        axes : tuple of ints, optional
+            Axes to compute spectrum for independently.
         **kwargs : Dict
             Additional keyword arguments.
-
-        Returns
-        -------
-        dict
-            data: BackendArray
-                The filter mask.
-            shape: tuple of ints
-                The requested filter shape
-            return_real_fourier: bool
-                Whether data is compliant with rfftn.
-            is_multiplicative_filter: bool
-                Whether the filter is multiplicative in Fourier space.
         """
-        if data_rfft is None:
-            data_rfft = be.rfftn(data)
+        if isinstance(axes, int):
+            axes = (axes,)
 
+        stack = []
         data_rfft = be.to_numpy_array(data_rfft)
-        bins, radial_averages = self._compute_spectrum(
-            data_rfft, n_bins, batch_dimension
-        )
-        shape = tuple(int(x) for i, x in enumerate(shape) if i != batch_dimension)
-
-        shape_filter = shape
-        if return_real_fourier:
-            shape_filter = compute_fourier_shape(
+        for subset, _ in batchify(data_rfft.shape, axes):
+            _, radial_avg = self._compute_spectrum(np.squeeze(data_rfft[subset]))
+            ret = self._interpolate_spectrum(
+                spectrum=radial_avg,
                 shape=shape,
                 shape_is_real_fourier=False,
+                order=order,
             )
+            stack.append(ret)
 
-        ret = self._interpolate_spectrum(
-            spectrum=radial_averages,
-            shape=shape_filter,
-            shape_is_real_fourier=return_real_fourier,
-        )
-
-        ret = shift_fourier(data=ret, shape_is_real_fourier=return_real_fourier)
-
-        return {
-            "data": be.to_backend_array(ret),
-            "shape": shape,
-            "return_real_fourier": return_real_fourier,
-            "is_multiplicative_filter": True,
-        }
+        ret = np.array(stack)
+        if not len(axes):
+            ret = np.squeeze(ret)
+        return {"data": be.to_backend_array(ret), "shape": shape}

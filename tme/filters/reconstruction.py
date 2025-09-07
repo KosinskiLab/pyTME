@@ -1,22 +1,22 @@
 """
-Defines filters on tomographic tilt series.
+Implements class ReconstructFromTilt and ShiftFourier.
 
 Copyright (c) 2024 European Molecular Biology Laboratory
 
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-from typing import Tuple
+from typing import Tuple, Dict
 from dataclasses import dataclass
 
 import numpy as np
 
+from ..types import BackendArray
 from ..backends import backend as be
-from ..types import NDArray, BackendArray
 
 from .compose import ComposableFilter
 from ..rotations import euler_to_rotationmatrix
-from ._utils import crop_real_fourier, shift_fourier, create_reconstruction_filter
+from ._utils import shift_fourier, create_reconstruction_filter
 
 __all__ = ["ReconstructFromTilt", "ShiftFourier"]
 
@@ -24,45 +24,56 @@ __all__ = ["ReconstructFromTilt", "ShiftFourier"]
 @dataclass
 class ReconstructFromTilt(ComposableFilter):
     """
-    Reconstruct a d+1 array from a d-dimensional input projection using weighted
-    backprojection (WBP).
+    Place Fourier transforms of d-dimensional inputs into a d+1-dimensional array
+    aking of weighted backprojection using direct fourier inversion.
+
+    This class is used to reconstruct the output of ComposableFilter instances for
+    individual tilts to be applied to query templates.
+
+    See Also
+    --------
+    :py:class:`tme.filters.CTF`
+    :py:class:`tme.filters.Wedge`
+    :py:class:`tme.filters.BandPass`
+
     """
 
-    #: Shape of the reconstruction.
-    shape: Tuple[int] = None
-    #: Angle of each individual tilt.
+    #: Angle of each individual tilt in degrees.
     angles: Tuple[float] = None
     #: Projection axis, defaults to 2 (z).
     opening_axis: int = 2
     #: Tilt axis, defaults to 0 (x).
     tilt_axis: int = 0
-    #: Whether to return a share compliant with rfftn.
-    return_real_fourier: bool = True
     #: Interpolation order used for rotation
     interpolation_order: int = 1
     #: Filter window applied during reconstruction.
     reconstruction_filter: str = None
 
-    def __call__(self, return_real_fourier: bool = False, **kwargs):
+    @staticmethod
+    def _evaluate(
+        data: BackendArray,
+        shape: Tuple[int, ...],
+        angles: Tuple[float],
+        opening_axis: int = 2,
+        tilt_axis: int = 0,
+        interpolation_order: int = 1,
+        reconstruction_filter: str = None,
+        **kwargs,
+    ) -> Dict:
         """
-        Reconstruct a  d+1 array from a d-dimensional input using WBP.
+        Reconstruct a 3-dimensional array from n 2-dimensional inputs using WBP.
 
         Parameters
         ----------
-        shape : tuple of int
-            The shape of the reconstruction volume.
         data : BackendArray
             D-dimensional image stack with shape (n, ...). The data is assumed to be
-            a Fourier transform of the stack you are trying to reconstruct with
-            DC component in the center.
+            the Fourier transform of the stack you are trying to reconstruct with
+            DC component at the origin. Notably, the data needs to be the output of
+            np.fft.fftn not the reduced np.fft.rffn.
+        shape : tuple of int
+            The shape of the reconstruction volume.
         angles : tuple of float
-            Angle of each individual tilt.
-        return_real_fourier : bool, optional
-            Return a shape compliant
-        return_real_fourier : tuple of int
-            Return a shape compliant with rfft, i.e., omit the negative frequencies
-            terms resulting in a return shape (*shape[:-1], shape[-1]//2+1). Defaults
-            to False.
+            Angle to place individual slices at in degrees.
         reconstruction_filter : bool, optional
            Filter window applied during reconstruction.
            See :py:meth:`create_reconstruction_filter` for available options.
@@ -70,80 +81,21 @@ class ReconstructFromTilt(ComposableFilter):
             Axis the plane is tilted over, defaults to 0 (x).
         opening_axis : int
             The projection axis, defaults to 2 (z).
-
-        Returns
-        -------
-        dict
-            data: BackendArray
-                The filter mask.
-            shape: tuple of ints
-                The requested filter shape
-            return_real_fourier: bool
-                Whether data is compliant with rfftn.
-            is_multiplicative_filter: bool
-                Whether the filter is multiplicative in Fourier space.
         """
 
-        func_args = vars(self).copy()
-        func_args.update(kwargs)
-
-        ret = self.reconstruct(**func_args)
-
-        ret = shift_fourier(data=ret, shape_is_real_fourier=False)
-        if return_real_fourier:
-            ret = crop_real_fourier(ret)
-
-        return {
-            "data": ret,
-            "shape": func_args["shape"],
-            "return_real_fourier": return_real_fourier,
-            "is_multiplicative_filter": False,
-        }
-
-    @staticmethod
-    def reconstruct(
-        data: NDArray,
-        shape: Tuple[int],
-        angles: Tuple[float],
-        opening_axis: int,
-        tilt_axis: int,
-        interpolation_order: int = 1,
-        reconstruction_filter: str = None,
-        **kwargs,
-    ):
-        """
-        Reconstruct a volume from a tilt series.
-
-        Parameters
-        ----------
-        data : NDArray
-            The Fourier transform of tilt series data.
-        shape : tuple of int
-            Shape of the reconstruction.
-        angles : tuple of float
-            Angle of each individual tilt.
-        opening_axis : int
-            The axis around which the volume is opened.
-        tilt_axis : int
-            Axis the plane is tilted over.
-        interpolation_order : int, optional
-            Interpolation order used for rotation, defaults to 1.
-        reconstruction_filter : bool, optional
-           Filter window applied during reconstruction.
-           See :py:meth:`create_reconstruction_filter` for available options.
-
-        Returns
-        -------
-        NDArray
-            The reconstructed volume.
-        """
         if data.shape == shape:
             return data
 
-        data = be.to_backend_array(data)
+        # Composable filters use frequency grids centered at the origin
+        # Here we require them to be centered at subset.shape // 2
+        for i in range(data.shape[0]):
+            data_shifted = shift_fourier(
+                data[i], shape_is_real_fourier=False, ifftshift=False
+            )
+            data = be.at(data, i, data_shifted)
+
         volume_temp = be.zeros(shape, dtype=data.dtype)
-        volume_temp_rotated = be.zeros(shape, dtype=data.dtype)
-        volume = be.zeros(shape, dtype=data.dtype)
+        rec = be.zeros(shape, dtype=data.dtype)
 
         slices = tuple(slice(a // 2, (a // 2) + 1) for a in shape)
         subset = tuple(
@@ -162,58 +114,51 @@ class ReconstructFromTilt(ComposableFilter):
                 filter_type=reconstruction_filter,
                 filter_shape=(shape[tilt_axis],),
                 tilt_angles=angles,
+                fftshift=True,
             )
             rec_shape = tuple(1 if i != tilt_axis else x for i, x in enumerate(shape))
             rec_filter = be.to_backend_array(rec_filter)
             rec_filter = be.reshape(rec_filter, rec_shape)
 
         angles = be.to_backend_array(angles)
+        axis_index = min(
+            tuple(i for i in range(len(shape)) if i not in (tilt_axis, opening_axis))
+        )
         for index in range(len(angles)):
             angles_loop = be.fill(angles_loop, 0)
             volume_temp = be.fill(volume_temp, 0)
-            volume_temp_rotated = be.fill(volume_temp_rotated, 0)
 
             # Jax compatibility
             volume_temp = be.at(volume_temp, subset, wedges[index] * rec_filter)
-            angles_loop = be.at(angles_loop, tilt_axis, angles[index])
+            angles_loop = be.at(angles_loop, axis_index, angles[index])
 
-            angles_loop = be.roll(angles_loop, (opening_axis - 1,), axis=0)
-            rotation_matrix = euler_to_rotationmatrix(be.to_numpy_array(angles_loop))
-            rotation_matrix = be.to_backend_array(rotation_matrix)
+            # We want a push rotation but rigid transform assumes pull
+            rotation_matrix = euler_to_rotationmatrix(
+                be.to_numpy_array(angles_loop), seq="xyz"
+            ).T
 
-            volume_temp_rotated, _ = be.rigid_transform(
+            volume_temp, _ = be.rigid_transform(
                 arr=volume_temp,
-                rotation_matrix=rotation_matrix,
-                out=volume_temp_rotated,
+                rotation_matrix=be.to_backend_array(rotation_matrix),
                 use_geometric_center=True,
                 order=interpolation_order,
             )
-            volume = be.add(volume, volume_temp_rotated, out=volume)
+            rec = be.add(rec, volume_temp, out=rec)
 
-        return volume
+        # Shift DC component back to origin
+        rec = shift_fourier(rec, shape_is_real_fourier=False, ifftshift=True)
+        return {"data": rec, "shape": shape, "is_multiplicative_filter": False}
 
 
 class ShiftFourier(ComposableFilter):
-    def __call__(
-        self,
-        data: BackendArray,
-        shape_is_real_fourier: bool = False,
-        return_real_fourier: bool = True,
-        **kwargs,
-    ):
+    def _evaluate(self, shape: Tuple[int, ...], data: BackendArray, **kwargs) -> Dict:
         ret = []
         for index in range(data.shape[0]):
-            mask = be.to_numpy_array(data[index])
-
-            mask = shift_fourier(data=mask, shape_is_real_fourier=shape_is_real_fourier)
-            if return_real_fourier:
-                mask = crop_real_fourier(mask)
+            mask = shift_fourier(
+                data=data[index],
+                shape_is_real_fourier=kwargs.get("return_real_fourier", False),
+            )
             ret.append(mask[None])
-        ret = np.concatenate(ret, axis=0)
 
-        return {
-            "data": ret,
-            "shape": kwargs.get("shape"),
-            "return_real_fourier": return_real_fourier,
-            "is_multiplicative_filter": False,
-        }
+        ret = be.concatenate(ret, axis=0)
+        return {"data": ret, "shape": shape, "is_multiplicative_filter": False}
