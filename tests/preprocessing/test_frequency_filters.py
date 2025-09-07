@@ -71,52 +71,43 @@ class TestBandPassFilter:
         shape_is_real_fourier: bool,
     ):
         band_pass_filter.use_gaussian = use_gaussian
-        band_pass_filter.return_real_fourier = return_real_fourier
         band_pass_filter.shape_is_real_fourier = shape_is_real_fourier
 
         result = band_pass_filter(shape=(10, 10), lowpass=0.2, highpass=0.8)
 
         assert isinstance(result, dict)
         assert "data" in result
-        assert "is_multiplicative_filter" in result
         assert isinstance(result["data"], type(be.ones((1,))))
-        assert result["is_multiplicative_filter"] is True
 
     def test_default_values(self, band_pass_filter: BandPassReconstructed):
         assert band_pass_filter.lowpass is None
         assert band_pass_filter.highpass is None
         assert band_pass_filter.sampling_rate == 1
         assert band_pass_filter.use_gaussian is True
-        assert band_pass_filter.return_real_fourier is False
 
     @pytest.mark.parametrize("shape", ((10, 10), (20, 20, 20), (30, 30)))
     def test_return_real_fourier(self, shape: Tuple[int]):
-        bpf = BandPassReconstructed(return_real_fourier=True)
+        bpf = BandPassReconstructed()
         result = bpf(shape=shape, lowpass=0.2, highpass=0.8)
-        expected_shape = tuple(compute_fourier_shape(shape, False))
-        assert result["data"].shape == expected_shape
+        assert result["data"].shape == shape
 
 
 class TestLinearWhiteningFilter:
     @pytest.mark.parametrize(
-        "shape, n_bins, batch_dimension",
+        "shape, n_bins",
         [
-            ((10, 10), None, None),
-            ((20, 20, 20), 15, 0),
-            ((30, 30, 30), 20, 1),
-            ((40, 40, 40, 40), 25, 2),
+            ((10, 10), None),
+            ((20, 20, 20), 15),
+            ((30, 30, 30), 20),
+            ((40, 40, 40, 40), 25),
         ],
     )
-    def test_compute_spectrum(
-        self, shape: Tuple[int], n_bins: int, batch_dimension: int
-    ):
+    def test_compute_spectrum(self, shape: Tuple[int], n_bins: int):
         data_rfft = be.fft.rfftn(be.random.random(shape))
         bins, radial_averages = LinearWhiteningFilter._compute_spectrum(
-            data_rfft, n_bins, batch_dimension
+            data_rfft, n_bins
         )
-        data_shape = tuple(
-            int(x) for i, x in enumerate(data_rfft.shape) if i != batch_dimension
-        )
+        data_shape = tuple(int(x) for i, x in enumerate(data_rfft.shape))
 
         assert isinstance(bins, np.ndarray)
         assert isinstance(radial_averages, np.ndarray)
@@ -140,9 +131,8 @@ class TestLinearWhiteningFilter:
     @pytest.mark.parametrize(
         "shape, n_bins, batch_dimension, order",
         [
-            ((10, 10), None, None, 1),
-            ((20, 20, 20), 15, 0, 2),
-            ((30, 30, 30), 20, 1, None),
+            ((10, 10), None, (), 1),
+            ((20, 20, 20), 15, 0, 1),
         ],
     )
     def test_call_method(
@@ -154,21 +144,17 @@ class TestLinearWhiteningFilter:
     ):
         data = be.random.random(shape)
         result = LinearWhiteningFilter()(
-            shape=shape,
-            data=data,
+            shape=tuple(x for i, x in enumerate(shape) if i != batch_dimension),
+            data_rfft=np.fft.rfftn(data),
             n_bins=n_bins,
-            batch_dimension=batch_dimension,
+            axes=batch_dimension,
             order=order,
         )
 
         assert isinstance(result, dict)
         assert result.get("data", False) is not False
-        assert result.get("is_multiplicative_filter", False)
         assert isinstance(result["data"], type(be.ones((1,))))
-        data_shape = tuple(
-            int(x) for i, x in enumerate(data.shape) if i != batch_dimension
-        )
-        assert result["data"].shape == tuple(compute_fourier_shape(data_shape, False))
+        assert result["data"].shape == shape
 
     def test_call_method_with_data_rfft(self):
         shape = (30, 30, 30)
@@ -179,14 +165,13 @@ class TestLinearWhiteningFilter:
 
         assert isinstance(result, dict)
         assert result.get("data", False) is not False
-        assert result.get("is_multiplicative_filter", False)
         assert isinstance(result["data"], type(be.ones((1,))))
         assert result["data"].shape == data_rfft.shape
 
     @pytest.mark.parametrize("shape", [(10, 10), (20, 20, 20), (30, 30, 30)])
     def test_filter_mask_range(self, shape: Tuple[int]):
         data = be.random.random(shape)
-        result = LinearWhiteningFilter()(shape=shape, data=data)
+        result = LinearWhiteningFilter()(shape=shape, data_rfft=np.fft.rfftn(data))
 
         filter_mask = result["data"]
         assert np.all(filter_mask >= 0) and np.all(filter_mask <= 1)

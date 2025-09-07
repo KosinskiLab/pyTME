@@ -1,28 +1,38 @@
 import pytest
 
-from tme.filters import Compose
+from tme.filters import Compose, ComposableFilter
 from tme.backends import backend as be
 
 
-def mock_transform1(**kwargs):
+class MockFilter(ComposableFilter):
+    def _evaluate(self, *args, **kwargs):
+        return {"data": be.ones((10, 10)), "shape": (10, 10)}
+
+
+class MockFilterNoMult(ComposableFilter):
+    def _evaluate(self, *args, **kwargs):
+        return {
+            "data": be.ones((10, 10)) * 3,
+            "shape": (10, 10),
+            "is_multiplicative_filter": False,
+        }
+
+
+mock_transform = MockFilter()
+mock_transform_nomult = MockFilterNoMult()
+
+
+def mock_transform_error(**kwargs):
     return {"data": be.ones((10, 10)), "is_multiplicative_filter": True}
-
-
-def mock_transform2(**kwargs):
-    return {"data": be.ones((10, 10)) * 2, "is_multiplicative_filter": True}
-
-
-def mock_transform3(**kwargs):
-    return {"extra_info": "test"}
 
 
 class TestCompose:
     @pytest.fixture
     def compose_instance(self):
-        return Compose((mock_transform1, mock_transform2, mock_transform3))
+        return Compose((mock_transform, mock_transform, mock_transform))
 
     def test_init(self):
-        transforms = (mock_transform1, mock_transform2)
+        transforms = (mock_transform, mock_transform)
         compose = Compose(transforms)
         assert compose.transforms == transforms
 
@@ -32,45 +42,36 @@ class TestCompose:
         assert result == {}
 
     def test_call_single_transform(self):
-        compose = Compose((mock_transform1,))
-        result = compose()
+        compose = Compose((mock_transform,))
+        result = compose(return_real_fourier=False)
         assert "data" in result
-        assert result.get("is_multiplicative_filter", False)
         assert be.allclose(result["data"], be.ones((10, 10)))
 
     def test_call_multiple_transforms(self, compose_instance):
-        result = compose_instance()
+        result = compose_instance(return_real_fourier=False)
         assert "data" in result
-        assert "extra_info" not in result
-        assert be.allclose(result["data"], be.ones((10, 10)) * 2)
+        assert be.allclose(result["data"], be.ones((10, 10)))
 
     def test_multiplicative_filter_composition(self):
-        compose = Compose((mock_transform1, mock_transform2))
-        result = compose()
+        compose = Compose((mock_transform, mock_transform))
+        result = compose(return_real_fourier=False)
         assert "data" in result
-        assert be.allclose(result["data"], be.ones((10, 10)) * 2)
+        assert be.allclose(result["data"], be.ones((10, 10)))
 
     @pytest.mark.parametrize(
         "kwargs", [{}, {"extra_param": "test"}, {"data": be.zeros((5, 5))}]
     )
     def test_call_with_kwargs(self, compose_instance, kwargs):
-        result = compose_instance(**kwargs)
+        result = compose_instance(**kwargs, return_real_fourier=False)
         assert "data" in result
         assert "extra_info" not in result
 
     def test_non_multiplicative_filter(self):
-        def non_mult_transform(**kwargs):
-            return {"data": be.ones((10, 10)) * 3, "is_multiplicative_filter": False}
-
-        compose = Compose((mock_transform1, non_mult_transform))
-        result = compose()
+        compose = Compose((mock_transform, mock_transform_nomult))
+        result = compose(return_real_fourier=False)
         assert "data" in result
         assert be.allclose(result["data"], be.ones((10, 10)) * 3)
 
     def test_error_handling(self):
-        def error_transform(**kwargs):
-            raise ValueError("Test error")
-
-        compose = Compose((mock_transform1, error_transform))
-        with pytest.raises(ValueError, match="Test error"):
-            compose()
+        with pytest.raises(ValueError):
+            Compose((mock_transform, mock_transform_error))()

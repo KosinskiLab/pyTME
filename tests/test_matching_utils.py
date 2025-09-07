@@ -15,7 +15,7 @@ from tme.matching_utils import (
     apply_convolution_mode,
     write_pickle,
     load_pickle,
-    _normalize_template_overflow_safe,
+    _standardize_safe,
 )
 
 BASEPATH = files("tests.data")
@@ -127,12 +127,12 @@ class TestMatchingUtils:
         loaded_data = load_pickle(filename)
         assert np.array_equal(loaded_data, data)
 
-    def test_normalize_template_overflow_safe(self):
+    def test_standardize_safe(self):
         template = be.random.random((10, 10)).astype(be.float32)
         mask = be.ones_like(template)
         n_observations = 100.0
 
-        result = _normalize_template_overflow_safe(template, mask, n_observations)
+        result = _standardize_safe(template, mask, n_observations)
         assert result.shape == template.shape
         assert result.dtype == template.dtype
         assert np.allclose(result.mean(), 0, atol=0.1)

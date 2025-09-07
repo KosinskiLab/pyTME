@@ -1,5 +1,5 @@
-import numpy as np
 import pytest
+import numpy as np
 
 from scipy.ndimage import laplace
 
@@ -7,7 +7,7 @@ from tme.matching_data import MatchingData
 from tme.memory import MATCHING_MEMORY_REGISTRY
 from tme.analyzer import MaxScoreOverRotations, PeakCallerSort
 from tme.matching_exhaustive import (
-    scan_subsets,
+    match_exhaustive,
     MATCHING_EXHAUSTIVE_REGISTER,
     register_matching_exhaustive,
 )
@@ -35,11 +35,11 @@ class TestMatchExhaustive:
         self.coordinates_weights = None
         self.rotations = None
 
-    @pytest.mark.parametrize("evaluate_peak", (True,))
+    @pytest.mark.parametrize("evaluate_peak", (True, False))
     @pytest.mark.parametrize("score", tuple(MATCHING_EXHAUSTIVE_REGISTER.keys()))
     @pytest.mark.parametrize("job_schedule", ((2, 1),))
     @pytest.mark.parametrize("pad_edge", (False, True))
-    def test_scan_subset(
+    def test_match_exhaustive(
         self,
         score: str,
         job_schedule: int,
@@ -64,7 +64,7 @@ class TestMatchExhaustive:
         if evaluate_peak:
             callback_class = PeakCallerSort
 
-        ret = scan_subsets(
+        ret = match_exhaustive(
             matching_data=matching_data,
             matching_setup=setup,
             matching_score=process,

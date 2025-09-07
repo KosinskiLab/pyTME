@@ -101,9 +101,10 @@ class TestDensity:
 
     def test_from_file_baseline(self):
         self.test_to_file(gzip=False)
-        density = Density.from_file(str(BASEPATH.joinpath("Maps/emd_8621.mrc.gz")))
-        assert np.allclose(density.origin, (4.35, 2.90, -1.45), rtol=0.1)
-        assert np.allclose(density.sampling_rate, (1.45), rtol=0.3)
+        density = Density.from_file(str(BASEPATH.joinpath("Raw/em_map.map")))
+        assert density.shape == (19, 14, 20)
+        assert np.allclose(density.origin, (-52.8, -10.56, -52.8), rtol=0.1)
+        assert np.allclose(density.sampling_rate, (5.28), rtol=0.1)
 
     @pytest.mark.parametrize("extension", ("mrc", "em", "tiff", "h5"))
     @pytest.mark.parametrize("gzip", (True, False))
@@ -315,7 +316,7 @@ class TestDensity:
         "cutoff", [DEFAULT_DATA.min() - 1, 0, DEFAULT_DATA.max() - 0.1]
     )
     def test_centered(self, cutoff):
-        centered_density, translation = self.density.centered(cutoff=cutoff)
+        centered_density = self.density.centered(cutoff=cutoff)
         com = centered_density.center_of_mass(centered_density.data, 0)
 
         difference = np.abs(
@@ -334,7 +335,7 @@ class TestDensity:
             box = temp.minimum_enclosing_box(cutoff=0, use_geometric_center=True)
             temp.adjust_box(box)
         else:
-            temp, translation = temp.centered()
+            temp = temp.centered()
 
         swaps = set(permutations([0, 1, 2]))
         temp_matrix = np.eye(temp.data.ndim).astype(np.float32)
@@ -436,7 +437,7 @@ class TestDensity:
         arr = np.linalg.norm(np.indices(shape) - position, axis=0)
         arr = (arr <= radius).astype(np.float32)
 
-        center_of_mass = Density.center_of_mass(arr)
+        center_of_mass = Density(arr).center_of_mass()
         assert np.allclose(center, center_of_mass)
 
     @pytest.mark.parametrize(
@@ -451,7 +452,7 @@ class TestDensity:
         target[5:10, 15:22, 10:13] = 1
 
         target = Density(target, sampling_rate=(1, 1, 1), origin=(0, 0, 0))
-        target, translation = target.centered(cutoff=0)
+        target = target.centered(cutoff=0)
 
         template = target.copy()
 
@@ -474,21 +475,79 @@ class TestDensity:
         assert np.allclose(np.linalg.inv(rotation), initial_rotation, atol=0.2)
 
     def test_match_structure_to_density(self):
-        density = Density.from_file("tests/data/Maps/emd_8621.mrc.gz")
-        density = density.resample(density.sampling_rate * 4)
-        structure = Structure.from_file(
-            "tests/data/Structures/5uz4.cif", filter_by_residues=None
+        mask = create_mask(
+            mask_type="ellipse",
+            center=(20, 20, 20),
+            radius=(10, 5, 10),
+            shape=(50, 50, 50),
         )
+
+        coordinates = np.array(np.where(mask > 0), dtype=np.float32).T
+        structure = Structure(
+            record_type=[
+                "ATOM",
+            ]
+            * coordinates.shape[0],
+            atom_serial_number=list(range(coordinates.shape[0])),
+            atom_name=[
+                "C",
+            ]
+            * coordinates.shape[0],
+            atom_coordinate=coordinates,
+            alternate_location_indicator=[
+                ".",
+            ]
+            * coordinates.shape[0],
+            residue_name=[
+                "GLY",
+            ]
+            * coordinates.shape[0],
+            chain_identifier=[
+                "A",
+            ]
+            * coordinates.shape[0],
+            residue_sequence_number=[
+                0,
+            ]
+            * coordinates.shape[0],
+            code_for_residue_insertion=[
+                "?",
+            ]
+            * coordinates.shape[0],
+            occupancy=[
+                0,
+            ]
+            * coordinates.shape[0],
+            temperature_factor=[
+                0,
+            ]
+            * coordinates.shape[0],
+            segment_identifier=[
+                "1",
+            ]
+            * coordinates.shape[0],
+            element_symbol=[
+                "C",
+            ]
+            * coordinates.shape[0],
+            charge=[
+                "?",
+            ]
+            * coordinates.shape[0],
+            metadata={},
+        )
+        density = Density(mask, sampling_rate=1.0)
+        density = density.resample(density.sampling_rate * 2)
 
         initial_translation = np.array([-1, 0, 5])
         initial_rotation = euler_to_rotationmatrix((-10, 2, 5))
-        structure.rigid_transform(
+        structure_mod = structure.rigid_transform(
             translation=initial_translation, rotation_matrix=initial_rotation
         )
         np.random.seed(12)
         ret = Density.match_structure_to_density(
             target=density,
-            template=structure,
+            template=structure_mod,
             cutoff_target=0,
             scoring_method="CrossCorrelation",
             maxiter=10,

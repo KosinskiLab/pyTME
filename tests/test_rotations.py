@@ -35,24 +35,19 @@ class TestRotations:
         )
 
     @pytest.mark.parametrize(
-        "initial_vector, target_vector, convention",
+        "initial_vector, target_vector",
         [
-            ([1, 0, 0], [0, 1, 0], None),
-            ([0, 1, 0], [0, 0, 1], "zyx"),
-            ([1, 1, 1], [1, 0, 0], "xyz"),
+            ([1, 0, 0], [0, 1, 0]),
+            ([0, 1, 0], [0, 0, 1]),
+            ([1, 1, 1], [1, 0, 0]),
         ],
     )
-    def test_align_vectors(self, initial_vector, target_vector, convention):
-        result = align_vectors(initial_vector, target_vector, convention)
+    def test_align_vectors(self, initial_vector, target_vector):
+        result = align_vectors(initial_vector, target_vector)
 
         assert isinstance(result, np.ndarray)
-        if convention is None:
-            assert result.shape == (3, 3)
-            assert np.allclose(np.dot(result, result.T), np.eye(3), atol=1e-6)
-        else:
-            assert len(result) == 3
-            result = Rotation.from_euler(convention, result, degrees=True).as_matrix()
-            assert np.allclose(np.dot(result, result.T), np.eye(3), atol=1e-6)
+        assert result.shape == (3, 3)
+        assert np.allclose(np.dot(result, result.T), np.eye(3), atol=1e-6)
 
         rotated = np.dot(Rotation.from_matrix(result).as_matrix(), initial_vector)
         assert np.allclose(
@@ -62,11 +57,11 @@ class TestRotations:
         )
 
     @pytest.mark.parametrize(
-        "cone_angle, cone_sampling, axis_angle, axis_sampling, vector, n_symmetry, convention",
+        "cone_angle, cone_sampling, axis_angle, axis_sampling, vector, n_symmetry",
         [
-            (30, 5, 360, None, (1, 0, 0), 1, None),
-            (45, 10, 180, 15, (0, 1, 0), 2, "zyx"),
-            (60, 15, 90, 30, (0, 0, 1), 4, "xyz"),
+            (30, 5, 360, None, (1, 0, 0), 1),
+            (45, 10, 180, 15, (0, 1, 0), 2),
+            (60, 15, 90, 30, (0, 0, 1), 4),
         ],
     )
     def test_get_cone_rotations(
@@ -77,7 +72,6 @@ class TestRotations:
         axis_sampling,
         vector,
         n_symmetry,
-        convention,
     ):
         result = get_cone_rotations(
             cone_angle=cone_angle,
@@ -86,14 +80,10 @@ class TestRotations:
             axis_sampling=axis_sampling,
             reference=vector,
             n_symmetry=n_symmetry,
-            seq=convention,
         )
 
         assert isinstance(result, np.ndarray)
-        if convention is None:
-            assert result.shape[1:] == (3, 3)
-        else:
-            assert result.shape[1] == 3
+        assert result.shape[1:] == (3, 3)
 
     def test_euler_conversion(self):
         rotation_matrix_initial = np.array(

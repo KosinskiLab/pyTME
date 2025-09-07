@@ -1,5 +1,4 @@
 import pytest
-import numpy as np
 
 from tme import Density, Structure, Preprocessor
 
@@ -47,15 +46,6 @@ class TestPreprocessor:
             template=self.structure_density.data,
             low_sigma=low_sigma,
             high_sigma=high_sigma,
-        )
-
-    @pytest.mark.parametrize("smallest_size,largest_size", [(1, 10), (2, 20)])
-    def test_bandpass_filter(self, smallest_size, largest_size):
-        _ = self.preprocessor.bandpass_filter(
-            template=self.structure_density.data,
-            lowpass=smallest_size,
-            highpass=largest_size,
-            sampling_rate=1,
         )
 
     @pytest.mark.parametrize("lbd,sigma_range", [(1, (2, 4)), (20, (1, 6))])
@@ -124,13 +114,4 @@ class TestPreprocessor:
         _ = self.preprocessor.rank_filter(
             template=self.structure_density.data,
             rank=rank,
-        )
-
-    @pytest.mark.parametrize("infinite_plane", [False, True])
-    def test_continuous_wedge_mask(self, infinite_plane):
-        _ = self.preprocessor.continuous_wedge_mask(
-            start_tilt=50,
-            stop_tilt=-40,
-            shape=(50, 50, 50),
-            infinite_plane=infinite_plane,
         )

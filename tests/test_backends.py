@@ -332,16 +332,6 @@ class TestBackends:
         assert np.allclose(arr, backend.to_numpy_array(real_arr), rtol=0.3)
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
-    def test_extract_center(self, backend):
-        new_shape = np.divide(self.x1.shape, 2).astype(int)
-        base = self.backend.extract_center(arr=self.x1, newshape=new_shape)
-        other = backend.extract_center(
-            arr=backend.to_backend_array(self.x1), newshape=new_shape
-        )
-
-        assert np.allclose(base, backend.to_numpy_array(other), rtol=0.01)
-
-    @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     def test_compute_convolution_shapes(self, backend):
         base = self.backend.compute_convolution_shapes(self.x1.shape, self.x2.shape)
         other = backend.compute_convolution_shapes(self.x1.shape, self.x2.shape)
@@ -359,32 +349,69 @@ class TestBackends:
         elif dim == 3:
             arr[20:25, 21:26, 26:31] = 1
 
-        rotation_matrix = np.eye(dim)
-        rotation_matrix[0, 0] = -1
+        from tme.rotations import get_rotation_matrices
+
+        np.random.seed(42)
+        rotation_matrix = get_rotation_matrices(
+            dim=dim, angular_sampling=10, use_optimized_set=False
+        )[-1]
 
         out = np.zeros_like(arr)
+        out.setflags(write=True)
 
         arr_mask, out_mask = None, None
         if create_mask:
             arr_mask = np.multiply(np.random.rand(*arr.shape) > 0.5, 1.0)
             out_mask = np.zeros_like(arr_mask)
-            arr_mask = backend.to_backend_array(arr_mask)
-            out_mask = backend.to_backend_array(out_mask)
+            out_mask.setflags(write=True)
 
-        arr = backend.to_backend_array(arr)
-        out = backend.to_backend_array(arr)
-
-        rotation_matrix = backend.to_backend_array(rotation_matrix)
-
-        backend.rigid_transform(
+        out, _ = NumpyFFTWBackend().rigid_transform(
             arr=arr,
             arr_mask=arr_mask,
             rotation_matrix=rotation_matrix,
             out=out,
             out_mask=out_mask,
+            order=1,
+            use_geometric_center=True,
         )
 
-        assert np.round(arr.sum(), 3) == np.round(out.sum(), 3)
+        arr = backend.to_backend_array(arr.copy())
+        out_be = backend.to_backend_array(out.copy())
+        if create_mask:
+            arr_mask = backend.to_backend_array(arr_mask)
+            out_mask = backend.to_backend_array(out_mask)
+
+        rotation_matrix = backend.to_backend_array(rotation_matrix)
+
+        out_be, _ = backend.rigid_transform(
+            arr=arr,
+            arr_mask=arr_mask,
+            rotation_matrix=rotation_matrix,
+            out=out_be,
+            out_mask=out_mask,
+            order=1,
+            use_geometric_center=True,
+        )
+        out_be = backend.to_numpy_array(out_be)
+        assert np.allclose(out, out_be, atol=0.3)
+
+    @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
+    @pytest.mark.parametrize("create_mask", (False, True))
+    def test_rigid_transform_identity(self, backend, create_mask):
+        dim = 3
+        shape = tuple(50 for _ in range(dim))
+
+        arr = np.zeros(shape)
+        arr[20:25, 21:26, 26:31] = 1
+
+        rotation_matrix = backend.to_backend_array(np.eye(dim))
+        out, _ = backend.rigid_transform(
+            arr=backend.to_backend_array(arr),
+            rotation_matrix=backend.to_backend_array(rotation_matrix),
+            order=1,
+            use_geometric_center=True,
+        )
+        assert np.allclose(out, arr, atol=0.01)
 
     @pytest.mark.parametrize("dim", (2, 3))
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
@@ -418,6 +445,7 @@ class TestBackends:
             out=out,
             out_mask=out_mask,
             batched=True,
+            order=1,
         )
 
         arr_b = backend.to_backend_array(arr_b)
@@ -430,6 +458,7 @@ class TestBackends:
                 rotation_matrix=rotation_matrix,
                 out=out_b[i],
                 out_mask=out_mask if out_mask is None else out_mask[i],
+                order=1,
             )
 
         assert np.allclose(arr, arr_b)

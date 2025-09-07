@@ -10,7 +10,7 @@ from tme import Density, Orientations
 from tme.backends import backend as be
 
 np.random.seed(42)
-available_backends = (x for x in be.available_backends() if x != "mlx")
+available_backends = tuple(x for x in be.available_backends() if x != "mlx")
 
 
 def argdict_to_command(input_args, executable: str):
@@ -29,7 +29,7 @@ def argdict_to_command(input_args, executable: str):
     return " ".join(ret)
 
 
-class TestMatchTemplate:
+class TestSetup:
     @classmethod
     def setup_class(cls):
         target = np.random.rand(20, 20, 20)
@@ -98,6 +98,7 @@ class TestMatchTemplate:
         use_target_mask: bool = False,
         backend: str = "numpyfftw",
         test_rejection_sampling: bool = False,
+        background_correction: str = None,
     ):
         output_path = tempfile.NamedTemporaryFile(delete=False, suffix="pickle").name
 
@@ -120,6 +121,9 @@ class TestMatchTemplate:
         if test_rejection_sampling:
             argdict["--orientations"] = self.orientations_path
 
+        if background_correction is not None:
+            argdict["--background-correction"] = background_correction
+
         if test_filter:
             argdict["--lowpass"] = 30
             argdict["--defocus"] = 3000
@@ -136,11 +140,15 @@ class TestMatchTemplate:
         assert ret.returncode == 0
         return output_path
 
+
+class TestMatchTemplate(TestSetup):
+
     @pytest.mark.parametrize("backend", available_backends)
     @pytest.mark.parametrize("call_peaks", (False, True))
     @pytest.mark.parametrize("use_template_mask", (False, True))
     @pytest.mark.parametrize("test_filter", (False, True))
     @pytest.mark.parametrize("test_rejection_sampling", (False, True))
+    @pytest.mark.parametrize("background_correction", (None, "phase-scrambling"))
     def test_match_template(
         self,
         backend: bool,
@@ -148,8 +156,14 @@ class TestMatchTemplate:
         use_template_mask: bool,
         test_filter: bool,
         test_rejection_sampling: bool,
+        background_correction: str,
     ):
-        if backend == "jax" and (call_peaks or test_rejection_sampling):
+        # Jax does not support peak calling yet
+        if backend == "jax" and call_peaks:
+            return None
+
+        # These use different analyzers raising an error in the interface
+        if call_peaks and test_rejection_sampling:
             return None
 
         self.run_matching(
@@ -163,10 +177,11 @@ class TestMatchTemplate:
             template_mask_path=self.template_mask_path,
             target_mask_path=self.target_mask_path,
             test_rejection_sampling=test_rejection_sampling,
+            background_correction=background_correction,
         )
 
 
-class TestPostprocessing(TestMatchTemplate):
+class TestPostprocessing(TestSetup):
     @classmethod
     def setup_class(cls):
         super().setup_class()
@@ -256,7 +271,6 @@ class TestPostprocessing(TestMatchTemplate):
         }
         cmd = argdict_to_command(argdict, executable="postprocess.py")
         ret = subprocess.run(cmd, capture_output=True, shell=True)
-        print(ret)
 
         match output_format:
             case "orientations":
@@ -289,14 +303,14 @@ class TestPostprocessing(TestMatchTemplate):
         assert ret.returncode == 0
 
 
-class TestEstimateMemoryUsage(TestMatchTemplate):
+class TestEstimateMemoryUsage(TestSetup):
     @classmethod
     def setup_class(cls):
         super().setup_class()
 
     @pytest.mark.parametrize("ncores", (1, 4, 8))
     @pytest.mark.parametrize("pad_edges", (False, True))
-    def test_estimation(self, ncores, pad_edges):
+    def test_estimation_cli(self, ncores, pad_edges):
 
         argdict = {
             "-m": self.target_path,
@@ -311,7 +325,7 @@ class TestEstimateMemoryUsage(TestMatchTemplate):
         assert ret.returncode == 0
 
 
-class TestPreprocess(TestMatchTemplate):
+class TestPreprocess(TestSetup):
     @classmethod
     def setup_class(cls):
         super().setup_class()
@@ -319,7 +333,7 @@ class TestPreprocess(TestMatchTemplate):
     @pytest.mark.parametrize("backend", available_backends)
     @pytest.mark.parametrize("align_axis", (False, True))
     @pytest.mark.parametrize("invert_contrast", (False, True))
-    def test_estimation(self, backend, align_axis, invert_contrast):
+    def test_preprocess_cli(self, backend, align_axis, invert_contrast):
 
         argdict = {
             "-m": self.target_path,

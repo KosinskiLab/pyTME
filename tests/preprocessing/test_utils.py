@@ -74,9 +74,21 @@ class TestPreprocessUtils:
     def test_fftfreqn(self, n, sampling_rate):
         assert np.allclose(
             fftfreqn(
-                shape=(n,), sampling_rate=sampling_rate, compute_euclidean_norm=True
+                shape=(n,),
+                sampling_rate=sampling_rate,
+                compute_euclidean_norm=True,
+                fftshift=True,
             ),
             np.abs(np.fft.ifftshift(np.fft.fftfreq(n=n, d=sampling_rate))),
+        )
+        assert np.allclose(
+            fftfreqn(
+                shape=(n,),
+                sampling_rate=sampling_rate,
+                compute_euclidean_norm=True,
+                fftshift=False,
+            ),
+            np.abs(np.fft.fftfreq(n=n, d=sampling_rate)),
         )
 
     @pytest.mark.parametrize("shape", ((10,), (10, 15), (10, 15, 30)))

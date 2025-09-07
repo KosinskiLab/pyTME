@@ -53,6 +53,7 @@ class TestExtensions:
     @pytest.mark.parametrize("min_distance", [0, 5, 10])
     def test_find_candidate_indices(self, dimension, dtype, min_distance):
         coordinates = COORDINATES[dimension].astype(dtype)
+        print(coordinates.shape)
 
         min_distance = np.array([min_distance]).astype(dtype)[0]
 

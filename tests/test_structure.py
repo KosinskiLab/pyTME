@@ -6,7 +6,6 @@ import pytest
 import numpy as np
 
 from tme import Structure
-from tme.matching_utils import minimum_enclosing_box
 from tme.rotations import euler_to_rotationmatrix
 
 
@@ -196,11 +195,6 @@ class TestStructure:
         assert center_of_mass.shape[0] == self.structure.atom_coordinate.shape[1]
         assert np.allclose(center_of_mass, [-0.89391639, 29.94908928, -2.64736741])
 
-    def test_centered(self):
-        ret, translation = self.structure.centered()
-        box = minimum_enclosing_box(coordinates=self.structure.atom_coordinate.T)
-        assert np.allclose(ret.center_of_mass(), np.divide(box, 2), atol=1)
-
     def test__get_atom_weights_error(self):
         with pytest.raises(NotImplementedError):
             self.structure._get_atom_weights(
@@ -242,6 +236,6 @@ class TestStructure:
         assert final_rmsd <= 0.1
 
         aligned, final_rmsd = Structure.align_structures(
-            self.structure, structure_transform, sampling_rate=1
+            self.structure, structure_transform
         )
         assert final_rmsd <= 1
