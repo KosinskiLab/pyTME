@@ -18,21 +18,18 @@ Within |project|, exhaustive template matching is modularized into three primary
 3. **Callback:**
    Custom on the fly processing of template matching results using :doc:`analyzers <../analyzer/base>`.
 
-This concept is embodied in the :py:class:`scan <tme.matching_exhaustive.scan>` and :py:class:`scan_subsets <tme.matching_exhaustive.scan_subsets>` methods below.
-
 If you wish to integrate custom template matching methods into |project|, please refer to the :ref:`custom-methods` section.
 
 
 Methods
 ~~~~~~~
 
-:py:class:`scan_subsets <tme.matching_exhaustive.scan_subsets>` orchestrates the matching process, supporting parallel processing and post-scoring operations. :py:class:`scan_subsets <tme.matching_exhaustive.scan_subsets>` is a wrapper around :py:class:`scan <tme.matching_exhaustive.scan>` that enables template matching on data subsets, making it particularly useful for handling large datasets or targeting specific regions.
+:py:class:`match_exhaustive <tme.matching_exhaustive.match_exhaustive>` orchestrates the matching process, supporting parallel processing and post-scoring operations. Depending on user specification, parallelization can be performed by splitting the search region into subsets, and/or by distribution the angular search.
 
 .. autosummary::
    :toctree: ../api/
 
-   scan
-   scan_subsets
+   match_exhaustive
 
 
 .. _setup-functions:
@@ -74,7 +71,7 @@ Scoring functions
 Adding Custom Methods
 ~~~~~~~~~~~~~~~~~~~~~
 
-For a method to be considered by |project|'s template matching engine, it needs to be registered via :py:meth:`register_matching_exhaustive`. This enables developers to specify a unique name, setup function, scoring function, and a custom memory estimation class for their method. This ensures the modular and extensible design of |project|, allowing developers to continuously expand tme’s capabilities.
+New scoring methods need to be registered via :py:meth:`register_matching_exhaustive`. This enables developers to specify a unique name, setup function, scoring function, and a custom memory estimation class for their method. This ensures the modular and extensible design of |project|, allowing developers to continuously expand tme’s capabilities.
 
 Adding a new template matching methods requires defining the following parameters:
 

@@ -33,12 +33,11 @@ Utilities
 .. autosummary::
    :toctree: ../api/
 
+   standardize
    create_mask
    scramble_phases
-   rigid_transform
    array_to_memmap
    memmap_to_array
-   normalize_template
    conditional_execute
    minimum_enclosing_box
    generate_tempfile_name

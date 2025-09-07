@@ -19,16 +19,15 @@ To demonstrate the use of composable filters, let's walk through a basic example
    bandpass = BandPassReconstructed(
        lowpass=30,                   # Resolution to lowpass filter to
        highpass=5,                   # Resolution to highpass filter to
-       sampling_rate=sampling_rate
+       sampling_rate=sampling_rate   # Required to translate cutoffs
    )
 
    # Setup wege mask
    wedge = WedgeReconstructed(
-       angles=[-60, 60],             # Start, stop tilt angle
+       angles=[60, 60],              # Start, stop tilt angle
        opening_axis=2,               # Wedge is open in z-axis
        tilt_axis=0,                  # Sample is tilted over x-axis
        create_continuous_wedge=True, # Include all angles from -60 to 60
-       sampling_rate=sampling_rate,
    )
 
    # Combine bandpass and wedge mask into a single filter

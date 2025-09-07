@@ -20,7 +20,7 @@ Since 6HMS is already in the correct orientation, we will first simulate a trans
     from tme import Structure
     from tme.rotations import get_rotation_matrices
 
-    rotation_matrix = get_rotation_matrices(40)[32]
+    rotation_matrix = get_rotation_matrices(40)[32].T
 
     structure = Structure.from_file("6HMS.pdb")
     structure_mod = structure.rigid_transform(
@@ -30,7 +30,6 @@ Since 6HMS is already in the correct orientation, we will first simulate a trans
     structure_mod.to_file("6HMS_mod.pdb")
 
 The following will fit the newly created structure `6HMS_mod.pdb` into the density map to recover the correct orientation
-
 .. code-block:: bash
 
     match_template.py \
@@ -40,20 +39,6 @@ The following will fit the newly created structure `6HMS_mod.pdb` into the densi
         -a 40 \
         --centering \
         -o output.pickle
-
-We can also apply various filters to the atomic structure, such as a lowpass filter to 30 Ångstrom
-
-.. code-block:: bash
-
-    match_template.py \
-        -m emd_0244.map.gz \
-        -i 6HMS_mod.pdb \
-        -n 4 \
-        -a 40 \
-        --lowpass 30 \
-        --centering \
-        -o output_mod.pickle
-
 
 The orientation with highest score, which in our case is the initial correct orientation, can be obtained from the created pickle files like so
 
@@ -65,7 +50,7 @@ The orientation with highest score, which in our case is the initial correct ori
         --output-format alignment \
         --output-prefix 6HMS_fit
 
-The postprocessing tool offers a range of additional features to enable subvoxel precision such as peak oversampling via ``--peak_oversampling``  and local optimization via the ``--local_optimization`` flag. The output of fitting is shown below. The left side shows the map and `6HMS_mod.pdb`, the right side the output of |project|.
+The postprocessing tool offers a range of additional features to enable subvoxel precision such as peak oversampling via ``--peak-oversampling``  and local optimization via the ``--local-optimization`` flag. The output of fitting is shown below. The left side shows the map and `6HMS_mod.pdb`, the right side the output of |project|.
 
 
 .. image:: ../../_static/quickstart/fitting_erroneous.png

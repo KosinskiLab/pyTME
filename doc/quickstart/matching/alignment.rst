@@ -6,7 +6,7 @@ Alignment of Densities
 
 In the following we will use template matching to recover the correct orientation of a density map within another density map.
 
-To demonstrate the procedure, we will use EMD-15271. You can download it from the `EMDB <https://www.ebi.ac.uk/emdb/EMD-15271>`_ or from the command line
+To demonstrate the procedure, we will use `EMD-15271 <https://www.ebi.ac.uk/emdb/EMD-15271>`_
 
 .. code-block:: bash
 
@@ -21,10 +21,10 @@ We will first simulate a translation and rotation of the map
     from tme import Density
     from tme.rotations import get_rotation_matrices
 
-    rotation_matrix = get_rotation_matrices(40)[32]
+    rotation_matrix = get_rotation_matrices(40)[32].T
 
     density = Density.from_file("emd_15271.map.gz")
-    density, _ = density.centered(0) # Create a sufficiently sized volume for rotation
+    density = density.centered(0) # Create a sufficiently sized volume for rotation
     density_mod = density.rigid_transform(
         rotation_matrix = rotation_matrix
     )

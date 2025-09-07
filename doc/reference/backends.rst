@@ -36,7 +36,7 @@ Backends allows users to effortlessly switch between different array and FFT imp
      - All
      - All
      - All
-     - MaxScoreOverRotations only
+     - MaxScoreOverRotations, MaxScoreOverRotationsConstrained, MaxScoreOverTranslations
    * - **When to Use**
      - CPU-only systems
      - New users with NVIDIA GPU

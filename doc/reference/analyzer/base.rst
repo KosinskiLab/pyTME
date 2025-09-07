@@ -13,9 +13,7 @@ Key characteristics of analyzers
 - Support distributed computation with result merging capabilities
 - Maintain internal state that evolves throughout the matching process
 
-Analyzers are passed to :py:class:`scan_subsets <tme.matching_exhaustive.scan_subsets>` and similar matching functions to enable custom processing workflows tailored to specific analysis requirements.
-
-:py:class:`AbstractAnalyzer <tme.analyzer.AbstractAnalyzer>` defines the interface specification that all analyzers must implement.
+Analyzers are passed to :py:class:`match_exhaustive <tme.matching_exhaustive.match_exhaustive>` to enable custom processing workflows tailored to specific analysis requirements. :py:class:`AbstractAnalyzer <tme.analyzer.AbstractAnalyzer>` defines the interface specification that all analyzers must implement.
 
 .. autosummary::
    :toctree: ../api/

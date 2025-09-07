@@ -68,4 +68,3 @@ Computations
    Structure.align_structures
    Structure.compare_structures
    Structure.center_of_mass
-   Structure.centered
