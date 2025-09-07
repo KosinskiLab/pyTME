@@ -16,7 +16,6 @@ from os.path import splitext, basename
 import h5py
 import mrcfile
 import numpy as np
-import skimage.io as skio
 
 from scipy.ndimage import (
     zoom,
@@ -26,7 +25,6 @@ from scipy.ndimage import (
     binary_erosion,
     generic_gradient_magnitude,
 )
-from scipy.spatial import ConvexHull
 
 from .types import NDArray
 from .rotations import align_to_axis
@@ -571,6 +569,8 @@ class Density:
         --------
         :py:meth:`Density.from_file`
         """
+        import skimage.io as skio
+
         swap = filename
         if is_gzipped(filename):
             with gzip_open(filename, "rb") as infile:
@@ -938,6 +938,8 @@ class Density:
         ----------
         .. [1] https://scikit-image.org/docs/stable/api/skimage.io.html
         """
+        import skimage.io as skio
+
         swap, kwargs = filename, {}
         if gzip:
             swap = BytesIO()
@@ -1403,8 +1405,7 @@ class Density:
         cutoff : float
             Above this value arr elements are considered. Defaults to 0.
         use_geometric_center : bool, optional
-            Whether the box should accommodate the geometric or the coordinate
-            center. Defaults to False.
+            Accommodate the geometric instead of the mass center.
 
         Returns
         -------
@@ -1416,24 +1417,25 @@ class Density:
         :py:meth:`Density.adjust_box`
         :py:meth:`tme.matching_utils.minimum_enclosing_box`
         """
-        coordinates = self.to_pointcloud(threshold=cutoff)
-        starts, stops = coordinates.min(axis=1), coordinates.max(axis=1)
+        if cutoff is None:
+            cutoff = self.data.min() - 1
 
+        coordinates = self.to_pointcloud(threshold=cutoff)
         shape = minimum_enclosing_box(
             coordinates=coordinates,
             use_geometric_center=use_geometric_center,
         )
-        difference = np.maximum(np.subtract(shape, np.subtract(stops, starts)), 0)
 
-        shift_start = np.divide(difference, 2).astype(int)
-        shift_stop = shift_start + np.mod(difference, 2)
+        starts, stops = coordinates.min(axis=1), coordinates.max(axis=1)
+        diff = np.maximum(np.subtract(shape, np.subtract(stops, starts)), 0)
 
+        shift_start = np.divide(diff, 2).astype(int)
+        shift_stop = shift_start + np.mod(diff, 2)
+
+        # These are purposefully negative to indicate left and right pad
         starts = (starts - shift_start).astype(int)
         stops = (stops + shift_stop).astype(int)
-
-        enclosing_box = tuple(slice(start, stop) for start, stop in zip(starts, stops))
-
-        return tuple(enclosing_box)
+        return tuple(slice(start, stop) for start, stop in zip(starts, stops))
 
     def pad(
         self, new_shape: Tuple[int], center: bool = True, padding_value: float = 0
@@ -1500,7 +1502,9 @@ class Density:
 
         self.adjust_box(new_box, pad_kwargs={"constant_values": padding_value})
 
-    def centered(self, cutoff: float = 0) -> Tuple["Density", NDArray]:
+    def centered(
+        self, cutoff: float = 0.0, order: int = 1
+    ) -> Tuple["Density", NDArray]:
         """
         Shifts the data center of mass to the center of the data array using linear
         interpolation. The box size of the returned :py:class:`Density` object is at
@@ -1509,8 +1513,10 @@ class Density:
         Parameters
         ----------
         cutoff : float, optional
-            Only elements in data larger than cutoff will be considered for
-            computing the new box. By default considers only positive elements.
+            Consider all elements larger than cutoff for computing the new box.
+            Default is 0.0.
+        order : int, optional
+            Interpolation order, defaults to 1.
 
         Notes
         -----
@@ -1534,16 +1540,15 @@ class Density:
         Examples
         --------
         :py:meth:`Density.centered` returns a tuple containing a centered version
-        of the current :py:class:`Density` instance, as well as an array with
-        translations. The translation corresponds to the shift between the original and
-        current center of mass.
+        of the current :py:class:`Density` instance. Centering is achieved via padding
+        and rigid-transform of the internal :py:attr:`Density.data` attribute.
+        `centered_dens` is sufficiently large to represent all rotations of the
+        :py:attr:`Density.data` attribute.
 
         >>> import numpy as np
         >>> from tme import Density
         >>> dens = Density(np.ones((5,5,5)))
-        >>> centered_dens, translation = dens.centered(0)
-        >>> translation
-        array([0., 0., 0.])
+        >>> centered_dens = dens.centered(0)
 
         :py:meth:`Density.centered` extended the :py:attr:`Density.data` attribute
         of the current :py:class:`Density` instance and modified
@@ -1551,22 +1556,6 @@ class Density:
 
         >>> centered_dens
         Origin: (-2.0, -2.0, -2.0), sampling_rate: (1, 1, 1), Shape: (9, 9, 9)
-
-        :py:meth:`Density.centered` achieves centering via zero-padding and
-        rigid-transform of the internal :py:attr:`Density.data` attribute.
-        `centered_dens` is sufficiently large to represent all rotations of the
-        :py:attr:`Density.data` attribute, such as ones obtained from
-        :py:meth:`tme.matching_utils.get_rotation_matrices`.
-
-        >>> from tme.matching_utils import get_rotation_matrices
-        >>> rotation_matrix = get_rotation_matrices(dim = 3 ,angular_sampling = 10)[0]
-        >>> rotated_centered_dens = centered_dens.rigid_transform(
-        >>>     rotation_matrix = rotation_matrix,
-        >>>     order = None
-        >>> )
-        >>> print(centered_dens.data.sum(), rotated_centered_dens.data.sum())
-        125.0 125.0
-
         """
         ret = self.copy()
 
@@ -1583,12 +1572,11 @@ class Density:
         ret = ret.rigid_transform(
             translation=shift,
             rotation_matrix=np.eye(ret.data.ndim),
-            use_geometric_center=False,
-            order=1,
+            use_geometric_center=True,
+            order=order,
         )
-
-        shift = np.subtract(center, self.center_of_mass(ret.data, cutoff))
-        return ret, shift
+        ret.origin = np.subtract(ret.origin, np.multiply(shift, ret.sampling_rate))
+        return ret
 
     def rigid_transform(
         self,
@@ -1895,6 +1883,8 @@ class Density:
 
         lower_bound, upper_bound = density_boundaries
         if method == "ConvexHull":
+            from scipy.spatial import ConvexHull
+
             binary = np.transpose(np.where(self.data > lower_bound))
             hull = ConvexHull(binary)
             surface_points = binary[hull.vertices[:]]
@@ -2032,27 +2022,24 @@ class Density:
             eroded_mask = binary_erosion(eroded_mask)
         return core_indices
 
-    @staticmethod
-    def center_of_mass(arr: NDArray, cutoff: float = None) -> NDArray:
+    def center_of_mass(self, arr: NDArray = None, cutoff: float = None) -> NDArray:
         """
-        Computes the center of mass of a numpy ndarray instance using all available
-        elements. For template matching it typically makes sense to only input
-        positive densities.
+        Computes the center of mass of a numpy ndarray instance.
 
         Parameters
         ----------
-        arr : NDArray
-            Array to compute the center of mass of.
+        arr : NDArray, optional
+            Array to compute the center of mass of, default is :py:attr:`Density.data`.
         cutoff : float, optional
-            Densities less than or equal to cutoff are nullified for center
-            of mass computation. By default considers all values.
+            Density cutoff for calculation. Defaults to None
 
         Returns
         -------
         NDArray
             Center of mass with shape (arr.ndim).
         """
-        return NumpyFFTWBackend().center_of_mass(arr**2, cutoff)
+        arr = self.data if arr is None else arr
+        return NumpyFFTWBackend().center_of_mass(arr, cutoff)
 
     @classmethod
     def match_densities(
@@ -2101,13 +2088,13 @@ class Density:
         -----
         No densities below cutoff_template are present in the returned Density object.
         """
-        from .matching_utils import normalize_template
+        from .matching_utils import standardize
         from .matching_optimization import optimize_match, create_score_object
 
         template_mask = template.empty
         template_mask.data.fill(1)
 
-        normalize_template(
+        template.data = standardize(
             template=template.data,
             mask=template_mask.data,
             n_observations=template_mask.data.sum(),
@@ -2141,8 +2128,8 @@ class Density:
         template_coordinates = template_coordinates * template_scaling[:, None]
 
         mass_center_difference = np.subtract(
-            cls.center_of_mass(target.data, cutoff_target),
-            cls.center_of_mass(template.data, cutoff_template),
+            target.center_of_mass(target.data, cutoff_target),
+            target.center_of_mass(template.data, cutoff_template),
         ).astype(int)
         template_coordinates += mass_center_difference[:, None]
 

@@ -20,7 +20,7 @@ from .types import NDArray
 from .rotations import align_to_axis
 from .preprocessor import atom_profile, Preprocessor
 from .parser import PDBParser, MMCIFParser, GROParser
-from .matching_utils import rigid_transform, minimum_enclosing_box
+from .matching_utils import _rigid_transform
 
 __all__ = ["Structure"]
 
@@ -91,49 +91,35 @@ class Structure:
 
     """
 
-    #: Array of record types, e.g.ATOM.
+    #: Array of record types, e.g., ATOM (n,)
     record_type: NDArray
-
-    #: Array of serial numbers.
+    #: Array of serial numbers (n,)
     atom_serial_number: NDArray
-
-    #: Array of atom names.
+    #: Array of atom names (n,)
     atom_name: NDArray
-
-    #: Array of x,y,z atom coordinates.
+    #: Array of x,y,z atom coordinates (n, d)
     atom_coordinate: NDArray
-
-    #: Array of alternate location indices.
+    #: Array of alternate location indices (n,)
     alternate_location_indicator: NDArray
-
-    #: Array of residue names.
+    #: Array of residue names (n,)
     residue_name: NDArray
-
-    #: Array of chain identifiers.
+    #: Array of chain identifiers (n,)
     chain_identifier: NDArray
-
-    #: Array of residue ids.
+    #: Array of residue ids (n,)
     residue_sequence_number: NDArray
-
-    #: Array of insertion information.
+    #: Array of insertion information (n,)
     code_for_residue_insertion: NDArray
-
-    #: Array of occupancy factors.
+    #: Array of occupancy factors (n,)
     occupancy: NDArray
-
-    #: Array of B-factors.
+    #: Array of B-factors (n,)
     temperature_factor: NDArray
-
-    #: Array of segment identifiers.
+    #: Array of segment identifiers (n,)
     segment_identifier: NDArray
-
-    #: Array of element symbols.
+    #: Array of element symbols (n,)
     element_symbol: NDArray
-
-    #: Array of charges.
+    #: Array of charges (n,)
     charge: NDArray
-
-    #: Metadata dictionary.
+    #: Metadata dictionary
     metadata: dict
 
     def __post_init__(self, *args, **kwargs):
@@ -370,9 +356,9 @@ class Structure:
         """
         _, file_extension = splitext(basename(filename.lower()))
         _formats = {
-            ".pdb": cls._load_pdb,
-            ".cif": cls._load_mmcif,
-            ".gro": cls._load_gro,
+            ".pdb": _parse_pdb,
+            ".cif": _parse_mmcif,
+            ".gro": _parse_gro,
         }
         func = _formats.get(file_extension)
         if func is None:
@@ -382,7 +368,7 @@ class Structure:
                 f"Supported filetypes are {formats}."
             )
 
-        data = func(cls, filename)
+        data = func(filename)
         keep = np.ones(data["element_symbol"].size, dtype=bool)
         if filter_by_elements:
             keep = np.logical_and(
@@ -410,220 +396,6 @@ class Structure:
         data["metadata"]["filepath"] = filename
 
         return cls(**data)
-
-    @staticmethod
-    def _convert_dtypes(data: Dict[str, List], mapping: Dict):
-        """
-        Convert key values in data according to mapping.
-
-        Parameters
-        ----------
-        data : Dict
-            Mapping of keys to list of values
-        mapping : Dict
-            Mapping of key in return dict to (key, dtype) in data.
-
-        Returns
-        -------
-        dict
-            Key-value map using key-dtype pairs in mapping on data.
-        """
-        out = {}
-        max_len = max([len(t) for t in data.values() if hasattr(t, "__len__")])
-
-        missing_keys = set()
-        for out_key, (inner_key, dtype) in mapping.items():
-            default = "." if dtype is str else 0
-            if inner_key in data:
-                continue
-            missing_keys.add(inner_key)
-            out[out_key] = np.repeat(default, max_len).astype(dtype)
-
-        if len(missing_keys):
-            msg = ", ".join([f"'{x}'" for x in missing_keys])
-            warnings.warn(
-                f"Missing keys: ({msg}) in data - filling with default value."
-            )
-
-        for out_key, (inner_key, dtype) in mapping.items():
-            default = "." if dtype is str else 0
-
-            # Avoid modifying input dictionaries
-            if inner_key in missing_keys:
-                continue
-
-            out_data = data[inner_key]
-            if isinstance(data[inner_key][0], str):
-                out_data = [str(x).strip() for x in data[inner_key]]
-
-            out_data = np.asarray(out_data)
-            if dtype is int:
-                out_data = np.where(out_data == ".", "0", out_data)
-            elif dtype == "base-36":
-                dtype = int
-                base36_offset = int("A0000", 36) - 100000
-                out_data = np.where(
-                    np.char.isdigit(out_data),
-                    out_data,
-                    np.vectorize(lambda x: int(x, 36) - base36_offset)(out_data),
-                )
-            try:
-                out[out_key] = np.asarray(out_data, dtype=dtype)
-            except ValueError:
-                print(
-                    f"Converting {out_key} to {dtype} failed. Setting {out_key} to {default}."
-                )
-                out[out_key] = np.repeat(default, max_len).astype(dtype)
-        return out
-
-    def _load_mmcif(self, filename: str) -> Dict:
-        """
-        Parses a macromolecular Crystallographic Information File (mmCIF)
-        and returns the data in a dictionary format.
-
-        Parameters
-        ----------
-        filename : str
-            The filename of the mmCIF to load.
-
-        Returns
-        -------
-        dict
-            A dictionary of numpy arrays. Keys are the names of the PDB
-            coordinate section. In addition, some details about the parsed
-            structure are included. In case of conversion failure, the failing
-            attribute is set to 0 if its supposed to be an integer value.
-        """
-        result = MMCIFParser(filename)
-
-        atom_site_mapping = {
-            "record_type": ("group_PDB", str),
-            "atom_serial_number": ("id", int),
-            "atom_name": ("label_atom_id", str),
-            "alternate_location_indicator": ("label_alt_id", str),
-            "residue_name": ("label_comp_id", str),
-            # "chain_identifier": ("auth_asym_id", str),
-            "chain_identifier": ("label_asym_id", str),
-            "residue_sequence_number": ("label_seq_id", int),
-            "code_for_residue_insertion": ("pdbx_PDB_ins_code", str),
-            "occupancy": ("occupancy", float),
-            "temperature_factor": ("B_iso_or_equiv", float),
-            "segment_identifier": ("label_entity_id", str),
-            "element_symbol": ("type_symbol", str),
-            "charge": ("pdbx_formal_charge", str),
-        }
-
-        out = self._convert_dtypes(result["atom_site"], atom_site_mapping)
-        number_entries = len(max(out.values(), key=len))
-        for key, value in out.items():
-            if value.size != 1:
-                continue
-            out[key] = np.repeat(value, number_entries // value.size)
-
-        out["metadata"] = {}
-        out["atom_coordinate"] = np.transpose(
-            np.array(
-                [
-                    result["atom_site"]["Cartn_x"],
-                    result["atom_site"]["Cartn_y"],
-                    result["atom_site"]["Cartn_z"],
-                ],
-                dtype=np.float32,
-            )
-        )
-
-        detail_mapping = {
-            "resolution": ("em_3d_reconstruction", "resolution", np.nan),
-            "resolution_method": ("em_3d_reconstruction", "resolution_method", np.nan),
-            "method": ("exptl", "method", np.nan),
-            "electron_source": ("em_imaging", "electron_source", np.nan),
-            "illumination_mode": ("em_imaging", "illumination_mode", np.nan),
-            "microscope_model": ("em_imaging", "microscope_model", np.nan),
-        }
-        for out_key, (base_key, inner_key, default) in detail_mapping.items():
-            if base_key not in result:
-                continue
-            out["metadata"][out_key] = result[base_key].get(inner_key, default)
-
-        return out
-
-    def _load_pdb(self, filename: str) -> Dict:
-        """
-        Parses a Protein Data Bank (PDB) file and returns the data
-        in a dictionary format.
-
-        Parameters
-        ----------
-        filename : str
-            The filename of the PDB file to load.
-
-        Returns
-        -------
-        dict
-            A dictionary of numpy arrays. Keys are the names of the PDB
-            coordinate section. In addition, some details about the parsed
-            structure are included. In case of conversion failure, the failing
-            attribute is set to 0 if its supposed to be an integer value.
-        """
-        result = PDBParser(filename)
-
-        atom_site_mapping = {
-            "record_type": ("record_type", str),
-            "atom_serial_number": ("atom_serial_number", "base-36"),
-            "atom_name": ("atom_name", str),
-            "alternate_location_indicator": ("alternate_location_indicator", str),
-            "residue_name": ("residue_name", str),
-            "chain_identifier": ("chain_identifier", str),
-            "residue_sequence_number": ("residue_sequence_number", int),
-            "code_for_residue_insertion": ("code_for_residue_insertion", str),
-            "occupancy": ("occupancy", float),
-            "temperature_factor": ("temperature_factor", float),
-            "segment_identifier": ("segment_identifier", str),
-            "element_symbol": ("element_symbol", str),
-            "charge": ("charge", str),
-        }
-
-        out = self._convert_dtypes(result, atom_site_mapping)
-
-        out["metadata"] = result["details"]
-        out["atom_coordinate"] = np.array(result["atom_coordinate"], dtype=np.float32)
-
-        return out
-
-    def _load_gro(self, filename):
-        result = GROParser(filename)
-
-        atom_site_mapping = {
-            "record_type": ("record_type", str),
-            "atom_serial_number": ("atom_number", int),
-            "atom_name": ("atom_name", str),
-            "alternate_location_indicator": ("label_alt_id", str),
-            "residue_name": ("residue_name", str),
-            "chain_identifier": ("segment_identifier", str),
-            "residue_sequence_number": ("residue_number", int),
-            "code_for_residue_insertion": ("pdbx_PDB_ins_code", str),
-            "occupancy": ("occupancy", float),
-            "temperature_factor": ("B_iso_or_equiv", float),
-            "segment_identifier": ("segment_identifier", str),
-            "element_symbol": ("type_symbol", str),
-            "charge": ("pdbx_formal_charge", str),
-        }
-
-        out = self._convert_dtypes(result, atom_site_mapping)
-
-        unique_chains = np.unique(out["segment_identifier"])
-        if len(unique_chains) > 1:
-            warnings.warn(
-                "Multiple GRO files detected - treating them as a single Structure. "
-                "GRO file number is given by segment_identifier according to the "
-                "input file. Note: You need to subset the Structure to operate on "
-                "individual GRO files."
-            )
-
-        mkeys = ("title", "time", "box_vectors")
-        out["metadata"] = {key: result.get(key) for key in mkeys}
-        out["atom_coordinate"] = np.asarray(result["atom_coordinate"], dtype=np.float32)
-        return out
 
     def to_file(self, filename: str) -> None:
         """
@@ -656,220 +428,25 @@ class Structure:
         >>> structure = Structure.from_file(filename=fname)
         >>> structure.to_file(f"{oname}.cif") # Writes an mmCIF file to disk
         >>> structure.to_file(f"{oname}.pdb") # Writes a PDB file to disk
-
         """
         _, file_extension = splitext(basename(filename.lower()))
         _formats = {
-            ".pdb": self._write_pdb,
-            ".cif": self._write_mmcif,
-            ".gro": self._write_gro,
+            ".pdb": _to_pdb,
+            ".cif": _to_mmcif,
+            ".gro": _to_gro,
         }
         func = _formats.get(file_extension)
         if func is None:
             formats = ",".join([f"'{x}'" for x in _formats.keys()])
             raise NotImplementedError(
-                f"Files with extension {file_extension} are not supported. "
-                f"Supported filetypes are {formats}."
+                f"Supported filetypes are {formats} - got {file_extension}."
             )
 
-        if np.any(np.vectorize(len)(self.chain_identifier) > 2):
+        if np.any(np.vectorize(len)(self.chain_identifier) > 2) and func == _to_pdb:
             warnings.warn("Chain identifiers longer than one will be shortened.")
 
-        if self.atom_coordinate.shape[0] > 10**5 and func == self._write_pdb:
-            warnings.warn(
-                "The structure contains more than 100,000 atoms. Consider using mmcif."
-            )
-
         with open(filename, mode="w", encoding="utf-8") as ofile:
-            ofile.write(func())
-
-    def _write_pdb(self) -> str:
-        """
-        Returns a PDB string representation of the structure instance.
-
-        Returns
-        -------
-        str
-            String containing PDB file coordine lines.
-        """
-        data_out = []
-        for index in range(self.atom_coordinate.shape[0]):
-            x, y, z = self.atom_coordinate[index, :]
-            line = list(" " * 80)
-            line[0:6] = f"{self.record_type[index]:<6}"
-            line[6:11] = f"{self.atom_serial_number[index]:>5}"
-            line[12:16] = f"{self.atom_name[index]:<4}"
-            line[16] = f"{self.alternate_location_indicator[index]:<1}"
-            line[17:20] = f"{self.residue_name[index]:<3}"
-            line[21] = f"{self.chain_identifier[index][0]:<1}"
-            line[22:26] = f"{self.residue_sequence_number[index]:>4}"
-            line[26] = f"{self.code_for_residue_insertion[index]:<1}"
-            line[30:38] = f"{x:>8.3f}"
-            line[38:46] = f"{y:>8.3f}"
-            line[46:54] = f"{z:>8.3f}"
-            line[54:60] = f"{self.occupancy[index]:>6.2f}"
-            line[60:66] = f"{self.temperature_factor[index]:>6.2f}"
-            line[72:76] = f"{self.segment_identifier[index]:>4}"
-            line[76:78] = f"{self.element_symbol[index]:<2}"
-            line[78:80] = f"{self.charge[index]:>2}"
-            data_out.append("".join(line))
-        data_out.append("END")
-        data_out = "\n".join(data_out)
-        return data_out
-
-    def _write_mmcif(self) -> str:
-        """
-        Returns a MMCIF string representation of the structure instance.
-
-        Returns
-        -------
-        str
-            String containing MMCIF file coordinate lines.
-        """
-        model_num, entity_id = 1, 1
-        data = {
-            "group_PDB": [],
-            "id": [],
-            "type_symbol": [],
-            "label_atom_id": [],
-            "label_alt_id": [],
-            "label_comp_id": [],
-            "label_asym_id": [],
-            "label_entity_id": [],
-            "label_seq_id": [],
-            "pdbx_PDB_ins_code": [],
-            "Cartn_x": [],
-            "Cartn_y": [],
-            "Cartn_z": [],
-            "occupancy": [],
-            "B_iso_or_equiv": [],
-            "pdbx_formal_charge": [],
-            "auth_seq_id": [],
-            "auth_comp_id": [],
-            "auth_asym_id": [],
-            "auth_atom_id": [],
-            "pdbx_PDB_model_num": [],
-        }
-
-        for index in range(self.atom_coordinate.shape[0]):
-            x, y, z = self.atom_coordinate[index, :]
-            data["group_PDB"].append(self.record_type[index])
-            data["id"].append(str(self.atom_serial_number[index]))
-            data["type_symbol"].append(self.element_symbol[index])
-            data["label_atom_id"].append(self.atom_name[index])
-            data["label_alt_id"].append(self.alternate_location_indicator[index])
-            data["label_comp_id"].append(self.residue_name[index])
-            data["label_asym_id"].append(self.chain_identifier[index][0])
-            data["label_entity_id"].append(str(entity_id))
-            data["label_seq_id"].append(str(self.residue_sequence_number[index]))
-            data["pdbx_PDB_ins_code"].append(self.code_for_residue_insertion[index])
-            data["Cartn_x"].append(f"{x:.3f}")
-            data["Cartn_y"].append(f"{y:.3f}")
-            data["Cartn_z"].append(f"{z:.3f}")
-            data["occupancy"].append(f"{self.occupancy[index]:.2f}")
-            data["B_iso_or_equiv"].append(f"{self.temperature_factor[index]:.2f}")
-            data["pdbx_formal_charge"].append(self.charge[index])
-            data["auth_seq_id"].append(str(self.residue_sequence_number[index]))
-            data["auth_comp_id"].append(self.residue_name[index])
-            data["auth_asym_id"].append(self.chain_identifier[index][0])
-            data["auth_atom_id"].append(self.atom_name[index])
-            data["pdbx_PDB_model_num"].append(str(model_num))
-
-        output_data = {"atom_site": data}
-        original_file = self.metadata.get("filepath", "")
-        try:
-            new_data = {k: v for k, v in MMCIFParser(original_file).items()}
-            index = self.atom_serial_number - 1
-            new_data["atom_site"] = {
-                k: [v[i] for i in index] for k, v in new_data["atom_site"].items()
-            }
-            new_data["atom_site"]["Cartn_x"] = data["Cartn_x"]
-            new_data["atom_site"]["Cartn_y"] = data["Cartn_y"]
-            new_data["atom_site"]["Cartn_z"] = data["Cartn_z"]
-            output_data = new_data
-        except Exception:
-            pass
-
-        ret = ""
-        for category, subdict in output_data.items():
-            if not len(subdict):
-                continue
-
-            ret += "#\n"
-            is_loop = isinstance(subdict[list(subdict.keys())[0]], list)
-            if not is_loop:
-                for k in subdict:
-                    ret += f"_{category}.{k}\t{subdict[k]}\n"
-            else:
-                ret += "loop_\n"
-                ret += "".join([f"_{category}.{k}\n" for k in subdict])
-
-                subdict = {
-                    k: [_format_string(s) for s in v] for k, v in subdict.items()
-                }
-                key_length = {
-                    key: len(max(value, key=lambda x: len(x), default=""))
-                    for key, value in subdict.items()
-                }
-                padded_subdict = {
-                    key: [s.ljust(key_length[key] + 1) for s in values]
-                    for key, values in subdict.items()
-                }
-
-                data = [
-                    "".join([str(x) for x in content])
-                    for content in zip(*padded_subdict.values())
-                ]
-                ret += "\n".join([entry for entry in data]) + "\n"
-
-        return ret
-
-    def _write_gro(self) -> str:
-        """
-        Generate a GRO format string representation of the structure.
-
-        Returns
-        -------
-        str
-            String representation of the structure in GRO format.
-        """
-        ret = ""
-        gro_files = np.unique(self.segment_identifier)
-        for index, gro_file in enumerate(gro_files):
-            subset = self[self.segment_identifier == gro_file]
-
-            title = self.metadata.get("title", "Missing title")
-            box_vectors = self.metadata.get("box_vectors")
-            try:
-                title = title[index]
-                box_vectors = box_vectors[index]
-            except Exception:
-                pass
-
-            if box_vectors is None:
-                box_vectors = [0.0, 0.0, 0.0]
-
-            num_atoms = subset.atom_coordinate.shape[0]
-            lines = [title, f"{num_atoms}"]
-            for i in range(num_atoms):
-                res_num = subset.residue_sequence_number[i]
-                res_name = subset.residue_name[i]
-                atom_name = subset.atom_name[i]
-                atom_num = subset.atom_serial_number[i]
-
-                x, y, z = subset.atom_coordinate[i]
-                coord = f"{atom_num % 100000:5d}{x:8.3f}{y:8.3f}{z:8.3f}"
-                line = f"{res_num % 100000:5d}{res_name:5s}{atom_name:5s}{coord}"
-
-                if "velocity" in subset.metadata:
-                    vx, vy, vz = subset.metadata["velocity"][i]
-                    line += f"{vx:8.4f}{vy:8.4f}{vz:8.4f}"
-
-                lines.append(line)
-
-            lines.append(" ".join(f"{v:.5f}" for v in box_vectors))
-            ret += "\n".join(lines) + "\n"
-        return ret
+            _ = ofile.write(func(self))
 
     def subset_by_chain(self, chain: str = None) -> "Structure":
         """
@@ -976,18 +553,7 @@ class Structure:
         >>> structure.center_of_mass()
         array([-0.89391639, 29.94908928, -2.64736741])
         """
-        atoms = self.element_symbol
-        match weight_type:
-            case "atomic_weight":
-                weights = [self._elements[atom].atomic_weight for atom in atoms]
-            case "atomic_number":
-                weights = [self._elements[atom].atomic_number for atom in atoms]
-            case "equal":
-                weights = np.ones((len(atoms)))
-            case _:
-                raise NotImplementedError(
-                    "weight_type can be 'atomic_weight', 'atomic_number' or 'equal."
-                )
+        weights = self._get_atom_weights(self.element_symbol, weight_type)
         return np.dot(self.atom_coordinate.T, weights) / np.sum(weights)
 
     def rigid_transform(
@@ -995,6 +561,7 @@ class Structure:
         rotation_matrix: NDArray = None,
         translation: NDArray = None,
         use_geometric_center: bool = False,
+        center: NDArray = None,
     ) -> "Structure":
         """
         Performs a rigid transform of internal structure coordinates.
@@ -1005,8 +572,14 @@ class Structure:
             The rotation matrix to apply to the coordinates, defaults to identity.
         translation : NDArray, optional
             The vector to translate the coordinates by, defaults to 0.
+        center : NDArray, optional
+            Rotation center.
         use_geometric_center : bool, optional
-            Whether to use geometric or coordinate center.
+            Whether to use geometric or mass center.
+
+            .. deprecated:: 0.3.2
+
+                All rotations are w.r.t to the center of mass.
 
         Returns
         -------
@@ -1025,115 +598,29 @@ class Structure:
         >>>     translation = (0, 1, -5)
         >>> )
         """
-        out = np.empty_like(self.atom_coordinate.T)
+        ndim = self.atom_coordinate.shape[1]
         if translation is None:
-            translation = np.zeros((self.atom_coordinate.shape[1]))
+            translation = np.zeros((ndim))
         if rotation_matrix is None:
-            rotation_matrix = np.eye(self.atom_coordinate.shape[1])
+            rotation_matrix = np.eye(ndim)
 
-        rigid_transform(
+        # Assume we discretize the structure on a grid
+        min_coordinate = self.atom_coordinate.min(axis=0)
+        center = np.divide(self.atom_coordinate.max(axis=0) - min_coordinate, 2)
+        center = np.add(center, min_coordinate)
+
+        if not use_geometric_center:
+            center = self.center_of_mass()
+
+        ret = self.copy()
+        _rigid_transform(
             coordinates=self.atom_coordinate.T,
             rotation_matrix=rotation_matrix,
             translation=translation,
-            out=out,
-            use_geometric_center=use_geometric_center,
+            out=ret.atom_coordinate.T,
+            center=center,
         )
-        ret = self.copy()
-        ret.atom_coordinate = out.T.copy()
         return ret
-
-    def centered(self) -> Tuple["Structure", NDArray]:
-        """
-        Shifts the structure analogous to :py:meth:`tme.density.Density.centered`.
-
-        Returns
-        -------
-        Structure
-            A copy of the class instance whose data center of mass is in the
-            center of the data array.
-        NDArray
-            The coordinate translation.
-
-        See Also
-        --------
-        :py:meth:`tme.density.Density.centered`
-
-        Examples
-        --------
-        >>> from importlib_resources import files
-        >>> from tme import Structure
-        >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
-        >>> structure = Structure.from_file(filename=fname)
-        >>> centered_structure, translation = structure.centered()
-        >>> translation
-        array([34.89391639,  4.05091072, 36.64736741])
-        """
-        center_of_mass = self.center_of_mass()
-        enclosing_box = minimum_enclosing_box(coordinates=self.atom_coordinate.T)
-        shift = np.subtract(np.divide(enclosing_box, 2), center_of_mass)
-
-        transformed_structure = self.rigid_transform(
-            translation=shift, rotation_matrix=np.eye(shift.size)
-        )
-
-        return transformed_structure, shift
-
-    def _coordinate_to_position(
-        self,
-        shape: Tuple[int],
-        sampling_rate: Tuple[float],
-        origin: Tuple[float],
-    ) -> (NDArray, Tuple[str], Tuple[int], float, Tuple[float]):
-        """
-        Converts coordinates to positions.
-
-        Parameters
-        ----------
-        shape : Tuple[int,]
-            The desired shape of the output array.
-        sampling_rate : float
-            The sampling rate of the output array in unit of self.atom_coordinate.
-        origin : Tuple[float,]
-            The origin of the coordinate system.
-
-        Returns
-        -------
-        Tuple[NDArray, List[str], Tuple[int, ], float, Tuple[float,]]
-            Returns positions, atom_types, shape, sampling_rate, and origin.
-        """
-        coordinates = self.atom_coordinate.copy()
-        atom_types = self.element_symbol.copy()
-
-        coordinates = coordinates
-        sampling_rate = 1 if sampling_rate is None else sampling_rate
-        adjust_origin = origin is not None and shape is None
-        origin = coordinates.min(axis=0) if origin is None else origin
-        positions = (coordinates - origin) / sampling_rate
-        positions = np.rint(positions).astype(int)
-
-        if adjust_origin:
-            left_shift = positions.min(axis=0)
-            positions -= left_shift
-            shape = positions.max(axis=0) + 1
-            origin = origin + np.multiply(left_shift, sampling_rate)
-
-        if shape is None:
-            shape = positions.max(axis=0) + 1
-
-        valid_positions = np.sum(
-            np.logical_and(positions < shape, positions >= 0), axis=1
-        )
-
-        positions = positions[valid_positions == positions.shape[1], :]
-        atom_types = atom_types[valid_positions == positions.shape[1]]
-
-        self.metadata["nAtoms_outOfBound"] = 0
-        if positions.shape[0] != coordinates.shape[0]:
-            out_of_bounds = coordinates.shape[0] - positions.shape[0]
-            print(f"{out_of_bounds}/{coordinates.shape[0]} atoms were out of bounds.")
-            self.metadata["nAtoms_outOfBound"] = out_of_bounds
-
-        return positions, atom_types, shape, sampling_rate, origin
 
     def _position_to_vdw_sphere(
         self,
@@ -1339,10 +826,9 @@ class Structure:
         atoms : Tuple of strings, optional
             The atoms to get the weights for. If None, weights for all atoms
             are used. Default is None.
-
         weight_type : str, optional
             The type of weights to return. This can either be 'atomic_weight',
-            'atomic_number', or 'van_der_waals_radius'. Default is 'atomic_weight'.
+            'atomic_number', or 'equal'. Default is 'atomic_weight'.
 
         Returns
         -------
@@ -1355,9 +841,11 @@ class Structure:
                 weight = [self._elements[atom].atomic_weight for atom in atoms]
             case "atomic_number":
                 weight = [self._elements[atom].atomic_number for atom in atoms]
+            case "equal":
+                weight = np.ones((len(atoms)))
             case _:
                 raise NotImplementedError(
-                    "weight_type can either be 'atomic_weight' or 'atomic_number'"
+                    "weight_type can be 'atomic_weight', 'atomic_number' or 'equal'."
                 )
         return weight
 
@@ -1457,15 +945,60 @@ class Structure:
             )
 
         temp = self.subset_by_chain(chain=chain)
-        positions, atoms, _shape, sampling_rate, origin = temp._coordinate_to_position(
-            shape=shape, sampling_rate=sampling_rate, origin=origin
+        positions, valid, _shape, origin = _coordinate_to_position(
+            coordinates=temp.atom_coordinate,
+            shape=shape,
+            sampling_rate=sampling_rate,
+            origin=origin,
         )
+        positions = positions[valid]
+        atoms = temp.element_symbol[valid]
         volume = np.zeros(_shape, dtype=np.float32)
         if weight_type in ("atomic_weight", "atomic_number"):
-            weights = temp._get_atom_weights(atoms=atoms, weight_type=weight_type)
-            np.add.at(volume, tuple(positions.T), weights)
+            weights = np.array(
+                temp._get_atom_weights(atoms=atoms, weight_type=weight_type)
+            )
+            p0 = np.floor(positions).astype(int)
+
+            x0, y0, z0 = p0.T
+            x1, y1, z1 = (p0 + 1).T
+            dx, dy, dz = (positions - p0).T
+
+            w000 = (1 - dx) * (1 - dy) * (1 - dz)
+            w001 = (1 - dx) * (1 - dy) * dz
+            w010 = (1 - dx) * dy * (1 - dz)
+            w011 = (1 - dx) * dy * dz
+            w100 = dx * (1 - dy) * (1 - dz)
+            w101 = dx * (1 - dy) * dz
+            w110 = dx * dy * (1 - dz)
+            w111 = dx * dy * dz
+
+            corners = [
+                ((x0, y0, z0), w000),
+                ((x0, y0, z1), w001),
+                ((x0, y1, z0), w010),
+                ((x0, y1, z1), w011),
+                ((x1, y0, z0), w100),
+                ((x1, y0, z1), w101),
+                ((x1, y1, z0), w110),
+                ((x1, y1, z1), w111),
+            ]
+
+            for positions, tril_weights in corners:
+                positions = np.array(positions).T
+                keep = np.all(
+                    np.logical_and(positions < _shape, positions >= 0), axis=1
+                )
+
+                # Safeguard, but this should not happen using _coordinate_to_position
+                positions = positions[keep]
+                _weights = (tril_weights * weights)[keep]
+                np.add.at(volume, tuple(positions.T), _weights)
+
         elif weight_type == "van_der_waals_radius":
-            self._position_to_vdw_sphere(positions, atoms, sampling_rate, volume)
+            self._position_to_vdw_sphere(
+                np.rint(positions).astype(int), atoms, sampling_rate, volume
+            )
         elif weight_type == "scattering_factors":
             self._position_to_scattering_factors(
                 positions,
@@ -1493,8 +1026,6 @@ class Structure:
                 sampling_rate=sampling_rate,
                 **weight_type_args,
             )
-
-        self.metadata.update(temp.metadata)
         return volume, origin, sampling_rate
 
     @classmethod
@@ -1502,9 +1033,9 @@ class Structure:
         cls,
         structure1: "Structure",
         structure2: "Structure",
-        origin: NDArray = None,
         sampling_rate: float = None,
         weighted: bool = False,
+        **kwargs,
     ) -> float:
         """
         Compute root mean square deviation (RMSD) between two structures with the
@@ -1514,8 +1045,6 @@ class Structure:
         ----------
         structure1, structure2 : :py:class:`Structure`
             Structure instances to compare.
-        origin : tuple of floats, optional
-            Coordinate system origin. For computing RMSD on discretized grids.
         sampling_rate : tuple of floats, optional
             Sampling rate in units of :py:attr:`atom_coordinate`.
             For computing RMSD on discretized grids.
@@ -1543,38 +1072,29 @@ class Structure:
         >>> Structure.compare_structures(structure, structure)
         0.0
         """
-        if origin is None:
-            origin = np.zeros(structure1.atom_coordinate.shape[1])
-
         coordinates1 = structure1.atom_coordinate
         coordinates2 = structure2.atom_coordinate
         atoms1, atoms2 = structure1.element_symbol, structure2.element_symbol
-        if sampling_rate is not None:
-            coordinates1 = np.rint(
-                np.divide(np.subtract(coordinates1, origin), sampling_rate)
-            ).astype(int)
-            coordinates2 = np.rint(
-                np.divide(np.subtract(coordinates2, origin), sampling_rate)
-            ).astype(int)
-
-        weights1 = np.ones_like(structure1.atom_coordinate.shape[0])
-        weights2 = np.ones_like(structure2.atom_coordinate.shape[0])
-        if weighted:
-            weights1 = np.array(structure1._get_atom_weights(atoms=atoms1))
-            weights2 = np.array(structure2._get_atom_weights(atoms=atoms2))
-
         if not np.allclose(coordinates1.shape, coordinates2.shape):
             raise ValueError(
                 "Input structures need to have the same number of coordinates."
             )
-        if not np.allclose(weights1.shape, weights2.shape):
+        if not np.allclose(atoms1.shape, atoms2.shape):
             raise ValueError("Input structures need to have the same number of atoms.")
+
+        if sampling_rate is not None:
+            coordinates1 = np.divide(coordinates1, sampling_rate).astype(int)
+            coordinates2 = np.divide(coordinates2, sampling_rate).astype(int)
+
+        weights1 = np.ones(coordinates1.shape[0])
+        weights2 = np.ones(coordinates2.shape[0])
+        if weighted:
+            weights1 = np.array(structure1._get_atom_weights(atoms=atoms1))
+            weights2 = np.array(structure2._get_atom_weights(atoms=atoms2))
 
         squared_diff = np.sum(np.square(coordinates1 - coordinates2), axis=1)
         weighted_quared_diff = squared_diff * ((weights1 + weights2) / 2)
-        rmsd = np.sqrt(np.mean(weighted_quared_diff))
-
-        return rmsd
+        return np.sqrt(np.mean(weighted_quared_diff))
 
     @classmethod
     def align_structures(
@@ -1595,9 +1115,6 @@ class Structure:
             Structure instances to align.
         origin : tuple of floats, optional
             Coordinate system origin. For computing RMSD on discretized grids.
-        sampling_rate : tuple of floats, optional
-            Sampling rate in units of :py:attr:`atom_coordinate`.
-            For computing RMSD on discretized grids.
         weighted : bool, optional
             Whether atoms should be weighted by their atomic weight.
 
@@ -1622,29 +1139,10 @@ class Structure:
         >>> aligned, rmsd = Structure.align_structures(structure, transformed)
         Initial RMSD: 31.07189 - Final RMSD: 0.00000
         """
-        if origin is None:
-            origin = np.minimum(
-                structure1.atom_coordinate.min(axis=0),
-                structure2.atom_coordinate.min(axis=0),
-            ).astype(int)
-
-        initial_rmsd = cls.compare_structures(
-            structure1=structure1,
-            structure2=structure2,
-            origin=origin,
-            sampling_rate=sampling_rate,
-            weighted=weighted,
-        )
+        rmsd = cls.compare_structures(structure1, structure2, weighted=weighted)
 
         reference = structure1.atom_coordinate.copy()
         query = structure2.atom_coordinate.copy()
-        if sampling_rate is not None:
-            reference, atoms1, shape, _, _ = structure1._coordinate_to_position(
-                shape=None, sampling_rate=sampling_rate, origin=origin
-            )
-            query, atoms2, shape, _, _ = structure2._coordinate_to_position(
-                shape=None, sampling_rate=sampling_rate, origin=origin
-            )
 
         reference_mean = reference.mean(axis=0)
         query_mean = query.mean(axis=0)
@@ -1667,16 +1165,8 @@ class Structure:
         ret = structure2.copy()
         ret.atom_coordinate = np.dot(query + query_mean, rotation) + translation
 
-        final_rmsd = cls.compare_structures(
-            structure1=temp,
-            structure2=ret,
-            origin=origin,
-            sampling_rate=None,
-            weighted=weighted,
-        )
-
-        print(f"Initial RMSD: {initial_rmsd:.5f} - Final RMSD: {final_rmsd:.5f}")
-
+        final_rmsd = cls.compare_structures(temp, ret, weighted=weighted)
+        print(f"Initial RMSD: {rmsd:.5f} - Final RMSD: {final_rmsd:.5f}")
         return ret, final_rmsd
 
     def align_to_axis(
@@ -1684,8 +1174,488 @@ class Structure:
     ):
         if coordinates is None:
             coordinates = self.atom_coordinate
-
         return align_to_axis(coordinates, axis=axis, flip=flip, **kwargs)
+
+
+def _coordinate_to_position(
+    coordinates: NDArray,
+    shape: Tuple[int],
+    sampling_rate: Tuple[float, ...],
+    origin: Tuple[float, ...],
+) -> (NDArray, Tuple[int], Tuple[float]):
+    """
+    Converts coordinates to positions on a grid.
+
+    Parameters
+    ----------
+    shape : Tuple[int,]
+        The desired shape of the grid.
+    sampling_rate : float
+        The sampling rate of the grid in unit of self.atom_coordinate.
+    origin : Tuple[float,]
+        The origin of the coordinate system.
+
+    Returns
+    -------
+    Tuple[NDArray, NDArray Tuple[int, ...] Tuple[float,...]]
+        Returns positions, valid grid positions, shape, and origin.
+    """
+    sampling_rate = 1 if sampling_rate is None else sampling_rate
+
+    adjust_origin = origin is not None and shape is None
+    origin = coordinates.min(axis=0) if origin is None else origin
+    positions = (coordinates - origin) / sampling_rate
+
+    pad = 1
+    # 0.3.2 switched from rint to ceil to accomodate interpolation scheme
+    if adjust_origin:
+        left_shift = positions.min(axis=0)
+        positions -= left_shift
+        origin = origin + np.multiply(left_shift, sampling_rate)
+
+    if shape is None:
+        shape = np.ceil(positions.max(axis=0)) + pad
+
+    valid_positions = (
+        np.sum(np.logical_and(positions < shape, positions >= 0), axis=1)
+        == positions.shape[1]
+    )
+
+    n_mapped = valid_positions.sum()
+    if n_mapped != coordinates.shape[0]:
+        out_of_bounds = coordinates.shape[0] - n_mapped
+        warnings.warn(
+            f"{out_of_bounds}/{coordinates.shape[0]} atoms were out of bounds."
+        )
+
+    shape = tuple(int(x) for x in shape)
+    origin = tuple(float(x) for x in origin)
+    return positions, np.where(valid_positions)[0], shape, origin
+
+
+def _convert_dtypes(data: Dict[str, List], mapping: Dict):
+    """
+    Convert key values in data according to mapping.
+
+    Parameters
+    ----------
+    data : Dict
+        Mapping of keys to list of values
+    mapping : Dict
+        Mapping of key in return dict to (key, dtype) in data.
+
+    Returns
+    -------
+    dict
+        Key-value map using key-dtype pairs in mapping on data.
+    """
+    out = {}
+    max_len = max([len(t) for t in data.values() if hasattr(t, "__len__")])
+
+    missing_keys = set()
+    for out_key, (inner_key, dtype) in mapping.items():
+        default = "." if dtype is str else 0
+        if inner_key in data:
+            continue
+        missing_keys.add(inner_key)
+        out[out_key] = np.repeat(default, max_len).astype(dtype)
+
+    if len(missing_keys):
+        msg = ", ".join([f"'{x}'" for x in missing_keys])
+        warnings.warn(f"Missing keys: ({msg}) in data - filling with default value.")
+
+    for out_key, (inner_key, dtype) in mapping.items():
+        default = "." if dtype is str else 0
+
+        # Avoid modifying input dictionaries
+        if inner_key in missing_keys:
+            continue
+
+        out_data = data[inner_key]
+        if isinstance(data[inner_key][0], str):
+            out_data = [str(x).strip() for x in data[inner_key]]
+
+        out_data = np.asarray(out_data)
+        if dtype is int:
+            out_data = np.where(out_data == ".", "0", out_data)
+        elif dtype == "base-36":
+            dtype = int
+            base36_offset = int("A0000", 36) - 100000
+            out_data = np.where(
+                np.char.isdigit(out_data),
+                out_data,
+                np.vectorize(lambda x: int(x, 36) - base36_offset)(out_data),
+            )
+        try:
+            out[out_key] = np.asarray(out_data, dtype=dtype)
+        except ValueError:
+            print(
+                f"Converting {out_key} to {dtype} failed. Setting {out_key} to {default}."
+            )
+            out[out_key] = np.repeat(default, max_len).astype(dtype)
+    return out
+
+
+def _parse_mmcif(filename: str) -> Dict:
+    """
+    Parses a macromolecular Crystallographic Information File (mmCIF)
+    and returns the data in a dictionary format.
+
+    Parameters
+    ----------
+    filename : str
+        The filename of the mmCIF to load.
+
+    Returns
+    -------
+    dict
+        A dictionary of numpy arrays. Keys are the names of the PDB
+        coordinate section. In addition, some details about the parsed
+        structure are included. In case of conversion failure, the failing
+        attribute is set to 0 if its supposed to be an integer value.
+    """
+    result = MMCIFParser(filename)
+
+    atom_site_mapping = {
+        "record_type": ("group_PDB", str),
+        "atom_serial_number": ("id", int),
+        "atom_name": ("label_atom_id", str),
+        "alternate_location_indicator": ("label_alt_id", str),
+        "residue_name": ("label_comp_id", str),
+        # "chain_identifier": ("auth_asym_id", str),
+        "chain_identifier": ("label_asym_id", str),
+        "residue_sequence_number": ("label_seq_id", int),
+        "code_for_residue_insertion": ("pdbx_PDB_ins_code", str),
+        "occupancy": ("occupancy", float),
+        "temperature_factor": ("B_iso_or_equiv", float),
+        "segment_identifier": ("label_entity_id", str),
+        "element_symbol": ("type_symbol", str),
+        "charge": ("pdbx_formal_charge", str),
+    }
+
+    out = _convert_dtypes(result["atom_site"], atom_site_mapping)
+    number_entries = len(max(out.values(), key=len))
+    for key, value in out.items():
+        if value.size != 1:
+            continue
+        out[key] = np.repeat(value, number_entries // value.size)
+
+    out["metadata"] = {}
+    out["atom_coordinate"] = np.transpose(
+        np.array(
+            [
+                result["atom_site"]["Cartn_x"],
+                result["atom_site"]["Cartn_y"],
+                result["atom_site"]["Cartn_z"],
+            ],
+            dtype=np.float32,
+        )
+    )
+
+    detail_mapping = {
+        "resolution": ("em_3d_reconstruction", "resolution", np.nan),
+        "resolution_method": ("em_3d_reconstruction", "resolution_method", np.nan),
+        "method": ("exptl", "method", np.nan),
+        "electron_source": ("em_imaging", "electron_source", np.nan),
+        "illumination_mode": ("em_imaging", "illumination_mode", np.nan),
+        "microscope_model": ("em_imaging", "microscope_model", np.nan),
+    }
+    for out_key, (base_key, inner_key, default) in detail_mapping.items():
+        if base_key not in result:
+            continue
+        out["metadata"][out_key] = result[base_key].get(inner_key, default)
+
+    return out
+
+
+def _parse_pdb(filename: str) -> Dict:
+    """
+    Parses a Protein Data Bank (PDB) file and returns the data
+    in a dictionary format.
+
+    Parameters
+    ----------
+    filename : str
+        The filename of the PDB file to load.
+
+    Returns
+    -------
+    dict
+        A dictionary of numpy arrays. Keys are the names of the PDB
+        coordinate section. In addition, some details about the parsed
+        structure are included. In case of conversion failure, the failing
+        attribute is set to 0 if its supposed to be an integer value.
+    """
+    result = PDBParser(filename)
+
+    atom_site_mapping = {
+        "record_type": ("record_type", str),
+        "atom_serial_number": ("atom_serial_number", "base-36"),
+        "atom_name": ("atom_name", str),
+        "alternate_location_indicator": ("alternate_location_indicator", str),
+        "residue_name": ("residue_name", str),
+        "chain_identifier": ("chain_identifier", str),
+        "residue_sequence_number": ("residue_sequence_number", int),
+        "code_for_residue_insertion": ("code_for_residue_insertion", str),
+        "occupancy": ("occupancy", float),
+        "temperature_factor": ("temperature_factor", float),
+        "segment_identifier": ("segment_identifier", str),
+        "element_symbol": ("element_symbol", str),
+        "charge": ("charge", str),
+    }
+
+    out = _convert_dtypes(result, atom_site_mapping)
+
+    out["metadata"] = result["details"]
+    out["atom_coordinate"] = np.array(result["atom_coordinate"], dtype=np.float32)
+
+    return out
+
+
+def _parse_gro(filename):
+    result = GROParser(filename)
+
+    atom_site_mapping = {
+        "record_type": ("record_type", str),
+        "atom_serial_number": ("atom_number", int),
+        "atom_name": ("atom_name", str),
+        "alternate_location_indicator": ("label_alt_id", str),
+        "residue_name": ("residue_name", str),
+        "chain_identifier": ("segment_identifier", str),
+        "residue_sequence_number": ("residue_number", int),
+        "code_for_residue_insertion": ("pdbx_PDB_ins_code", str),
+        "occupancy": ("occupancy", float),
+        "temperature_factor": ("B_iso_or_equiv", float),
+        "segment_identifier": ("segment_identifier", str),
+        "element_symbol": ("type_symbol", str),
+        "charge": ("pdbx_formal_charge", str),
+    }
+
+    out = _convert_dtypes(result, atom_site_mapping)
+
+    unique_chains = np.unique(out["segment_identifier"])
+    if len(unique_chains) > 1:
+        warnings.warn(
+            "Multiple GRO files detected - treating them as a single Structure. "
+            "GRO file number is given by segment_identifier according to the "
+            "input file. Note: You need to subset the Structure to operate on "
+            "individual GRO files."
+        )
+
+    mkeys = ("title", "time", "box_vectors")
+    out["metadata"] = {key: result.get(key) for key in mkeys}
+    out["atom_coordinate"] = np.asarray(result["atom_coordinate"], dtype=np.float32)
+    return out
+
+
+def _to_pdb(structure: Structure) -> str:
+    """
+    Returns a PDB string representation of the structure instance.
+
+    Parameters
+    ----------
+    structure : :py:class:`Structure`
+        Structure instance to serialize.
+
+    Returns
+    -------
+    str
+        PDB string representation of input structure.
+    """
+
+    def _encode(atom_num: int) -> str:
+        """Format atom number for PDB output."""
+        if atom_num >= 10**5:
+            # int("A0000", 36) - 100000
+            return f"{np.base_repr(16696160 + atom_num, 36)}"
+        return str(atom_num)
+
+    data_out = []
+    for i in range(structure.atom_coordinate.shape[0]):
+        x, y, z = structure.atom_coordinate[i, :]
+        line = list(" " * 80)
+        line[0:6] = f"{structure.record_type[i]:<6}"
+        line[6:11] = f"{_encode(structure.atom_serial_number[i]):>5}"
+        line[12:16] = f"{structure.atom_name[i]:<4}"
+        line[16] = f"{structure.alternate_location_indicator[i]:<1}"
+        line[17:20] = f"{structure.residue_name[i]:<3}"
+        line[21] = f"{structure.chain_identifier[i][0]:<1}"
+        line[22:26] = f"{structure.residue_sequence_number[i]:>4}"
+        line[26] = f"{structure.code_for_residue_insertion[i]:<1}"
+        line[30:38] = f"{x:>8.3f}"
+        line[38:46] = f"{y:>8.3f}"
+        line[46:54] = f"{z:>8.3f}"
+        line[54:60] = f"{structure.occupancy[i]:>6.2f}"
+        line[60:66] = f"{structure.temperature_factor[i]:>6.2f}"
+        line[72:76] = f"{structure.segment_identifier[i]:>4}"
+        line[76:78] = f"{structure.element_symbol[i]:<2}"
+        line[78:80] = f"{structure.charge[i]:>2}"
+        data_out.append("".join(line))
+    data_out.append("END")
+    return "\n".join(data_out)
+
+
+def _to_mmcif(structure: Structure) -> str:
+    """
+    Returns a MMCIF string representation of the structure instance.
+
+    Parameters
+    ----------
+    structure : :py:class:`Structure`
+        Structure instance to serialize.
+
+    Returns
+    -------
+    str
+        MMCIF string representation of structure.
+    """
+    model_num, entity_id = 1, 1
+    data = {
+        "group_PDB": [],
+        "id": [],
+        "type_symbol": [],
+        "label_atom_id": [],
+        "label_alt_id": [],
+        "label_comp_id": [],
+        "label_asym_id": [],
+        "label_entity_id": [],
+        "label_seq_id": [],
+        "pdbx_PDB_ins_code": [],
+        "Cartn_x": [],
+        "Cartn_y": [],
+        "Cartn_z": [],
+        "occupancy": [],
+        "B_iso_or_equiv": [],
+        "pdbx_formal_charge": [],
+        "auth_seq_id": [],
+        "auth_comp_id": [],
+        "auth_asym_id": [],
+        "auth_atom_id": [],
+        "pdbx_PDB_model_num": [],
+    }
+
+    for index in range(structure.atom_coordinate.shape[0]):
+        x, y, z = structure.atom_coordinate[index, :]
+        data["group_PDB"].append(structure.record_type[index])
+        data["id"].append(str(structure.atom_serial_number[index]))
+        data["type_symbol"].append(structure.element_symbol[index])
+        data["label_atom_id"].append(structure.atom_name[index])
+        data["label_alt_id"].append(structure.alternate_location_indicator[index])
+        data["label_comp_id"].append(structure.residue_name[index])
+        data["label_asym_id"].append(structure.chain_identifier[index])
+        data["label_entity_id"].append(str(entity_id))
+        data["label_seq_id"].append(str(structure.residue_sequence_number[index]))
+        data["pdbx_PDB_ins_code"].append(structure.code_for_residue_insertion[index])
+        data["Cartn_x"].append(f"{x:.3f}")
+        data["Cartn_y"].append(f"{y:.3f}")
+        data["Cartn_z"].append(f"{z:.3f}")
+        data["occupancy"].append(f"{structure.occupancy[index]:.2f}")
+        data["B_iso_or_equiv"].append(f"{structure.temperature_factor[index]:.2f}")
+        data["pdbx_formal_charge"].append(structure.charge[index])
+        data["auth_seq_id"].append(str(structure.residue_sequence_number[index]))
+        data["auth_comp_id"].append(structure.residue_name[index])
+        data["auth_asym_id"].append(structure.chain_identifier[index])
+        data["auth_atom_id"].append(structure.atom_name[index])
+        data["pdbx_PDB_model_num"].append(str(model_num))
+
+    output_data = {"atom_site": data}
+    original_file = structure.metadata.get("filepath", "")
+    try:
+        new_data = {k: v for k, v in MMCIFParser(original_file).items()}
+        index = structure.atom_serial_number - 1
+        new_data["atom_site"] = {
+            k: [v[i] for i in index] for k, v in new_data["atom_site"].items()
+        }
+        new_data["atom_site"]["Cartn_x"] = data["Cartn_x"]
+        new_data["atom_site"]["Cartn_y"] = data["Cartn_y"]
+        new_data["atom_site"]["Cartn_z"] = data["Cartn_z"]
+        output_data = new_data
+    except Exception:
+        pass
+
+    ret = ""
+    for category, subdict in output_data.items():
+        if not len(subdict):
+            continue
+
+        ret += "#\n"
+        is_loop = isinstance(subdict[list(subdict.keys())[0]], list)
+        if not is_loop:
+            for k in subdict:
+                ret += f"_{category}.{k}\t{subdict[k]}\n"
+        else:
+            ret += "loop_\n"
+            ret += "".join([f"_{category}.{k}\n" for k in subdict])
+
+            subdict = {k: [_format_string(s) for s in v] for k, v in subdict.items()}
+            key_length = {
+                key: len(max(value, key=lambda x: len(x), default=""))
+                for key, value in subdict.items()
+            }
+            padded_subdict = {
+                key: [s.ljust(key_length[key] + 1) for s in values]
+                for key, values in subdict.items()
+            }
+
+            data = [
+                "".join([str(x) for x in content])
+                for content in zip(*padded_subdict.values())
+            ]
+            ret += "\n".join([entry for entry in data]) + "\n"
+    return ret
+
+
+def _to_gro(structure: Structure) -> str:
+    """
+    Generate a GRO format string representation of the structure.
+
+    Parameters
+    ----------
+    structure : :py:class:`Structure`
+        Structure instance to serialize.
+
+    Returns
+    -------
+    str
+        GRO string representation of structure.
+    """
+    ret = ""
+    gro_files = np.unique(structure.segment_identifier)
+    for index, gro_file in enumerate(gro_files):
+        subset = structure[structure.segment_identifier == gro_file]
+
+        title = structure.metadata.get("title", "Missing title")
+        box_vectors = structure.metadata.get("box_vectors")
+        try:
+            title = title[index]
+            box_vectors = box_vectors[index]
+        except Exception:
+            pass
+
+        if box_vectors is None:
+            box_vectors = [0.0, 0.0, 0.0]
+
+        num_atoms = subset.atom_coordinate.shape[0]
+        lines = [title, f"{num_atoms}"]
+        for i in range(num_atoms):
+            res_num = subset.residue_sequence_number[i]
+            res_name = subset.residue_name[i]
+            atom_name = subset.atom_name[i]
+            atom_num = subset.atom_serial_number[i]
+
+            x, y, z = subset.atom_coordinate[i]
+            coord = f"{atom_num % 100000:5d}{x:8.3f}{y:8.3f}{z:8.3f}"
+            line = f"{res_num % 100000:5d}{res_name:5s}{atom_name:5s}{coord}"
+
+            if "velocity" in subset.metadata:
+                vx, vy, vz = subset.metadata["velocity"][i]
+                line += f"{vx:8.4f}{vy:8.4f}{vz:8.4f}"
+
+            lines.append(line)
+
+        lines.append(" ".join(f"{v:.5f}" for v in box_vectors))
+        ret += "\n".join(lines) + "\n"
+    return ret
 
 
 @dataclass(frozen=True, repr=True)
