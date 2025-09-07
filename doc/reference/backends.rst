@@ -145,7 +145,6 @@ Template matching
    MatchingBackend.topleft_pad
    MatchingBackend.to_sharedarr
    MatchingBackend.from_sharedarr
-   MatchingBackend.extract_center
    MatchingBackend.rigid_transform
    MatchingBackend.max_filter_coordinates
    MatchingBackend.compute_convolution_shapes

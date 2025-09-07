@@ -797,6 +797,9 @@ class PeakCallerRecursiveMasking(PeakCaller):
             mask_buffer = be.zeros(mask.shape, dtype=mask.dtype)
 
         if min_score is None:
+            min_score = self.min_score
+
+        if min_score is None:
             min_score = be.min(scores) - 1
 
         _scores = be.zeros(scores.shape, dtype=scores.dtype)

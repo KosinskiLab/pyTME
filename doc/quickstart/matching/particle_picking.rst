@@ -284,11 +284,11 @@ The following outlines common filtering approaches to improve template matching 
                 --template emd_3228_resampled.mrc \
                 --template-mask emd_3228_resampled_mask.mrc \
                 --lowpass 40 \
-                --scramble-phases \
+                --background-correction phase-scrambling \
                 --angular-sampling 8 \
                 --output output_scramble.pickle
 
-        We then use the scores obtained from the noise template to normalize our observations. Note, that you do not need to use a noise template for this, but in principle any other cellular component you would like to avoid, e.g., membranes, fiducial markers or alternative macromolecules.
+        Instead of noise, you can also template match using any other cellular component you would like to avoid, e.g., membranes, fiducial markers or alternative macromolecules. Such runs can be used for normalization in post
 
         .. code-block:: bash
 

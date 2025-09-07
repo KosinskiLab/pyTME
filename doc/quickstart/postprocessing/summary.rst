@@ -10,13 +10,13 @@ The ``postprocess.py`` tool analyzes the output of ``match_template.py``.
 
     postprocess.py --help
 
-Depending on the downstream use case, different ``output-format`` options are available and outlined below.
+Depending on the downstream use case, different ``output-format`` options are available and outlined below. See the :ref:`coordinate-system` section for details on our coordinate convention.
 
 .. tab-set::
 
     .. tab-item:: Orientations
 
-        Create a tab-separated file containing x, y, z translations, euler_x, euler_y and euler_z Euler angles in counter-clockwise zyz format, corresponding score and peak caller details.
+        Create a tab-separated file containing x, y, z translations, euler_x, euler_y and euler_z Euler angles, corresponding score and peak caller details.
 
         .. code-block:: bash
 
@@ -38,13 +38,7 @@ Depending on the downstream use case, different ``output-format`` options are av
                 --output-format relion4 \
                 --mask-edges \
                 --min-boundary-distance 20 \
-                --angles-clockwise \
                 --num-peaks 1000
-
-        .. note::
-
-            RELION expects ``--angles-clockwise``, which need to be multiplied with negative one to be compatible with our format again.
-
 
     .. tab-item:: Alignments
 

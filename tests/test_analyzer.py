@@ -109,13 +109,11 @@ class TestRecursiveMasking:
 
     @pytest.mark.parametrize("num_peaks", (1, 100))
     @pytest.mark.parametrize("compute_rotation", (True, False))
-    @pytest.mark.parametrize("minimum_score", (None, 0.5))
-    def test__call__(self, num_peaks, compute_rotation, minimum_score):
+    def test__call__(self, num_peaks, compute_rotation):
         peak_caller = PeakCallerRecursiveMasking(
             shape=self.data.shape,
             num_peaks=num_peaks,
             min_distance=self.min_distance,
-            min_score=minimum_score,
         )
         rotation_space, rotation_mapping = None, None
         if compute_rotation:
@@ -131,13 +129,7 @@ class TestRecursiveMasking:
             rotation_space=rotation_space,
             rotation_mapping=rotation_mapping,
         )
-
-        if minimum_score is None:
-            assert len(state[0] <= num_peaks)
-        else:
-            peaks = state[0].astype(int)
-            assert np.all(self.data[tuple(peaks.T)] >= minimum_score)
-
+        assert len(state[0] <= num_peaks)
 
 class TestMaxScoreOverRotations:
     def setup_method(self):

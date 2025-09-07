@@ -128,11 +128,12 @@ Achieves sub-voxel precision by interpolating score maxima. Factor of 2 provides
 **Local Optimization**
 Uses basin-hopping optimization to refine translation and rotation parameters around initial peaks. Most useful when analyzing small numbers of high-quality candidates.
 
+.. _coordinate-system:
 
 Coordinate System
 -----------------
 
-Our convention follows the schematics outlined in [1]_. We use a right-handed coordinate system with orthogonal X, Y and Z axes. Euler angles are expressed counter-clockwise using intrinsic ZYZ convention, with the first rotation around the Z-axis, the second around the new Y-axis and the third around the new Z-axis (see :py:meth:`euler_to_rotationmatrix <tme.rotations.euler_to_rotationmatrix>`). The default orientation is the z-unit vector (0, 0, 1).
+Our convention follows the schematics outlined in [1]_. We use a right-handed coordinate system with orthogonal X, Y and Z axes. Euler angles are expressed using intrinsic ZYZ convention, with the first rotation around the Z-axis, the second around the new Y-axis and the third around the new Z-axis (see :py:meth:`euler_to_rotationmatrix <tme.rotations.euler_to_rotationmatrix>`). The default orientation is the z-unit vector (0, 0, 1).
 
 Details for Developers
 ----------------------

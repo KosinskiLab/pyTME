@@ -169,7 +169,7 @@ The high-pass and band-pass filtered images exhibit sharp pronounced peaks and a
 Spectral Whitening
 ^^^^^^^^^^^^^^^^^^
 
-Spectral whitening normalizes each frequency by dividing the amplitude of each frequency by its magnitude. This can bring out subtle features that might be overshadowed otherwise. Spectral Whitening is particulary useful when analyzing large heterogeneous datasets, because the assumptions made are fairly weak. Although not specific to cryogenic electron microscopy, spectral whitening is a fairly popular [2]_ [3]_ approach and graphically explained `here <https://github.com/ZauggGroup/DeePiCt/blob/main/spectrum_filter/tomo-matcher.svg>`_.
+Spectral whitening normalizes each frequency by dividing the amplitude of each frequency by its magnitude. This can bring out subtle features that might be overshadowed otherwise, but at a risk of amplifying noise. Spectral whitening is graphically explained `here <https://github.com/ZauggGroup/DeePiCt/blob/main/spectrum_filter/tomo-matcher.svg>`_ [2]_ [3]_.
 
 
 .. plot::
@@ -187,12 +187,12 @@ Spectral whitening normalizes each frequency by dividing the amplitude of each f
 
    whitening_filter = LinearWhiteningFilter()
    target_filter = whitening_filter(
-      data=target,
+      data_rfft=np.fft.rfftn(target),
       shape=target.shape,
       return_real_fourier=True
    )["data"]
    template_filter = whitening_filter(
-      data=template,
+      data_rfft=np.fft.rfftn(target),
       shape=template.shape,
       return_real_fourier=True,
    )["data"]
@@ -222,9 +222,9 @@ Spectral Whitening leads to a more similar frequency composition of the template
 CTF
 ^^^
 
-The contrast transfer (`CTF <https://guide.cryosparc.com/processing-data/all-job-types-in-cryosparc/ctf-estimation>`_) function is a mathematical description of the modulation incurred to a specimen when viewed through a microscope. In cryogenic electron microscopy we are often concerned with correction for the CTF, but it can also be used to simulate how a given template would be observed through a microscope. Accounding for the CTF thus improves template matching by increasing the similarity between the template and template instances in the target.
+The contrast transfer (`CTF <https://guide.cryosparc.com/processing-data/all-job-types-in-cryosparc/ctf-estimation>`_) function is a mathematical description of the modulation incurred to a specimen when viewed through a microscope. In cryogenic electron microscopy we are often concerned with correction for the CTF, but it can also be used to simulate how a given template would be observed through a microscope. Accounting for the CTF thus improves template matching by increasing the similarity between the template and template instances in the target.
 
-Shown below is how we can use the CTF to inspect an object at different defocus values. However, in practice there are more parameters to consider as we will discuss in a following tutorial.
+Shown below is how we can use the CTF to inspect an object at different defoci.
 
 .. plot::
    :caption: Application of CTF.
@@ -239,33 +239,31 @@ Shown below is how we can use the CTF to inspect an object at different defocus 
    target = Density.from_file("../../_static/examples/preprocessing_target.png")
 
    ctf = CTFReconstructed(
-       shape=target.shape,
        sampling_rate=target.sampling_rate[0],
        acceleration_voltage=200 * 1e3,
        defocus_x=[1000],
        spherical_aberration=2.7e7,
        amplitude_contrast=0.08,
        flip_phase=False,
-       return_real_fourier=True,
    )
 
    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(10, 5), constrained_layout=True)
    for ax in axs.flat:
        ax.axis("off")
 
-   ctf_mask = ctf()["data"]
+   ctf_mask = ctf(shape=target.shape, return_real_fourier=True)["data"]
    target_filtered = np.fft.irfftn(np.fft.rfftn(target.data) * ctf_mask)
    axs[0].imshow(target_filtered, cmap="gray")
    axs[0].set_title("Defocus 1000", color="#24a9bb")
 
    ctf.defocus_x[0] = 2500
-   ctf_mask = ctf()["data"]
+   ctf_mask = ctf(shape=target.shape, return_real_fourier=True)["data"]
    target_filtered = np.fft.irfftn(np.fft.rfftn(target.data) * ctf_mask)
    axs[1].imshow(target_filtered, cmap="gray")
    axs[1].set_title("Defocus 2500", color="#24a9bb")
 
    ctf.defocus_x[0] = 5000
-   ctf_mask = ctf()["data"]
+   ctf_mask = ctf(shape=target.shape, return_real_fourier=True)["data"]
    target_filtered = np.fft.irfftn(np.fft.rfftn(target.data) * ctf_mask)
    axs[2].imshow(target_filtered, cmap="gray")
    axs[2].set_title("Defocus 5000", color="#24a9bb")
