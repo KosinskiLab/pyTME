@@ -115,35 +115,6 @@ class MLXBackend(NumpyFFTWBackend):
         )
         return self.to_backend_array(ret)
 
-    def extract_center(self, arr: NDArray, newshape: Tuple[int]) -> NDArray:
-        """
-        Extract the centered portion of an array based on a new shape.
-
-        Parameters
-        ----------
-        arr : NDArray
-            Input array.
-        newshape : tuple
-            Desired shape for the central portion.
-
-        Returns
-        -------
-        NDArray
-            Central portion of the array with shape `newshape`.
-
-        References
-        ----------
-        .. [1] https://github.com/scipy/scipy/blob/v1.11.2/scipy/signal/_signaltools.py
-        """
-        new_shape = self.to_backend_array(newshape)
-        current_shape = self.to_backend_array(arr.shape)
-        starts = self.subtract(current_shape, new_shape)
-        starts = self.astype(self.divide(starts, 2), self._int_dtype)
-        stops = self.astype(self.add(starts, newshape), self._int_dtype)
-        starts, stops = starts.tolist(), stops.tolist()
-        box = tuple(slice(start, stop) for start, stop in zip(starts, stops))
-        return arr[box]
-
     def rfftn(self, arr, *args, **kwargs):
         return self.fft.rfftn(arr, stream=self._array_backend.cpu, **kwargs)
 

@@ -10,11 +10,11 @@ from typing import Tuple
 from functools import partial
 
 import jax.numpy as jnp
-from jax import pmap, lax, vmap, jit
+from jax import pmap, lax, jit
 
 from ..types import BackendArray
 from ..backends import backend as be
-from ..matching_utils import normalize_template as _normalize_template
+from ..matching_utils import standardize, to_padded
 
 
 __all__ = ["scan", "setup_scan"]
@@ -62,15 +62,14 @@ def _flcSphere_scoring(
     Computes :py:meth:`tme.matching_scores.corr_scoring`.
     """
     correlation = _correlate(template=template, ft_target=ft_target)
-    correlation = correlation.at[:].multiply(inv_denominator)
-    return correlation
+    return correlation.at[:].multiply(inv_denominator)
 
 
 def _reciprocal_target_std(
     ft_target: BackendArray,
     ft_target2: BackendArray,
     template_mask: BackendArray,
-    n_observations: float,
+    n_obs: float,
     eps: float,
 ) -> BackendArray:
     """
@@ -80,16 +79,16 @@ def _reciprocal_target_std(
     --------
     :py:meth:`tme.matching_scores.flc_scoring`.
     """
-    ft_shape = template_mask.shape
-    ft_template_mask = jnp.fft.rfftn(template_mask, s=ft_shape)
+    shape = template_mask.shape
+    ft_template_mask = jnp.fft.rfftn(template_mask, s=shape)
 
     # E(X^2)- E(X)^2
-    exp_sq = jnp.fft.irfftn(ft_target2 * ft_template_mask, s=ft_shape)
-    exp_sq = exp_sq.at[:].divide(n_observations)
+    exp_sq = jnp.fft.irfftn(ft_target2 * ft_template_mask, s=shape)
+    exp_sq = exp_sq.at[:].divide(n_obs)
 
     ft_template_mask = ft_template_mask.at[:].multiply(ft_target)
-    sq_exp = jnp.fft.irfftn(ft_template_mask, s=ft_shape)
-    sq_exp = sq_exp.at[:].divide(n_observations)
+    sq_exp = jnp.fft.irfftn(ft_template_mask, s=shape)
+    sq_exp = sq_exp.at[:].divide(n_obs)
     sq_exp = sq_exp.at[:].power(2)
 
     exp_sq = exp_sq.at[:].add(-sq_exp)
@@ -97,7 +96,7 @@ def _reciprocal_target_std(
     exp_sq = exp_sq.at[:].power(0.5)
 
     exp_sq = exp_sq.at[:].set(
-        jnp.where(exp_sq <= eps, 0, jnp.reciprocal(exp_sq * n_observations))
+        jnp.where(exp_sq <= eps, 0, jnp.reciprocal(exp_sq * n_obs))
     )
     return exp_sq
 
@@ -108,33 +107,21 @@ def _apply_fourier_filter(arr: BackendArray, arr_filter: BackendArray) -> Backen
     return arr.at[:].set(jnp.fft.irfftn(arr_ft, s=arr.shape))
 
 
-def _identity(arr: BackendArray, arr_filter: BackendArray) -> BackendArray:
-    return arr
-
-
-def _mask_scores(arr, mask):
-    return arr.at[:].multiply(mask)
-
-
-def _select_config(analyzer_kwargs, device_idx):
-    return analyzer_kwargs[device_idx]
-
-
-def setup_scan(analyzer_kwargs, callback_class, fast_shape, rotate_mask):
+def setup_scan(analyzer_kwargs, analyzer, fast_shape, rotate_mask, match_projection):
     """Create separate scan function with initialized analyzer for each device"""
     device_scans = [
         partial(
             scan,
             fast_shape=fast_shape,
             rotate_mask=rotate_mask,
-            analyzer=callback_class(**device_config),
+            analyzer=analyzer(**device_config),
         )
         for device_config in analyzer_kwargs
     ]
 
     @partial(
         pmap,
-        in_axes=(0,) + (None,) * 6,
+        in_axes=(0,) + (None,) * 7,
         axis_name="batch",
     )
     def scan_combined(
@@ -145,6 +132,7 @@ def setup_scan(analyzer_kwargs, callback_class, fast_shape, rotate_mask):
         template_filter,
         target_filter,
         score_mask,
+        background_template,
     ):
         return lax.switch(
             lax.axis_index("batch"),
@@ -156,12 +144,13 @@ def setup_scan(analyzer_kwargs, callback_class, fast_shape, rotate_mask):
             template_filter,
             target_filter,
             score_mask,
+            background_template,
         )
 
     return scan_combined
 
 
-@partial(jit, static_argnums=(7, 8, 9))
+@partial(jit, static_argnums=(8, 9, 10))
 def scan(
     target: BackendArray,
     template: BackendArray,
@@ -170,67 +159,98 @@ def scan(
     template_filter: BackendArray,
     target_filter: BackendArray,
     score_mask: BackendArray,
+    background_template: BackendArray,
     fast_shape: Tuple[int],
     rotate_mask: bool,
     analyzer: object,
-) -> Tuple[BackendArray, BackendArray]:
+) -> Tuple:
     eps = jnp.finfo(template.dtype).resolution
 
-    if hasattr(target_filter, "shape"):
+    if target_filter.shape != ():
         target = _apply_fourier_filter(target, target_filter)
 
     ft_target = jnp.fft.rfftn(target, s=fast_shape)
     ft_target2 = jnp.fft.rfftn(jnp.square(target), s=fast_shape)
-    inv_denominator, target, scoring_func = None, None, _flc_scoring
+    _n_obs, _inv_denominator, target = None, None, None
+
+    unpadded_slice = tuple(slice(0, x) for x in template.shape)
+    rot_buffer, mask_rot_buffer = jnp.zeros(fast_shape), jnp.zeros(fast_shape)
     if not rotate_mask:
-        n_observations = jnp.sum(template_mask)
-        inv_denominator = _reciprocal_target_std(
+        _n_obs = jnp.sum(template_mask)
+        _inv_denominator = _reciprocal_target_std(
             ft_target=ft_target,
             ft_target2=ft_target2,
-            template_mask=be.topleft_pad(template_mask, fast_shape),
+            template_mask=to_padded(mask_rot_buffer, template_mask, unpadded_slice),
             eps=eps,
-            n_observations=n_observations,
+            n_obs=_n_obs,
         )
-        ft_target2, scoring_func = None, _flcSphere_scoring
+        ft_target2 = None
 
-    _template_filter_func = _identity
-    if template_filter.shape != ():
-        _template_filter_func = _apply_fourier_filter
+    mask_scores = score_mask.shape != ()
+    filter_template = template_filter.shape != ()
+    bg_correction = background_template.shape != ()
+    bg_scores = jnp.zeros(fast_shape) if bg_correction else 0
 
-    _score_mask_func = _identity
-    if score_mask.shape != ():
-        _score_mask_func = _mask_scores
+    _template_mask_rot = template_mask
+    template_indices = be._index_grid(template.shape)
+    center = be.divide(be.to_backend_array(template.shape) - 1, 2)
 
     def _sample_transform(ret, rotation_matrix):
-        state, index = ret
-        template_rot, template_mask_rot = be.rigid_transform(
-            arr=template,
-            arr_mask=template_mask,
-            rotation_matrix=rotation_matrix,
-            order=1,  # thats all we get for now
+        matrix = be._build_transform_matrix(
+            rotation_matrix=rotation_matrix, center=center
         )
+        indices = be._transform_indices(template_indices, matrix)
 
-        n_observations = jnp.sum(template_mask_rot)
-        template_rot = _template_filter_func(template_rot, template_filter)
-        template_rot = _normalize_template(
-            template_rot, template_mask_rot, n_observations
-        )
-        rot_pad = be.topleft_pad(template_rot, fast_shape)
-        mask_rot_pad = be.topleft_pad(template_mask_rot, fast_shape)
+        template_rot = be._interpolate(template, indices, order=1)
+        n_obs, template_mask_rot = _n_obs, _template_mask_rot
+        if rotate_mask:
+            template_mask_rot = be._interpolate(template_mask, indices, order=1)
+            n_obs = jnp.sum(template_mask_rot)
 
-        scores = scoring_func(
-            template=rot_pad,
-            template_mask=mask_rot_pad,
-            ft_target=ft_target,
-            ft_target2=ft_target2,
-            inv_denominator=inv_denominator,
-            n_observations=n_observations,
-            eps=eps,
-        )
-        scores = _score_mask_func(scores, score_mask)
+        if filter_template:
+            template_rot = _apply_fourier_filter(template_rot, template_filter)
+        template_rot = standardize(template_rot, template_mask_rot, n_obs)
 
+        rot_pad = to_padded(rot_buffer, template_rot, unpadded_slice)
+
+        inv_denominator = _inv_denominator
+        if rotate_mask:
+            mask_rot_pad = to_padded(mask_rot_buffer, template_mask_rot, unpadded_slice)
+            inv_denominator = _reciprocal_target_std(
+                ft_target=ft_target,
+                ft_target2=ft_target2,
+                template_mask=mask_rot_pad,
+                n_obs=n_obs,
+                eps=eps,
+            )
+
+        scores = _flcSphere_scoring(ft_target, rot_pad, inv_denominator)
+        if mask_scores:
+            scores = scores.at[:].multiply(score_mask)
+
+        state, bg_scores, index = ret
         state = analyzer(state, scores, rotation_matrix, rotation_index=index)
-        return (state, index + 1), None
 
-    (state, _), _ = lax.scan(_sample_transform, (analyzer.init_state(), 0), rotations)
+        if bg_correction:
+            template_rot = be._interpolate(background_template, indices, order=1)
+            if filter_template:
+                template_rot = _apply_fourier_filter(template_rot, template_filter)
+            template_rot = standardize(template_rot, template_mask_rot, n_obs)
+
+            rot_pad = to_padded(rot_buffer, template_rot, unpadded_slice)
+            scores = _flcSphere_scoring(ft_target, rot_pad, inv_denominator)
+            bg_scores = jnp.maximum(bg_scores, scores)
+
+        return (state, bg_scores, index + 1), None
+
+    (state, bg_scores, _), _ = lax.scan(
+        _sample_transform, (analyzer.init_state(), bg_scores, 0), rotations
+    )
+
+    if bg_correction:
+        if mask_scores:
+            bg_scores = bg_scores.at[:].multiply(score_mask)
+        bg_scores = bg_scores.at[:].add(-be.mean(bg_scores))
+        state = analyzer.correct_background(state, bg_scores)
+
     return state

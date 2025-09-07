@@ -33,7 +33,6 @@ class CupyBackend(NumpyFFTWBackend):
         import cupy as cp
         import cupyx.scipy.fft as cufft
         from cupyx.scipy.ndimage import affine_transform, maximum_filter
-        from ._cupy_utils import affine_transform_batch
 
         float_dtype = cp.float32 if float_dtype is None else float_dtype
         complex_dtype = cp.complex64 if complex_dtype is None else complex_dtype
@@ -51,7 +50,6 @@ class CupyBackend(NumpyFFTWBackend):
         self._cufft = cufft
         self.maximum_filter = maximum_filter
         self.affine_transform = affine_transform
-        self.affine_transform_batch = affine_transform_batch
 
         itype = f"int{self.datatype_bytes(int_dtype) * 8}"
         ftype = f"float{self.datatype_bytes(float_dtype) * 8}"
@@ -157,8 +155,8 @@ class CupyBackend(NumpyFFTWBackend):
 
         from voltools import StaticVolume
 
-        # Only keep template and potential corresponding mask in cache
-        if len(TEXTURE_CACHE) >= 2:
+        # Only keep template, mask and noise template in cache
+        if len(TEXTURE_CACHE) >= 3:
             TEXTURE_CACHE.clear()
 
         interpolation = "filt_bspline"
@@ -174,7 +172,7 @@ class CupyBackend(NumpyFFTWBackend):
 
         return TEXTURE_CACHE[key]
 
-    def _rigid_transform(
+    def _transform(
         self,
         data: CupyArray,
         matrix: CupyArray,
@@ -182,21 +180,10 @@ class CupyBackend(NumpyFFTWBackend):
         prefilter: bool,
         order: int,
         cache: bool = False,
-        batched: bool = False,
-    ) -> None:
+    ) -> CupyArray:
         out_slice = tuple(slice(0, stop) for stop in data.shape)
-        if batched:
-            self.affine_transform_batch(
-                input=data,
-                matrix=matrix,
-                mode="constant",
-                output=output[out_slice],
-                order=order,
-                prefilter=prefilter,
-            )
-            return None
 
-        if data.ndim == 3 and cache and self.texture_available and not batched:
+        if data.ndim == 3 and cache and self.texture_available:
             # Device memory pool (should) come to rescue performance
             temp = self.zeros(data.shape, data.dtype)
             texture = self._get_texture(data, order=order, prefilter=prefilter)
@@ -204,7 +191,7 @@ class CupyBackend(NumpyFFTWBackend):
             output[out_slice] = temp
             return None
 
-        self.affine_transform(
+        return self.affine_transform(
             input=data,
             matrix=matrix,
             mode="constant",

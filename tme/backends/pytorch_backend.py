@@ -281,22 +281,45 @@ class PytorchBackend(NumpyFFTWBackend):
         kwargs["dim"] = kwargs.pop("axes", None)
         return self._array_backend.fft.irfftn(arr, **kwargs)
 
-    def _rigid_transform_matrix(self, rotation_matrix, *args, **kwargs):
-        return rotation_matrix
+    def _build_transform_matrix(
+        self,
+        shape: Tuple[int],
+        rotation_matrix: TorchTensor,
+        translation: TorchTensor = None,
+        center: TorchTensor = None,
+        **kwargs,
+    ) -> TorchTensor:
+        """
+        Express the transform matrix in normalized coordinates.
+        """
+        shape = self.to_backend_array(shape) - 1
 
-    def rigid_transform(
+        scale_factors = 2.0 / shape
+        if center is not None:
+            center = center - shape / 2
+            center = center * scale_factors
+
+        if translation is not None:
+            translation = translation * scale_factors
+
+        return super()._build_transform_matrix(
+            rotation_matrix=self.flip(rotation_matrix, [0, 1]),
+            translation=translation,
+            center=center,
+        )
+
+    def _rigid_transform(
         self,
         arr: TorchTensor,
-        rotation_matrix: TorchTensor,
+        matrix: TorchTensor,
         arr_mask: TorchTensor = None,
-        translation: TorchTensor = None,
-        use_geometric_center: bool = False,
         out: TorchTensor = None,
         out_mask: TorchTensor = None,
         order: int = 1,
-        cache: bool = False,
+        batched: bool = False,
         **kwargs,
-    ):
+    ) -> Tuple[TorchTensor, TorchTensor]:
+        """Apply rigid transformation using homogeneous transformation matrix."""
         _mode_mapping = {0: "nearest", 1: "bilinear", 3: "bicubic"}
         mode = _mode_mapping.get(order, None)
         if mode is None:
@@ -305,90 +328,54 @@ class PytorchBackend(NumpyFFTWBackend):
                 f"Got {order} but supported interpolation orders are: {modes}."
             )
 
-        out = self.zeros_like(arr) if out is None else out
-
-        if translation is None:
-            translation = self._array_backend.zeros(arr.ndim, device=arr.device)
-
-        normalized_translation = self.divide(
-            -2.0 * translation, self.tensor(arr.shape, device=arr.device)
-        )
-        rotation_matrix_pull = self.linalg.inv(self.flip(rotation_matrix, [0, 1]))
-
-        out_slice = tuple(slice(0, x) for x in arr.shape)
-        subset = tuple(slice(None) for _ in range(arr.ndim))
-        offset = max(int(arr.ndim - rotation_matrix.shape[0]) - 1, 0)
-        if offset > 0:
-            normalized_translation = normalized_translation[offset:]
-            subset = tuple(0 if i < offset else slice(None) for i in range(arr.ndim))
-            out_slice = tuple(
-                slice(0, 1) if i < offset else slice(0, x)
-                for i, x in enumerate(arr.shape)
-            )
-
-        out[out_slice] = self._affine_transform(
-            arr=arr[subset],
-            rotation_matrix=rotation_matrix_pull,
-            translation=normalized_translation,
-            mode=mode,
-        )
-
-        if arr_mask is not None:
-            out_mask_slice = tuple(slice(0, x) for x in arr_mask.shape)
-            if out_mask is None:
-                out_mask = self._array_backend.zeros_like(arr_mask)
-            out_mask[out_mask_slice] = self._affine_transform(
-                arr=arr_mask[subset],
-                rotation_matrix=rotation_matrix_pull,
-                translation=normalized_translation,
-                mode=mode,
-            )
-
-        return out, out_mask
-
-    def _affine_transform(
-        self,
-        arr: TorchTensor,
-        rotation_matrix: TorchTensor,
-        translation: TorchTensor,
-        mode,
-    ) -> TorchTensor:
-        batched = arr.ndim != rotation_matrix.shape[0]
-
         batch_size, spatial_dims = 1, arr.shape
+        out_slice = tuple(slice(0, x) for x in arr.shape)
         if batched:
-            translation = translation[1:]
+            matrix = matrix[1:, 1:]
             batch_size, *spatial_dims = arr.shape
 
-        n_dims = len(spatial_dims)
-        transformation_matrix = self._array_backend.zeros(
-            n_dims, n_dims + 1, device=arr.device, dtype=arr.dtype
-        )
+        # Remove homogeneous row and expand for batch processing
+        matrix = matrix[:-1, :].to(arr.dtype)
+        matrix = matrix.unsqueeze(0).expand(batch_size, -1, -1)
 
-        transformation_matrix[:, :n_dims] = rotation_matrix
-        transformation_matrix[:, n_dims] = translation
-        transformation_matrix = transformation_matrix.unsqueeze(0).expand(
-            batch_size, -1, -1
-        )
-
-        if not batched:
-            arr = arr.unsqueeze(0)
-
-        size = self.Size([batch_size, 1, *spatial_dims])
         grid = self.F.affine_grid(
-            theta=transformation_matrix, size=size, align_corners=False
+            theta=matrix.to(arr.dtype),
+            size=self.Size([batch_size, 1, *spatial_dims]),
+            align_corners=False,
         )
-        output = self.F.grid_sample(
+
+        arr = arr.unsqueeze(0) if not batched else arr
+        ret = self.F.grid_sample(
             input=arr.unsqueeze(1),
             grid=grid,
             mode=mode,
             align_corners=False,
-        )
+        ).squeeze(1)
+
+        ret_mask = None
+        if arr_mask is not None:
+            arr_mask = arr_mask.unsqueeze(0) if not batched else arr_mask
+            ret_mask = self.F.grid_sample(
+                input=arr_mask.unsqueeze(1),
+                grid=grid,
+                mode=mode,
+                align_corners=False,
+            ).squeeze(1)
 
         if not batched:
-            output = output.squeeze(0)
+            ret = ret.squeeze(0)
+            ret_mask = ret_mask.squeeze(0) if arr_mask is not None else None
 
-        return output.squeeze(1)
+        if out is not None:
+            out[out_slice] = ret
+        else:
+            out = ret
+
+        if out_mask is not None:
+            out_mask[out_slice] = ret_mask
+        else:
+            out_mask = ret_mask
+        return out, out_mask
 
     def get_available_memory(self) -> int:
         if self.device == "cpu":

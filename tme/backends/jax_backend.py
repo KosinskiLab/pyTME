@@ -11,7 +11,7 @@ from typing import Tuple, List, Dict, Any
 
 import numpy as np
 
-from ..types import BackendArray
+from ..types import JaxArray
 from .npfftw_backend import NumpyFFTWBackend, shm_type
 
 
@@ -54,25 +54,23 @@ class JaxBackend(NumpyFFTWBackend):
         self.scipy = jsp
         self._create_ufuncs()
 
-    def from_sharedarr(self, arr: BackendArray) -> BackendArray:
+    def from_sharedarr(self, arr: JaxArray) -> JaxArray:
         return arr
 
     @staticmethod
-    def to_sharedarr(arr: BackendArray, shared_memory_handler: type = None) -> shm_type:
+    def to_sharedarr(arr: JaxArray, shared_memory_handler: type = None) -> shm_type:
         return arr
 
     @staticmethod
-    def at(arr, idx, value) -> BackendArray:
-        arr = arr.at[idx].set(value)
-        return arr
+    def at(arr, idx, value) -> JaxArray:
+        return arr.at[idx].set(value)
 
     def addat(self, arr, indices, values):
-        arr = arr.at[indices].add(values)
-        return arr
+        return arr.at[indices].add(values)
 
     def topleft_pad(
-        self, arr: BackendArray, shape: Tuple[int], padval: int = 0
-    ) -> BackendArray:
+        self, arr: JaxArray, shape: Tuple[int], padval: int = 0
+    ) -> JaxArray:
         b = self.full(shape=shape, dtype=arr.dtype, fill_value=padval)
         aind = [slice(None, None)] * arr.ndim
         bind = [slice(None, None)] * arr.ndim
@@ -95,6 +93,7 @@ class JaxBackend(NumpyFFTWBackend):
             "maximum",
             "exp",
             "mod",
+            "dot",
         ]
         for ufunc in ufuncs:
             backend_method = emulate_out(getattr(self._array_backend, ufunc))
@@ -105,65 +104,68 @@ class JaxBackend(NumpyFFTWBackend):
             backend_method = getattr(self._array_backend, ufunc)
             setattr(self, ufunc, staticmethod(backend_method))
 
-    def fill(self, arr: BackendArray, value: float) -> BackendArray:
+    def fill(self, arr: JaxArray, value: float) -> JaxArray:
         return self._array_backend.full(
             shape=arr.shape, dtype=arr.dtype, fill_value=value
         )
 
-    def rfftn(self, arr: BackendArray, *args, **kwargs) -> BackendArray:
+    def rfftn(self, arr: JaxArray, *args, **kwargs) -> JaxArray:
         return self._array_backend.fft.rfftn(arr, **kwargs)
 
-    def irfftn(self, arr: BackendArray, *args, **kwargs) -> BackendArray:
+    def irfftn(self, arr: JaxArray, *args, **kwargs) -> JaxArray:
         return self._array_backend.fft.irfftn(arr, **kwargs)
 
-    def rigid_transform(
+    def _interpolate(self, arr, indices, order: int = 1):
+        ret = self.scipy.ndimage.map_coordinates(arr, indices, order=order)
+        return ret.reshape(arr.shape)
+
+    def _index_grid(self, shape: Tuple[int]) -> JaxArray:
+        """
+        Create homogeneous coordinate grid.
+
+        Parameters
+        ----------
+        shape : tuple of int
+            Shape to create the grid for
+
+        Returns
+        -------
+        JaxArray
+            Coordinate grid of shape (ndim + int(homogeneous), n_points)
+        """
+        indices = self._array_backend.indices(shape, dtype=self._float_dtype)
+        indices = indices.reshape((len(shape), -1))
+        ones = self._array_backend.ones((1, indices.shape[1]), dtype=indices.dtype)
+        return self._array_backend.concatenate([indices, ones], axis=0)
+
+    def _transform_indices(self, indices: JaxArray, matrix: JaxArray) -> JaxArray:
+        return self._array_backend.matmul(matrix[:-1], indices)
+
+    def _rigid_transform(
         self,
-        arr: BackendArray,
-        rotation_matrix: BackendArray,
-        out: BackendArray = None,
-        out_mask: BackendArray = None,
-        translation: BackendArray = None,
-        arr_mask: BackendArray = None,
+        arr: JaxArray,
+        matrix: JaxArray,
+        out: JaxArray = None,
+        out_mask: JaxArray = None,
+        arr_mask: JaxArray = None,
         order: int = 1,
         **kwargs,
-    ) -> Tuple[BackendArray, BackendArray]:
-        rotate_mask = arr_mask is not None
+    ) -> Tuple[JaxArray, JaxArray]:
+        indices = self._index_grid(arr.shape)
+        indices = self._transform_indices(indices, matrix)
 
-        # This approach is only valid for order <= 1
-        if arr.ndim != rotation_matrix.shape[0]:
-            matrix = self._array_backend.zeros((arr.ndim, arr.ndim))
-            matrix = matrix.at[0, 0].set(1)
-            matrix = matrix.at[1:, 1:].add(rotation_matrix)
-            rotation_matrix = matrix
-
-        center = self.divide(self.to_backend_array(arr.shape) - 1, 2)[:, None]
-        indices = self._array_backend.indices(arr.shape, dtype=self._float_dtype)
-        indices = indices.reshape((arr.ndim, -1))
-        indices = indices.at[:].add(-center)
-        indices = self._array_backend.matmul(rotation_matrix.T, indices)
-        indices = indices.at[:].add(center)
-        if translation is not None:
-            indices = indices.at[:].add(translation)
-
-        out = self.scipy.ndimage.map_coordinates(arr, indices, order=order).reshape(
-            arr.shape
-        )
-
-        out_mask = arr_mask
-        if rotate_mask:
-            out_mask = self.scipy.ndimage.map_coordinates(
-                arr_mask, indices, order=order
-            ).reshape(arr_mask.shape)
-
-        return out, out_mask
+        arr = self._interpolate(arr, indices, order)
+        if arr_mask is not None:
+            arr_mask = self._interpolate(out_mask, indices, order)
+        return arr, arr_mask
 
     def max_score_over_rotations(
         self,
-        scores: BackendArray,
-        max_scores: BackendArray,
-        rotations: BackendArray,
+        scores: JaxArray,
+        max_scores: JaxArray,
+        rotations: JaxArray,
         rotation_index: int,
-    ) -> Tuple[BackendArray, BackendArray]:
+    ) -> Tuple[JaxArray, JaxArray]:
         update = self.greater(max_scores, scores)
         max_scores = max_scores.at[:].set(self.where(update, max_scores, scores))
         rotations = rotations.at[:].set(self.where(update, rotations, rotation_index))
@@ -212,64 +214,69 @@ class JaxBackend(NumpyFFTWBackend):
         callback_class: object,
         callback_class_args: Dict,
         rotate_mask: bool = False,
+        background_correction: str = None,
+        match_projection: bool = False,
         **kwargs,
     ) -> List:
         """
-        Emulates output of :py:meth:`tme.matching_exhaustive.scan` using
-        :py:class:`tme.analyzer.MaxScoreOverRotations`.
+        Emulates output of :py:meth:`tme.matching_exhaustive._match_exhaustive`.
         """
         from ._jax_utils import setup_scan
+        from ..matching_utils import setup_filter
         from ..analyzer import MaxScoreOverRotations
 
         pad_target = True if len(splits) > 1 else False
-        convolution_mode = "valid" if pad_target else "same"
         target_pad = matching_data.target_padding(pad_target=pad_target)
+        template_shape = matching_data._batch_shape(
+            matching_data.template.shape, matching_data._target_batch
+        )
 
-        score_mask = self.full((1,), fill_value=1, dtype=bool)
+        score_mask = 1
         target_shape = tuple(
             (x.stop - x.start + p) for x, p in zip(splits[0][0], target_pad)
         )
-        conv_shape, fast_shape, fast_ft_shape, shift = matching_data._fourier_padding(
-            target_shape=self.to_numpy_array(target_shape),
-            template_shape=self.to_numpy_array(matching_data._template.shape),
-            batch_mask=self.to_numpy_array(matching_data._batch_mask),
+        conv_shape, fast_shape, fast_ft_shape, shift = matching_data.fourier_padding(
+            target_shape=target_shape
         )
+
         analyzer_args = {
             "shape": fast_shape,
             "fourier_shift": shift,
             "fast_shape": fast_shape,
-            "targetshape": target_shape,
-            "templateshape": matching_data.template.shape,
+            "templateshape": template_shape,
             "convolution_shape": conv_shape,
-            "convolution_mode": convolution_mode,
+            "convolution_mode": "valid" if pad_target else "same",
             "thread_safe": False,
             "aggregate_axis": matching_data._batch_axis(matching_data._batch_mask),
             "n_rotations": matching_data.rotations.shape[0],
             "jax_mode": True,
         }
+        analyzer_args.update(callback_class_args)
+
         create_target_filter = matching_data.target_filter is not None
         create_template_filter = matching_data.template_filter is not None
         create_filter = create_target_filter or create_template_filter
 
-        # Applying the filter leads to more FFTs
-        fastt_shape = matching_data._template.shape
-        if create_template_filter:
-            fastt_shape = matching_data._template.shape
+        bg_tmpl = 1
+        if background_correction == "phase-scrambling":
+            bg_tmpl = matching_data.transform_template(
+                "phase_randomization", reverse=True
+            )
+            bg_tmpl = self.astype(bg_tmpl, self._float_dtype)
 
+        rotations = self.astype(matching_data.rotations, self._float_dtype)
         ret, template_filter, target_filter = [], 1, 1
         rotation_mapping = {
-            self.tobytes(matching_data.rotations[i]): i
-            for i in range(matching_data.rotations.shape[0])
+            self.tobytes(rotations[i]): i for i in range(rotations.shape[0])
         }
         for split_start in range(0, len(splits), n_jobs):
 
             analyzer_kwargs = []
-
             split_subset = splits[split_start : (split_start + n_jobs)]
             if not len(split_subset):
                 continue
 
-            targets, translation_offsets = [], []
+            targets = []
             for target_split, template_split in split_subset:
                 base, translation_offset = matching_data.subset_by_slice(
                     target_slice=target_split,
@@ -278,52 +285,50 @@ class JaxBackend(NumpyFFTWBackend):
                 )
                 cur_args = analyzer_args.copy()
                 cur_args["offset"] = translation_offset
-                cur_args.update(callback_class_args)
+                cur_args["targetshape"] = base._output_shape
                 analyzer_kwargs.append(cur_args)
 
                 if pad_target:
                     score_mask = base._score_mask(fast_shape, shift)
 
-                _target = self.astype(base._target, self._float_dtype)
-                translation_offsets.append(translation_offset)
-                targets.append(self.topleft_pad(_target, fast_shape))
+                # We prepad outside of jit to guarantee the stack operation works
+                targets.append(self.topleft_pad(base._target, fast_shape))
 
             if create_filter:
-                filter_args = {
-                    "data_rfft": self.fft.rfftn(targets[0]),
-                    "return_real_fourier": True,
-                }
+                # This is technically inaccurate for whitening filters
+                template_filter, target_filter = setup_filter(
+                    matching_data=base,
+                    fast_shape=fast_shape,
+                    fast_ft_shape=fast_ft_shape,
+                    pad_template_filter=False,
+                    apply_target_filter=False,
+                )
 
-            if create_template_filter:
-                template_filter = matching_data.template_filter(
-                    shape=fastt_shape, **filter_args
-                )["data"]
-                template_filter = template_filter.at[(0,) * template_filter.ndim].set(0)
+                # For projection matching we allow broadcasting the first dimension
+                # This becomes problematic when applying per-tilt filters to the target
+                # as the number of tilts does not necessarily coincide with the ideal
+                # fourier shape. Hence we pad the target_filter with zeros here
+                if target_filter.shape != (1,):
+                    target_filter = self.topleft_pad(target_filter, fast_ft_shape)
 
-            if create_target_filter:
-                target_filter = matching_data.target_filter(
-                    shape=fast_shape, **filter_args
-                )["data"]
-                target_filter = target_filter.at[(0,) * target_filter.ndim].set(0)
-
-            create_filter, create_template_filter, create_target_filter = (False,) * 3
             base, targets = None, self._array_backend.stack(targets)
-
             scan_inner = setup_scan(
                 analyzer_kwargs=analyzer_kwargs,
-                callback_class=callback_class,
+                analyzer=callback_class,
                 fast_shape=fast_shape,
                 rotate_mask=rotate_mask,
+                match_projection=match_projection,
             )
 
             states = scan_inner(
                 self.astype(targets, self._float_dtype),
                 self.astype(matching_data.template, self._float_dtype),
                 self.astype(matching_data.template_mask, self._float_dtype),
-                matching_data.rotations,
+                rotations,
                 template_filter,
                 target_filter,
                 score_mask,
+                bg_tmpl,
             )
 
             ndim = targets.ndim - 1

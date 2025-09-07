@@ -6,7 +6,6 @@ Copyright (c) 2023 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-import os
 from psutil import virtual_memory
 from contextlib import contextmanager
 from typing import Tuple, List, Type
@@ -24,12 +23,6 @@ from pyfftw import (
 
 from ..types import NDArray, BackendArray, shm_type
 from .matching_backend import MatchingBackend, _create_metafunction
-
-
-os.environ["MKL_NUM_THREADS"] = "1"
-os.environ["OMP_NUM_THREADS"] = "1"
-os.environ["PYFFTW_NUM_THREADS"] = "1"
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
 
 def create_ufuncs(obj):
@@ -247,12 +240,13 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
 
         shm = shared_memory_handler.SharedMemory(size=arr.nbytes)
         np_array = self.ndarray(arr.shape, dtype=arr.dtype, buffer=shm.buf)
-        np_array[:] = arr[:].copy()
+        np_array[:] = arr[:]
         return shm, arr.shape, arr.dtype
 
-    def topleft_pad(self, arr: NDArray, shape: Tuple[int], padval: int = 0) -> NDArray:
-        b = self.zeros(shape, arr.dtype)
-        self.add(b, padval, out=b)
+    def topleft_pad(
+        self, arr: NDArray, shape: Tuple[int], padval: float = 0
+    ) -> NDArray:
+        b = self.full(shape, fill_value=padval, dtype=arr.dtype)
         aind = [slice(None, None)] * arr.ndim
         bind = [slice(None, None)] * arr.ndim
         for i in range(arr.ndim):
@@ -311,15 +305,6 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
             **kwargs,
         )
 
-    def extract_center(self, arr: NDArray, newshape: Tuple[int]) -> NDArray:
-        new_shape = self.to_backend_array(newshape)
-        current_shape = self.to_backend_array(arr.shape)
-        starts = self.subtract(current_shape, new_shape)
-        starts = self.astype(self.divide(starts, 2), self._int_dtype)
-        stops = self.astype(self.add(starts, new_shape), self._int_dtype)
-        box = tuple(slice(start, stop) for start, stop in zip(starts, stops))
-        return arr[box]
-
     def compute_convolution_shapes(
         self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
     ) -> Tuple[List[int], List[int], List[int]]:
@@ -329,62 +314,65 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
 
         return convolution_shape, fast_shape, fast_ft_shape
 
-    def _rigid_transform_matrix(
+    def _build_transform_matrix(
         self,
-        rotation_matrix: NDArray,
-        translation: NDArray = None,
-        center: NDArray = None,
-    ) -> NDArray:
+        rotation_matrix: BackendArray,
+        translation: BackendArray = None,
+        center: BackendArray = None,
+        **kwargs,
+    ) -> BackendArray:
         ndim = rotation_matrix.shape[0]
-        matrix = self.identity(ndim + 1, dtype=self._float_dtype)
 
+        spatial_slice = slice(0, ndim)
+        matrix = self.eye(ndim + 1, dtype=self._float_dtype)
+
+        rotation_matrix = self.astype(rotation_matrix, self._float_dtype)
+        matrix = self.at(matrix, (spatial_slice, spatial_slice), rotation_matrix)
+
+        total_translation = self.zeros(ndim, dtype=self._float_dtype)
         if translation is not None:
-            translation_matrix = self.identity(ndim + 1, dtype=self._float_dtype)
-            translation_matrix[:ndim, ndim] = -translation
-            self.dot(matrix, translation_matrix, out=matrix)
+            translation = self.astype(translation, self._float_dtype)
+            total_translation = self.subtract(total_translation, translation)
 
         if center is not None:
-            center_matrix = self.identity(ndim + 1, dtype=self._float_dtype)
-            center_matrix[:ndim, ndim] = center
-            self.dot(matrix, center_matrix, out=matrix)
+            total_translation = self.add(total_translation, center)
+            rotated_center = self.matmul(rotation_matrix, center)
+            total_translation = self.subtract(total_translation, rotated_center)
 
-        if rotation_matrix is not None:
-            rmat = self.identity(ndim + 1, dtype=self._float_dtype)
-            rmat[:ndim, :ndim] = self._array_backend.linalg.inv(rotation_matrix)
-            self.dot(matrix, rmat, out=matrix)
+        matrix = self.at(matrix, (spatial_slice, ndim), total_translation)
+        return self.to_backend_array(matrix)
 
-        if center is not None:
-            center_matrix[:ndim, ndim] = -center_matrix[:ndim, ndim]
-            self.dot(matrix, center_matrix, out=matrix)
+    def _batch_transform_matrix(self, matrix: NDArray) -> NDArray:
+        ndim = matrix.shape[0] + 1
 
-        matrix /= matrix[ndim, ndim]
-        return matrix
+        ret = self.zeros((ndim, ndim), dtype=matrix.dtype)
+        ret = self.at(ret, (0, 0), 1)
 
-    def _rigid_transform(
+        spatial_slice = slice(1, ndim)
+        ret = self.at(ret, (spatial_slice, spatial_slice), matrix)
+        return ret
+
+    def _compute_transform_center(
+        self, arr: NDArray, use_geometric_center: bool, batched: bool = False
+    ) -> NDArray:
+        center = self.divide(self.to_backend_array(arr.shape) - 1, 2)
+        if not use_geometric_center:
+            center = self.center_of_mass(arr, cutoff=0)
+        if batched:
+            return center[1:]
+        return center
+
+    def _transform(
         self,
         data: NDArray,
         matrix: NDArray,
         output: NDArray,
         prefilter: bool,
         order: int,
-        cache: bool = False,
-        batched=False,
-    ) -> None:
-        if batched:
-            for i in range(data.shape[0]):
-                self._rigid_transform(
-                    data=data[i],
-                    matrix=matrix,
-                    output=output[i],
-                    prefilter=prefilter,
-                    order=order,
-                    cache=cache,
-                    batched=False,
-                )
-            return None
-
+        **kwargs,
+    ) -> NDArray:
         out_slice = tuple(slice(0, stop) for stop in data.shape)
-        self.affine_transform(
+        return self.affine_transform(
             input=data,
             matrix=matrix,
             mode="constant",
@@ -392,6 +380,45 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
             order=order,
             prefilter=prefilter,
         )
+
+    def _rigid_transform(
+        self,
+        arr: NDArray,
+        matrix: NDArray,
+        arr_mask: NDArray = None,
+        out: NDArray = None,
+        out_mask: NDArray = None,
+        order: int = 3,
+        cache: bool = False,
+        **kwargs,
+    ) -> Tuple[NDArray, NDArray]:
+        if out is None:
+            out = self.zeros_like(arr)
+
+        out = self._transform(
+            data=arr,
+            matrix=matrix,
+            output=out,
+            order=order,
+            prefilter=True,
+            cache=cache,
+        )
+
+        if arr_mask is not None:
+            if out_mask is None:
+                out_mask = self.zeros_like(arr)
+
+            # Applying the prefilter leads to artifacts in the mask.
+            out_mask = self._transform(
+                data=arr_mask,
+                matrix=matrix,
+                output=out_mask,
+                order=order,
+                prefilter=False,
+                cache=cache,
+            )
+
+        return out, out_mask
 
     def rigid_transform(
         self,
@@ -406,59 +433,35 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         cache: bool = False,
         batched: bool = False,
     ) -> Tuple[NDArray, NDArray]:
-        if out is None:
-            out = self.zeros_like(arr)
-
-        # Check whether rotation_matrix is already a rigid transform matrix
         matrix = rotation_matrix
-        if matrix.shape[-1] == (arr.ndim - int(batched)):
-            center = self.divide(self.to_backend_array(arr.shape) - 1, 2)
-            if not use_geometric_center:
-                center = self.center_of_mass(arr, cutoff=0)
 
-            offset = int(arr.ndim - rotation_matrix.shape[0])
-            center = center[offset:]
-            translation = (
-                self.zeros(center.size) if translation is None else translation
-            )
-            matrix = self._rigid_transform_matrix(
+        # Build transformation matrix from rotation matrix
+        if matrix.shape[-1] == (arr.ndim - int(batched)):
+            center = self._compute_transform_center(arr, use_geometric_center, batched)
+            matrix = self._build_transform_matrix(
                 rotation_matrix=rotation_matrix,
                 translation=translation,
-                center=center,
+                center=self.astype(center, self._float_dtype),
+                shape=arr.shape[1:] if batched else arr.shape,
             )
 
-        self._rigid_transform(
-            data=arr,
+        if batched:
+            matrix = self._batch_transform_matrix(matrix)
+
+        return self._rigid_transform(
+            arr=arr,
+            arr_mask=arr_mask,
+            out=out,
+            out_mask=out_mask,
             matrix=matrix,
-            output=out,
-            order=order,
-            prefilter=True,
             cache=cache,
+            order=order,
             batched=batched,
         )
 
-        # Applying the prefilter leads to artifacts in the mask.
-        if arr_mask is not None:
-            if out_mask is None:
-                out_mask = self.zeros_like(arr_mask)
-
-            self._rigid_transform(
-                data=arr_mask,
-                matrix=matrix,
-                output=out_mask,
-                order=order,
-                prefilter=False,
-                cache=cache,
-                batched=batched,
-            )
-
-        return out, out_mask
-
     def center_of_mass(self, arr: BackendArray, cutoff: float = None) -> BackendArray:
         """
-        Computes the center of mass of a numpy ndarray instance using all available
-        elements. For template matching it typically makes sense to only input
-        positive densities.
+        Computes the center of mass of an array larger than cutoff.
 
         Parameters
         ----------
@@ -466,19 +469,19 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
             Array to compute the center of mass of.
         cutoff : float, optional
             Densities less than or equal to cutoff are nullified for center
-            of mass computation. By default considers all values.
+            of mass computation. Defaults to None.
 
         Returns
         -------
         BackendArray
             Center of mass with shape (arr.ndim).
         """
-        cutoff = self.min(arr) - 1 if cutoff is None else cutoff
-
-        arr = self.where(arr > cutoff, arr, 0)
-        denominator = self.sum(arr)
+        arr = self.abs(arr)
+        if cutoff is not None:
+            arr = self.where(arr > cutoff, arr, 0)
 
         grids = []
+        denominator = self.sum(arr)
         for i, x in enumerate(arr.shape):
             baseline_dims = tuple(1 if i != t else x for t in range(len(arr.shape)))
             grids.append(
@@ -587,7 +590,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         sq_exp = self.sqrt(sq_exp, out=sq_exp)
 
         # Assume that low stdev regions also have low scores
-        # See :py:meth:`tme.matching_exhaustive.flcSphericalMask_setup` for correct norm
+        # See :py:meth:`tme.matching_scores.flcSphericalMask_setup` for correct norm
         sq_exp[sq_exp < eps] = 1
         sq_exp = self.multiply(sq_exp, n_obs, out=sq_exp)
         return self.divide(arr, sq_exp, out=out)

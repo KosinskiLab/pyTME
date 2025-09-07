@@ -1105,23 +1105,6 @@ class MatchingBackend(ABC):
     def irfftn(self, **kwargs):
         """Perform an n-D real inverse FFT."""
 
-    def extract_center(self, arr: BackendArray, newshape: Tuple[int]) -> BackendArray:
-        """
-        Extract the centered portion of an array based on a new shape.
-
-        Parameters
-        ----------
-        arr : BackendArray
-            Input data.
-        newshape : tuple
-            Desired shape for the central portion.
-
-        Returns
-        -------
-        BackendArray
-            Central portion of the array with shape ``newshape``.
-        """
-
     @abstractmethod
     def compute_convolution_shapes(
         self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
