@@ -3,6 +3,7 @@ from typing import Union, TypeVar, Tuple
 BackendArray = TypeVar("backend_array")
 NDArray = TypeVar("numpy.ndarray")
 CupyArray = TypeVar("cupy.ndarray")
+JaxArray = TypeVar("jaxlib._jax.ArrayImpl")
 TorchTensor = TypeVar("torch.Tensor")
 MlxArray = TypeVar("mlx.core.array")
 ArrayLike = TypeVar("array_like")

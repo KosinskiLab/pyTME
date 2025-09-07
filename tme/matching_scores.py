@@ -10,14 +10,14 @@ import warnings
 from typing import Callable, Tuple, Dict
 
 import numpy as np
-from scipy.ndimage import laplace
 
 from .backends import backend as be
 from .types import CallbackClass, BackendArray, shm_type
 from .matching_utils import (
     conditional_execute,
     identity,
-    normalize_template,
+    standardize,
+    to_padded,
 )
 
 
@@ -46,7 +46,7 @@ def cc_setup(
     )
     axes = matching_data._batch_axis(matching_data._batch_mask)
 
-    ret = {
+    return {
         "template": be.to_sharedarr(matching_data.template, shm_handler),
         "ft_target": be.to_sharedarr(be.rfftn(target_pad, axes=axes), shm_handler),
         "inv_denominator": be.to_sharedarr(
@@ -54,8 +54,6 @@ def cc_setup(
         ),
         "numerator": be.to_sharedarr(be.zeros(1, be._float_dtype), shm_handler),
     }
-
-    return ret
 
 
 def lcc_setup(matching_data, **kwargs) -> Dict:
@@ -71,26 +69,8 @@ def lcc_setup(matching_data, **kwargs) -> Dict:
     -----
     To be used with :py:meth:`corr_scoring`.
     """
-    target = be.to_numpy_array(matching_data._target)
-    template = be.to_numpy_array(matching_data._template)
-
-    subsets = matching_data._batch_iter(
-        target.shape,
-        tuple(1 if i in matching_data._target_dim else 0 for i in range(target.ndim)),
-    )
-    for subset in subsets:
-        target[subset] = laplace(target[subset], mode="wrap")
-
-    subsets = matching_data._batch_iter(
-        template.shape,
-        tuple(1 if i in matching_data._template_dim else 0 for i in range(target.ndim)),
-    )
-    for subset in subsets:
-        template[subset] = laplace(template[subset], mode="wrap")
-
-    matching_data._target = be.to_backend_array(target)
-    matching_data._template = be.to_backend_array(template)
-
+    matching_data.target = matching_data.transform_target("laplace")
+    matching_data.template = matching_data.transform_template("laplace")
     return cc_setup(matching_data=matching_data, **kwargs)
 
 
@@ -184,19 +164,17 @@ def corr_setup(
     denominator = be.divide(1, denominator, out=denominator)
     denominator = be.multiply(denominator, mask, out=denominator)
 
-    ret = {
+    return {
         "template": be.to_sharedarr(template, shm_handler),
         "ft_target": be.to_sharedarr(ft_target, shm_handler),
         "inv_denominator": be.to_sharedarr(denominator, shm_handler),
         "numerator": be.to_sharedarr(numerator, shm_handler),
     }
 
-    return ret
-
 
 def cam_setup(matching_data, **kwargs) -> Dict:
     """
-    Like :py:meth:`corr_setup` but with standardized ``target``, ``template``
+    Like :py:meth:`corr_setup` but with standardized ``target`` and ``template``
 
     .. math::
 
@@ -206,19 +184,14 @@ def cam_setup(matching_data, **kwargs) -> Dict:
     -----
     To be used with :py:meth:`corr_scoring`.
     """
-    template = matching_data._template
-    axis = matching_data._batch_axis(matching_data._target_batch)
-    matching_data._template = be.divide(
-        be.subtract(template, be.mean(template, axis=axis, keepdims=True)),
-        be.std(template, axis=axis, keepdims=True),
-    )
-    target = matching_data._target
-    axis = matching_data._batch_axis(matching_data._template_batch)
-    matching_data._target = be.divide(
-        be.subtract(target, be.mean(target, axis=axis, keepdims=True)),
-        be.std(target, axis=axis, keepdims=True),
-    )
-    return corr_setup(matching_data=matching_data, **kwargs)
+    matching_data.target = matching_data.transform_target("standardize")
+    matching_data.template = matching_data.transform_template("standardize")
+    return flcSphericalMask_setup(matching_data=matching_data, **kwargs)
+
+
+def ncc_setup(matching_data, **kwargs) -> Dict:
+    matching_data.target = matching_data.transform_target("standardize")
+    return cc_setup(matching_data=matching_data, **kwargs)
 
 
 def flc_setup(
@@ -242,14 +215,12 @@ def flc_setup(
     target_pad = be.square(target_pad, out=target_pad)
     ft_target2 = be.rfftn(target_pad, axes=data_axes)
 
-    ret = {
+    return {
         "template": be.to_sharedarr(matching_data.template, shm_handler),
         "template_mask": be.to_sharedarr(matching_data.template_mask, shm_handler),
         "ft_target": be.to_sharedarr(ft_target, shm_handler),
         "ft_target2": be.to_sharedarr(ft_target2, shm_handler),
     }
-
-    return ret
 
 
 def flcSphericalMask_setup(
@@ -302,15 +273,13 @@ def flcSphericalMask_setup(
     temp = be.irfftn(ft_temp, s=data_shape, axes=data_axes)
 
     temp2 = be.norm_scores(1, temp2, temp, n_obs, be.eps(be._float_dtype), temp2)
-    ret = {
+    return {
         "template": be.to_sharedarr(matching_data.template, shm_handler),
         "template_mask": be.to_sharedarr(template_mask, shm_handler),
         "ft_target": be.to_sharedarr(ft_target, shm_handler),
         "inv_denominator": be.to_sharedarr(temp2, shm_handler),
         "numerator": be.to_sharedarr(be.zeros(1, be._float_dtype), shm_handler),
     }
-
-    return ret
 
 
 def mcc_setup(
@@ -331,7 +300,7 @@ def mcc_setup(
     target = be.topleft_pad(target, shape)
     target_mask = be.topleft_pad(target_mask, shape)
 
-    ret = {
+    return {
         "template": be.to_sharedarr(matching_data.template, shm_handler),
         "template_mask": be.to_sharedarr(matching_data.template_mask, shm_handler),
         "ft_target": be.to_sharedarr(be.rfftn(target, axes=ax), shm_handler),
@@ -340,8 +309,6 @@ def mcc_setup(
         ),
         "ft_target_mask": be.to_sharedarr(be.rfftn(target_mask, axes=ax), shm_handler),
     }
-
-    return ret
 
 
 def corr_scoring(
@@ -357,6 +324,7 @@ def corr_scoring(
     interpolation_order: int,
     template_mask: shm_type = None,
     score_mask: shm_type = None,
+    template_background: shm_type = None,
 ) -> CallbackClass:
     """
     Calculates a normalized cross-correlation between a target f and a template g.
@@ -414,7 +382,7 @@ def corr_scoring(
         template_mask = be.from_sharedarr(template_mask)
         n_obs = be.sum(template_mask) if template_mask is not None else None
 
-    norm_template = conditional_execute(normalize_template, n_obs is not None)
+    norm_template = conditional_execute(standardize, n_obs is not None)
     norm_sub = conditional_execute(be.subtract, numerator.shape != (1,))
     norm_mul = conditional_execute(be.multiply, inv_denominator.shape != (1))
     norm_mask = conditional_execute(be.multiply, score_mask.shape != (1,))
@@ -423,30 +391,41 @@ def corr_scoring(
     ft_temp = be.zeros(fast_ft_shape, be._complex_dtype)
     template_rot = be.zeros(template.shape, be._float_dtype)
 
-    template_filter_func = _create_filter_func(
-        arr_shape=template.shape,
-        filter_shape=template_filter.shape,
-    )
+    tmpl_filter_func = _create_filter_func(template.shape, template_filter)
 
     center = be.divide(be.to_backend_array(template.shape) - 1, 2)
     unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
+
+    background_correction = template_background is not None
+    if background_correction:
+        scores_alt, compute_norm = _setup_background_correction(
+            fast_shape=fast_shape,
+            template_background=template_background,
+            rotation_buffer=template_rot,
+            unpadded_slice=unpadded_slice,
+            interpolation_order=interpolation_order,
+            tmpl_filter_func=tmpl_filter_func,
+            norm_template=norm_template,
+        )
+
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
-        matrix = be._rigid_transform_matrix(rotation_matrix=rotation, center=center)
+        matrix = be._build_transform_matrix(
+            rotation_matrix=rotation, center=center, shape=template.shape
+        )
         _ = be.rigid_transform(
             arr=template,
             rotation_matrix=matrix,
             out=template_rot,
             order=interpolation_order,
             cache=True,
+            use_geometric_center=True,
         )
 
-        template_rot = template_filter_func(template_rot, ft_temp, template_filter)
-        norm_template(template_rot, template_mask, n_obs)
+        template_rot = tmpl_filter_func(template_rot, ft_temp)
+        template_rot = norm_template(template_rot, template_mask, n_obs)
 
-        arr = be.fill(arr, 0)
-        arr[unpadded_slice] = template_rot
-
+        arr = to_padded(arr, template_rot, unpadded_slice)
         ft_temp = be.rfftn(arr, s=fast_shape, out=ft_temp)
         arr = _correlate_fts(ft_target, ft_temp, ft_temp, arr, fast_shape)
 
@@ -455,6 +434,17 @@ def corr_scoring(
         arr = norm_mask(arr, score_mask, out=arr)
 
         callback(arr, rotation_matrix=rotation)
+        if background_correction:
+            arr = compute_norm(arr, ft_target, ft_temp, matrix, template_mask, n_obs)
+            arr = norm_sub(arr, numerator, out=arr)
+            arr = norm_mul(arr, inv_denominator, out=arr)
+            arr = norm_mask(arr, score_mask, out=arr)
+            scores_alt = be.maximum(arr, scores_alt, out=scores_alt)
+
+    if background_correction:
+        scores_alt = norm_mask(scores_alt, score_mask, out=scores_alt)
+        scores_alt = be.subtract(scores_alt, be.mean(scores_alt), out=scores_alt)
+        callback.correct_background(scores_alt)
 
     return callback
 
@@ -471,6 +461,7 @@ def flc_scoring(
     callback: CallbackClass,
     interpolation_order: int,
     score_mask: shm_type = None,
+    template_background: shm_type = None,
 ) -> CallbackClass:
     """
     Computes a normalized cross-correlation between ``target`` (f),
@@ -511,8 +502,6 @@ def flc_scoring(
         Rotation matrices to be sampled (n, d, d).
     callback : CallbackClass
         A callable for processing the result of each rotation.
-    callback_class_args : Dict
-        Dictionary of arguments to be passed to ``callback``.
     interpolation_order : int
         Spline order for template rotations.
 
@@ -524,7 +513,6 @@ def flc_scoring(
     ----------
     .. [1]  Hrabe T. et al, J. Struct. Biol. 178, 177 (2012).
     """
-    float_dtype, complex_dtype = be._float_dtype, be._complex_dtype
     template = be.from_sharedarr(template)
     template_mask = be.from_sharedarr(template_mask)
     ft_target = be.from_sharedarr(ft_target)
@@ -532,42 +520,55 @@ def flc_scoring(
     template_filter = be.from_sharedarr(template_filter)
     score_mask = be.from_sharedarr(score_mask)
 
-    arr = be.zeros(fast_shape, float_dtype)
-    temp = be.zeros(fast_shape, float_dtype)
-    temp2 = be.zeros(fast_shape, float_dtype)
-    ft_temp = be.zeros(fast_ft_shape, complex_dtype)
-    ft_denom = be.zeros(fast_ft_shape, complex_dtype)
+    arr = be.zeros(fast_shape, be._float_dtype)
+    temp = be.zeros(fast_shape, be._float_dtype)
+    temp2 = be.zeros(fast_shape, be._float_dtype)
+    ft_temp = be.zeros(fast_ft_shape, be._complex_dtype)
+    ft_denom = be.zeros(fast_ft_shape, be._complex_dtype)
     template_rot = be.zeros(template.shape, be._float_dtype)
     template_mask_rot = be.zeros(template.shape, be._float_dtype)
 
-    tmpl_filter_func = _create_filter_func(template.shape, template_filter.shape)
+    tmpl_filter_func = _create_filter_func(template.shape, template_filter)
     norm_mask = conditional_execute(be.multiply, score_mask.shape != (1,))
 
-    eps = be.eps(float_dtype)
+    eps = be.eps(be._float_dtype)
     center = be.divide(be.to_backend_array(template.shape) - 1, 2)
     unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
+
+    background_correction = template_background is not None
+    if background_correction:
+        scores_alt, compute_norm = _setup_background_correction(
+            fast_shape=fast_shape,
+            template_background=template_background,
+            rotation_buffer=template_rot,
+            unpadded_slice=unpadded_slice,
+            interpolation_order=interpolation_order,
+            tmpl_filter_func=tmpl_filter_func,
+            norm_template=standardize,
+        )
+
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
-        matrix = be._rigid_transform_matrix(rotation_matrix=rotation, center=center)
+        matrix = be._build_transform_matrix(
+            rotation_matrix=rotation, center=center, shape=template.shape
+        )
         _ = be.rigid_transform(
             arr=template,
             arr_mask=template_mask,
             rotation_matrix=matrix,
             out=template_rot,
             out_mask=template_mask_rot,
-            use_geometric_center=True,
             order=interpolation_order,
             cache=True,
+            use_geometric_center=True,
         )
 
         n_obs = be.sum(template_mask_rot)
-        template_rot = tmpl_filter_func(template_rot, ft_temp, template_filter)
-        template_rot = normalize_template(template_rot, template_mask_rot, n_obs)
+        template_rot = tmpl_filter_func(template_rot, ft_temp)
+        template_rot = standardize(template_rot, template_mask_rot, n_obs)
 
-        arr = be.fill(arr, 0)
-        temp = be.fill(temp, 0)
-        arr[unpadded_slice] = template_rot
-        temp[unpadded_slice] = template_mask_rot
+        arr = to_padded(arr, template_rot, unpadded_slice)
+        temp = to_padded(temp, template_mask_rot, unpadded_slice)
 
         ft_temp = be.rfftn(temp, out=ft_temp, s=fast_shape)
         temp = _correlate_fts(ft_target, ft_temp, ft_denom, temp, fast_shape)
@@ -576,11 +577,109 @@ def flc_scoring(
         ft_temp = be.rfftn(arr, out=ft_temp, s=fast_shape)
         arr = _correlate_fts(ft_target, ft_temp, ft_temp, arr, fast_shape)
 
-        arr = be.norm_scores(arr, temp2, temp, n_obs, eps, arr)
+        inv_sdev = be.norm_scores(1, temp2, temp, n_obs, eps, temp2)
+        arr = be.multiply(arr, inv_sdev, out=arr)
         arr = norm_mask(arr, score_mask, out=arr)
 
         callback(arr, rotation_matrix=rotation)
+        if background_correction:
+            arr = compute_norm(arr, ft_target, ft_temp, matrix, template_mask, n_obs)
+            arr = be.multiply(arr, inv_sdev, out=arr)
+            scores_alt = be.maximum(arr, scores_alt, out=scores_alt)
 
+    if background_correction:
+        scores_alt = norm_mask(scores_alt, score_mask, out=scores_alt)
+        scores_alt = be.subtract(scores_alt, be.mean(scores_alt), out=scores_alt)
+        callback.correct_background(scores_alt)
+
+    return callback
+
+
+def ncc_scoring(
+    template: shm_type,
+    ft_target: shm_type,
+    fast_shape: Tuple[int],
+    fast_ft_shape: Tuple[int],
+    rotations: BackendArray,
+    callback: CallbackClass,
+    interpolation_order: int,
+    template_filter: shm_type = None,
+    score_mask: shm_type = None,
+    template_background: shm_type = None,
+    **kwargs,
+) -> CallbackClass:
+    template = be.from_sharedarr(template)
+    ft_target = be.from_sharedarr(ft_target)
+    score_mask = be.from_sharedarr(score_mask)
+    template_filter = be.from_sharedarr(template_filter)
+
+    arr = be.zeros(fast_shape, be._float_dtype)
+    ft_temp = be.zeros(fast_ft_shape, be._complex_dtype)
+    template_rot = be.zeros(template.shape, be._float_dtype)
+
+    # Welford arrays for global statistics
+    pixel_mean = be.zeros(fast_shape, be._float_dtype)
+    pixel_M2 = be.zeros(fast_shape, be._float_dtype)
+
+    tmpl_filter_func = _create_filter_func(template.shape, template_filter)
+    norm_mask = conditional_execute(be.multiply, score_mask.shape != (1,))
+
+    size = be.size(template)
+    center = be.divide(be.to_backend_array(template.shape) - 1, 2)
+    unpadded_slice = tuple(slice(0, stop) for stop in template.shape)
+    n_angles = rotations.shape[0]
+
+    # Scale forward transform by 1/n i.e. norm 'forward'
+    ft_target = be.multiply(ft_target, 1 / be.size(arr))
+
+    background_correction = template_background is not None
+    for index in range(n_angles):
+        arr = be.fill(arr, 0)
+        rotation = rotations[index]
+        matrix = be._build_transform_matrix(
+            rotation_matrix=rotation, center=center, shape=template.shape
+        )
+
+        be.rigid_transform(
+            template,
+            rotation_matrix=matrix,
+            out=template_rot,
+            order=interpolation_order,
+            cache=True,
+            use_geometric_center=True,
+        )
+        template_rot = tmpl_filter_func(template_rot, ft_temp)
+        template_rot = standardize(template_rot, 1, size)
+
+        arr = to_padded(arr, template_rot, unpadded_slice)
+        ft_temp = be.rfftn(arr, s=fast_shape, norm="forward")
+        ft_temp = be.multiply(ft_temp, ft_target, out=ft_temp)
+
+        arr = be.irfftn(ft_temp, s=fast_shape, norm="forward")
+        arr = norm_mask(arr, score_mask, out=arr)
+        callback(arr, rotation_matrix=rotation)
+
+        delta = be.subtract(arr, pixel_mean)
+        pixel_mean = be.add(pixel_mean, be.divide(delta, index + 1), out=pixel_mean)
+        delta2 = be.subtract(arr, pixel_mean)
+        delta = be.multiply(delta, delta2, out=delta)
+        pixel_M2 = be.add(pixel_M2, delta, out=pixel_M2)
+
+    global_mean = be.mean(pixel_mean)
+    pixel_variance = be.divide(pixel_M2, n_angles - 1)
+    global_std = be.sqrt(be.mean(pixel_variance))
+
+    callback.correct_background(global_mean, global_std)
+    if background_correction:
+        # Adapt units for local normalization
+        pixel_mean = be.subtract(pixel_mean, global_mean, out=pixel_mean)
+        pixel_mean = be.divide(pixel_mean, global_std, out=pixel_mean)
+
+        pixel_std = be.sqrt(pixel_variance, out=pixel_variance)
+        pixel_std = be.divide(pixel_std, global_std, out=pixel_variance)
+
+        pixel_std = be.where(pixel_std > 1e-4, 1 / pixel_std, 0.0)
+        callback.correct_background(pixel_mean, pixel_std)
     return callback
 
 
@@ -597,7 +696,7 @@ def mcc_scoring(
     callback: CallbackClass,
     interpolation_order: int,
     overlap_ratio: float = 0.3,
-    score_mask: shm_type = None,
+    **kwargs,
 ) -> CallbackClass:
     """
     Computes a normalized cross-correlation score between ``target`` (f),
@@ -676,12 +775,11 @@ def mcc_scoring(
     temp3 = be.zeros(fast_shape, float_dtype)
     temp_ft = be.zeros(fast_ft_shape, complex_dtype)
 
-    template_filter_func = _create_filter_func(
+    tmpl_filter_func = _create_filter_func(
         arr_shape=template.shape,
-        filter_shape=template_filter.shape,
+        template_filter=template_filter,
         arr_padded=True,
     )
-
     for index in range(rotations.shape[0]):
         rotation = rotations[index]
         template_rot = be.fill(template_rot, 0)
@@ -697,8 +795,8 @@ def mcc_scoring(
             cache=True,
         )
 
-        template_filter_func(template_rot, temp_ft, template_filter)
-        normalize_template(template_rot, temp, be.sum(temp))
+        template_rot = tmpl_filter_func(template_rot, temp_ft)
+        template_rot = standardize(template_rot, temp, be.sum(temp))
 
         temp_ft = be.rfftn(template_rot, out=temp_ft, s=fast_shape)
         temp2 = be.irfftn(target_mask_ft * temp_ft, out=temp2, s=fast_shape)
@@ -769,6 +867,7 @@ def flc_scoring2(
     callback: CallbackClass,
     interpolation_order: int,
     score_mask: shm_type = None,
+    template_background: shm_type = None,
 ) -> CallbackClass:
     template = be.from_sharedarr(template)
     template_mask = be.from_sharedarr(template_mask)
@@ -795,12 +894,24 @@ def flc_scoring2(
 
     tmp_sqz, arr_sqz, ft_temp = temp[sqz_slice], arr[sqz_slice], ft_denom[sqz_slice]
 
-    template_filter_func = _create_filter_func(
+    tmpl_filter_func = _create_filter_func(
         arr_shape=template.shape,
-        filter_shape=template_filter.shape,
+        template_filter=template_filter,
         arr_padded=True,
     )
     norm_mask = conditional_execute(be.multiply, score_mask.shape != (1,))
+
+    background_correction = template_background is not None
+    if background_correction:
+        scores_alt, compute_norm = _setup_background_correction(
+            fast_shape=fast_shape,
+            template_background=template_background,
+            rotation_buffer=arr_sqz[tmpl_subset],
+            unpadded_slice=tmpl_subset,
+            interpolation_order=interpolation_order,
+            tmpl_filter_func=tmpl_filter_func,
+            norm_template=standardize,
+        )
 
     eps = be.eps(be._float_dtype)
     for index in range(rotations.shape[0]):
@@ -821,8 +932,8 @@ def flc_scoring2(
         )
 
         n_obs = be.sum(tmp_sqz, axis=axes, keepdims=True)
-        arr_norm = template_filter_func(arr_sqz, ft_temp, template_filter)
-        arr_norm = normalize_template(arr_norm, tmp_sqz, n_obs, axis=axes)
+        arr_norm = tmpl_filter_func(arr_sqz, ft_temp)
+        arr_norm = standardize(arr_norm, tmp_sqz, n_obs, axis=axes)
 
         ft_temp = be.rfftn(tmp_sqz, out=ft_temp, axes=axes, s=shape)
         temp = _correlate_fts(ft_target, ft_temp, ft_denom, temp, shape, axes)
@@ -831,10 +942,20 @@ def flc_scoring2(
         ft_temp = be.rfftn(arr_norm, out=ft_temp, axes=axes, s=shape)
         arr = _correlate_fts(ft_target, ft_temp, ft_denom, arr, shape, axes)
 
-        arr = be.norm_scores(arr, temp2, temp, n_obs, eps, arr)
+        inv_sdev = be.norm_scores(1, temp2, temp, n_obs, eps, temp2)
+        arr = be.multiply(arr, inv_sdev, out=arr)
         arr = norm_mask(arr, score_mask, out=arr)
 
         callback(arr, rotation_matrix=rotation)
+        if background_correction:
+            arr = compute_norm(arr, ft_target, ft_temp, rotation, template_mask, n_obs)
+            arr = be.multiply(arr, inv_sdev, out=arr)
+            scores_alt = be.maximum(arr, scores_alt, out=scores_alt)
+
+    if background_correction:
+        scores_alt = norm_mask(scores_alt, score_mask, out=scores_alt)
+        scores_alt = be.subtract(scores_alt, be.mean(scores_alt), out=scores_alt)
+        callback.correct_background(scores_alt)
 
     return callback
 
@@ -853,6 +974,7 @@ def corr_scoring2(
     target_filter: shm_type = None,
     template_mask: shm_type = None,
     score_mask: shm_type = None,
+    template_background: shm_type = None,
 ) -> CallbackClass:
     template = be.from_sharedarr(template)
     ft_target = be.from_sharedarr(ft_target)
@@ -886,14 +1008,14 @@ def corr_scoring2(
         template_mask = be.from_sharedarr(template_mask)
         n_obs = be.sum(template_mask, axis=axes, keepdims=True)
 
-    norm_template = conditional_execute(normalize_template, n_obs is not None)
+    norm_template = conditional_execute(standardize, n_obs is not None)
     norm_sub = conditional_execute(be.subtract, numerator.shape != (1,))
     norm_mul = conditional_execute(be.multiply, inv_denominator.shape != (1,))
     norm_mask = conditional_execute(be.multiply, score_mask.shape != (1,))
 
     template_filter_func = _create_filter_func(
         arr_shape=template.shape,
-        filter_shape=template_filter.shape,
+        template_filter=template_filter,
         arr_padded=True,
     )
 
@@ -909,7 +1031,7 @@ def corr_scoring2(
             cache=False,
             batched=batched,
         )
-        arr_norm = template_filter_func(arr_sqz, ft_sqz, template_filter)
+        arr_norm = template_filter_func(arr_sqz, ft_sqz)
         norm_template(arr_norm[unpadded_slice], template_mask, n_obs, axis=axes)
 
         ft_sqz = be.rfftn(arr_norm, out=ft_sqz, axes=axes, s=shape)
@@ -942,7 +1064,7 @@ def _correlate_fts(ft_tar, ft_tmpl, ft_buffer, real_buffer, fast_shape, axes=Non
 
 def _create_filter_func(
     arr_shape: Tuple[int],
-    filter_shape: BackendArray,
+    template_filter: BackendArray,
     arr_padded: bool = False,
     axes=None,
 ) -> Callable:
@@ -960,7 +1082,7 @@ def _create_filter_func(
     ----------
     arr_shape : tuple of ints
         Shape of the array to be filtered.
-    filter_shape : BackendArray
+    template_filter : BackendArray
         Precomputed filter to apply in the frequency domain.
     arr_padded : bool, optional
         Whether the input template is padded and will need to be cropped
@@ -973,11 +1095,12 @@ def _create_filter_func(
     Callable
         Filter function with parameters template, ft_temp and template_filter.
     """
+    filter_shape = template_filter.shape
     if filter_shape == (1,):
         return conditional_execute(identity, execute_operation=True)
 
     # Default case, all shapes are correctly matched
-    def _apply_filter(template, ft_temp, template_filter):
+    def _apply_filter(template, ft_temp):
         ft_temp = be.rfftn(template, out=ft_temp, s=template.shape)
         ft_temp = be.multiply(ft_temp, template_filter, out=ft_temp)
         return be.irfftn(ft_temp, out=template, s=template.shape)
@@ -990,12 +1113,49 @@ def _create_filter_func(
     _template = be.zeros(arr_shape, be._float_dtype)
     _ft_temp = be.zeros(filter_shape, be._complex_dtype)
 
-    def _apply_filter_subset(template, ft_temp, template_filter):
+    def _apply_filter_subset(template, ft_temp):
         _template[:] = template[real_subset]
-        template[real_subset] = _apply_filter(_template, _ft_temp, template_filter)
+        template[real_subset] = _apply_filter(_template, _ft_temp)
         return template
 
     return _apply_filter_subset
+
+
+def _setup_background_correction(
+    fast_shape: Tuple[int],
+    template_background: BackendArray,
+    rotation_buffer: BackendArray,
+    unpadded_slice: Tuple[slice],
+    interpolation_order: int = 3,
+    tmpl_filter_func: Callable = identity,
+    norm_template: Callable = identity,
+    axes=None,
+    shape=None,
+):
+    scores_noise = be.zeros(fast_shape, be._float_dtype)
+    template_background = be.from_sharedarr(template_background)
+
+    fwd_shape = shape
+    if shape is not None:
+        fwd_shape = shape
+
+    def compute_norm(arr, ft_target, ft_temp, matrix, template_mask, n_obs):
+        _ = be.rigid_transform(
+            arr=template_background,
+            rotation_matrix=matrix,
+            out=rotation_buffer,
+            use_geometric_center=True,
+            order=interpolation_order,
+            cache=True,
+        )
+        template_rot = tmpl_filter_func(rotation_buffer, ft_temp)
+        template_rot = norm_template(template_rot, template_mask, n_obs, axis=axes)
+
+        arr = to_padded(arr, template_rot, unpadded_slice)
+        ft_temp = be.rfftn(arr, out=ft_temp, axes=axes, s=fwd_shape)
+        return _correlate_fts(ft_target, ft_temp, ft_temp, arr, fast_shape, axes)
+
+    return scores_noise, compute_norm
 
 
 MATCHING_EXHAUSTIVE_REGISTER = {
@@ -1003,6 +1163,7 @@ MATCHING_EXHAUSTIVE_REGISTER = {
     "LCC": (lcc_setup, corr_scoring),
     "CORR": (corr_setup, corr_scoring),
     "CAM": (cam_setup, corr_scoring),
+    # "NCC": (ncc_setup, ncc_scoring),
     "FLCSphericalMask": (flcSphericalMask_setup, corr_scoring),
     "FLC": (flc_setup, flc_scoring),
     "MCC": (mcc_setup, mcc_scoring),

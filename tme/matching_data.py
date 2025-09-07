@@ -15,7 +15,7 @@ from . import Density
 from .filters import Compose
 from .backends import backend as be
 from .types import BackendArray, NDArray
-from .matching_utils import compute_parallelization_schedule
+from .matching_utils import compute_parallelization_schedule, copy_docstring
 
 __all__ = ["MatchingData"]
 
@@ -249,8 +249,8 @@ class MatchingData:
         target_offset = np.zeros(len(self._output_target_shape), dtype=int)
         target_offset[mask] = [x.start for x in target_slice]
         mask = np.subtract(1, self._target_batch).astype(bool)
-        template_offset = np.zeros(len(self._output_template_shape), dtype=int)
-        template_offset[mask] = [x.start for x in template_slice]
+        # template_offset = np.zeros(len(self._output_template_shape), dtype=int)
+        # template_offset[mask] = [x.start for x in template_slice]
 
         translation_offset = tuple(x for x in target_offset)
 
@@ -485,14 +485,18 @@ class MatchingData:
 
     @staticmethod
     def _fourier_padding(
-        target_shape: Tuple[int],
-        template_shape: Tuple[int],
-        batch_mask: Tuple[int] = None,
+        target_shape: NDArray,
+        template_shape: NDArray,
+        target_batch: NDArray = None,
+        template_batch: NDArray = None,
         **kwargs,
     ) -> Tuple[Tuple, Tuple, Tuple, Tuple]:
-        if batch_mask is None:
-            batch_mask = np.zeros_like(template_shape)
-        batch_mask = np.asarray(batch_mask)
+        if target_batch is None:
+            target_batch = np.zeros_like(target_shape)
+        if template_batch is None:
+            template_batch = np.zeros_like(target_shape)
+
+        batch_mask = np.logical_or(target_batch, template_batch)
 
         fourier_pad = np.ones(len(template_shape), dtype=int)
         fourier_pad = np.multiply(fourier_pad, 1 - batch_mask)
@@ -500,7 +504,9 @@ class MatchingData:
 
         # Avoid padding batch dimensions
         pad_shape = np.maximum(target_shape, template_shape)
-        pad_shape = np.maximum(pad_shape, np.multiply(1 - batch_mask, pad_shape))
+        pad_shape = np.where(target_batch, target_shape, pad_shape)
+        pad_shape = np.where(template_batch, template_shape, pad_shape)
+
         ret = be.compute_convolution_shapes(pad_shape, fourier_pad)
         conv_shape, fast_shape, fast_ft_shape = ret
 
@@ -538,10 +544,15 @@ class MatchingData:
         --------
         >>> conv, fwd, inv, shift = matching_data.fourier_padding(pad_fourier=True)
         """
+        target_shape = kwargs.get("target_shape", self._output_target_shape)
+        template_shape = kwargs.get("template_shape", self._output_template_shape)
+        target_batch = kwargs.get("target_batch", self._target_batch)
+        template_batch = kwargs.get("template_batch", self._template_batch)
         return self._fourier_padding(
-            target_shape=be.to_numpy_array(self._output_target_shape),
-            template_shape=be.to_numpy_array(self._output_template_shape),
-            batch_mask=be.to_numpy_array(self._batch_mask),
+            target_shape=be.to_numpy_array(target_shape),
+            template_shape=be.to_numpy_array(template_shape),
+            target_batch=be.to_numpy_array(target_batch),
+            template_batch=be.to_numpy_array(template_batch),
         )
 
     def _score_mask(self, fast_shape: Tuple[int], shift: Tuple[int]) -> BackendArray:
@@ -567,6 +578,68 @@ class MatchingData:
             axis=tuple(i for i in range(len(shift))),
         )
         return be.to_backend_array(score_mask)
+
+    def _transform_data(
+        self, method: str, data: BackendArray, batch_mask: Tuple[int], **kwargs
+    ) -> BackendArray:
+        """
+        Transform data using the specified method.
+
+        Parameters
+        ----------
+        method : str, optional
+            Transformation method, default "phase_randomization".
+            - "phase_randomization": Scrambles phase while preserving amplitude spectrum
+            - "standardize": Standardize to zero mean and unit variance
+            - "laplace": Applies Laplacian edge detection filter
+        **kwargs : dict
+            Method-specific arguments (e.g., mode="wrap" for laplace).
+
+        Returns
+        -------
+        BackendArray
+            Transformed data.
+        """
+        from scipy.ndimage import laplace
+        from .matching_utils import scramble_phases, standardize
+
+        def _standardize(arr: NDArray, **kwargs) -> NDArray:
+            return standardize(arr, 1, arr.size)
+
+        _supported_methods = {
+            "phase_randomization": scramble_phases,
+            "laplace": laplace,
+            "standardize": _standardize,
+        }
+        func = _supported_methods.get(method)
+        if func is None:
+            _supported = ",".join([str(x) for x in _supported_methods])
+            raise ValueError(f"Only methods {_supported} are supported.")
+
+        data = be.to_numpy_array(data)
+
+        ret = np.zeros_like(data)
+        for subset in self._batch_iter(data.shape, batch_mask):
+            ret[subset] = func(data[subset], **kwargs)
+        return be.to_backend_array(ret)
+
+    @copy_docstring(_transform_data)
+    def transform_target(self, method: str = "phase_randomization", **kwargs):
+        return self._transform_data(method, self.target, self._target_batch, **kwargs)
+
+    @copy_docstring(_transform_data)
+    def transform_template(
+        self, method: str = "phase_randomization", reverse: bool = False, **kwargs
+    ):
+        """
+        Notes
+        -----
+        The returned template is in the original not reversed orientation.
+        """
+        template = self._get_data(
+            self._template, self._output_template_shape, reverse, self._template_dim
+        )
+        return self._transform_data(method, template, self._template_batch, **kwargs)
 
     def computation_schedule(
         self,
@@ -723,7 +796,6 @@ class MatchingData:
         _output_shape = self._output_template_shape
         if np.prod([int(i) for i in template_mask.shape]) != np.prod(_output_shape):
             _output_shape = self._batch_shape(_output_shape, self._template_batch, True)
-
         return self._get_data(template_mask, _output_shape, True, self._template_dim)
 
     @target.setter
@@ -855,7 +927,7 @@ class MatchingData:
             rot_list.append(self.rotations[init_rot:end_rot])
         return rot_list
 
-    def _free_data(self):
+    def free(self):
         """
         Dereference data arrays owned by the class instance.
         """

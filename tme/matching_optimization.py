@@ -23,7 +23,7 @@ from .backends import backend as be
 from .types import ArrayLike, NDArray
 from .matching_data import MatchingData
 from .rotations import euler_to_rotationmatrix
-from .matching_utils import rigid_transform, normalize_template
+from .matching_utils import _rigid_transform, standardize
 
 
 def _format_rigid_transform(x: Tuple[float]) -> Tuple[ArrayLike, ArrayLike]:
@@ -45,10 +45,8 @@ def _format_rigid_transform(x: Tuple[float]) -> Tuple[ArrayLike, ArrayLike]:
     translation, angles = x[:split], x[split:]
 
     translation = be.to_backend_array(translation)
-    rotation_matrix = euler_to_rotationmatrix(be.to_numpy_array(angles))
-    rotation_matrix = be.to_backend_array(rotation_matrix)
-
-    return translation, rotation_matrix
+    rotation_matrix = euler_to_rotationmatrix(be.to_numpy_array(angles), "ZYZ")
+    return translation, be.to_backend_array(rotation_matrix)
 
 
 class _MatchDensityToDensity(ABC):
@@ -120,57 +118,6 @@ class _MatchDensityToDensity(ABC):
 
         if hasattr(self, "_post_init"):
             self._post_init(**kwargs)
-
-    def rotate_array(
-        self,
-        arr,
-        rotation_matrix,
-        translation,
-        arr_mask=None,
-        out=None,
-        out_mask=None,
-        order: int = 1,
-        **kwargs,
-    ):
-        rotate_mask = arr_mask is not None
-        return_type = (out is None) + 2 * rotate_mask * (out_mask is None)
-        translation = np.zeros(arr.ndim) if translation is None else translation
-
-        center = np.floor(np.array(arr.shape) / 2)[:, None]
-
-        if not hasattr(self, "_previous_center"):
-            self._previous_center = arr.shape
-
-        if not hasattr(self, "grid") or not np.allclose(self._previous_center, center):
-            self.grid = np.indices(arr.shape, dtype=np.float32).reshape(arr.ndim, -1)
-            np.subtract(self.grid, center, out=self.grid)
-            self.grid_out = np.zeros_like(self.grid)
-            self._previous_center = center
-
-        np.matmul(rotation_matrix.T, self.grid, out=self.grid_out)
-        translation = np.add(translation[:, None], center)
-        np.add(self.grid_out, translation, out=self.grid_out)
-
-        if out is None:
-            out = np.zeros_like(arr)
-
-        self._interpolate(arr, self.grid_out, order=order, out=out.ravel())
-
-        if out_mask is None and arr_mask is not None:
-            out_mask = np.zeros_like(arr_mask)
-
-        if arr_mask is not None:
-            self._interpolate(arr_mask, self.grid_out, order=order, out=out.ravel())
-
-        match return_type:
-            case 0:
-                return None
-            case 1:
-                return out
-            case 2:
-                return out_mask
-            case 3:
-                return out, out_mask
 
     @staticmethod
     def _interpolate(data, positions, order: int = 1, out=None):
@@ -266,8 +213,7 @@ class _MatchDensityToDensity(ABC):
             self.template_mask_rot.fill(0)
             kw_dict["arr_mask"] = self.template_mask
             kw_dict["out_mask"] = self.template_mask_rot
-
-        self.rotate_array(**kw_dict)
+        be.rigid_transform(**kw_dict)
 
         return self()
 
@@ -361,7 +307,7 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
         """
         translation, rotation_matrix = _format_rigid_transform(x)
 
-        rigid_transform(
+        _rigid_transform(
             coordinates=self.template,
             coordinates_mask=self.template_mask,
             rotation_matrix=rotation_matrix,
@@ -469,7 +415,7 @@ class _MatchCoordinatesToCoordinates(_MatchDensityToDensity):
         """
         translation, rotation_matrix = _format_rigid_transform(x)
 
-        rigid_transform(
+        _rigid_transform(
             coordinates=self.template_coordinates,
             coordinates_mask=self.template_mask_coordinates,
             rotation_matrix=rotation_matrix,
@@ -514,7 +460,7 @@ class FLC(_MatchDensityToDensity):
 
         self.target_square = be.square(self.target)
 
-        normalize_template(
+        standardize(
             template=self.template,
             mask=self.template_mask,
             n_observations=be.sum(self.template_mask),
@@ -524,7 +470,7 @@ class FLC(_MatchDensityToDensity):
         """Returns the score of the current configuration."""
         n_obs = be.sum(self.template_mask_rot)
 
-        normalize_template(
+        standardize(
             template=self.template_rot,
             mask=self.template_mask_rot,
             n_observations=n_obs,
@@ -1309,5 +1255,5 @@ def optimize_match(
         print("Initial score better than refined score. Returning identity.")
         result.x = np.zeros_like(result.x)
     translation, rotation = result.x[:ndim], result.x[ndim:]
-    rotation_matrix = euler_to_rotationmatrix(rotation)
+    rotation_matrix = euler_to_rotationmatrix(rotation, "ZYZ")
     return translation, rotation_matrix, float(result.fun)

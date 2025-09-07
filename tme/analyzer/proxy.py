@@ -85,6 +85,16 @@ class StatelessSharedAnalyzerProxy:
             final_state = tuple(self._shared_to_object(x) for x in final_state)
         return self._analyzer.result(final_state, **kwargs)
 
+    def correct_background(self, state, *args, **kwargs):
+        if self._shared:
+            # Copy to not correct the internal score array across processes
+            backend_arr = type(be.zeros((1), dtype=be._float_dtype))
+            state = tuple(self._shared_to_object(x) for x in state)
+            state = tuple(
+                be.copy(x) if isinstance(x, backend_arr) else x for x in state
+            )
+        return self._analyzer.correct_background(state, *args, **kwargs)
+
     def merge(self, *args, **kwargs):
         return self._analyzer.merge(*args, **kwargs)
 
@@ -121,3 +131,7 @@ class SharedAnalyzerProxy(StatelessSharedAnalyzerProxy):
     def result(self, **kwargs):
         """Extract final result"""
         return super().result(self._state, **kwargs)
+
+    def correct_background(self, *args, **kwargs):
+        # We always assign to state as this operation can not be shared
+        self._state = super().correct_background(self._state, *args, **kwargs)

@@ -9,7 +9,6 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 import os
 import pickle
 from shutil import move
-from joblib import Parallel
 from tempfile import mkstemp
 from itertools import product
 from gzip import open as gzip_open
@@ -17,11 +16,29 @@ from typing import Tuple, Dict, Callable
 from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
-from scipy.spatial import ConvexHull
 
 from .backends import backend as be
 from .memory import estimate_memory_usage
-from .types import NDArray, BackendArray
+from .types import NDArray, BackendArray, MatchingData
+
+
+def copy_docstring(source_func, append: bool = True):
+    """Decorator to copy docstring from source function."""
+
+    def decorator(target_func):
+        base_doc = source_func.__doc__ or ""
+        if append and target_func.__doc__:
+            target_func.__doc__ = base_doc + "\n\n" + target_func.__doc__
+        else:
+            target_func.__doc__ = base_doc
+        return target_func
+
+    return decorator
+
+
+def to_padded(buffer, data, unpadded_slice):
+    buffer = be.fill(buffer, 0)
+    return be.at(buffer, unpadded_slice, data)
 
 
 def identity(arr, *args, **kwargs):
@@ -54,7 +71,7 @@ def conditional_execute(
     return func if execute_operation else alt_func
 
 
-def normalize_template(
+def standardize(
     template: BackendArray, mask: BackendArray, n_observations: float, axis=None
 ) -> BackendArray:
     """
@@ -95,12 +112,13 @@ def normalize_template(
     return be.multiply(template, mask, out=template)
 
 
-def _normalize_template_overflow_safe(
+def _standardize_safe(
     template: BackendArray, mask: BackendArray, n_observations: float, axis=None
 ) -> BackendArray:
+    """Overflow-safe version of standardize using higher precision arithmetic."""
     _template = be.astype(template, be._overflow_safe_dtype)
     _mask = be.astype(mask, be._overflow_safe_dtype)
-    normalize_template(
+    standardize(
         template=_template, mask=_mask, n_observations=n_observations, axis=axis
     )
     template[:] = be.astype(_template, template.dtype)
@@ -572,18 +590,20 @@ def split_shape(
     return splits
 
 
-def rigid_transform(
+def _rigid_transform(
     coordinates: NDArray,
     rotation_matrix: NDArray,
     out: NDArray,
     translation: NDArray,
-    use_geometric_center: bool = False,
     coordinates_mask: NDArray = None,
     out_mask: NDArray = None,
     center: NDArray = None,
+    **kwargs,
 ) -> None:
     """
-    Apply a rigid transformation (rotation and translation) to given coordinates.
+    Apply a rigid transformation to given coordinates as
+
+    rotation_matrix.T @ coordinates + translation
 
     Parameters
     ----------
@@ -599,39 +619,25 @@ def rigid_transform(
         An array representing the mask for the coordinates (d,t).
     out_mask : NDArray, optional
         The output array to store the transformed coordinates mask (d,t).
-    use_geometric_center : bool, optional
-        Whether to use geometric or coordinate center.
+    center : NDArray, optional
+        Coordinate center, defaults to the average along each axis.
     """
-    coordinate_dtype = coordinates.dtype
-    center = coordinates.mean(axis=1) if center is None else center
-    if not use_geometric_center:
-        coordinates = coordinates - center[:, None]
+    if center is None:
+        center = coordinates.mean(axis=1)
 
-    np.matmul(rotation_matrix, coordinates, out=out)
-    if use_geometric_center:
-        axis_max, axis_min = out.max(axis=1), out.min(axis=1)
-        axis_difference = axis_max - axis_min
-        translation = np.add(translation, center - axis_max + (axis_difference // 2))
-    else:
-        translation = np.add(translation, np.subtract(center, out.mean(axis=1)))
+    coordinates = coordinates - center[:, None]
+    out = np.matmul(rotation_matrix.T, coordinates, out=out)
+    translation = np.add(translation, center)
 
-    out += translation[:, None]
+    out = np.add(out, translation[:, None], out=out)
     if coordinates_mask is not None and out_mask is not None:
-        if not use_geometric_center:
-            coordinates_mask = coordinates_mask - center[:, None]
-        np.matmul(rotation_matrix, coordinates_mask, out=out_mask)
-        out_mask += translation[:, None]
-
-    if not use_geometric_center and coordinate_dtype != out.dtype:
-        np.subtract(out.mean(axis=1), out.astype(int).mean(axis=1), out=translation)
-        out += translation[:, None]
+        np.matmul(rotation_matrix.T, coordinates_mask, out=out_mask)
+        out_mask = np.add(out_mask, translation[:, None], out=out_mask)
 
 
-def minimum_enclosing_box(
-    coordinates: NDArray, margin: NDArray = None, use_geometric_center: bool = False
-) -> Tuple[int]:
+def minimum_enclosing_box(coordinates: NDArray, **kwargs) -> Tuple[int, ...]:
     """
-    Computes the minimal enclosing box around coordinates with margin.
+    Computes the minimal enclosing box around coordinates.
 
     Parameters
     ----------
@@ -639,35 +645,30 @@ def minimum_enclosing_box(
         Coordinates of shape (d,n) to compute the enclosing box of.
     margin : NDArray, optional
         Box margin, zero by default.
+
+        .. deprecated:: 0.3.2
+
+            Boxed are returned without margin.
+
     use_geometric_center : bool, optional
         Whether box accommodates the geometric or coordinate center, False by default.
 
+        .. deprecated:: 0.3.2
+
+            Boxes always accomodate the coordinate center
+
     Returns
     -------
-    tuple of ints
-        Minimum enclosing box shape.
+    tuple of int
+        Minimum enclosing box.
     """
-    from .extensions import max_euclidean_distance
+    coordinates = np.asarray(coordinates).T
+    coordinates = coordinates - coordinates.min(axis=0)
+    coordinates = coordinates - coordinates.mean(axis=0)
 
-    point_cloud = np.asarray(coordinates)
-    dim = point_cloud.shape[0]
-    point_cloud = point_cloud - point_cloud.min(axis=1)[:, None]
-
-    margin = np.zeros(dim) if margin is None else margin
-    margin = np.asarray(margin).astype(int)
-
-    norm_cloud = point_cloud - point_cloud.mean(axis=1)[:, None]
     # Adding one avoids clipping during scipy.ndimage.affine_transform
-    shape = np.repeat(
-        np.ceil(2 * np.linalg.norm(norm_cloud, axis=0).max()) + 1, dim
-    ).astype(int)
-    if use_geometric_center:
-        hull = ConvexHull(point_cloud.T)
-        distance, _ = max_euclidean_distance(point_cloud[:, hull.vertices].T)
-        distance += np.linalg.norm(np.ones(dim))
-        shape = np.repeat(np.rint(distance).astype(int), dim)
-
-    return shape
+    box_size = int(np.ceil(2 * np.linalg.norm(coordinates, axis=1).max()) + 1)
+    return tuple(box_size for _ in range(coordinates.shape[1]))
 
 
 def scramble_phases(
@@ -684,15 +685,13 @@ def scramble_phases(
         Proportion of scrambled phases, 1.0 by default.
     seed : int, optional
         The seed for the random phase scrambling, 42 by default.
-    normalize_power : bool, optional
-        Return value has same sum of squares as ``arr``.
 
     Returns
     -------
     NDArray
         Phase scrambled version of ``arr``.
     """
-    from tme.filters._utils import fftfreqn
+    from .filters._utils import fftfreqn
 
     np.random.seed(seed)
     noise_proportion = max(min(noise_proportion, 1), 0)
@@ -700,9 +699,11 @@ def scramble_phases(
     arr_fft = np.fft.fftn(arr)
     amp, ph = np.abs(arr_fft), np.angle(arr_fft)
 
-    # Scrambling up to nyquist gives more uniform noise distribution
-    mask = np.fft.ifftshift(
-        fftfreqn(arr_fft.shape, sampling_rate=1, compute_euclidean_norm=True) <= 0.5
+    mask = (
+        fftfreqn(
+            arr_fft.shape, sampling_rate=1, compute_euclidean_norm=True, fftshift=False
+        )
+        <= 0.5
     )
 
     ph_noise = np.random.permutation(ph[mask])
@@ -811,38 +812,96 @@ def create_mask(mask_type: str, sigma_decay: float = 0, **kwargs) -> NDArray:
     return mask
 
 
-class TqdmParallel(Parallel):
-    """
-    A minimal Parallel implementation using tqdm for progress reporting.
+def setup_filter(
+    matching_data: MatchingData,
+    fast_shape: Tuple[int],
+    fast_ft_shape: Tuple[int],
+    pad_template_filter: bool = False,
+    apply_target_filter: bool = False,
+):
+    from .filters import Compose
 
-    Parameters:
-    -----------
-    tqdm_args : dict, optional
-        Dictionary of arguments passed to tqdm.tqdm
-    *args, **kwargs:
-        Arguments to pass to joblib.Parallel
-    """
+    backend_arr = type(be.zeros((1), dtype=be._float_dtype))
+    template_filter = be.full(shape=(1,), fill_value=1, dtype=be._float_dtype)
+    target_filter = be.full(shape=(1,), fill_value=1, dtype=be._float_dtype)
+    if isinstance(matching_data.template_filter, backend_arr):
+        template_filter = matching_data.template_filter
 
-    def __init__(self, tqdm_args: Dict = {}, *args, **kwargs):
-        from tqdm import tqdm
+    if isinstance(matching_data.target_filter, backend_arr):
+        target_filter = matching_data.target_filter
 
-        super().__init__(*args, **kwargs)
-        self.pbar = tqdm(**tqdm_args)
+    filter_template = isinstance(matching_data.template_filter, Compose)
+    filter_target = isinstance(matching_data.target_filter, Compose)
 
-    def __call__(self, iterable, *args, **kwargs):
-        self.n_tasks = len(iterable) if hasattr(iterable, "__len__") else None
-        return super().__call__(iterable, *args, **kwargs)
+    # For now assume user-supplied template_filter is correctly padded
+    if filter_target is None and target_filter is None:
+        return template_filter
 
-    def print_progress(self):
-        if self.n_tasks is None:
-            return super().print_progress()
+    batch_mask = matching_data._batch_mask
+    real_shape = matching_data._batch_shape(fast_shape, batch_mask, keepdims=False)
+    cmpl_shape = matching_data._batch_shape(fast_ft_shape, batch_mask, keepdims=True)
 
-        if self.n_tasks != self.pbar.total:
-            self.pbar.total = self.n_tasks
-            self.pbar.refresh()
+    real_tmpl_shape, cmpl_tmpl_shape = real_shape, cmpl_shape
+    if not pad_template_filter:
+        shape = matching_data._output_template_shape
 
-        self.pbar.n = self.n_completed_tasks
-        self.pbar.refresh()
+        real_tmpl_shape = matching_data._batch_shape(shape, batch_mask, keepdims=False)
+        cmpl_tmpl_shape = matching_data._batch_shape(shape, batch_mask, keepdims=True)
+        cmpl_tmpl_shape = list(cmpl_tmpl_shape)
+        cmpl_tmpl_shape[-1] = cmpl_tmpl_shape[-1] // 2 + 1
 
-        if self.n_completed_tasks >= self.n_tasks:
-            self.pbar.close()
+    cmpl_shape = tuple(
+        -1 if y else x for x, y in zip(cmpl_shape, matching_data._target_batch)
+    )
+    cmpl_tmpl_shape = list(
+        -1 if y else x for x, y in zip(cmpl_tmpl_shape, matching_data._template_batch)
+    )
+
+    # We can have one flexible dimension and this makes projection matching easier
+    if not any(matching_data._template_batch):
+        cmpl_tmpl_shape[0] = -1
+
+    # Avoid invalidating the meaning of some filters on padded batch dimensions
+    target_shape = np.maximum(
+        np.multiply(fast_shape, tuple(1 - x for x in matching_data._target_batch)),
+        matching_data.target.shape,
+    )
+    target_shape = tuple(int(x) for x in target_shape)
+    target_temp = be.topleft_pad(matching_data.target, target_shape)
+    shape = matching_data._batch_shape(
+        target_temp.shape, matching_data._target_batch, keepdims=False
+    )
+    axes = matching_data._batch_axis(matching_data._target_batch)
+    target_temp_ft = be.rfftn(target_temp, s=shape, axes=axes)
+
+    # Setup composable filters
+    filter_kwargs = {
+        "return_real_fourier": True,
+        "shape_is_real_fourier": False,
+        "data_rfft": target_temp_ft,
+        "axes": matching_data._target_dim,
+    }
+    if filter_template:
+        template_filter = matching_data.template_filter(
+            shape=real_tmpl_shape, **filter_kwargs
+        )["data"]
+        template_filter = be.reshape(template_filter, cmpl_tmpl_shape)
+        template_filter = be.astype(
+            be.to_backend_array(template_filter), be._float_dtype
+        )
+        template_filter = be.at(template_filter, ((0,) * template_filter.ndim), 0)
+
+    if filter_target:
+        target_filter = matching_data.target_filter(
+            shape=real_shape, weight_type=None, **filter_kwargs
+        )["data"]
+        target_filter = be.reshape(target_filter, cmpl_shape)
+        target_filter = be.astype(be.to_backend_array(target_filter), be._float_dtype)
+        target_filter = be.at(target_filter, ((0,) * target_filter.ndim), 0)
+
+    if apply_target_filter and filter_target:
+        target_temp_ft = be.multiply(target_temp_ft, target_filter, out=target_temp_ft)
+        target_temp = be.irfftn(target_temp_ft, s=shape, axes=axes)
+        matching_data._target = be.topleft_pad(target_temp, matching_data.target.shape)
+
+    return template_filter, target_filter

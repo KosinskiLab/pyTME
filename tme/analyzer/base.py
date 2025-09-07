@@ -74,6 +74,40 @@ class AbstractAnalyzer(ABC):
         """
 
     @abstractmethod
+    def correct_background(self, state, mean=0, inv_std=1, **kwargs):
+        """
+        Applies flat-fielding correction to scores f as
+
+        .. math::
+
+            f' = (f - \\text{mean}) \\cdot \\text{inv_std},
+
+        transforming raw correlations to SNR-like scores.
+
+        Parameters
+        ----------
+        state : tuple
+            Current analyzer state as returned :py:meth:`AbstractAnalyzer.init_state`
+            or previous invocations of :py:meth:`AbstractAnalyzer.__call__`.
+        mean : BackendArray, optional
+            Background mean (or equivalent), defaults to 0.
+        inv_std : BackendArray, optional
+            Reciprocal background standard deviation (or equivalent), defaults to 1.
+
+        Notes
+        -----
+        This method should be called after all rotations have been processed
+        but before calling :py:meth:`result`. The correction helps distinguish genuine
+        template matches from systematic background artifacts that may arise from
+        template edges, interpolation artifacts, or structured noise in the target.
+
+        Returns
+        -------
+        tuple
+            Updated analyzer state incorporating the new data.
+        """
+
+    @abstractmethod
     def result(self, state: Tuple, **kwargs) -> Tuple:
         """
         Finalize the analysis by performing potential post processing.

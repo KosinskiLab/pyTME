@@ -192,6 +192,15 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         )
         return scores, rotations, rotation_mapping, ssum
 
+    def correct_background(self, state, mean=0, inv_std=1, **kwargs):
+        scores, rotations, rotation_mapping, ssum = state
+
+        scores = be.subtract(scores, mean, out=scores)
+        scores = be.multiply(scores, inv_std, out=scores)
+
+        scores = be.maximum(scores, self._score_threshold, out=scores)
+        return scores, rotations, rotation_mapping, ssum
+
     @staticmethod
     def _invert_rmap(rotation_mapping: dict) -> dict:
         """
@@ -201,7 +210,12 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         new_map, ndim = {}, None
         for k, v in rotation_mapping.items():
             nbytes = be.datatype_bytes(be._float_dtype)
-            dtype = np.float32 if nbytes == 4 else np.float16
+            if nbytes == 8:
+                dtype = np.float64
+            elif nbytes == 4:
+                dtype = np.float32
+            else:
+                np.float16
             rmat = np.frombuffer(k, dtype=dtype)
             if ndim is None:
                 ndim = int(np.sqrt(rmat.size))
@@ -451,7 +465,7 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
         Maximum accepted rotational deviation in degrees.
     positions : BackendArray
         Array of shape (n, d) with n seed point translations.
-    positions : BackendArray
+    rotations : BackendArray
         Array of shape (n, d, d) with n seed point rotation matrices.
     reference : BackendArray
         Reference orientation of the template, wlog defaults to (0,0,1).
@@ -489,6 +503,7 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
             be.reshape(be.to_backend_array(reference), (-1,)), be._float_dtype
         )
         positions = be.astype(be.to_backend_array(positions), be._int_dtype)
+        rotations = be.astype(be.to_backend_array(rotations), be._float_dtype)
 
         ndim = positions.shape[1]
         rotate_mask = len(set(acceptance_radius)) != 1
@@ -515,7 +530,13 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
         )
 
         self._positions = positions[valid_positions]
-        rotations = be.to_backend_array(rotations)[valid_positions]
+        rotations = rotations[valid_positions]
+
+        # Convert to pull matrix to remain consistent with rotation convention
+        rotations = be.concatenate(
+            [rotations[i].T[None] for i in range(rotations.shape[0])]
+        )
+
         ex = be.astype(be.to_backend_array((1, 0, 0)), be._float_dtype)
         ey = be.astype(be.to_backend_array((0, 1, 0)), be._float_dtype)
         ez = be.astype(be.to_backend_array((0, 0, 1)), be._float_dtype)
@@ -523,6 +544,15 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
         self._normals_x = (rotations @ ex[..., None])[..., 0]
         self._normals_y = (rotations @ ey[..., None])[..., 0]
         self._normals_z = (rotations @ ez[..., None])[..., 0]
+
+        # All scores will be rejected in this case. We should think about a
+        # unified interface for checking analyzer validity to skip such runs
+        if self._positions.shape[0] == 0:
+
+            def _get_score_mask(*args, **kwargs):
+                return 0
+
+            self._get_score_mask = _get_score_mask
 
         # Periodic wrapping could be avoided by padding the target
         shape = be.to_backend_array(self._shape)
@@ -539,9 +569,7 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
         self._mask_shape = tuple(1 if i != 0 else -1 for i in range(1 + ndim))
 
         if rotate_mask:
-            self._score_mask = be.zeros(
-                (rotations.shape[0], *self._score_mask.shape), dtype=be._float_dtype
-            )
+            self._score_mask = []
             for i in range(rotations.shape[0]):
                 mask = create_mask(
                     mask_type="ellipse",
@@ -550,9 +578,10 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
                     center=tuple(extend for _ in range(ndim)),
                     orientation=be.to_numpy_array(rotations[i]),
                 )
-                self._score_mask[i] = be.astype(
-                    be.to_backend_array(mask), be._float_dtype
+                self._score_mask.append(
+                    be.astype(be.to_backend_array(mask), be._float_dtype)[None]
                 )
+            self._score_mask = be.concatenate(self._score_mask)
 
     def __call__(
         self,
@@ -573,7 +602,7 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
         """
         Determine whether the angle between projection of reference w.r.t to
         a given rotation matrix and a set of rotations fall within the set
-        cone_angle cutoff.
+        cone angle cutoff.
 
         Parameters
         ----------
@@ -585,7 +614,7 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
         BackerndArray
             Boolean mask of shape (n, )
         """
-        template_rot = rotation_matrix @ self._reference
+        template_rot = rotation_matrix.T @ self._reference
 
         x = be.sum(be.multiply(self._normals_x, template_rot), axis=1)
         y = be.sum(be.multiply(self._normals_y, template_rot), axis=1)
@@ -596,10 +625,9 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
     def _get_score_mask(self, mask: BackendArray, scores: BackendArray, **kwargs):
         score_mask = be.zeros(scores.shape, scores.dtype)
 
-        if be.sum(mask) == 0:
-            return score_mask
+        # The indexing could be improved to avoid expanding the mask to
+        # the number of seed points
         mask = be.reshape(mask, self._mask_shape)
-
         score_mask = be.addat(score_mask, self._index_grid, self._score_mask * mask)
         return score_mask > 0
 
@@ -663,13 +691,16 @@ class MaxScoreOverTranslations(MaxScoreOverRotations):
         rotation_index = len(rotation_mapping)
         if self._inversion_mapping:
             rotation_mapping[rotation_index] = rotation_matrix
+        elif self._jax_mode:
+            rotation_index = kwargs.get("rotation_index", 0)
         else:
             rotation = be.tobytes(rotation_matrix)
             rotation_index = rotation_mapping.setdefault(rotation, rotation_index)
-        max_score = be.max(scores, axis=self._aggregate_axis)
 
-        update = prev_scores[rotation_index]
-        update = be.maximum(max_score, update, out=update)
+        scores = be.max(scores, axis=self._aggregate_axis)
+        scores = be.maximum(scores, prev_scores[rotation_index])
+        prev_scores = be.at(prev_scores, rotation_index, scores)
+
         return prev_scores, rotations, rotation_mapping
 
     @classmethod

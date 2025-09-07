@@ -11,7 +11,7 @@ from typing import Tuple, Optional
 
 from .types import NDArray
 from scipy.ndimage import gaussian_filter
-from .matching_utils import rigid_transform
+from .matching_utils import _rigid_transform
 
 __all__ = ["elliptical_mask", "tube_mask", "box_mask", "membrane_mask"]
 
@@ -76,7 +76,7 @@ def elliptical_mask(
     if orientation is not None:
         return_shape = indices.shape
         indices = indices.reshape(n, -1)
-        rigid_transform(
+        _rigid_transform(
             coordinates=indices,
             rotation_matrix=np.asarray(orientation),
             out=indices,

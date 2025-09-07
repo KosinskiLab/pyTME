@@ -18,7 +18,6 @@ from .base import AbstractAnalyzer
 from ._utils import score_to_cart
 from ..backends import backend as be
 from ..types import BackendArray, NDArray
-from ..rotations import euler_to_rotationmatrix
 from ..matching_utils import split_shape, compute_extraction_box
 
 __all__ = [
@@ -182,6 +181,7 @@ class PeakCaller(AbstractAnalyzer):
         min_score: float = None,
         max_score: float = None,
         batch_dims: Tuple[int] = None,
+        projection_dims: Tuple[int] = None,
         shm_handler: object = None,
         **kwargs,
     ):
@@ -197,9 +197,13 @@ class PeakCaller(AbstractAnalyzer):
         self.min_distance = int(min_distance)
         self.min_boundary_distance = int(min_boundary_distance)
 
-        self.batch_dims = batch_dims
+        self.batch_dims = ()
         if batch_dims is not None:
-            self.batch_dims = tuple(int(x) for x in self.batch_dims)
+            self.batch_dims = tuple(int(x) for x in batch_dims)
+
+        self.projection_dims = ()
+        if projection_dims is not None:
+            self.projection_dims = tuple(int(x) for x in projection_dims)
 
         self.min_score, self.max_score = min_score, max_score
 
@@ -231,7 +235,7 @@ class PeakCaller(AbstractAnalyzer):
 
         rdim = len(self.shape)
         if self.batch_dims:
-            rdim -= len(self.batch_dims)
+            rdim = rdim - len(self.batch_dims) + len(self.projection_dims)
 
         rotations = be.full(
             (self.num_peaks, rdim, rdim), fill_value=0, dtype=be._float_dtype
@@ -387,6 +391,20 @@ class PeakCaller(AbstractAnalyzer):
             )
 
         return state
+
+    def correct_background(self, state, mean, inv_std=1, **kwargs):
+        arr_type = type(be.zeros((1,), be._float_dtype))
+        translations, rotations, scores, details = state
+
+        if isinstance(mean, arr_type):
+            mean = mean[tuple(be.astype(translations.T, int))]
+        scores = be.subtract(scores, mean, out=scores)
+
+        if isinstance(inv_std, arr_type):
+            inv_std = inv_std[tuple(be.astype(translations.T, int))]
+        scores = be.multiply(scores, inv_std, out=scores)
+
+        return translations, rotations, scores, details
 
     @classmethod
     def merge(cls, results=List[Tuple], **kwargs) -> Tuple:
@@ -849,15 +867,7 @@ class PeakCallerRecursiveMasking(PeakCaller):
         """
         if rotation_space is None or rotation_mapping is None:
             return rotation_matrix
-
-        rotation = rotation_mapping[rotation_space[tuple(peak)]]
-
-        # Old versions of rotation mapping contained Euler angles
-        if rotation.ndim != 2:
-            rotation = be.to_backend_array(
-                euler_to_rotationmatrix(be.to_numpy_array(rotation))
-            )
-        return rotation
+        return rotation_mapping[rotation_space[tuple(peak)]]
 
 
 class PeakCallerScipy(PeakCaller):

@@ -236,6 +236,7 @@ MATCHING_MEMORY_REGISTRY = {
     "CC": CCMemoryUsage,
     "LCC": LCCMemoryUsage,
     "CORR": CORRMemoryUsage,
+    "NCC": CORRMemoryUsage,
     "CAM": CAMMemoryUsage,
     "MCC": MCCMemoryUsage,
     "FLCSphericalMask": FLCSphericalMaskMemoryUsage,

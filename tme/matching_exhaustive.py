@@ -8,7 +8,6 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 
 import sys
 import warnings
-from math import prod
 from functools import wraps
 from itertools import product
 from typing import Callable, Tuple, Dict, Optional
@@ -16,13 +15,14 @@ from typing import Callable, Tuple, Dict, Optional
 from joblib import Parallel, delayed
 from multiprocessing.managers import SharedMemoryManager
 
-from .filters import Compose
 from .backends import backend as be
-from .matching_utils import split_shape
+from .matching_utils import split_shape, setup_filter
 from .types import CallbackClass, MatchingData
 from .analyzer.proxy import SharedAnalyzerProxy
 from .matching_scores import MATCHING_EXHAUSTIVE_REGISTER
 from .memory import MatchingMemoryUsage, MATCHING_MEMORY_REGISTRY
+
+__all__ = ["match_exhaustive"]
 
 
 def _wrap_backend(func):
@@ -34,89 +34,6 @@ def _wrap_backend(func):
         return func(*args, **kwargs)
 
     return wrapper
-
-
-def _setup_template_filter_apply_target_filter(
-    matching_data: MatchingData,
-    fast_shape: Tuple[int],
-    fast_ft_shape: Tuple[int],
-    pad_template_filter: bool = False,
-):
-    target_filter = None
-    backend_arr = type(be.zeros((1), dtype=be._float_dtype))
-    template_filter = be.full(shape=(1,), fill_value=1, dtype=be._float_dtype)
-    if isinstance(matching_data.template_filter, backend_arr):
-        template_filter = matching_data.template_filter
-
-    if isinstance(matching_data.target_filter, backend_arr):
-        target_filter = matching_data.target_filter
-
-    filter_template = isinstance(matching_data.template_filter, Compose)
-    filter_target = isinstance(matching_data.target_filter, Compose)
-
-    # For now assume user-supplied template_filter is correctly padded
-    if filter_target is None and target_filter is None:
-        return template_filter
-
-    cmpl_template_shape_full, batch_mask = fast_ft_shape, matching_data._batch_mask
-    real_shape = matching_data._batch_shape(fast_shape, batch_mask, keepdims=False)
-    cmpl_shape = matching_data._batch_shape(fast_ft_shape, batch_mask, keepdims=True)
-
-    real_template_shape, cmpl_template_shape = real_shape, cmpl_shape
-    cmpl_template_shape_full = matching_data._batch_shape(
-        fast_ft_shape, matching_data._target_batch, keepdims=True
-    )
-    cmpl_target_shape_full = matching_data._batch_shape(
-        fast_ft_shape, matching_data._template_batch, keepdims=True
-    )
-    if filter_template and not pad_template_filter:
-        out_shape = matching_data._output_template_shape
-        real_template_shape = matching_data._batch_shape(
-            out_shape, batch_mask, keepdims=False
-        )
-        cmpl_template_shape = list(
-            matching_data._batch_shape(out_shape, batch_mask, keepdims=True)
-        )
-        cmpl_template_shape_full = list(out_shape)
-        cmpl_template_shape[-1] = cmpl_template_shape[-1] // 2 + 1
-        cmpl_template_shape_full[-1] = cmpl_template_shape_full[-1] // 2 + 1
-
-    # Setup composable filters
-    target_temp = be.topleft_pad(matching_data.target, fast_shape)
-    target_temp_ft = be.rfftn(target_temp)
-    filter_kwargs = {
-        "return_real_fourier": True,
-        "shape_is_real_fourier": False,
-        "data_rfft": target_temp_ft,
-        "batch_dimension": matching_data._target_dim,
-    }
-
-    if filter_template:
-        template_filter = matching_data.template_filter(
-            shape=real_template_shape, **filter_kwargs
-        )["data"]
-        template_filter_size = int(be.size(template_filter))
-
-        if template_filter_size == prod(cmpl_template_shape_full):
-            cmpl_template_shape = cmpl_template_shape_full
-        elif template_filter_size == prod(cmpl_shape):
-            cmpl_template_shape = cmpl_shape
-        template_filter = be.reshape(template_filter, cmpl_template_shape)
-
-    if filter_target:
-        target_filter = matching_data.target_filter(
-            shape=real_shape, weight_type=None, **filter_kwargs
-        )["data"]
-        if int(be.size(target_filter)) == prod(cmpl_target_shape_full):
-            cmpl_shape = cmpl_target_shape_full
-
-        target_filter = be.reshape(target_filter, cmpl_shape)
-        target_temp_ft = be.multiply(target_temp_ft, target_filter, out=target_temp_ft)
-
-        target_temp = be.irfftn(target_temp_ft, s=target_temp.shape)
-        matching_data._target = be.topleft_pad(target_temp, matching_data.target.shape)
-
-    return be.astype(be.to_backend_array(template_filter), be._float_dtype)
 
 
 def device_memory_handler(func: Callable):
@@ -142,7 +59,7 @@ def device_memory_handler(func: Callable):
 
 
 @device_memory_handler
-def scan(
+def _match_exhaustive(
     matching_data: MatchingData,
     matching_setup: Callable,
     matching_score: Callable,
@@ -155,6 +72,8 @@ def scan(
     shm_handler=None,
     target_slice=None,
     template_slice=None,
+    background_correction: str = None,
+    **kwargs,
 ) -> Optional[Tuple]:
     """
     Run template matching.
@@ -187,29 +106,19 @@ def scan(
         Target subset to process.
     template_slice : tuple of slice, optional
         Template subset to process.
+    background_correction : str, optional
+        Background correctoin use use. Supported methods are 'phase-scrambling'.
 
     Returns
     -------
     Optional[Tuple]
         The merged results from callback_class if provided otherwise None.
 
-    Examples
-    --------
-    Schematically, :py:meth:`scan` is identical to :py:meth:`scan_subsets`,
+    Notes
+    -----
+    Schematically, this function is identical to :py:meth:`match_exhaustive`,
     with the distinction that the objects contained in ``matching_data`` are not
     split and the search is only parallelized over angles.
-    Assuming you have followed the example in :py:meth:`scan_subsets`, :py:meth:`scan`
-    can be invoked like so
-
-    >>> from tme.matching_exhaustive import scan
-    >>> results = scan(
-    >>>    matching_data=matching_data,
-    >>>    matching_score=matching_score,
-    >>>    matching_setup=matching_setup,
-    >>>    callback_class=callback_class,
-    >>>    callback_class_args=callback_class_args,
-    >>> )
-
     """
     matching_data, translation_offset = matching_data.subset_by_slice(
         target_slice=target_slice,
@@ -219,19 +128,21 @@ def scan(
 
     matching_data.to_backend()
     template_shape = matching_data._batch_shape(
-        matching_data.template.shape, matching_data._template_batch
+        matching_data._template.shape, matching_data._template_batch
     )
     conv, fwd, inv, shift = matching_data.fourier_padding()
 
+    # Mask invalid scores from padding to not skew score statistics
     score_mask = be.full(shape=(1,), fill_value=1, dtype=bool)
     if pad_target:
         score_mask = matching_data._score_mask(fwd, shift)
 
-    template_filter = _setup_template_filter_apply_target_filter(
+    template_filter, _ = setup_filter(
         matching_data=matching_data,
         fast_shape=fwd,
         fast_ft_shape=inv,
         pad_template_filter=False,
+        apply_target_filter=True,
     )
 
     default_callback_args = {
@@ -259,7 +170,15 @@ def scan(
         shm_handler=shm_handler,
     )
 
-    matching_data._free_data()
+    if background_correction == "phase-scrambling":
+        # Use getter to make sure template is reversed correctly
+        matching_data.template = matching_data.transform_template("phase_randomization")
+        setup["template_background"] = be.to_sharedarr(matching_data.template)
+
+    matching_data.free()
+    if not callback_class.shareable:
+        jobs_per_callback_class = 1
+
     n_callback_classes = max(n_jobs // jobs_per_callback_class, 1)
     callback_classes = [
         SharedAnalyzerProxy(
@@ -286,11 +205,14 @@ def scan(
     )
     be.free_cache()
 
-    callbacks = [x.result(**default_callback_args) for x in ret[:n_callback_classes]]
+    # Background correction creates individual non-shared arrays
+    if background_correction is None:
+        ret = ret[:n_callback_classes]
+    callbacks = [x.result(**default_callback_args) for x in ret]
     return callback_class.merge(callbacks, **default_callback_args)
 
 
-def scan_subsets(
+def match_exhaustive(
     matching_data: MatchingData,
     matching_score: Callable,
     matching_setup: Callable,
@@ -305,11 +227,12 @@ def scan_subsets(
     backend_name: str = None,
     backend_args: Dict = {},
     verbose: bool = False,
+    background_correction: str = None,
     **kwargs,
 ) -> Optional[Tuple]:
     """
-    Wrapper around :py:meth:`scan` that supports matching on splits
-    of ``matching_data``.
+    Run exhaustive template matching over all translations and a subset of rotations
+    specified in `matching_data`.
 
     Parameters
     ----------
@@ -341,7 +264,9 @@ def scan_subsets(
         How many jobs should be processed by a single callback_class instance,
         if ones is provided.
     verbose : bool, optional
-        Indicate matching progress.
+        Indicate matching progress, defaults to False.
+    background_correction : str, optional
+        Background correctoin use use. Supported methods are 'phase-scrambling'.
 
     Returns
     -------
@@ -355,7 +280,7 @@ def scan_subsets(
 
     >>> import numpy as np
     >>> from tme.matching_data import MatchingData
-    >>> from tme.matching_utils import get_rotation_matrices
+    >>> from tme.rotations import get_rotation_matrices
     >>> target = np.random.rand(50,40,60)
     >>> template = target[15:25, 10:20, 30:40]
     >>> matching_data = MatchingData(target, template)
@@ -391,8 +316,8 @@ def scan_subsets(
     Finally, we can perform template matching. Note that the data
     contained in ``matching_data`` will be destroyed when running the following
 
-    >>> from tme.matching_exhaustive import scan_subsets
-    >>> results = scan_subsets(
+    >>> from tme.matching_exhaustive import match_exhaustive
+    >>> results = match_exhaustive(
     >>>    matching_data=matching_data,
     >>>    matching_score=matching_score,
     >>>    matching_setup=matching_setup,
@@ -407,6 +332,12 @@ def scan_subsets(
     --------
     :py:meth:`tme.matching_utils.compute_parallelization_schedule`
     """
+    if background_correction not in (None, "phase-scrambling"):
+        raise ValueError(
+            "Argument background_correction can be either None or "
+            f"'phase-scrambling', got {background_correction}."
+        )
+
     template_splits = split_shape(matching_data._template.shape, splits=template_splits)
     target_splits = split_shape(matching_data._target.shape, splits=target_splits)
     if (len(target_splits) > 1) and not pad_target_edges:
@@ -417,26 +348,25 @@ def scan_subsets(
     splits = tuple(product(target_splits, template_splits))
 
     kwargs = {
+        "match_projection": kwargs.get("match_projection", False),
         "matching_data": matching_data,
         "callback_class": callback_class,
         "callback_class_args": callback_class_args,
     }
-
     outer_jobs, inner_jobs = job_schedule
     if be._backend_name == "jax":
-        func = be.scan
-
-        corr_scoring = MATCHING_EXHAUSTIVE_REGISTER.get("CORR", (None, None))[1]
-        results = func(
+        score = MATCHING_EXHAUSTIVE_REGISTER.get("FLC", (None, None))[1]
+        results = be.scan(
             splits=splits,
             n_jobs=outer_jobs,
-            rotate_mask=matching_score != corr_scoring,
+            rotate_mask=matching_score == score,
+            background_correction=background_correction,
             **kwargs,
         )
     else:
         results = Parallel(n_jobs=outer_jobs, verbose=verbose)(
             [
-                delayed(_wrap_backend(scan))(
+                delayed(_wrap_backend(_match_exhaustive))(
                     backend_name=be._backend_name,
                     backend_args=be._backend_args,
                     matching_score=matching_score,
@@ -447,6 +377,7 @@ def scan_subsets(
                     gpu_index=index % outer_jobs,
                     target_slice=target_split,
                     template_slice=template_split,
+                    background_correction=background_correction,
                     **kwargs,
                 )
                 for index, (target_split, template_split) in enumerate(splits)
@@ -489,3 +420,22 @@ def register_matching_exhaustive(
 
     MATCHING_EXHAUSTIVE_REGISTER[matching] = (matching_setup, matching_scoring)
     MATCHING_MEMORY_REGISTRY[matching] = memory_class
+
+
+def scan(*args, **kwargs):
+    warnings.warn(
+        "Using scan directly is deprecated and will raise an error "
+        "in future releases. Please use match_exhaustive instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return _match_exhaustive(*args, **kwargs)
+
+
+def scan_subsets(*args, **kwargs):
+    warnings.warn(
+        "Using scan_subsets directly is deprecated and will raise an error "
+        "in future releases. Please use match_exhaustive instead.",
+        DeprecationWarning,
+    )
+    return match_exhaustive(*args, **kwargs)

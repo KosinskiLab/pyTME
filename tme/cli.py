@@ -52,7 +52,7 @@ def match_template(
     """
     from .matching_data import MatchingData
     from .analyzer import MaxScoreOverRotations
-    from .matching_exhaustive import scan_subsets, MATCHING_EXHAUSTIVE_REGISTER
+    from .matching_exhaustive import match_exhaustive, MATCHING_EXHAUSTIVE_REGISTER
 
     if rotations is None:
         rotations = np.eye(target.ndim).reshape(1, target.ndim, target.ndim)
@@ -73,7 +73,7 @@ def match_template(
     matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[score]
 
     candidates = list(
-        scan_subsets(
+        match_exhaustive(
             matching_data=matching_data,
             matching_score=matching_score,
             matching_setup=matching_setup,
