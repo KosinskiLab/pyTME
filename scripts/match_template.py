@@ -19,8 +19,9 @@ import numpy as np
 
 from tme.backends import backend as be
 from tme import Density, __version__, Orientations
-from tme.matching_utils import scramble_phases, write_pickle
-from tme.matching_exhaustive import scan_subsets, MATCHING_EXHAUSTIVE_REGISTER
+from tme.matching_utils import write_pickle
+from tme.matching_exhaustive import match_exhaustive
+from tme.matching_scores import MATCHING_EXHAUSTIVE_REGISTER
 from tme.rotations import (
     get_cone_rotations,
     get_rotation_matrices,
@@ -37,6 +38,7 @@ from tme.filters import (
     Wedge,
     Compose,
     BandPass,
+    ShiftFourier,
     CTFReconstructed,
     WedgeReconstructed,
     ReconstructFromTilt,
@@ -129,21 +131,14 @@ def parse_rotation_logic(args, ndim):
 
 
 def compute_schedule(
-    args,
-    matching_data: MatchingData,
-    callback_class,
-    pad_edges: bool = False,
+    args, matching_data: MatchingData, callback_class, use_gpu: bool = False
 ):
-    # User requested target padding
-    if args.pad_edges is True:
-        pad_edges = True
-
     splits, schedule = matching_data.computation_schedule(
         matching_method=args.score,
         analyzer_method=callback_class.__name__,
-        use_gpu=args.use_gpu,
+        use_gpu=use_gpu,
         pad_fourier=False,
-        pad_target_edges=pad_edges,
+        pad_target_edges=args.pad_edges,
         available_memory=args.memory,
         max_cores=args.cores,
     )
@@ -155,53 +150,63 @@ def compute_schedule(
         )
         exit(-1)
 
+    # Padding is required to avoid artifacts so setting it
     n_splits = np.prod(list(splits.values()))
-    if pad_edges is False and len(matching_data._target_dim) == 0 and n_splits > 1:
+    if args.pad_edges is False and len(matching_data._target_dim) == 0 and n_splits > 1:
+        warnings.warn("Setting --pad-edges to avoid artifacts from splitting.")
         args.pad_edges = True
-        return compute_schedule(args, matching_data, callback_class, True)
+        return compute_schedule(args, matching_data, callback_class, use_gpu)
     return splits, schedule
 
 
 def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Compose]:
     template_filter, target_filter = [], []
 
-    if args.tilt_angles is None:
-        args.tilt_angles = args.ctf_file
-
     wedge = None
     if args.tilt_angles is not None:
         try:
             wedge = Wedge.from_file(args.tilt_angles)
             wedge.weight_type = args.tilt_weighting
-            if args.tilt_weighting in ("angle", None):
+
+            # Avoid reconstructing the 3D wedge from individual tilts
+            if args.tilt_weighting in ("angle", None) and not args.match_projection:
                 wedge = WedgeReconstructed(
                     angles=wedge.angles,
                     weight_wedge=args.tilt_weighting == "angle",
                 )
+
         except (FileNotFoundError, AttributeError):
-            tilt_start, tilt_stop = args.tilt_angles.split(",")
-            tilt_start, tilt_stop = abs(float(tilt_start)), abs(float(tilt_stop))
             wedge = WedgeReconstructed(
-                angles=(tilt_start, tilt_stop),
+                angles=args.tilt_angles,
                 create_continuous_wedge=True,
                 weight_wedge=False,
                 reconstruction_filter=args.reconstruction_filter,
             )
-        wedge.opening_axis, wedge.tilt_axis = args.wedge_axes
-
-        wedge_target = WedgeReconstructed(
-            angles=wedge.angles,
-            weight_wedge=False,
-            create_continuous_wedge=True,
-            opening_axis=wedge.opening_axis,
-            tilt_axis=wedge.tilt_axis,
-        )
 
         wedge.sampling_rate = template.sampling_rate
-        wedge_target.sampling_rate = template.sampling_rate
-
-        target_filter.append(wedge_target)
+        wedge.opening_axis, wedge.tilt_axis = args.wedge_axes
         template_filter.append(wedge)
+
+        # When projection matching we can reuse the template wedge mask
+        wedge_target = wedge
+        if not args.match_projection:
+            wedge_target = WedgeReconstructed(
+                angles=wedge.angles,
+                weight_wedge=False,
+                create_continuous_wedge=True,
+                opening_axis=wedge.opening_axis,
+                tilt_axis=wedge.tilt_axis,
+            )
+
+            wedge_target.sampling_rate = template.sampling_rate
+        else:
+            n_angles, n_tilts = len(wedge_target.angles), target.shape[0]
+            if n_angles != n_tilts:
+                raise ValueError(
+                    f"Target contains {n_tilts} tilts, but the input specified "
+                    f"{n_angles} tilt angles."
+                )
+        target_filter.append(wedge_target)
 
     if args.ctf_file is not None or args.defocus is not None:
         try:
@@ -219,15 +224,19 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
             if len(ctf.angles) == 0:
                 ctf.angles = wedge.angles
 
+            # There are several ways we can end up here. Bottom line, we are using
+            # a non-reconstructed wedge, which contains a different number of tilts
+            # than the ctf. We use defocus_x, as not all ctf_files specify angles.
             n_tilts_ctfs, n_tils_angles = len(ctf.defocus_x), len(wedge.angles)
-            if (n_tilts_ctfs != n_tils_angles) and isinstance(wedge, Wedge):
+            if (n_tilts_ctfs != n_tils_angles) and type(wedge) is Wedge:
                 raise ValueError(
                     f"CTF file contains {n_tilts_ctfs} tilt, but recieved "
                     f"{n_tils_angles} tilt angles. Expected one angle per tilt"
                 )
 
         except (FileNotFoundError, AttributeError):
-            ctf = CTFReconstructed(
+            ctf_cl = CTFReconstructed if not args.match_projection else CTF
+            ctf = ctf_cl(
                 defocus_x=args.defocus,
                 phase_shift=args.phase_shift,
                 amplitude_contrast=args.amplitude_contrast,
@@ -237,10 +246,9 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
         ctf.flip_phase = args.no_flip_phase
         ctf.sampling_rate = template.sampling_rate
         ctf.opening_axis, ctf.tilt_axis = args.wedge_axes
-        ctf.correct_defocus_gradient = args.correct_defocus_gradient
         template_filter.append(ctf)
 
-    if args.lowpass or args.highpass is not None:
+    if args.lowpass is not None or args.highpass is not None:
         lowpass, highpass = args.lowpass, args.highpass
         if args.pass_format == "voxel":
             if lowpass is not None:
@@ -255,48 +263,57 @@ def setup_filter(args, template: Density, target: Density) -> Tuple[Compose, Com
 
         try:
             if args.lowpass >= args.highpass:
-                warnings.warn("--lowpass should be smaller than --highpass.")
+                raise ValueError("--lowpass should be smaller than --highpass.")
         except Exception:
             pass
 
-        bandpass = BandPassReconstructed(
+        bp_cl = BandPassReconstructed if not args.match_projection else BandPass
+        bandpass = bp_cl(
             use_gaussian=args.no_pass_smooth,
             lowpass=lowpass,
             highpass=highpass,
             sampling_rate=template.sampling_rate,
         )
+        bandpass.opening_axis, bandpass.tilt_axis = args.wedge_axes
         template_filter.append(bandpass)
         target_filter.append(bandpass)
 
+    if not args.match_projection:
+        rec_filt = (Wedge, CTF)
+        needs_reconstruction = sum(type(x) in rec_filt for x in template_filter)
+        if needs_reconstruction > 0 and args.reconstruction_filter is None:
+            warnings.warn(
+                "Consider using a --reconstruction_filter such as 'ram-lak' or 'ramp' "
+                "to avoid artifacts from reconstruction using weighted backprojection."
+            )
+
+        template_filter = sorted(
+            template_filter, key=lambda x: type(x) in rec_filt, reverse=True
+        )
+        if needs_reconstruction > 0:
+            relevant_filters = [x for x in template_filter if type(x) in rec_filt]
+            if len(relevant_filters) == 0:
+                raise ValueError("Filters require ")
+
+            reconstruction_filter = ReconstructFromTilt(
+                reconstruction_filter=args.reconstruction_filter,
+                interpolation_order=args.reconstruction_interpolation_order,
+                angles=relevant_filters[0].angles,
+                opening_axis=args.wedge_axes[0],
+                tilt_axis=args.wedge_axes[1],
+            )
+            template_filter.insert(needs_reconstruction, reconstruction_filter)
+    else:
+        template_filter.append(ShiftFourier())
+        if len(target_filter):
+            target_filter.append(ShiftFourier())
+
+    # LinearWhiteningFilter does not support working on tilts yet, hence we
+    # can safely evaluate it after all other filters
     if args.whiten_spectrum:
         whitening_filter = LinearWhiteningFilter()
         template_filter.append(whitening_filter)
         target_filter.append(whitening_filter)
-
-    rec_filt = (Wedge, CTF)
-    needs_reconstruction = sum(type(x) in rec_filt for x in template_filter)
-    if needs_reconstruction > 0 and args.reconstruction_filter is None:
-        warnings.warn(
-            "Consider using a --reconstruction_filter such as 'ram-lak' or 'ramp' "
-            "to avoid artifacts from reconstruction using weighted backprojection."
-        )
-
-    template_filter = sorted(
-        template_filter, key=lambda x: type(x) in rec_filt, reverse=True
-    )
-    if needs_reconstruction > 0:
-        relevant_filters = [x for x in template_filter if type(x) in rec_filt]
-        if len(relevant_filters) == 0:
-            raise ValueError("Filters require ")
-
-        reconstruction_filter = ReconstructFromTilt(
-            reconstruction_filter=args.reconstruction_filter,
-            interpolation_order=args.reconstruction_interpolation_order,
-            angles=relevant_filters[0].angles,
-            opening_axis=args.wedge_axes[0],
-            tilt_axis=args.wedge_axes[1],
-        )
-        template_filter.insert(needs_reconstruction, reconstruction_filter)
 
     template_filter = Compose(template_filter) if len(template_filter) else None
     target_filter = Compose(target_filter) if len(target_filter) else None
@@ -359,8 +376,7 @@ def parse_args():
         "--invert-target-contrast",
         action="store_true",
         default=False,
-        help="Invert the target contrast. Useful for matching on tomograms if the "
-        "template has not been inverted.",
+        help="Invert contrast by multiplication with negative one.",
     )
     io_group.add_argument(
         "--scramble-phases",
@@ -410,6 +426,13 @@ def parse_args():
         default="FLCSphericalMask",
         choices=list(MATCHING_EXHAUSTIVE_REGISTER.keys()),
         help="Template matching scoring function.",
+    )
+    scoring_group.add_argument(
+        "--background-correction",
+        choices=["phase-scrambling"],
+        required=False,
+        help="Transform cross-correlation into SNR-like values using a given method: "
+        "'phase-scrambling' uses a phase-scrambled template as background",
     )
 
     angular_group = parser.add_argument_group("Angular Sampling")
@@ -493,9 +516,8 @@ def parse_args():
     computation_group.add_argument(
         "--gpu-indices",
         type=str,
-        default=None,
-        help="Comma-separated GPU indices (e.g., '0,1,2' for first 3 GPUs). Otherwise "
-        "CUDA_VISIBLE_DEVICES will be used.",
+        default=os.environ.get("CUDA_VISIBLE_DEVICES"),
+        help="GPU indices, e.g., '0,1,2', defaults to CUDA_VISIBLE_DEVICES.",
     )
     computation_group.add_argument(
         "--memory",
@@ -527,15 +549,13 @@ def parse_args():
         "--lowpass",
         type=float,
         required=False,
-        help="Resolution to lowpass filter template and target to in the same unit "
-        "as the sampling rate of template and target (typically Ångstrom).",
+        help="Resolution to lowpass filter template and target to.",
     )
     filter_group.add_argument(
         "--highpass",
         type=float,
         required=False,
-        help="Resolution to highpass filter template and target to in the same unit "
-        "as the sampling rate of template and target (typically Ångstrom).",
+        help="Resolution to highpass filter template and target to.",
     )
     filter_group.add_argument(
         "--no-pass-smooth",
@@ -549,14 +569,13 @@ def parse_args():
         required=False,
         default="sampling_rate",
         choices=["sampling_rate", "voxel", "frequency"],
-        help="How values passed to --lowpass and --highpass should be interpreted. "
-        "Defaults to unit of sampling_rate, e.g., 40 Angstrom.",
+        help="How values passed to --lowpass and --highpass should be interpreted. ",
     )
     filter_group.add_argument(
         "--whiten-spectrum",
         action="store_true",
         default=None,
-        help="Apply spectral whitening to template and target based on target spectrum.",
+        help="Apply spectral whitening to template and target.",
     )
     filter_group.add_argument(
         "--wedge-axes",
@@ -603,6 +622,7 @@ def parse_args():
         type=int,
         default=1,
         required=False,
+        choices=[0, 1, 2, 3, 4, 5],
         help="Analogous to --interpolation-order but for reconstruction.",
     )
     filter_group.add_argument(
@@ -664,40 +684,32 @@ def parse_args():
         required=False,
         help="Do not perform phase-flipping CTF correction.",
     )
-    ctf_group.add_argument(
-        "--correct-defocus-gradient",
-        action="store_true",
-        required=False,
-        help="[Experimental] Whether to compute a more accurate 3D CTF incorporating "
-        "defocus gradients.",
-    )
 
     performance_group = parser.add_argument_group("Performance")
     performance_group.add_argument(
         "--centering",
         action="store_true",
-        help="Center the template in the box if it has not been done already.",
+        help="Translate the template's center of mass to the center of the box.",
     )
     performance_group.add_argument(
         "--pad-edges",
         action="store_true",
         default=False,
-        help="Useful if the target does not have a well-defined bounding box. Will be "
-        "activated automatically if splitting is required to avoid boundary artifacts.",
+        help="Zero pad the target. Defaults to True if splitting is required..",
     )
     performance_group.add_argument(
         "--interpolation-order",
         required=False,
         type=int,
         default=None,
-        help="Spline interpolation used for rotations. Defaults to 3, and 1 for jax "
-        "and pytorch backends.",
+        choices=[0, 1, 2, 3, 4, 5],
+        help="Spline order for rotation, default is 3 and 1 for jax and pytorch.",
     )
     performance_group.add_argument(
         "--use-memmap",
         action="store_true",
         default=False,
-        help="Memmap large data to disk, e.g., matching on unbinned tomograms.",
+        help="Memmap analyzer data, useful for matching on very large inputs.",
     )
 
     analyzer_group = parser.add_argument_group("Output / Analysis")
@@ -706,7 +718,7 @@ def parse_args():
         required=False,
         type=float,
         default=0,
-        help="Minimum template matching scores to consider for analysis.",
+        help="Minimum template matching scores to consider.",
     )
     analyzer_group.add_argument(
         "-p",
@@ -724,30 +736,20 @@ def parse_args():
     args = parser.parse_args()
     args.version = __version__
 
-    if args.interpolation_order is None:
-        args.interpolation_order = 3
-        if args.backend in ("jax", "pytorch"):
-            args.interpolation_order = 1
-            args.reconstruction_interpolation_order = 1
+    if args.temp_directory is not None:
+        os.environ["TMPDIR"] = args.temp_directory
 
-    if args.interpolation_order < 0:
-        args.interpolation_order = None
-
-    if args.temp_directory is None:
-        args.temp_directory = gettempdir()
-
-    os.environ["TMPDIR"] = args.temp_directory
-    if args.gpu_indices is not None:
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_indices
-
-    if args.tilt_angles is not None and not exists(args.tilt_angles):
+    # Tilt angles can be specified as range or using a suitable input file
+    is_file = exists(args.tilt_angles) if args.tilt_angles is not None else False
+    if args.tilt_angles is not None and not is_file:
         try:
-            float(args.tilt_angles.split(",")[0])
+            args.tilt_angles = tuple(abs(float(x)) for x in args.tilt_angles.split(","))
         except Exception:
             raise ValueError(f"{args.tilt_angles} is not a file nor a range.")
 
+    # Since both Wedge.from_file and CTF.from_file parse similar inputs, we can
+    # fall back to assigning the ctf_file to args.tilt_angles
     if args.ctf_file is not None and args.tilt_angles is None:
-        # Check if tilt angles can be extracted from CTF specification
         try:
             ctf = CTF.from_file(args.ctf_file)
             if ctf.angles is None:
@@ -758,7 +760,14 @@ def parse_args():
                 "Need to specify --tilt-angles when not provided in --ctf-file."
             )
 
-    args.wedge_axes = tuple(int(i) for i in args.wedge_axes.split(","))
+    # For projection matching we cannot use continuous wedge masks
+    args.match_projection = False
+    if not is_file and args.match_projection:
+        raise ValueError(
+            "Projection angles are required via --tilt-angles or --ctf-file."
+        )
+
+    # Handle constrained matching inputs
     if args.orientations is not None:
         orientations = Orientations.from_file(args.orientations)
         orientations.translations = np.divide(
@@ -766,6 +775,64 @@ def parse_args():
         )
         args.orientations = orientations
 
+    if args.orientations_uncertainty is not None:
+        args.orientations_uncertainty = tuple(
+            int(x) for x in args.orientations_uncertainty.split(",")
+        )
+
+    # Handle backend specificities
+    if args.interpolation_order is None:
+        args.interpolation_order = 3
+        if args.backend in ("jax", "pytorch"):
+            args.interpolation_order = 1
+            args.reconstruction_interpolation_order = 1
+
+    # This flag is not passed to backend yet, but might aswell be verbose about it
+    if args.interpolation_order != 1 and args.backend == "jax":
+        warnings.warn("Setting interpolation order to order jax supports (1).")
+        args.interpolation_order = 1
+        args.reconstruction_interpolation_order = 1
+
+    if args.interpolation_order == 3 and args.backend == "pytorch":
+        warnings.warn("Pytorch does not support order 3, changing it to 1.")
+        args.interpolation_order = 1
+        if args.reconstruction_interpolation_order == 3:
+            args.reconstruction_interpolation_order = args.interpolation_order
+
+    # Handle GPU device specification for suitable backends
+    if args.backend in ("pytorch", "cupy", "jax"):
+        if args.gpu_indices is None:
+            warnings.warn(
+                "No GPU indices provided and CUDA_VISIBLE_DEVICES is not set. "
+                "Assuming device 0.",
+            )
+            args.gpu_indices = "0"
+
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_indices
+        args.gpu_indices = [int(x) for x in args.gpu_indices.split(",")]
+        args.cores = len(args.gpu_indices)
+
+    if args.backend == "jax" and args.peak_calling:
+        raise ValueError("Jax supports only subclasses of MaxScoreOverRotations.")
+
+    # Wedge axes do not have meaning for projections
+    args.wedge_axes = tuple(int(i) for i in args.wedge_axes.split(","))
+    if args.match_projection:
+        args.wedge_axes = None, None
+
+    if args.match_projection and args.backend != "jax":
+        raise ValueError("Projection matching is only supported for --backend jax.")
+
+    # This is implicitly caught in the jax check above, but keeping it for future use
+    if args.match_projection and args.peak_calling:
+        raise ValueError("Peak calling is not yet supported for projection matching.")
+
+    if args.orientations is not None and args.peak_calling:
+        raise ValueError(
+            "Peak calling and constrained matching simultaneously is not yet supported."
+        )
+
+    # Avoid relative input specification
     args.target = abspath(args.target)
     if args.target_mask is not None:
         args.target_mask = abspath(args.target_mask)
@@ -782,7 +849,6 @@ def main():
     print_entry()
 
     target = Density.from_file(args.target, use_memmap=True)
-
     try:
         template = Density.from_file(args.template)
     except Exception:
@@ -800,27 +866,24 @@ def main():
         )
 
     if target.sampling_rate.size == template.sampling_rate.size:
-        if not np.allclose(
+        sampling_rate_match = np.allclose(
             np.round(target.sampling_rate, 2), np.round(template.sampling_rate, 2)
-        ):
+        )
+        # For projection we omit the warning as the leading dimension has no sampling
+        if not sampling_rate_match and not args.match_projection:
             warnings.warn(
                 f"Sampling rate mismatch detected: target={target.sampling_rate} "
                 f"template={template.sampling_rate}. Proceeding with user-provided "
                 f"values. Make sure this is intentional. "
             )
 
-    template_mask = load_and_validate_mask(
-        mask_target=template, mask_path=args.template_mask
-    )
-    target_mask = load_and_validate_mask(
-        mask_target=target, mask_path=args.target_mask, use_memmap=True
-    )
+    template_mask = load_and_validate_mask(template, args.template_mask)
+    target_mask = load_and_validate_mask(target, args.target_mask, use_memmap=True)
 
-    initial_shape = target.shape
     print_block(
         name="Target",
         data={
-            "Initial Shape": initial_shape,
+            "Initial Shape": target.shape,
             "Sampling Rate": _format_sampling(target.sampling_rate),
             "Final Shape": target.shape,
         },
@@ -830,16 +893,15 @@ def main():
         print_block(
             name="Target Mask",
             data={
-                "Initial Shape": initial_shape,
+                "Initial Shape": target_mask.shape,
                 "Sampling Rate": _format_sampling(target_mask.sampling_rate),
                 "Final Shape": target_mask.shape,
             },
         )
 
     initial_shape = template.shape
-    translation = np.zeros(len(template.shape), dtype=np.float32)
     if args.centering:
-        template, translation = template.centered(0)
+        template = template.centered(0)
 
     print_block(
         name="Template",
@@ -852,27 +914,12 @@ def main():
 
     if template_mask is None:
         template_mask = template.empty
-        if not args.centering:
-            enclosing_box = template.minimum_enclosing_box(
-                0, use_geometric_center=False
-            )
-            template_mask.adjust_box(enclosing_box)
 
-        template_mask.data[:] = 1
-        translation = np.zeros_like(translation)
+        # Pre 0.3.2 we used to perform a rigid transform on the template mask to match
+        # the template origin, but this seems overly pedantic given the sporadic use
+        # of the origin parameter in the matching pipeline
+        template_mask.data = np.ones(template.shape, dtype=template.data.dtype)
 
-    template_mask.pad(template.shape, center=False)
-    origin_translation = np.divide(
-        np.subtract(template.origin, template_mask.origin), template.sampling_rate
-    )
-    translation = np.add(translation, origin_translation)
-
-    template_mask = template_mask.rigid_transform(
-        rotation_matrix=np.eye(template_mask.data.ndim),
-        translation=-translation,
-        order=1,
-    )
-    template_mask.origin = template.origin.copy()
     print_block(
         name="Template Mask",
         data={
@@ -883,70 +930,34 @@ def main():
     )
     print("\n" + "-" * 80)
 
-    if args.scramble_phases:
-        template.data = scramble_phases(template.data, noise_proportion=1.0)
-
     callback_class = MaxScoreOverRotations
     if args.orientations is not None:
         callback_class = MaxScoreOverRotationsConstrained
     elif args.peak_calling:
         callback_class = PeakCallerMaximumFilter
 
-    # Determine suitable backend for the selected operation
-    available_backends = be.available_backends()
-    if args.backend not in available_backends:
-        raise ValueError("Requested backend is not available.")
-    if args.backend == "jax" and callback_class != MaxScoreOverRotations:
-        raise ValueError(
-            "Jax backend only supports the MaxScoreOverRotations analyzer."
-        )
-
-    if args.interpolation_order == 3 and args.backend in ("jax", "pytorch"):
-        warnings.warn(
-            "Jax and pytorch do not support interpolation order 3, setting it to 1."
-        )
-        args.interpolation_order = 1
-
-    if args.backend in ("pytorch", "cupy", "jax"):
-        gpu_devices = os.environ.get("CUDA_VISIBLE_DEVICES", None)
-        if gpu_devices is None:
-            warnings.warn(
-                "No GPU indices provided and CUDA_VISIBLE_DEVICES is not set. "
-                "Assuming device 0.",
-            )
-            os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
-        args.cores = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
-        args.gpu_indices = [
-            int(x) for x in os.environ["CUDA_VISIBLE_DEVICES"].split(",")
-        ]
-
-    # Finally set the desired backend
-    device = "cuda"
-    args.use_gpu = False
-    be.change_backend(args.backend)
+    # We currently do not allow parallelizing angular searches in the GPU compatible
+    # backends, so we keep this flag to compute a suitable splitting schedule
+    use_gpu = False
     if args.backend in ("jax", "pytorch", "cupy"):
-        args.use_gpu = True
+        use_gpu = True
 
+    # Finally set the requested backend
+    be.change_backend(args.backend)
     if args.backend == "pytorch":
         try:
-            be.change_backend("pytorch", device=device)
+            be.change_backend("pytorch", device="cuda")
             # Trigger exception if not compiled with device
             be.get_available_memory()
         except Exception as e:
+            # Let the user know they did not compile with GPU devices
             print(e)
-            device = "cpu"
-            args.use_gpu = False
-            be.change_backend("pytorch", device=device)
+            use_gpu = False
+            be.change_backend("pytorch", device="cpu")
 
     available_memory = be.get_available_memory() * be.device_count()
     if args.memory is None:
         args.memory = int(args.memory_scaling * available_memory)
-
-    if args.orientations_uncertainty is not None:
-        args.orientations_uncertainty = tuple(
-            int(x) for x in args.orientations_uncertainty.split(",")
-        )
 
     matching_data = MatchingData(
         target=target,
@@ -956,19 +967,23 @@ def main():
         invert_target=args.invert_target_contrast,
         rotations=parse_rotation_logic(args=args, ndim=template.data.ndim),
     )
-
-    matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[args.score]
-    matching_data.template_filter, matching_data.target_filter = setup_filter(
-        args, template, target
-    )
+    if args.scramble_phases:
+        matching_data.template = matching_data.transform_template("phase_randomization")
 
     matching_data.set_matching_dimension(
         target_dim=target.metadata.get("batch_dimension", None),
         template_dim=template.metadata.get("batch_dimension", None),
     )
-    args.batch_dims = tuple(int(x) for x in np.where(matching_data._batch_mask)[0])
+    if args.match_projection:
+        matching_data.set_matching_dimension(target_dim=0)
 
-    splits, schedule = compute_schedule(args, matching_data, callback_class)
+    args.batch_dims = tuple(int(x) for x in np.where(matching_data._batch_mask)[0])
+    matching_setup, matching_score = MATCHING_EXHAUSTIVE_REGISTER[args.score]
+    matching_data.template_filter, matching_data.target_filter = setup_filter(
+        args, template, target
+    )
+
+    splits, schedule = compute_schedule(args, matching_data, callback_class, use_gpu)
 
     n_splits = np.prod(list(splits.values()))
     target_split = ", ".join(
@@ -980,6 +995,7 @@ def main():
         f" [{matching_data.rotations.shape[0]} rotations]",
         "Center Template": args.centering,
         "Scramble Template": args.scramble_phases,
+        "Background Correction": args.background_correction,
         "Invert Contrast": args.invert_target_contrast,
         "Extend Target Edges": args.pad_edges,
         "Interpolation Order": args.interpolation_order,
@@ -1020,7 +1036,6 @@ def main():
     if args.ctf_file is not None or args.defocus is not None:
         filter_args["CTF File"] = args.ctf_file
         filter_args["Flip Phase"] = args.no_flip_phase
-        filter_args["Correct Defocus"] = args.correct_defocus_gradient
 
     filter_args = {k: v for k, v in filter_args.items() if v is not None}
     if len(filter_args):
@@ -1042,7 +1057,7 @@ def main():
         analyzer_args["acceptance_radius"] = args.orientations_uncertainty
         analyzer_args["positions"] = args.orientations.translations
         analyzer_args["rotations"] = euler_to_rotationmatrix(
-            args.orientations.rotations
+            args.orientations.rotations, seq="ZYZ"
         )
 
     print_block(
@@ -1062,7 +1077,7 @@ def main():
 
     start = time()
     print("Running Template Matching. This might take a while ...")
-    candidates = scan_subsets(
+    candidates = match_exhaustive(
         matching_data=matching_data,
         job_schedule=schedule,
         matching_score=matching_score,
@@ -1072,6 +1087,8 @@ def main():
         target_splits=splits,
         pad_target_edges=args.pad_edges,
         interpolation_order=args.interpolation_order,
+        match_projection=args.match_projection,
+        background_correction=args.background_correction,
     )
 
     candidates = list(candidates) if candidates is not None else []

@@ -88,11 +88,6 @@ def parse_args():
         "added with respect to chosen output format.",
     )
     output_group.add_argument(
-        "--angles-clockwise",
-        action="store_true",
-        help="Report Euler angles in clockwise format expected by RELION.",
-    )
-    output_group.add_argument(
         "--output-format",
         choices=[
             "orientations",
@@ -174,13 +169,6 @@ def parse_args():
         help="Box size of extracted subtomograms, defaults to the centered template.",
     )
     additional_group.add_argument(
-        "--mask-subtomograms",
-        action="store_true",
-        default=False,
-        help="Whether to mask subtomograms using the template mask. The mask will be "
-        "rotated according to determined angles.",
-    )
-    additional_group.add_argument(
         "--invert-target-contrast",
         action="store_true",
         default=False,
@@ -219,20 +207,15 @@ def load_template(
 ):
     try:
         template = Density.from_file(filepath)
-        center = np.divide(np.subtract(template.shape, 1), 2)
         template_is_density = True
     except Exception:
-        template = Structure.from_file(filepath)
-        center = template.center_of_mass()
-        template = Density.from_structure(template, sampling_rate=sampling_rate)
+        template = Density.from_structure(filepath, sampling_rate=sampling_rate)
         template_is_density = False
 
-    translation = np.zeros_like(center)
-    if centering and template_is_density:
-        template, translation = template.centered(0)
-        center = np.divide(np.subtract(template.shape, 1), 2)
-
-    return template, center, translation, template_is_density
+    if centering:
+        template = template.centered(0)
+    center = np.divide(np.subtract(template.shape, 1), 2)
+    return template, center, template_is_density
 
 
 def load_matching_output(path: str) -> List:
@@ -375,7 +358,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
     update = tuple(slice(0, int(x)) for x in np.minimum(out_shape, scores.shape))
     scores_out = np.full(out_shape, fill_value=0, dtype=np.float32)
     scores_out[update] = data[0][update] - scores_norm[update]
-    scores_out = np.fmax(scores_out, 0, out=scores_out)
+    # scores_out = np.fmax(scores_out, 0, out=scores_out)
     scores_out[update] += scores_norm[update].mean()
 
     # scores_out[update] = np.divide(scores_out[update], 1 - scores_norm[update])
@@ -448,34 +431,24 @@ def main():
     if hasattr(cli_args, "no_centering"):
         cli_args.centering = not cli_args.no_centering
 
-    _, template_extension = splitext(cli_args.template)
-    ret = load_template(
+    template, *_ = load_template(
         filepath=cli_args.template,
         sampling_rate=sampling_rate,
         centering=cli_args.centering,
     )
-    template, center_of_mass, translation, template_is_density = ret
 
     template_mask = template.empty
     template_mask.data[:] = 1
     if cli_args.template_mask is not None:
         template_mask = Density.from_file(cli_args.template_mask)
-        template_mask.pad(template.shape, center=False)
-        origin_translation = np.divide(
-            np.subtract(template.origin, template_mask.origin), template.sampling_rate
-        )
-        translation = np.add(translation, origin_translation)
-
-        template_mask = template_mask.rigid_transform(
-            rotation_matrix=np.eye(template_mask.data.ndim),
-            translation=-translation,
-            order=1,
-        )
+    if cli_args.centering:
+        template_mask.pad(template.shape, center=True)
 
     if args.mask_edges and args.min_boundary_distance == 0:
         max_shape = np.max(template.shape)
         args.min_boundary_distance = np.ceil(np.divide(max_shape, 2))
 
+    # Do the actual peak calling
     orientations = args.orientations
     if orientations is None:
         translations, rotations, scores, details = [], [], [], []
@@ -518,18 +491,20 @@ def main():
             print(f"Determined cutoff --min-score {minimum_score}.")
             args.min_score = max(minimum_score, 0)
 
-        args.batch_dims = None
-        if hasattr(cli_args, "batch_dims"):
-            args.batch_dims = cli_args.batch_dims
+        projection_dims = None
+        batch_dims = getattr(cli_args, "batch_dims", None)
+        if getattr(cli_args, "match_projection", False):
+            projection_dims = batch_dims
 
         peak_caller_kwargs = {
             "shape": scores.shape,
             "num_peaks": args.num_peaks,
             "min_distance": args.min_distance,
             "min_boundary_distance": args.min_boundary_distance,
-            "batch_dims": args.batch_dims,
             "min_score": args.min_score,
             "max_score": args.max_score,
+            "batch_dims": batch_dims,
+            "projection_dims": projection_dims,
         }
 
         peak_caller = PEAK_CALLERS[args.peak_caller](**peak_caller_kwargs)
@@ -551,13 +526,9 @@ def main():
             exit(-1)
 
         for translation, _, score, detail in zip(*candidates):
-            rotation_index = rotation_array[tuple(translation)]
-            rotation = rotation_mapping.get(
-                rotation_index, np.zeros(template.data.ndim, int)
-            )
-            if rotation.ndim == 2:
-                rotation = euler_from_rotationmatrix(rotation)
-            rotations.append(rotation)
+            index = rotation_array[tuple(translation)]
+            rotation = rotation_mapping.get(index, np.eye(template.data.ndim))
+            rotations.append(euler_from_rotationmatrix(rotation, seq="ZYZ"))
 
         if len(rotations):
             rotations = np.vstack(rotations).astype(float)
@@ -583,11 +554,10 @@ def main():
 
     if args.peak_oversampling > 1:
         if data[0].ndim != data[2].ndim:
-            print(
+            exit(
                 "Input pickle does not contain template matching scores."
                 " Cannot oversample peaks."
             )
-            exit(-1)
         peak_caller = peak_caller = PEAK_CALLERS[args.peak_caller](shape=scores.shape)
         orientations.translations = peak_caller.oversample_peaks(
             scores=data[0],
@@ -597,8 +567,6 @@ def main():
 
     if args.local_optimization:
         target = Density.from_file(cli_args.target, use_memmap=True)
-        orientations.translations = orientations.translations.astype(np.float32)
-        orientations.rotations = orientations.rotations.astype(np.float32)
         for index, (translation, angles, *_) in enumerate(orientations):
             score_object = create_score_object(
                 score="FLC",
@@ -619,11 +587,10 @@ def main():
                 x0=[*init_translation, *angles],
             )
             orientations.translations[index] = np.add(translation, center)
-            orientations.rotations[index] = angles
+            orientations.rotations[index] = euler_from_rotationmatrix(
+                rotation_matrix, seq="ZYZ"
+            )
             orientations.scores[index] = score * -1
-
-    if args.angles_clockwise:
-        orientations.rotations *= -1
 
     if args.output_format in ("orientations", "relion4", "relion5"):
         file_format, extension = "text", "tsv"
@@ -691,12 +658,6 @@ def main():
                 sampling_rate=sampling_rate,
                 origin=np.multiply(cand_start, sampling_rate),
             )
-            if args.mask_subtomograms:
-                rotation_matrix = euler_to_rotationmatrix(orientations.rotations[index])
-                mask_transfomed = template_mask.rigid_transform(
-                    rotation_matrix=rotation_matrix, order=1
-                )
-                out_density.data = out_density.data * mask_transfomed.data
             out_density.to_file(
                 join(working_directory, f"{args.output_prefix}_{index}.mrc")
             )
@@ -713,10 +674,11 @@ def main():
         out = np.zeros_like(template.data)
         for index in range(len(cand_slices)):
             subset = Density(target.data[obs_slices[index]])
-            rotation_matrix = euler_to_rotationmatrix(orientations.rotations[index])
 
+            # We invert to pull the local into the global reference system
+            matrix = euler_to_rotationmatrix(orientations.rotations[index]).T
             subset = subset.rigid_transform(
-                rotation_matrix=np.linalg.inv(rotation_matrix),
+                rotation_matrix=matrix,
                 order=1,
                 use_geometric_center=True,
             )
@@ -728,37 +690,37 @@ def main():
         ret.to_file(f"{args.output_prefix}.mrc")
         exit(0)
 
-    template, center, *_ = load_template(
+    template, center, template_is_density, *_ = load_template(
         filepath=cli_args.template,
         sampling_rate=sampling_rate,
         centering=cli_args.centering,
     )
 
+    _, ext = splitext(cli_args.template)
     for index, (translation, angles, *_) in enumerate(orientations):
-        rotation_matrix = euler_to_rotationmatrix(angles)
+        rotation = euler_to_rotationmatrix(angles, seq="ZYZ")
         if template_is_density:
             transformed_template = template.rigid_transform(
-                rotation_matrix=rotation_matrix, use_geometric_center=True
+                rotation_matrix=rotation, use_geometric_center=True
             )
             # Just adapting the coordinate system not the in-box position
             shift = np.multiply(np.subtract(translation, center), sampling_rate)
             transformed_template.origin = np.add(target_origin, shift)
-
         else:
             template = Structure.from_file(cli_args.template)
-            new_center_of_mass = np.add(
-                np.multiply(translation, sampling_rate), target_origin
-            )
-            translation = np.subtract(new_center_of_mass, center)
+            shift = np.add(np.multiply(translation, sampling_rate), target_origin)
+            translation = np.subtract(shift, template.center_of_mass())
+
+            # Since we move the template's center of mass to the geometric center
+            # during matching and analysis we use the center of mass
+            # directly for rotating structures into the correct orientation
             transformed_template = template.rigid_transform(
                 translation=translation,
-                rotation_matrix=rotation_matrix,
+                rotation_matrix=rotation,
+                use_geometric_center=False,
             )
-        # template_extension should contain '.'
-        transformed_template.to_file(
-            f"{args.output_prefix}_{index}{template_extension}"
-        )
-        index += 1
+
+        transformed_template.to_file(f"{args.output_prefix}_{index}{ext}")
 
 
 if __name__ == "__main__":

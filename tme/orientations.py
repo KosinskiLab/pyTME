@@ -13,6 +13,7 @@ from string import ascii_lowercase, ascii_uppercase
 import numpy as np
 
 from .parser import StarParser
+from .__version__ import __version__
 from .matching_utils import compute_extraction_box
 
 # Exceeds available numpy dimensions for default installations
@@ -341,6 +342,8 @@ class Orientations:
         header.append("_pytmeScore")
         header = "\n".join(header)
         with open(filename, mode="w", encoding="utf-8") as ofile:
+            _ = ofile.write(f"# Created using pytme (version {__version__}).\n\n")
+
             if version is not None:
                 _ = ofile.write(f"{version.strip()}\n\n")
 
@@ -511,10 +514,21 @@ class Orientations:
                 f"Could not find either {keyword_order} section found in {filename}."
             )
 
-        translation = np.vstack(
-            (ret["_rlnCoordinateX"], ret["_rlnCoordinateY"], ret["_rlnCoordinateZ"])
+        keys_v4 = ("_rlnCoordinateX", "_rlnCoordinateY", "_rlnCoordinateZ")
+        keys_v5 = (
+            "_rlnCenteredCoordinateXAngst",
+            "_rlnCenteredCoordinateYAngst",
+            "_rlnCenteredCoordinateZAngst",
         )
-        translation = translation.astype(np.float32).T
+        if all(key in ret for key in keys_v4):
+            keys = keys_v4
+        elif all(key in ret for key in keys_v5):
+            keys = keys_v5
+        else:
+            raise ValueError(
+                f"File format not recognized. Need either {keys_v4} or {keys_v5}."
+            )
+        translation = np.vstack(tuple(ret[x] for x in keys)).astype(np.float32).T
 
         default_angle = np.zeros(translation.shape[0], dtype=np.float32)
         for x in ("_rlnAngleRot", "_rlnAngleTilt", "_rlnAnglePsi"):

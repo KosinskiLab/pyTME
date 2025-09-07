@@ -8,7 +8,7 @@ import subprocess
 from abc import ABC, abstractmethod
 
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field, fields
 from typing import Dict, List, Optional, Any
 
 from tme.backends import backend as be
@@ -149,7 +149,7 @@ class AnalysisDatasetDiscovery(DatasetDiscovery):
 
     #: Glob pattern for TM pickle files, e.g., "/data/results/*.pickle"
     input_patterns: List[str]
-    #: List of glob patterns for background files, e.g., ["/data/bg1/*.pickle", "/data/bg2/*.pickle"]
+    #: List of glob patterns for background files, e.g., ["bg1/*.pickle", "bg2/*."]
     background_patterns: List[str] = None
     #: Target masks, e.g., "/data/masks/*.mrc"
     mask_patterns: Optional[str] = None
@@ -230,46 +230,47 @@ class TMParameters:
     axis_sampling: Optional[float] = None
     axis_symmetry: int = 1
     cone_axis: int = 2
-    invert_cone: bool = False
-    no_use_optimized_set: bool = False
+    invert_cone: bool = field(default=False, metadata={"flag": True})
+    no_use_optimized_set: bool = field(default=False, metadata={"flag": True})
 
     # Microscope parameters
     acceleration_voltage: float = 300.0  # kV
     spherical_aberration: float = 2.7e7  # Å
     amplitude_contrast: float = 0.07
     defocus: Optional[float] = None  # Å
-    phase_shift: float = 0.0  # Dg
+    phase_shift: float = 0.0  # degrees
 
     # Processing options
     lowpass: Optional[float] = None  # Å
     highpass: Optional[float] = None  # Å
     pass_format: str = "sampling_rate"  # "sampling_rate", "voxel", "frequency"
-    no_pass_smooth: bool = True
+    no_pass_smooth: bool = field(default=True, metadata={"flag": False})
     interpolation_order: int = 3
     score_threshold: float = 0.0
     score: str = "FLCSphericalMask"
+    background_correction: Optional[str] = None
 
     # Weighting and correction
     tilt_weighting: Optional[str] = None  # "angle", "relion", "grigorieff"
     wedge_axes: str = "2,0"
-    whiten_spectrum: bool = False
-    scramble_phases: bool = False
-    invert_target_contrast: bool = False
+    whiten_spectrum: bool = field(default=False, metadata={"flag": True})
+    scramble_phases: bool = field(default=False, metadata={"flag": True})
+    invert_target_contrast: bool = field(default=False, metadata={"flag": True})
 
     # CTF parameters
     ctf_file: Optional[Path] = None
-    no_flip_phase: bool = True
-    correct_defocus_gradient: bool = False
+    no_flip_phase: bool = field(default=True, metadata={"flag": False})
+    correct_defocus_gradient: bool = field(default=False, metadata={"flag": True})
 
     # Performance options
-    centering: bool = False
-    pad_edges: bool = False
-    pad_filter: bool = False
-    use_mixed_precision: bool = False
-    use_memmap: bool = False
+    centering: bool = field(default=False, metadata={"flag": True})
+    pad_edges: bool = field(default=False, metadata={"flag": True})
+    pad_filter: bool = field(default=False, metadata={"flag": True})
+    use_mixed_precision: bool = field(default=False, metadata={"flag": True})
+    use_memmap: bool = field(default=False, metadata={"flag": True})
 
     # Analysis options
-    peak_calling: bool = False
+    peak_calling: bool = field(default=False, metadata={"flag": True})
     num_peaks: int = 1000
 
     # Backend selection
@@ -279,7 +280,7 @@ class TMParameters:
     # Reconstruction
     reconstruction_filter: str = "ramp"
     reconstruction_interpolation_order: int = 1
-    no_filter_target: bool = False
+    no_filter_target: bool = field(default=False, metadata={"flag": True})
 
     def __post_init__(self):
         """Validate parameters and convert units."""
@@ -337,6 +338,9 @@ class TMParameters:
             args["ctf-file"] = str(files.metadata)
             args["tilt-angles"] = str(files.metadata)
 
+        if self.background_correction:
+            args["background-correction"] = self.background_correction
+
         # Optional parameters
         if self.lowpass:
             args["lowpass"] = self.lowpass
@@ -378,43 +382,26 @@ class TMParameters:
         return {k: v for k, v in args.items() if v is not None}
 
     def get_flags(self) -> List[str]:
-        """Get boolean flags for pyTME command."""
         flags = []
-        if self.whiten_spectrum:
-            flags.append("whiten-spectrum")
-        if self.scramble_phases:
-            flags.append("scramble-phases")
-        if self.invert_target_contrast:
-            flags.append("invert-target-contrast")
-        if self.centering:
-            flags.append("centering")
-        if self.pad_edges:
-            flags.append("pad-edges")
-        if self.pad_filter:
-            flags.append("pad-filter")
-        if not self.no_pass_smooth:
-            flags.append("no-pass-smooth")
-        if self.use_mixed_precision:
-            flags.append("use-mixed-precision")
-        if self.use_memmap:
-            flags.append("use-memmap")
-        if self.peak_calling:
-            flags.append("peak-calling")
-        if not self.no_flip_phase:
-            flags.append("no-flip-phase")
-        if self.correct_defocus_gradient:
-            flags.append("correct-defocus-gradient")
-        if self.invert_cone:
-            flags.append("invert-cone")
-        if self.no_use_optimized_set:
-            flags.append("no-use-optimized-set")
-        if self.no_filter_target:
-            flags.append("no-filter-target")
+
+        for field_info in fields(self):
+            flag_meta = field_info.metadata.get("flag")
+            if flag_meta is None:
+                continue
+
+            value = getattr(self, field_info.name)
+            if not isinstance(value, bool):
+                continue
+
+            flag_name = field_info.name.replace("_", "-")
+            if (flag_meta is True and value) or (flag_meta is False and not value):
+                flags.append(flag_name)
+
         return flags
 
 
 @dataclass
-class AnalysisParameters:
+class AnalysisParameters(TMParameters):
     """Parameters for template matching analysis and peak calling."""
 
     # Peak calling
@@ -424,13 +411,12 @@ class AnalysisParameters:
     max_score: Optional[float] = None
     min_distance: int = 5
     min_boundary_distance: int = 0
-    mask_edges: bool = False
+    mask_edges: bool = field(default=False, metadata={"flag": True})
     n_false_positives: Optional[int] = None
 
     # Output format
     output_format: str = "relion4"
     output_directory: Optional[str] = None
-    angles_clockwise: bool = False
 
     # Advanced options
     extraction_box_size: Optional[int] = None
@@ -467,15 +453,6 @@ class AnalysisParameters:
             )
 
         return {k: v for k, v in args.items() if v is not None}
-
-    def get_flags(self) -> List[str]:
-        """Get boolean flags for analyze_template_matching command."""
-        flags = []
-        if self.mask_edges:
-            flags.append("mask-edges")
-        if self.angles_clockwise:
-            flags.append("angles-clockwise")
-        return flags
 
 
 @dataclass
@@ -592,12 +569,10 @@ class ExecutionBackend(ABC):
     @abstractmethod
     def submit_job(self, task) -> str:
         """Submit a single job and return job ID or status."""
-        pass
 
     @abstractmethod
     def submit_jobs(self, tasks: List) -> List[str]:
         """Submit multiple jobs and return list of job IDs."""
-        pass
 
 
 class SlurmBackend(ExecutionBackend):
@@ -842,6 +817,13 @@ def parse_args():
         help="Template matching scoring function. Use FLC if mask is not spherical.",
     )
     tm_group.add_argument(
+        "--background-correction",
+        choices=["phase-scrambling"],
+        required=False,
+        help="Transform cross-correlation into SNR-like values using a given method: "
+        "'phase-scrambling' uses a phase-scrambled template as background",
+    )
+    tm_group.add_argument(
         "--score-threshold", type=float, default=0.0, help="Minimum score threshold"
     )
 
@@ -1006,11 +988,6 @@ def parse_args():
         default="relion4",
         help="Output format for analysis results",
     )
-    output_group.add_argument(
-        "--angles-clockwise",
-        action="store_true",
-        help="Report Euler angles in clockwise format expected by RELION",
-    )
 
     advanced_group = analysis_parser.add_argument_group("Advanced Options")
     advanced_group.add_argument(
@@ -1077,6 +1054,7 @@ def run_matching(args, resources):
         backend=args.backend,
         whiten_spectrum=args.whiten_spectrum,
         scramble_phases=args.scramble_phases,
+        background_correction=args.background_correction,
     )
     print_params = params.to_command_args(files[0], "")
     _ = print_params.pop("target")
@@ -1132,7 +1110,6 @@ def run_analysis(args, resources):
         mask_edges=args.mask_edges,
         n_false_positives=args.n_false_positives,
         output_format=args.output_format,
-        angles_clockwise=args.angles_clockwise,
         extraction_box_size=args.extraction_box_size,
     )
     print_params = params.to_command_args(files[0], Path(""))

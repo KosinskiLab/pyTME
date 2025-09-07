@@ -126,7 +126,7 @@ def main():
         if args.align_axis is not None:
             rmat = data.align_to_axis(axis=args.align_axis, flip=args.flip_axis)
             data = data.rigid_transform(
-                rotation_matrix=rmat, translation=0, use_geometric_center=True
+                rotation_matrix=rmat.T, use_geometric_center=True
             )
         data = Density.from_structure(data, sampling_rate=sampling_rate)
 
@@ -138,11 +138,11 @@ def main():
         if args.align_axis is not None:
             rmat = data.align_to_axis(axis=args.align_axis, flip=args.flip_axis)
             data = data.rigid_transform(
-                rotation_matrix=rmat, translation=0, use_geometric_center=True
+                rotation_matrix=rmat.T, use_geometric_center=True
             )
 
     if not args.no_centering:
-        data, _ = data.centered(0)
+        data = data.centered(0)
 
     if args.box_size is None:
         scale = np.divide(data.sampling_rate, args.sampling_rate)
@@ -177,9 +177,8 @@ def main():
             lowpass=lowpass,
             highpass=None,
             use_gaussian=True,
-            return_real_fourier=True,
             sampling_rate=data.sampling_rate,
-        )(shape=data.shape)["data"]
+        )(shape=data.shape, return_real_fourier=True)["data"]
         bpf_mask = be.to_backend_array(bpf_mask)
 
         data_ft = be.rfftn(be.to_backend_array(data.data), s=data.shape)

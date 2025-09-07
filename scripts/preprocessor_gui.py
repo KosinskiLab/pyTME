@@ -26,14 +26,16 @@ from tme.backends import backend as be
 from tme.rotations import align_vectors
 from tme.matching_utils import create_mask, load_pickle
 from tme import Preprocessor, Density, Orientations
-from tme.filters import BandPassReconstructed, CTFReconstructed
+from tme.filters import BandPassReconstructed, CTFReconstructed, WedgeReconstructed
 
 preprocessor = Preprocessor()
 SLIDER_MIN, SLIDER_MAX = 0, 25
 
 
-def gaussian_filter(template: NDArray, sigma: float, **kwargs: dict) -> NDArray:
-    return preprocessor.gaussian_filter(template=template, sigma=sigma, **kwargs)
+def _apply_fourier_filter(arr, arr_filter):
+    arr_ft = np.fft.rfftn(arr, s=arr.shape)
+    arr_ft = np.multiply(arr_ft, arr_filter, out=arr_ft)
+    return np.real(np.fft.irfftn(arr_ft, s=arr.shape))
 
 
 def bandpass_filter(
@@ -48,13 +50,8 @@ def bandpass_filter(
         highpass=highpass_angstrom,
         sampling_rate=np.max(sampling_rate),
         use_gaussian=not hard_edges,
-        return_real_fourier=True,
-    )
-    template_ft = np.fft.rfftn(template, s=template.shape)
-
-    mask = bpf(shape=template.shape)["data"]
-    np.multiply(template_ft, mask, out=template_ft)
-    return np.fft.irfftn(template_ft, s=template.shape).real
+    )(shape=template.shape, return_real_fourier=True)["data"]
+    return _apply_fourier_filter(template, bpf)
 
 
 def ctf_filter(
@@ -70,9 +67,7 @@ def ctf_filter(
 ) -> NDArray:
     fast_shape = [next_fast_len(x) for x in np.multiply(template.shape, 2)]
     template_pad = be.topleft_pad(template, fast_shape)
-    template_ft = np.fft.rfftn(template_pad, s=template_pad.shape)
     ctf = CTFReconstructed(
-        shape=fast_shape,
         defocus_x=[defocus_angstrom],
         acceleration_voltage=acceleration_voltage * 1e3,
         spherical_aberration=spherical_aberration * 1e7,
@@ -80,22 +75,18 @@ def ctf_filter(
         phase_shift=phase_shift,
         defocus_angle=defocus_angle,
         sampling_rate=np.max(sampling_rate),
-        return_real_fourier=True,
         flip_phase=flip_phase,
-    )
-    np.multiply(template_ft, ctf()["data"], out=template_ft)
-    template_pad = np.fft.irfftn(template_ft, s=template_pad.shape).real
-    template = be.topleft_pad(template_pad, template.shape)
-    return template
+    )(shape=template.shape, return_real_fourier=True)["data"]
+    template = _apply_fourier_filter(template, ctf)
+    return be.topleft_pad(template_pad, template.shape)
 
 
-def difference_of_gaussian_filter(
-    template: NDArray, sigmas: Tuple[float, float], **kwargs: dict
-) -> NDArray:
-    low_sigma, high_sigma = sigmas
-    return preprocessor.difference_of_gaussian_filter(
-        template=template, low_sigma=low_sigma, high_sigma=high_sigma, **kwargs
-    )
+def gaussian_filter(template: NDArray, sigma: float, **kwargs: dict) -> NDArray:
+    return preprocessor.gaussian_filter(template=template, sigma=sigma, **kwargs)
+
+
+def difference_of_gaussian_filter(template, sigmas: Tuple[float, float], **kwargs):
+    return gaussian_filter(template, sigmas[0]) - gaussian_filter(template, sigmas[1])
 
 
 def edge_gaussian_filter(
@@ -132,11 +123,7 @@ def local_gaussian_filter(
     )
 
 
-def mean(
-    template: NDArray,
-    width: int,
-    **kwargs: dict,
-) -> NDArray:
+def mean(template: NDArray, width: int, **kwargs: dict) -> NDArray:
     return preprocessor.mean_filter(template=template, width=width)
 
 
@@ -147,45 +134,23 @@ def wedge(
     tilt_step: float = 0,
     opening_axis: int = 2,
     tilt_axis: int = 0,
-    omit_negative_frequencies: bool = False,
-    infinite_plane: bool = False,
-    weight_angle: bool = False,
     **kwargs,
 ) -> NDArray:
-    template_ft = np.fft.fftn(template)
-
-    if tilt_step <= 0:
-        wedge_mask = preprocessor.continuous_wedge_mask(
-            start_tilt=tilt_start,
-            stop_tilt=tilt_stop,
-            tilt_axis=tilt_axis,
-            opening_axis=opening_axis,
-            shape=template.shape,
-            omit_negative_frequencies=omit_negative_frequencies,
-            infinite_plane=infinite_plane,
-        )
-    else:
-        weights = None
-        tilt_angles = np.arange(-tilt_start, tilt_stop + tilt_step, tilt_step)
-        if weight_angle:
-            weights = np.cos(np.radians(tilt_angles))
-
-        wedge_mask = preprocessor.step_wedge_mask(
-            tilt_angles=tilt_angles,
-            tilt_axis=tilt_axis,
-            opening_axis=opening_axis,
-            shape=template.shape,
-            weights=weights,
-            omit_negative_frequencies=omit_negative_frequencies,
-        )
-
-    np.multiply(template_ft, wedge_mask, out=template_ft)
-    template = np.real(np.fft.ifftn(template_ft))
-    return template
+    mask = wedge_mask(
+        template=template,
+        fftshift=False,
+        tilt_start=tilt_start,
+        tilt_stop=tilt_stop,
+        tilt_step=tilt_step,
+        return_real_fourier=True,
+        weight_angle=False,
+    )
+    return _apply_fourier_filter(template, mask)
 
 
 def compute_power_spectrum(template: NDArray) -> NDArray:
-    return np.fft.fftshift(np.log(np.abs(np.fft.fftn(template))))
+    return np.fft.fftshift(np.log(1 + np.abs(np.fft.fftn(template))))
+    # return np.fft.fftshift(np.log(np.abs(np.fft.fftn(template))))
 
 
 def invert_contrast(template: NDArray) -> NDArray:
@@ -515,39 +480,30 @@ def wedge_mask(
     tilt_step: float = 0,
     opening_axis: int = 2,
     tilt_axis: int = 0,
-    omit_negative_frequencies: bool = False,
-    infinite_plane: bool = False,
-    weight_angle: bool = False,
     **kwargs,
 ) -> NDArray:
-    if tilt_step <= 0:
-        wedge_mask = preprocessor.continuous_wedge_mask(
-            start_tilt=tilt_start,
-            stop_tilt=tilt_stop,
-            tilt_axis=tilt_axis,
-            opening_axis=opening_axis,
-            shape=template.shape,
-            omit_negative_frequencies=omit_negative_frequencies,
-            infinite_plane=infinite_plane,
-        )
-        wedge_mask = np.fft.fftshift(wedge_mask)
-        return wedge_mask
+    angles = (tilt_start, tilt_stop)
+    continuous_wedge = tilt_step == 0
+    if not continuous_wedge:
+        angles = np.arange(-tilt_start, tilt_stop + tilt_step, tilt_step)
 
-    weights = None
-    tilt_angles = np.arange(-tilt_start, tilt_stop + tilt_step, tilt_step)
-    if weight_angle:
-        weights = np.cos(np.radians(tilt_angles))
-
-    wedge_mask = preprocessor.step_wedge_mask(
-        tilt_angles=tilt_angles,
+    return_real_fourier = kwargs.get("return_real_fourier", False)
+    func = WedgeReconstructed(
+        angles=angles,
         tilt_axis=tilt_axis,
         opening_axis=opening_axis,
-        shape=template.shape,
-        weights=weights,
-        omit_negative_frequencies=omit_negative_frequencies,
+        frequency_cutoff=0.5,
+        create_continuous_wedge=continuous_wedge,
+        weight_wedge=kwargs.get("weight_angle", False),
     )
-
-    wedge_mask = np.fft.fftshift(wedge_mask)
+    wedge_mask = func(shape=template.shape, return_real_fourier=return_real_fourier)[
+        "data"
+    ]
+    if kwargs.get("fftshift", True):
+        axes = [i for i in range(wedge_mask.ndim)]
+        if return_real_fourier:
+            _ = axes.pop(-1)
+        wedge_mask = np.fft.fftshift(wedge_mask, axes=axes)
     return wedge_mask
 
 
@@ -570,8 +526,7 @@ def threshold_mask(
         mask[mask < np.exp(-np.square(sigma))] = 0
 
     if invert:
-        np.invert(mask, out=mask)
-
+        mask = 1 - mask
     return mask
 
 
@@ -757,15 +712,6 @@ class MaskWidget(widgets.Container):
 
             if self.method_dropdown.value == "Shape":
                 new_layer.metadata = {}
-
-        # origin_layer = metadata["origin_layer"]
-        # if origin_layer in self.viewer.layers:
-        #     origin_layer = self.viewer.layers[origin_layer]
-        #     if np.allclose(origin_layer.data.shape, processed_data.shape):
-        #         in_mask = np.sum(np.fmax(origin_layer.data * processed_data, 0))
-        #         in_mask /= np.sum(np.fmax(origin_layer.data, 0))
-        #         in_mask *= 100
-        #         self.density_field.value = f"Positive Density in Mask: {in_mask:.2f}%"
 
 
 class AlignmentWidget(widgets.Container):

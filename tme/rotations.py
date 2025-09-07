@@ -7,7 +7,6 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import yaml
-import warnings
 from typing import Tuple
 from os.path import join, dirname
 
@@ -68,12 +67,7 @@ def _sample_cone(
         ],
         axis=1,
     )
-
-    rotation = Rotation.from_euler(
-        angles=align_vectors((1, 0, 0), axis, seq="zyz"),
-        seq="zyz",
-        degrees=True,
-    )
+    rotation = Rotation.from_matrix(align_vectors((1, 0, 0), axis, seq=None))
     return rotation.apply(points)
 
 
@@ -85,7 +79,7 @@ def get_cone_rotations(
     axis_sampling: float = None,
     reference: Tuple[float] = (1, 0, 0),
     n_symmetry: int = 1,
-    seq: str = None,
+    **kwargs,
 ) -> NDArray:
     """
     Generate rotations describing the possible placements of a vector in a cone.
@@ -108,14 +102,17 @@ def get_cone_rotations(
         the principal axis of the template.
     n_symmetry : int, optional
         Number of symmetry axis around the vector axis.
-    seq : str, optional
-        Convention for angles. By default returns rotation matrices.
+    seq : str
+        Output convention.
+
+        .. deprecated:: 0.3.2
+
+            Returns rotation matrices always.
 
     Returns
     -------
     NDArray
-        An arary of rotations represented as stack of rotation matrices when convention
-        None (n, 3, 3) or an array of Euler angles (n, 3) for available conventions.
+        An arary of rotations represented as stack of rotation matrices (n, 3, 3).
     """
     if axis_sampling is None:
         axis_sampling = cone_sampling
@@ -133,17 +130,13 @@ def get_cone_rotations(
         axis_rotation * Rotation.from_matrix(align_vectors(reference, x))
         for x in points
     ]
-
-    rotations = Rotation.concatenate(all_rotations)
-    if seq is None:
-        return rotations.as_matrix()
-
-    return rotations.as_euler(seq=seq, degrees=True)
+    return Rotation.concatenate(all_rotations).as_matrix()
 
 
-def align_vectors(base: NDArray, target: NDArray = (0, 0, 1), seq: str = None):
+def align_vectors(base: NDArray, target: NDArray = (0, 0, 1), **kwargs) -> NDArray:
     """
-    Compute the rotation matrix or Euler angles required to align an initial vector with a target vector.
+    Compute the rotation matrix or Euler angles required to align an initial
+    vector with a target vector.
 
     Parameters
     ----------
@@ -151,77 +144,59 @@ def align_vectors(base: NDArray, target: NDArray = (0, 0, 1), seq: str = None):
         The basis vector.
     target : NDArray, optional
         The vector to map base to, defaults to (0,0,1).
-    seq : str, optional
-        Euler angle convention, None returns a rotation matrix instead.
+    seq : str
+        Output convention.
+
+        .. deprecated:: 0.3.2
+
+            Returns rotation matrices always.
 
     Returns
     -------
     NDArray
-        Rotation matrix if seq is None otherwise Euler angles in desired convention
+        Rotation matrix mapping base to target.
     """
-    base = np.asarray(base, dtype=np.float32)
-    target = np.asarray(target, dtype=np.float32)
-
-    rotation, error = Rotation.align_vectors(target, base)
-    if seq is None:
-        return rotation.as_matrix()
-    return rotation.as_euler(seq=seq, degrees=True)
+    rotation, _ = Rotation.align_vectors(target, base)
+    return rotation.as_matrix().astype(np.float32)
 
 
-def euler_to_rotationmatrix(angles: Tuple[float], seq: str = "zyz") -> NDArray:
+def euler_to_rotationmatrix(angles: Tuple[float], seq: str = "ZYZ") -> NDArray:
     """
     Convert Euler angles to a rotation matrix.
 
     Parameters
     ----------
     angles : tuple
-        A tuple representing the Euler angles in degrees.
+        Euler angles in degrees.
     seq : str, optional
-        Euler angle convention.
+        Euler angle convention, defaults to ZYZ.
 
     Returns
     -------
     NDArray
-        The generated rotation matrix.
+        Corresponding rotation matrix.
     """
-    angles = np.asarray(angles)
-
-    n_angles = len(angles)
-    if angles.ndim == 2:
-        n_angles = angles.shape[1]
-
-    rotation_matrix = Rotation.from_euler(
-        seq=seq[:n_angles], angles=angles, degrees=True
-    )
-    return rotation_matrix.as_matrix().astype(np.float32)
+    rotation = Rotation.from_euler(seq=seq, angles=angles, degrees=True)
+    return rotation.as_matrix().astype(np.float32)
 
 
-def euler_from_rotationmatrix(rotation_matrix: NDArray, seq: str = "zyz") -> Tuple:
+def euler_from_rotationmatrix(rotation_matrix: NDArray, seq: str = "ZYZ") -> NDArray:
     """
-    Convert a rotation matrix to euler angles.
+    Convert a rotation matrix to Euler angles.
 
     Parameters
     ----------
     rotation_matrix : NDArray
-        A 2 x 2 or 3 x 3 rotation matrix.
+        Rotation matrix (d,d).
     seq : str, optional
-        Euler angle convention, zyz by default.
+        Euler angle convention, default to intrinsic ZYZ.
 
     Returns
     -------
-    Tuple
-        The generate euler angles in degrees
+    NDArray
+        Corresponding Euler angles in degrees.
     """
-    if rotation_matrix.shape[0] == 2:
-        temp_matrix = np.eye(3)
-        temp_matrix[:2, :2] = rotation_matrix
-        rotation_matrix = temp_matrix
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        rotation = Rotation.from_matrix(rotation_matrix)
-        angles = rotation.as_euler(seq=seq, degrees=True).astype(np.float32)
-    return angles
+    return Rotation.from_matrix(rotation_matrix).as_euler(seq=seq, degrees=True)
 
 
 def get_rotation_matrices(
@@ -250,16 +225,16 @@ def get_rotation_matrices(
     """
     if dim == 3 and use_optimized_set:
         quaternions, *_ = _load_quaternions_by_angle(angular_sampling)
-        ret = Rotation.from_quat(quaternions, scalar_first=True).as_matrix()
-    else:
-        num_rotations = dim * (dim - 1) // 2
-        k = int((360 / angular_sampling) ** num_rotations)
-        As = np.random.randn(k, dim, dim)
-        ret, _ = np.linalg.qr(As)
-        dets = np.linalg.det(ret)
-        neg_dets = dets < 0
-        ret[neg_dets, :, -1] *= -1
-        ret[0] = np.eye(dim, dtype=ret.dtype)
+        return Rotation.from_quat(quaternions, scalar_first=True).as_matrix()
+
+    num_rotations = dim * (dim - 1) // 2
+    k = int((360 / angular_sampling) ** num_rotations)
+    As = np.random.randn(k, dim, dim)
+    ret, _ = np.linalg.qr(As)
+    dets = np.linalg.det(ret)
+    neg_dets = dets < 0
+    ret[neg_dets, :, -1] *= -1
+    ret[0] = np.eye(dim, dtype=ret.dtype)
     return ret
 
 
@@ -351,3 +326,60 @@ def align_to_axis(
     eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
     eigenvector = eigenvectors[:, -(eigenvector_index + 1)]
     return align_vectors(eigenvector, alignment_axis)
+
+
+def get_symmetry_matrices(
+    symmetry_type: str, axis: Tuple[float] = (0, 0, 1)
+) -> NDArray:
+    """
+    Generate rotation matrices for common point group symmetries.
+
+    Parameters
+    ----------
+    symmetry_type : str
+        Type of symmetry. Supported: 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'D2', 'D3', 'D4'
+    axis : Tuple[float], optional
+        Symmetry axis as (x, y, z) vector, defaults to (0, 0, 1) for Z-axis.
+
+    Returns
+    -------
+    NDArray
+        Array of rotation matrices with shape (n, 3, 3).
+
+    """
+    axis = np.array(axis, dtype=np.float32)
+    axis = axis / np.linalg.norm(axis)
+
+    try:
+        n = int(symmetry_type[1:])
+    except IndexError:
+        n = 1
+
+    matrices = []
+    symmetry = symmetry_type.upper()[0]
+    if symmetry == "C":
+
+        for i in range(n):
+            angle = 2 * np.pi * i / n
+            R = Rotation.from_rotvec(angle * axis)
+            matrices.append(R.as_matrix().astype(np.float32))
+
+    elif symmetry == "D":
+        # First add the Cn rotations around main axis
+        matrices.extend(get_symmetry_matrices(f"C{n}", axis=axis))
+
+        # Then add n 180° rotations around perpendicular axes
+        _, _, vh = np.linalg.svd(axis.reshape(1, -1))
+
+        perp = vh[-1].astype(np.float32)
+        perp = perp / np.linalg.norm(perp)
+        for i in range(n):
+            angle = 2 * np.pi * i / n
+            R = Rotation.from_rotvec(angle * axis)
+
+            R_180 = Rotation.from_rotvec(np.pi * R.apply(perp))
+            matrices.append(R_180.as_matrix().astype(np.float32))
+    else:
+        raise ValueError(f"Unsupported symmetry type: {symmetry_type}")
+
+    return np.array(matrices)
