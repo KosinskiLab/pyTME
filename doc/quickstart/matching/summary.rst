@@ -98,7 +98,7 @@ Depending on available hardware and use case, there might be a more ideal comput
      - All
      - All
      - All
-     - MaxScoreOverRotations only
+     - MaxScoreOverRotations, MaxScoreOverRotationsConstrained, MaxScoreOverTranslations
    * - **When to Use**
      - CPU-only systems
      - New users with NVIDIA GPU

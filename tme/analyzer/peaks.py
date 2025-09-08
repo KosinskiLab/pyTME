@@ -696,7 +696,7 @@ class PeakCallerMaximumFilter(PeakCaller):
 class PeakCallerFast(PeakCaller):
     """
     Subdivides the score space into squares with edge length ``min_distance``
-    and determiens maximum value for each. In a second pass, all local maxima
+    and determines maximum value for each. In a second pass, all local maxima
     that are not the local maxima in a ``min_distance`` square centered around them
     are removed.
 

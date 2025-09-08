@@ -5,7 +5,7 @@
 Specification
 =============
 
-Analyzers are callback objects designed to process template matching results in real-time during exhaustive searches. Rather than storing all intermediate results in memory, analyzers accumulate only the most relevant data as each rotation is evaluated, enabling adaptation of template matching analysis routines to individual requirements.
+Analyzers are callbacks passed to :py:class:`match_exhaustive <tme.matching_exhaustive.match_exhaustive>` to enable custom analysis workflows of exhaustive searches. Rather than storing all intermediate results in memory, analyzers accumulate only the most relevant data.
 
 Key characteristics of analyzers
 
@@ -13,7 +13,7 @@ Key characteristics of analyzers
 - Support distributed computation with result merging capabilities
 - Maintain internal state that evolves throughout the matching process
 
-Analyzers are passed to :py:class:`match_exhaustive <tme.matching_exhaustive.match_exhaustive>` to enable custom processing workflows tailored to specific analysis requirements. :py:class:`AbstractAnalyzer <tme.analyzer.AbstractAnalyzer>` defines the interface specification that all analyzers must implement.
+:py:class:`AbstractAnalyzer <tme.analyzer.AbstractAnalyzer>` defines the interface specification that all analyzers must implement.
 
 .. autosummary::
    :toctree: ../api/
@@ -36,16 +36,7 @@ Analyzers follow a stateful, three-phase pattern
    - New scores array from the current rotation
    - Rotation matrix that generated these scores
 
-   The analyzer updates its state by incorporating the new data according to its specific logic (e.g., keeping only top N scores, filtering by threshold, etc.) and returns the updated state for the next iteration.
-
-**3. Finalization Phase**
-   After all rotations are processed, :py:meth:`AbstractAnalyzer.result` converts the accumulated state into the final output format. This may include post-processing operations like coordinate transformations or convolution mode corrections.
-
-
-Template Matching Integration
-=============================
-
-During exhaustive template matching, the analyzer is called for each rotation::
+   The analyzer updates its state by incorporating the new data according to its specific logic (e.g., keeping only top N scores, filtering by threshold, etc.) and returns the updated state for the next iteration ::
 
     # For each rotation in the search space
     for rotation in rotations:
@@ -55,8 +46,9 @@ During exhaustive template matching, the analyzer is called for each rotation::
         # Update analyzer state with new results
         analyzer_state = analyzer(analyzer_state, scores, rotation)
 
-This design enables real-time analysis during the matching process rather than requiring separate post-processing steps.
 
+**3. Finalization Phase**
+   After all rotations are processed, :py:meth:`AbstractAnalyzer.result` converts the accumulated state into the final output format. This may include post-processing operations like coordinate transformations or convolution mode corrections.
 
 State Management
 ================

@@ -25,7 +25,7 @@ Depending on the downstream use case, different ``output-format`` options are av
                 --output-format orientations \
                 --mask-edges \
                 --min-boundary-distance 20 \
-                --num-peaks 1000
+                --num-peaks 100
 
     .. tab-item:: Relion 4 / 5
 
@@ -38,7 +38,7 @@ Depending on the downstream use case, different ``output-format`` options are av
                 --output-format relion4 \
                 --mask-edges \
                 --min-boundary-distance 20 \
-                --num-peaks 1000
+                --num-peaks 100
 
     .. tab-item:: Alignments
 
@@ -50,7 +50,7 @@ Depending on the downstream use case, different ``output-format`` options are av
                 --input-file output.pickle \
                 --output-format alignment \
                 --mask-edges \
-                --min-boundary_distance 20 \
+                --min-boundary-distance 20 \
                 --num-peaks 10
 
     .. tab-item:: Extraction
