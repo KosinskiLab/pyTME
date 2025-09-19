@@ -215,7 +215,32 @@ class AnalysisDatasetDiscovery(DatasetDiscovery):
 
 
 @dataclass
-class TMParameters:
+class AbstractParameters(ABC):
+    def get_flags(self) -> List[str]:
+        flags = []
+
+        for field_info in fields(self):
+            flag_meta = field_info.metadata.get("flag")
+            if flag_meta is None:
+                continue
+
+            value = getattr(self, field_info.name)
+            if not isinstance(value, bool):
+                continue
+
+            flag_name = field_info.name.replace("_", "-")
+            if (flag_meta is True and value) or (flag_meta is False and not value):
+                flags.append(flag_name)
+
+        return flags
+
+    @abstractmethod
+    def to_command_args(self, files, output_path: Path) -> Dict[str, Any]:
+        """Convert parameters to pyTME command arguments."""
+
+
+@dataclass
+class TMParameters(AbstractParameters):
     """Template matching parameters."""
 
     template: Path
@@ -381,27 +406,9 @@ class TMParameters:
         args["num-peaks"] = self.num_peaks
         return {k: v for k, v in args.items() if v is not None}
 
-    def get_flags(self) -> List[str]:
-        flags = []
-
-        for field_info in fields(self):
-            flag_meta = field_info.metadata.get("flag")
-            if flag_meta is None:
-                continue
-
-            value = getattr(self, field_info.name)
-            if not isinstance(value, bool):
-                continue
-
-            flag_name = field_info.name.replace("_", "-")
-            if (flag_meta is True and value) or (flag_meta is False and not value):
-                flags.append(flag_name)
-
-        return flags
-
 
 @dataclass
-class AnalysisParameters(TMParameters):
+class AnalysisParameters(AbstractParameters):
     """Parameters for template matching analysis and peak calling."""
 
     # Peak calling
