@@ -58,7 +58,7 @@ EMD-3228 has a different sampling rate than our tomogram, so we need to resample
         --invert-contrast \
         --output emd_3228_resampled.mrc
 
-Larger boxes enable more accurate frequency operations and are essential for oscillating filters like the CTF. As a rule of thumb, set the box size to about twice the minimum enclosing box of your structure.
+Sufficiently sized boxes are essential for oscillating filters like the CTF. As a rule of thumb, set the box size to about twice the minimum enclosing box of your structure.
 
 .. note::
 

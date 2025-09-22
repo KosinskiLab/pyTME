@@ -4,7 +4,7 @@
 Practical Example
 =================
 
-The following outlines potential applications for template matching using ``match_template.py``.
+The following practical applications for template matching using ``match_template.py``.
 
 .. code-block:: bash
 
@@ -19,5 +19,8 @@ The following outlines potential applications for template matching using ``matc
    fitting
    alignment
 
+
+Further Reading
+---------------
 
 You will learn how to analyze the output of these experiments in the :doc:`postprocession section <../postprocessing/example>`.
