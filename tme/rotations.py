@@ -156,9 +156,16 @@ def align_vectors(base: NDArray, target: NDArray = (0, 0, 1), **kwargs) -> NDArr
     NDArray
         Rotation matrix mapping base to target.
     """
-    rotation, _ = Rotation.align_vectors(target, base)
-    return rotation.as_matrix().astype(np.float32)
+    base = np.asarray(base)
+    target = np.asarray(target)
 
+    # Support for (n, 3) and (3,) became available in scipy 1.12.0
+    rotation, _ = Rotation.align_vectors(np.atleast_2d(target), np.atleast_2d(base))
+
+    rotation = rotation.as_matrix().astype(np.float32)
+    if base.ndim == 1:
+        return np.squeeze(rotation)
+    return rotation
 
 def euler_to_rotationmatrix(angles: Tuple[float], seq: str = "ZYZ") -> NDArray:
     """
@@ -225,7 +232,7 @@ def get_rotation_matrices(
     """
     if dim == 3 and use_optimized_set:
         quaternions, *_ = _load_quaternions_by_angle(angular_sampling)
-        return Rotation.from_quat(quaternions, scalar_first=True).as_matrix()
+        return Rotation.from_quat(quaternions).as_matrix()
 
     num_rotations = dim * (dim - 1) // 2
     k = int((360 / angular_sampling) ** num_rotations)
@@ -252,7 +259,7 @@ def _load_quaternions_by_angle(
     Returns
     -------
     Tuple[NDArray, NDArray, float]
-        Quaternions, associated weights and realized angular sampling rate.
+        Quaternions (x,y,z,w), associated weights and realized angular sampling.
     """
     # Metadata contains (N orientations, rotational sampling, coverage as values)
     with open(join(dirname(__file__), "data", "metadata.yaml"), "r") as infile:
@@ -267,11 +274,10 @@ def _load_quaternions_by_angle(
     infile = join(dirname(__file__), "data", fname)
     quat_weights = np.load(infile)
 
-    quat = quat_weights[:, :4]
+    # Quat weights are scalar first (w,x,y,z), but scipy expects (x,y,z,w)
+    quat = quat_weights[:, (1, 2, 3, 0)]
     weights = quat_weights[:, -1]
-    angle = metadata[fname][0]
-
-    return quat, weights, angle
+    return quat, weights, metadata[fname][0]
 
 
 def align_to_axis(
@@ -332,14 +338,14 @@ def get_symmetry_matrices(
     symmetry_type: str, axis: Tuple[float] = (0, 0, 1)
 ) -> NDArray:
     """
-    Generate rotation matrices for common point group symmetries.
+    Get rotation matrices for common point group symmetries.
 
     Parameters
     ----------
     symmetry_type : str
-        Type of symmetry. Supported: 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'D2', 'D3', 'D4'
+        Type of symmetry, supported are 'Cn' and 'Dn'.
     axis : Tuple[float], optional
-        Symmetry axis as (x, y, z) vector, defaults to (0, 0, 1) for Z-axis.
+        Symmetry axis as (x, y, z) vector, defaults to (0, 0, 1).
 
     Returns
     -------
