@@ -23,6 +23,7 @@ extensions = [
     "sphinx_tabs.tabs",
     "sphinx.ext.intersphinx",
     "matplotlib.sphinxext.plot_directive",
+    "sphinxcontrib.youtube",
 ]
 
 copybutton_prompt_text = ">>> "

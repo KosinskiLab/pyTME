@@ -37,7 +37,9 @@ All data used throughout the example is available from `ownCloud <https://oc.emb
 
     iav_example/
     ├── tomogram_solvated_ctf_noise.mrc # Simulated IAV tomogram
+    ├── tomogram_segmentation.mrc       # Membrane segmentation
     ├── tilt_angles.txt                 # Tilt angles for missing wedge correction
+    ├── *.sh                            # Scripts for preprocessing and matching
     ├── templates/
     │   ├── ha.pdb                      # HA structure
     │   ├── na.pdb                      # NA structure
@@ -45,10 +47,14 @@ All data used throughout the example is available from `ownCloud <https://oc.emb
     │   ├── na_6.8_aligned.mrc          # Preprocessed NA template
     │   └── template_mask_6.8.mrc       # Template mask
     ├── seed_points/
-    │   └── SeedingPoints_40_80.star    # Pre-generated seed points
+    │   ├── SeedingPoints_40_80.star    # Pre-generated seed points
+    │   └── picks.star                  # HA/NA picks
     └── results/
-        ├── ha_matching.pickle          # HA matching results
-        └── na_matching.pickle          # NA matching results
+        ├── ha_matching.pickle          # Constrained HA matching results
+        ├── na_matching.pickle          # Constrained NA matching results
+        ├── ha.pickle                   # Unconstrained HA matching results
+        └── na.pickle                   # Unconstrained NA matching results
+
 
 You can mirror this structure locally to follow along with the example.
 
@@ -64,14 +70,12 @@ When working with membrane proteins, we like to generate seed points using membr
     You can use your own methods for generating seed points. Constrained template matching merely expects a STAR file as specification of the constraints with columns for coordinates (rlnCoordinateX, rlnCoordinateY, rlnCoordinateZ) and zyz angles (rlnAngleRot, rlnAngleTilt, rlnAnglePsi).
 
 
-Briefly, Mosaic uses membrain-seg [4]_ to create an initial segmentation of the viral membrane. This process can be triggered using the **Membrane** button in the **Intelligence** tab. Since the membrane is well resolved, the segmentation can directly be used for mesh creation.
+Briefly, Mosaic uses membrain-seg [4]_ to create an initial segmentation of the viral membrane. This process can be triggered using the **Membrane** button in the **Intelligence** tab. Since the membrane is well resolved, we only need to remove noise clusters prior to mesh creation.
 
-.. figure:: ../../_static/examples/constrained/iav_segmentation.png
-   :width: 100 %
+..  youtube:: Qb_qzMMBjSI
+   :width: 100%
 
-   IAV membrane segmentation in Mosaic. Shown is a yz-projection of the simulated tomogram and the membrane segmentation in red.
-
-The spherical geometry of the virus can be described by a convex hull, which can be fitted by selecting the membrane segmentation and clicking the **Mesh** button in the **Parametrization** tab. We can now draw seed points from the created mesh. The seed points should roughly align with the center of mass of the glycoproteins, because this is where the templates are expected to match. This alignment does not have to be very precise, but it helps to further constraint matching down the line. You can draw seed points by clicking the drop-down arrow of the **Sample** button, changing the *Mode* to *Distance*, the sampling to *40* and the offset to *80*.
+To parametrize the virus geometry, we select the outer membrane cluster and click the **Sphere** button in the **Parametrization** tab. Subsequently, we **Sample** points from the sphere model and fit a convex hull using **Mesh**. We can now draw seed points from the created mesh. The seed points should roughly align with the center of mass of the glycoproteins, because this is where the templates are expected to match. This alignment does not have to be very precise, but it helps to further constrain matching down the line. You can draw seed points by clicking the drop-down arrow of the **Sample** button, changing the *Mode* to *Distance* and
 
 - Sampling (40 Å): This controls the distance between adjacent seed points on the surface. Smaller values create denser sampling with more seed points.
 - Offset (80 Å): This moves seed points away from the membrane surface along the normal vector. For this IAV example, 80 Å positions the seed points approximately at the center of mass of the glycoproteins.
@@ -102,6 +106,7 @@ To integrate orientational constraints, we need to ensure the template used for 
         --sampling-rate 6.8 \
         --lowpass 15 \
         --box-size 60 \
+        --invert-contrast \
         --align-axis 2
 
     preprocess.py \
@@ -111,6 +116,7 @@ To integrate orientational constraints, we need to ensure the template used for 
         --lowpass 15 \
         --box-size 60 \
         --align-axis 2 \
+        --invert-contrast \
         --flip-axis
 
 For NA we need to provide the ``--flip-axis`` flag due to the handedness of the alignment problem. When aligning a protein structure to a principal axis, the algorithm determines the orientation based on the distribution of mass around the center. However, this can result in two possible orientations that are 180° apart - the protein could point "up" or "down" along the chosen axis.
@@ -136,11 +142,11 @@ Given the overall shape similarity between HA and NA, we can use a cylindrical m
 .. figure:: ../../_static/examples/constrained/masks.png
    :width: 100 %
 
-   Using the napari GUI to create template matching masks.
+   Using the napari GUI to create template matching masks. You can use the *Invert Contrast* filter to visualize the templates.
 
 .. tip::
 
-    In general, we find its beneficial to not make the mask too narrow. For HA for instance, a cylindrical mask of that diameter is not ideal (it should be larger), but sufficient for the data we are dealing with here. Furthermore, the mask should not include excessive amounts of membrane density, but rather focus on peripheral template components.
+    In general, we find it's beneficial to not make the mask too narrow. For HA for instance, a cylindrical mask of that diameter is not ideal (it should be larger), but sufficient for the data we are dealing with here. Furthermore, the mask should not include excessive amounts of membrane density, but rather focus on peripheral template components.
 
 Alternatively, you can do this using Python
 
@@ -173,34 +179,28 @@ The only difference to unconstrained template matching is that the seed points n
         -i templates/ha_6.8_aligned.mrc \
         --template-mask templates/template_mask_6.8.mrc \
         -s FLC \
-        -a 7 \
+        --angular-sampling 10 \
         --backend cupy \
-        --memory-scaling 1.0 \
         --orientations seed_points/SeedingPoints_40_80.star \
-        --orientations-scaling 1.0 \
         --orientations-cone 20 \
         --orientations-uncertainty 6,6,10 \
-        --wedge-axes 2,0 \
         --defocus 50000 \
-        --pad-edges \
-        --invert-target-contrast \
         --tilt-angles tilt_angles.txt \
-        -o ha_matching.pickle
+        -o results/ha_matching.pickle
 
-For NA, simply replace the path in ``-i`` using the path to `templates/na_6.8_aligned.mrc` and change the path in ``-o`` to `results/na_matching.pickle`. We recommend running the above on a GPU using the cupy backend as shown.
+For NA, simply use ``-i templates/na_6.8_aligned.mrc`` and ``-o results/na_matching.pickle``. We recommend running the above on a GPU using the cupy or jax backend as shown.
 
 - ``--orientations-cone 20``: Limits template orientations to within a 20-degree cone around the normal vector of each seed point. This ensures that particles are only matched in biologically relevant orientations (e.g., membrane proteins oriented relative to the membrane surface).
 
 - ``--orientations-uncertainty 6,6,10``: Defines an ellipsoidal search region around each seed point in voxels. The values represent the search radii in x, y, and z directions respectively. This accounts for uncertainty in the exact position of particles relative to seed points.
 
-- ``--orientations-scaling 1.0``: Scaling factor for seed point coordinates. Use 1.0 when seed points and tomogram are at the same voxel size.
-
-- ``--wedge-axes 2,0``: Specifies the projection axis (z=2) and tilt axis (x=0) used during tilt series acquisition.
-
 - ``--defocus 50000``: Defocus value in Ångstrom for CTF correction (5 μm defocus).
 
+.. tip::
 
-The output of constrained template matching is a pickle file containing the score space and identified orientations. We can explore the score space in the ``preprocessor_gui.py`` using the **Import Pickle** button. Shown below is a comparison of HA and NA matching using constrained and unconstrained matching, respectively. Note the increase in peak sharpness and decreased contribution of the membrane density in constrained matching. Achieving more uniform matching scores for HA would require a more stringently created mask. In essence, HAs orthogonal to the missing wedge score lower, because applying a wedge mask to the template density stretches the template, and pushes a considerable amount outside the mask. Alternatively, background correction could be performed, for instance using ``--scramble-phases``.
+    You can also constrain the rotational search to account for properties like template symmetry. For instance for the C3 symmetric HA, try replacing ``--angular-sampling 10`` with ``--cone-angle 180 --cone-sampling 10 --axis-symmetry 3``.
+
+The output of constrained template matching is a pickle file containing the score space and identified orientations. We can explore the score space in the ``preprocessor_gui.py`` using the **Import Pickle** button. Shown below is a comparison of HA and NA matching using constrained and unconstrained matching, respectively. Note the increase in peak sharpness and decreased contribution of the membrane density in constrained matching. Achieving more uniform matching scores for HA would require a more stringently created mask. In essence, HAs orthogonal to the missing wedge score lower, because applying a wedge mask to the template density stretches the template, and pushes a considerable amount outside the mask. Alternatively, background correction could be performed, for instance using ``--background-correction phase-scrambling``.
 
 .. figure:: ../../_static/examples/constrained/scores.png
 
@@ -210,7 +210,20 @@ The output of constrained template matching is a pickle file containing the scor
 Analysis
 --------
 
-The output of constrained template matching can be used in the default postprocessing schemes, e.g., for particle picking. See the :doc:`postprocessing section <../postprocessing/summary>` for more details.
+The output of constrained template matching can be used in the default postprocessing schemes, e.g., for particle picking. The following will use both matching results and identify no more than 475 particles with a minimum spacing of 12 voxels, which is in the order of the expected 10nm glycoprotein spacing. Whether a given pick corresponds to an HA or NA instance is indicated in ``_rlnClassNumber``.
+
+.. code-block:: bash
+
+    postprocess.py \
+      --input-file results/ha_matching.pickle results/na_matching.pickle \
+      --peak-caller PeakCallerMaximumFilter \
+      --num-peaks 475 \
+      --min-distance 12 \
+      --output-format relion4 \
+      --output-prefix orientations/picks
+
+
+See the :doc:`postprocessing section <../postprocessing/summary>` for more options.
 
 References
 ----------
