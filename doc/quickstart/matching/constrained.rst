@@ -90,7 +90,7 @@ The distance distribution between seed points and relative to the mesh can be as
 
 .. tip::
 
-    If you like to learn more about Mosaic, feel free to check out `this example <https://kosinskilab.github.io/mosaic/tutorial/workflows/iav.html>`_.
+    The Mosaic tutorial features `additional examples <https://kosinskilab.github.io/mosaic/tutorial/workflows/iav.html>`_.
 
 
 Creating Templates
@@ -222,8 +222,21 @@ The output of constrained template matching can be used in the default postproce
       --output-format relion4 \
       --output-prefix orientations/picks
 
+This should provide you with a decent particle set. However, since we are confident that the angles we determined are reasonable, we constrained them after all, we can use a different peak calling algorithm to express that. Instead of dividing the scores into a regular grid with spacing ``--min-distance``, ``--peak-caller PeakCallerRecursiveMasking`` will identify peaks sequentially and mask scores around it using the identified template orientation and provided mask.
 
-See the :doc:`postprocessing section <../postprocessing/summary>` for more options.
+.. code-block:: bash
+
+    postprocess.py \
+      --input-file results/ha_matching.pickle results/na_matching.pickle \
+      --peak-caller PeakCallerMaximumFilter \
+      --num-peaks 475 \
+      --min-distance 12 \
+      --output-format relion4 \
+      --output-prefix orientations/picks
+
+.. tip::
+
+    See the :doc:`postprocessing section <../postprocessing/motivation>` for all options.
 
 References
 ----------

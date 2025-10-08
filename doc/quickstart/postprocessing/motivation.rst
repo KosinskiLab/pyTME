@@ -108,6 +108,8 @@ In all cases, the tool will report statistics for foreground, background, and no
    > Background mean 0.089, std 0.023, max 0.234
    > Normalized mean 0.067, std 0.078, max 0.298
 
+Since the background of the individual entities may differ, we can also compare SNR-like cross-correlations instead, using ``--snr``. This is also useful when comparing the scores across an entire dataset.
+
 
 Local Optimization and Refinement
 ---------------------------------

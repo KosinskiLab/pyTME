@@ -28,13 +28,12 @@ Memory usage classes
 .. autosummary::
    :toctree: ../api/
 
+   MemoryProfile
    CCMemoryUsage
-   LCCMemoryUsage
    CORRMemoryUsage
-   CAMMemoryUsage
-   FLCSphericalMaskMemoryUsage
    FLCMemoryUsage
    MCCMemoryUsage
    MaxScoreOverRotationsMemoryUsage
+   MaxScoreOverRotationsConstrainedMemoryUsage
    PeakCallerMaximumFilterMemoryUsage
    CupyBackendMemoryUsage
