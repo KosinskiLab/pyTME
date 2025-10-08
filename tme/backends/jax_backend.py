@@ -1,4 +1,4 @@
-"""
+tme/backends/jax_backend.py """
 Backend using jax for template matching.
 
 Copyright (c) 2023-2024 European Molecular Biology Laboratory
@@ -16,9 +16,7 @@ from .npfftw_backend import NumpyFFTWBackend, shm_type
 
 
 def emulate_out(func):
-    """
-    Adds an out argument to write output of ``func`` to.
-    """
+    """Adds an out argument to write output of ``func`` to."""
 
     @wraps(func)
     def inner(*args, out=None, **kwargs):

@@ -112,7 +112,7 @@ class Preprocessor:
             Gaussian filtered template.
         """
         sigma = 0 if sigma is None else sigma
-        return ndimage.gaussian_filter(template, sigma, cval=cutoff_value)
+        return ndimage.gaussian_filter(template * 1.0, sigma, cval=cutoff_value)
 
     def difference_of_gaussian_filter(
         self, template: NDArray, low_sigma: NDArray, high_sigma: NDArray

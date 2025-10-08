@@ -1,4 +1,4 @@
-"""
+tme/matching_utils.py """
 Utility functions for template matching.
 
 Copyright (c) 2023 European Molecular Biology Laboratory
@@ -584,10 +584,7 @@ def split_shape(
         )
         for length, axis in zip(ret_shape, splits.keys())
     ]
-
-    splits = tuple(product(*slice_list))
-
-    return splits
+    return tuple(product(*slice_list))
 
 
 def _rigid_transform(
@@ -872,7 +869,9 @@ def setup_filter(
         target_temp.shape, matching_data._target_batch, keepdims=False
     )
     axes = matching_data._batch_axis(matching_data._target_batch)
-    target_temp_ft = be.rfftn(target_temp, s=shape, axes=axes)
+    target_temp_ft = be.rfftn(
+        be.astype(target_temp, be._float_dtype), s=shape, axes=axes
+    )
 
     # Setup composable filters
     filter_kwargs = {

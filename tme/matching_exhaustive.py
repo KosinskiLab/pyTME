@@ -221,15 +221,16 @@ def match_exhaustive(
     job_schedule: Tuple[int] = (1, 1),
     target_splits: Dict = {},
     template_splits: Dict = {},
+    target_subset: Optional[Tuple[slice, ...]] = None,
     pad_target_edges: bool = False,
     interpolation_order: int = 3,
     jobs_per_callback_class: int = 8,
     backend_name: str = None,
     backend_args: Dict = {},
     verbose: bool = False,
-    background_correction: str = None,
+    background_correction: Optional[str] = None,
     **kwargs,
-) -> Optional[Tuple]:
+) -> Tuple:
     """
     Run exhaustive template matching over all translations and a subset of rotations
     specified in `matching_data`.
@@ -256,6 +257,8 @@ def match_exhaustive(
     template_splits : dict, optional
         Splits for template. Default is an empty dictionary, i.e. no splits.
         See :py:meth:`tme.matching_utils.compute_parallelization_schedule`.
+    target_subset : tuple of slice
+        Match on target subset. Results will be w.r.t. the original shape.
     pad_target_edges : bool, optional
         Pad the target boundaries to avoid edge effects.
     interpolation_order : int, optional
@@ -270,8 +273,8 @@ def match_exhaustive(
 
     Returns
     -------
-    Optional[Tuple]
-        The merged results from callback_class if provided otherwise None.
+    Tuple
+        The merged results from callback_class.
 
     Examples
     --------
@@ -338,14 +341,34 @@ def match_exhaustive(
             f"'phase-scrambling', got {background_correction}."
         )
 
-    template_splits = split_shape(matching_data._template.shape, splits=template_splits)
-    target_splits = split_shape(matching_data._target.shape, splits=target_splits)
-    if (len(target_splits) > 1) and not pad_target_edges:
+    target_shape = matching_data._target.shape
+    target_scheme = split_shape(target_shape, splits=target_splits)
+    if target_subset is not None:
+        if len(target_subset) != len(target_shape):
+            raise ValueError(f"target_subset needs to be len {len(target_shape)}.")
+
+        offsets = tuple(s.start if s.start is not None else 0 for s in target_subset)
+        subset = tuple(
+            (s.stop if s.stop is not None else target_shape[i])
+            - (s.start if s.start is not None else 0)
+            for i, s in enumerate(target_subset)
+        )
+        target_scheme = split_shape(subset, splits=target_splits)
+        target_scheme = tuple(
+            tuple(
+                slice(s.start + offsets[i], s.stop + offsets[i])
+                for i, s in enumerate(split_tuple)
+            )
+            for split_tuple in target_scheme
+        )
+
+    template_scheme = split_shape(matching_data._template.shape, splits=template_splits)
+    if (len(target_scheme) > 1) and not pad_target_edges:
         warnings.warn(
             "Target splitting without padding target edges leads to unreliable "
             "similarity estimates around the split border."
         )
-    splits = tuple(product(target_splits, template_splits))
+    splits = tuple(product(target_scheme, template_scheme))
 
     kwargs = {
         "match_projection": kwargs.get("match_projection", False),
@@ -383,7 +406,12 @@ def match_exhaustive(
                 for index, (target_split, template_split) in enumerate(splits)
             ]
         )
-    return callback_class.merge(results, **callback_class_args)
+
+    if target_subset is None:
+        return callback_class.merge(results, **callback_class_args)
+    return callback_class.merge(
+        results, output_shape=target_shape, **callback_class_args
+    )
 
 
 def register_matching_exhaustive(

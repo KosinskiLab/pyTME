@@ -4,6 +4,7 @@ import numpy as np
 from tme.backends import backend as be
 from tme.analyzer import (
     MaxScoreOverRotations,
+    MaxScoreOverRotationsConstrained,
     PeakCaller,
     PeakCallerSort,
     PeakCallerMaximumFilter,
@@ -131,6 +132,7 @@ class TestRecursiveMasking:
         )
         assert len(state[0] <= num_peaks)
 
+
 class TestMaxScoreOverRotations:
     def setup_method(self):
         self.num_peaks = 100
@@ -210,3 +212,51 @@ class TestMaxScoreOverRotations:
         max_scores = np.maximum(self.data, data2)
         max_scores = np.maximum(max_scores, score_threshold)
         assert np.allclose(scores, max_scores)
+
+
+class TestMaxScoreOverRotationsContrained:
+    def setup_method(self):
+        self.num_peaks = 100
+        self.min_distance = 5
+        self.data = np.random.rand(100, 100, 100)
+        self.rotation_matrix = np.eye(3)
+
+        self.positions = np.array([[15, 30, 15], [90, 60, 30], [45, 50, 10]])
+        self.rotations = np.array(
+            (self.rotation_matrix, self.rotation_matrix * -1, self.rotation_matrix)
+        )
+
+    def test_initialization(self):
+        _ = MaxScoreOverRotationsConstrained(
+            shape=self.data.shape,
+            translation_offset=np.zeros(self.data.ndim, dtype=int),
+            positions=self.positions,
+            rotations=self.rotations,
+            cone_angle=30,
+        )
+        _ = MaxScoreOverRotationsConstrained(
+            shape=self.data.shape,
+            translation_offset=np.zeros(self.data.ndim, dtype=int),
+            positions=self.positions,
+            rotations=self.rotations,
+            acceptance_radius=(10, 5, 10),
+            cone_angle=30,
+        )
+
+    @pytest.mark.parametrize("use_memmap", [False, True])
+    def test__iter__(self, use_memmap: bool):
+        score_analyzer = MaxScoreOverRotationsConstrained(
+            shape=self.data.shape,
+            translation_offset=np.zeros(self.data.ndim, dtype=int),
+            positions=self.positions,
+            rotations=self.rotations,
+            acceptance_radius=(10, 5, 10),
+            cone_angle=30,
+        )
+        state = score_analyzer.init_state()
+        state = score_analyzer(state, self.data, rotation_matrix=self.rotation_matrix)
+        res = score_analyzer.result(state)
+        assert np.allclose(res[0].shape, self.data.shape)
+        assert res[0].dtype == be._float_dtype
+        assert res[1].size == self.data.ndim
+        assert np.allclose(res[2].shape, self.data.shape)

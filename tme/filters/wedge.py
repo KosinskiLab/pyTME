@@ -399,9 +399,8 @@ def weight_relion(
     **kwargs,
 ) -> NDArray:
     """
-    Generate weighted wedges based on the RELION 1.4 formalism, weighting each
-    angle using the cosine of the angle and a Gaussian lowpass filter computed
-    with respect to the exposure per angstrom.
+    Generate weighted wedges based on the RELION 1.4 formalism, weighting each tilt
+    by the cosine of its angle and a Gaussian lowpass of its exposure.
 
     Returns
     -------
@@ -421,10 +420,12 @@ def weight_relion(
             sampling_rate=sampling_rate,
             fftshift=False,
         )
-        sigma = np.sqrt(weights[index] * 4 / (8 * np.pi**2))
-        sigma = -2 * np.pi**2 * sigma**2
         frequency_grid = np.square(frequency_grid, out=frequency_grid)
-        frequency_grid = np.multiply(sigma, frequency_grid, out=frequency_grid)
+
+        # We use 4 to mirror Warp
+        frequency_grid = np.multiply(
+            -4 * weights[index], frequency_grid, out=frequency_grid
+        )
         frequency_grid = np.exp(frequency_grid, out=frequency_grid)
         wedges[index] = np.multiply(frequency_grid, np.cos(np.radians(angle)))
 

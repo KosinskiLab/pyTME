@@ -140,9 +140,12 @@ class PytorchBackend(NumpyFFTWBackend):
         arr[idx] = value
         return arr
 
-    @staticmethod
-    def addat(arr, indices, *args, **kwargs) -> NDArray:
-        return arr.index_put_(indices, *args, accumulate=True, **kwargs)
+    def addat(self, arr, indices, values, *args, **kwargs) -> NDArray:
+        if values.dtype != arr.dtype:
+            values = values.to(arr.dtype, copy=False)
+
+        # This is very slow
+        return arr.index_put_(indices, values, accumulate=True, **kwargs)
 
     def flip(self, a, axis, **kwargs):
         return self._array_backend.flip(input=a, dims=axis, **kwargs)

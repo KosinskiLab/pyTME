@@ -10,7 +10,6 @@ from psutil import virtual_memory
 from contextlib import contextmanager
 from typing import Tuple, List, Type
 
-import scipy
 import numpy as np
 from scipy.ndimage import maximum_filter, affine_transform
 from pyfftw import (
@@ -100,7 +99,10 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
 
         self.cholesky = self._linalg_cholesky
         self.solve_triangular = self._solve_triangular
-        self.linalg.solve_triangular = scipy.linalg.solve_triangular
+
+        from scipy.linalg import solve_triangular
+
+        self.linalg.solve_triangular = solve_triangular
 
         try:
             from ._numpyfftw_utils import rfftn as rfftn_cache

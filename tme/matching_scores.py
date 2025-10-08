@@ -422,7 +422,7 @@ def corr_scoring(
             use_geometric_center=True,
         )
 
-        template_rot = tmpl_filter_func(template_rot, ft_temp)
+        template_rot = tmpl_filter_func(template_rot)
         template_rot = norm_template(template_rot, template_mask, n_obs)
 
         arr = to_padded(arr, template_rot, unpadded_slice)
@@ -564,7 +564,7 @@ def flc_scoring(
         )
 
         n_obs = be.sum(template_mask_rot)
-        template_rot = tmpl_filter_func(template_rot, ft_temp)
+        template_rot = tmpl_filter_func(template_rot)
         template_rot = standardize(template_rot, template_mask_rot, n_obs)
 
         arr = to_padded(arr, template_rot, unpadded_slice)
@@ -648,7 +648,7 @@ def ncc_scoring(
             cache=True,
             use_geometric_center=True,
         )
-        template_rot = tmpl_filter_func(template_rot, ft_temp)
+        template_rot = tmpl_filter_func(template_rot)
         template_rot = standardize(template_rot, 1, size)
 
         arr = to_padded(arr, template_rot, unpadded_slice)
@@ -795,7 +795,7 @@ def mcc_scoring(
             cache=True,
         )
 
-        template_rot = tmpl_filter_func(template_rot, temp_ft)
+        template_rot = tmpl_filter_func(template_rot)
         template_rot = standardize(template_rot, temp, be.sum(temp))
 
         temp_ft = be.rfftn(template_rot, out=temp_ft, s=fast_shape)
@@ -1100,7 +1100,7 @@ def _create_filter_func(
         return conditional_execute(identity, execute_operation=True)
 
     # Default case, all shapes are correctly matched
-    def _apply_filter(template, ft_temp):
+    def _apply_filter(template, ft_temp=None):
         ft_temp = be.rfftn(template, out=ft_temp, s=template.shape)
         ft_temp = be.multiply(ft_temp, template_filter, out=ft_temp)
         return be.irfftn(ft_temp, out=template, s=template.shape)

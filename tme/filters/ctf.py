@@ -7,8 +7,8 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import re
-from typing import Tuple, Dict
 from dataclasses import dataclass
+from typing import Tuple, Dict, Optional
 
 import numpy as np
 
@@ -41,21 +41,21 @@ class CTF(ComposableFilter):
     #: The axis along which the tilt is applied, defaults to 0 (x).
     tilt_axis: int = 0
     #: The sampling rate, defaults to 1 Ångstrom / voxel.
-    sampling_rate: Tuple[float] = 1
+    sampling_rate: Tuple[float, ...] = 1
     #: The acceleration voltage in Volts, defaults to 300e3.
-    acceleration_voltage: Tuple[float] = 300e3
+    acceleration_voltage: Tuple[float, ...] = 300e3
     #: The spherical aberration, defaults to 2.7e7 (in units of sampling rate).
-    spherical_aberration: Tuple[float] = 2.7e7
+    spherical_aberration: Tuple[float, ...] = 2.7e7
     #: The amplitude contrast, defaults to 0.07.
-    amplitude_contrast: Tuple[float] = 0.07
+    amplitude_contrast: Tuple[float, ...] = 0.07
     #: The phase shift in radians, defaults to 0.
-    phase_shift: Tuple[float] = 0
+    phase_shift: Tuple[float, ...] = 0
     #: The defocus angle in radians, defaults to 0.
-    defocus_angle: Tuple[float] = 0
+    defocus_angle: Tuple[float, ...] = 0
     #: The defocus value in y direction, defaults to None (in units of sampling rate).
-    defocus_y: Tuple[float] = None
+    defocus_y: Optional[Tuple[float, ...]] = None
     #: Whether the returned CTF should be phase-flipped, defaults to True.
-    flip_phase: bool = True
+    flip_phase: Optional[bool] = True
 
     @classmethod
     def from_file(cls, filename: str, **kwargs) -> "CTF":
@@ -206,8 +206,6 @@ class CTF(ComposableFilter):
 
             stack[index] = chi
 
-        # Avoid contrast inversion
-        stack = np.negative(stack, out=stack)
         if flip_phase:
             stack = np.abs(stack, out=stack)
         return {"data": be.to_backend_array(stack), "shape": shape}
@@ -281,8 +279,6 @@ class CTFReconstructed(CTF):
             defocus_angle=defocus_angle,
             amplitude_contrast=amplitude_contrast,
         )
-        # Avoid contrast inversion
-        stack = np.negative(stack, out=stack)
         if flip_phase:
             stack = np.abs(stack, out=stack)
         return {"data": be.to_backend_array(stack), "shape": shape}
@@ -312,11 +308,18 @@ def _from_xml(filename: str) -> Dict:
     if "GridCTF" in data:
         ctf = data["GridCTF"]["Node"]
         params["Defocus"] = [ctf[i]["@attributes"]["Value"] for i in range(len(ctf))]
+
+        ctf_ddefocus = data["GridCTFDefocusDelta"]["Node"]
+        params["DefocusDelta"] = [
+            ctf_ddefocus[i]["@attributes"]["Value"] for i in range(len(ctf_ddefocus))
+        ]
+
         ctf_phase = data["GridCTFPhase"]["Node"]
         params["PhaseShift"] = [
             ctf_phase[i]["@attributes"]["Value"] for i in range(len(ctf_phase))
         ]
         params["PhaseShift"] = np.degrees(params["PhaseShift"])
+
         ctf_ast = data["GridCTFDefocusAngle"]["Node"]
         params["DefocusAngle"] = [
             ctf_ast[i]["@attributes"]["Value"] for i in range(len(ctf_ast))
@@ -333,11 +336,12 @@ def _from_xml(filename: str) -> Dict:
     # Convert units to sampling rate (we assume it is Angstrom)
     params["Cs"] = float(params["Cs"] * 1e7)
     params["Defocus"] = params["Defocus"] * 1e4
+    params["Defocus2"] = np.subtract(params["Defocus"], params["DefocusDelta"] * 1e4)
 
     mapping = {
         "angles": "Angles",
         "defocus_1": "Defocus",
-        "defocus_2": "Defocus",
+        "defocus_2": "Defocus2",
         "azimuth_astigmatism": "DefocusAngle",
         "additional_phase_shift": "PhaseShift",
         "acceleration_voltage": "Voltage",
@@ -444,7 +448,7 @@ def _from_mdoc(filename: str) -> Dict:
         "angles": ("TiltAngle", float),
         "defocus_1": ("Defocus", float),
         "acceleration_voltage": ("Voltage", float),
-        # These will be None, but on purpose
+        # These will be None
         "pixel_size": ("_rlnDetectorPixelSize", float),
         "defocus_2": ("Defocus2", float),
         "spherical_aberration": ("_rlnSphericalAberration", float),
@@ -601,5 +605,6 @@ def create_ctf(
             np.sqrt(1 - np.square(amplitude_contrast)),
         )
     )
-    chi = np.sin(-chi, out=chi)
+    # Avoid contrast inversion
+    chi = np.sin(chi, out=chi)
     return np.multiply(chi, frequency_mask, out=chi)

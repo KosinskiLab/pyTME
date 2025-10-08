@@ -167,6 +167,7 @@ def align_vectors(base: NDArray, target: NDArray = (0, 0, 1), **kwargs) -> NDArr
         return np.squeeze(rotation)
     return rotation
 
+
 def euler_to_rotationmatrix(angles: Tuple[float], seq: str = "ZYZ") -> NDArray:
     """
     Convert Euler angles to a rotation matrix.
