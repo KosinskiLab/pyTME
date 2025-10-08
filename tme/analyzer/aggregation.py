@@ -6,7 +6,7 @@ Copyright (c) 2023 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Optional
 
 import numpy as np
 
@@ -324,7 +324,13 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         return new_rotation_mapping, out_shape, states
 
     @classmethod
-    def merge(cls, results: List[Tuple], **kwargs) -> Tuple:
+    def merge(
+        cls,
+        results: List[Tuple],
+        use_memmap: bool = False,
+        output_shape: Optional[Tuple[int, ...]] = None,
+        **kwargs,
+    ) -> Tuple:
         """
         Merge multiple instances of the current class.
 
@@ -332,6 +338,10 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         ----------
         results : list of tuple
             List of instance's internal state created by applying `result`.
+        use_memmap : bool
+            Whether to memmap results, defaults to False.
+        output_shape : bool
+            Override internal output shape (for subset matching).
         **kwargs : dict, optional
             Optional keyword arguments.
 
@@ -346,18 +356,17 @@ class MaxScoreOverRotations(AbstractAnalyzer):
         Dict
             Mapping between rotations and rotation indices.
         """
-        use_memmap = kwargs.get("use_memmap", False)
-        if len(results) == 1:
-            ret = results[0]
+        # In this case we do not need to acount for offsets and merging
+        if len(results) == 1 and output_shape is None:
+            scores, offset, rotations, rotation_mapping, ssum = results[0]
             if use_memmap:
-                scores, offset, rotations, rotation_mapping, ssum = ret
                 scores = array_to_memmap(scores)
                 rotations = array_to_memmap(rotations)
-                ret = (scores, offset, rotations, rotation_mapping, ssum)
-            return ret
+            return scores, offset, rotations, rotation_mapping, ssum
 
         # Determine output array shape and create consistent rotation map
         master_rotation_mapping, out_shape, results = cls._harmonize_states(results)
+        out_shape = out_shape if output_shape is None else output_shape
         if out_shape is None:
             return None
 
@@ -506,7 +515,6 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
         rotations = be.astype(be.to_backend_array(rotations), be._float_dtype)
 
         ndim = positions.shape[1]
-        rotate_mask = len(set(acceptance_radius)) != 1
         extend = max(acceptance_radius)
         mask = create_mask(
             mask_type="ellipse",
@@ -514,23 +522,36 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
             shape=tuple(2 * extend + 1 for _ in range(ndim)),
             center=tuple(extend for _ in range(ndim)),
         )
-        self._score_mask = be.astype(be.to_backend_array(mask), be._float_dtype)
+        self._score_mask = be.astype(be.to_backend_array(mask > 0), bool)
 
         # Map position from real space to shifted score space
         lower_limit = be.to_backend_array(self._offset)
         positions = be.subtract(positions, lower_limit)
-        positions, valid_positions = cart_to_score(
-            positions=positions,
-            fast_shape=kwargs.get("fast_shape", None),
-            targetshape=kwargs.get("targetshape", None),
-            templateshape=kwargs.get("templateshape", None),
-            fourier_shift=kwargs.get("fourier_shift", None),
-            convolution_mode=kwargs.get("convolution_mode", None),
-            convolution_shape=kwargs.get("convolution_shape", None),
-        )
 
-        self._positions = positions[valid_positions]
-        rotations = rotations[valid_positions]
+        if kwargs.get("convolution_mode", None) is not None:
+            score_positions, valid_positions = cart_to_score(
+                positions=positions,
+                fast_shape=kwargs.get("fast_shape", None),
+                targetshape=kwargs.get("targetshape", None),
+                templateshape=kwargs.get("templateshape", None),
+                fourier_shift=kwargs.get("fourier_shift", None),
+                convolution_mode=kwargs.get("convolution_mode", None),
+                convolution_shape=kwargs.get("convolution_shape", None),
+            )
+
+            positions = score_positions[valid_positions]
+            rotations = rotations[valid_positions]
+
+        # All scores will be rejected in this case. We should think about a
+        # unified interface for checking analyzer validity to skip such runs
+        if positions.shape[0] == 0:
+
+            def _get_score_mask(*args, **kwargs):
+                return 0
+
+            self._get_score_mask = _get_score_mask
+            self._get_constraint = _get_score_mask
+            return
 
         # Convert to pull matrix to remain consistent with rotation convention
         rotations = be.concatenate(
@@ -545,43 +566,37 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
         self._normals_y = (rotations @ ey[..., None])[..., 0]
         self._normals_z = (rotations @ ez[..., None])[..., 0]
 
-        # All scores will be rejected in this case. We should think about a
-        # unified interface for checking analyzer validity to skip such runs
-        if self._positions.shape[0] == 0:
-
-            def _get_score_mask(*args, **kwargs):
-                return 0
-
-            self._get_score_mask = _get_score_mask
-
         # Periodic wrapping could be avoided by padding the target
         shape = be.to_backend_array(self._shape)
-        starts = be.subtract(self._positions, extend)
-        ret, (n, d), mshape = [], self._positions.shape, self._score_mask.shape
+        starts = be.subtract(positions, extend)
+        ret, (n, d), mshape = [], positions.shape, self._score_mask.shape
         if starts.shape[0] > 0:
             for i in range(d):
                 indices = starts[:, slice(i, i + 1)] + be.arange(mshape[i])[None]
                 indices = be.mod(indices, shape[i], out=indices)
+                indices = be.astype(indices, be._int_dtype)
                 indices_shape = (n, *tuple(1 if k != i else -1 for k in range(d)))
                 ret.append(be.reshape(indices, indices_shape))
 
         self._index_grid = tuple(ret)
         self._mask_shape = tuple(1 if i != 0 else -1 for i in range(1 + ndim))
+        if len(set(acceptance_radius)) != 1:
+            n_rotations = rotations.shape[0]
+            mask_shape = tuple(2 * extend + 1 for _ in range(ndim))
+            mask_center = tuple(extend for _ in range(ndim))
 
-        if rotate_mask:
-            self._score_mask = []
-            for i in range(rotations.shape[0]):
+            self._score_mask = be.zeros((n_rotations, *mask_shape), dtype=bool)
+            for i in range(n_rotations):
                 mask = create_mask(
                     mask_type="ellipse",
                     radius=acceptance_radius,
-                    shape=tuple(2 * extend + 1 for _ in range(ndim)),
-                    center=tuple(extend for _ in range(ndim)),
+                    shape=mask_shape,
+                    center=mask_center,
                     orientation=be.to_numpy_array(rotations[i]),
                 )
-                self._score_mask.append(
-                    be.astype(be.to_backend_array(mask), be._float_dtype)[None]
+                self._score_mask = be.at(
+                    self._score_mask, i, be.astype(be.to_backend_array(mask > 0), bool)
                 )
-            self._score_mask = be.concatenate(self._score_mask)
 
     def __call__(
         self,
@@ -623,11 +638,11 @@ class MaxScoreOverRotationsConstrained(MaxScoreOverRotations):
         return be.sqrt(x**2 + y**2) <= (z * self._cone_cutoff)
 
     def _get_score_mask(self, mask: BackendArray, scores: BackendArray, **kwargs):
-        score_mask = be.zeros(scores.shape, scores.dtype)
+        score_mask = be.zeros(scores.shape, be._float_dtype)
 
-        # The indexing could be improved to avoid expanding the mask to
-        # the number of seed points
         mask = be.reshape(mask, self._mask_shape)
+
+        # Ideally score mask would be bool but thats not supported by addat
         score_mask = be.addat(score_mask, self._index_grid, self._score_mask * mask)
         return score_mask > 0
 

@@ -391,31 +391,32 @@ def parse_args():
         default=None,
         required=False,
         help="Path to a file readable by Orientations.from_file containing "
-        "translations and rotations of candidate peaks to refine.",
+        "translations and rotations of seed points (or candidate peaks).",
     )
     sampling_group.add_argument(
         "--orientations-scaling",
         required=False,
         type=float,
         default=1.0,
-        help="Scaling factor to map candidate translations onto the target. "
-        "Assuming coordinates are in Å and target sampling rate are 3Å/voxel, "
-        "the corresponding --orientations-scaling would be 3.",
+        help="Conversion factor from coordinates to voxels (divides translations). "
+        "If coordinates are in Å and target sampling rate is 3Å/voxel, "
+        "use --orientations-scaling 3 to convert Å to voxels.",
     )
     sampling_group.add_argument(
         "--orientations-cone",
         required=False,
         type=float,
         default=20.0,
-        help="Accept orientations within specified cone angle of each orientation.",
+        help="Accept matches within specified cone angle in degrees.",
     )
     sampling_group.add_argument(
         "--orientations-uncertainty",
         required=False,
         type=str,
         default="10",
-        help="Accept translations within the specified radius of each orientation. "
-        "Can be a single value or comma-separated string for per-axis uncertainty.",
+        help="Accept matches within specified radius of each candidate (in voxels). "
+        "Provide a single value (e.g., '10') or comma-separated values for "
+        "per-axis uncertainty (e.g., '10,15,10').",
     )
 
     scoring_group = parser.add_argument_group("Scoring")
@@ -1051,6 +1052,7 @@ def main():
         "min_distance": max(template.shape) // 3,
         "use_memmap": args.use_memmap,
     }
+    target_subset = None
     if args.orientations is not None:
         analyzer_args["reference"] = (0, 0, 1)
         analyzer_args["cone_angle"] = args.orientations_cone
@@ -1059,6 +1061,20 @@ def main():
         analyzer_args["rotations"] = euler_to_rotationmatrix(
             args.orientations.rotations, seq="ZYZ"
         )
+
+        # Restrict the search to box permitted by seed points
+        margin = np.max(args.orientations_uncertainty)
+        margin += np.max(np.divide(template.shape, 2).astype(int))
+
+        lower_bound = analyzer_args["positions"].min(axis=0) - 1
+        lower_bound = np.subtract(lower_bound, margin)
+
+        upper_bound = analyzer_args["positions"].max(axis=0) + 1
+        upper_bound = np.add(upper_bound, margin)
+
+        lower_bound = np.maximum(lower_bound.astype(int), 0)
+        upper_bound = np.minimum(upper_bound.astype(int), matching_data._target.shape)
+        target_subset = tuple(slice(*x) for x in zip(lower_bound, upper_bound))
 
     print_block(
         name="Analyzer",
@@ -1089,6 +1105,7 @@ def main():
         interpolation_order=args.interpolation_order,
         match_projection=args.match_projection,
         background_correction=args.background_correction,
+        target_subset=target_subset,
     )
 
     candidates = list(candidates) if candidates is not None else []
