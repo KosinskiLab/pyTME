@@ -23,19 +23,23 @@ class TomoFiles:
     tomo_id: str
     #: Path to tomogram.
     tomogram: Path
-    #: XML file with tilt angles, defocus, etc.
-    metadata: Path
+    #: XML file with tilt angles, defocus, etc, optional.
+    metadata: Optional[Path]
     #: Path to tomogram mask, optional.
     mask: Optional[Path] = None
+    #: Path to seed points for constrained matching, optional.
+    orientations: Optional[Path] = None
 
     def __post_init__(self):
         """Validate that required files exist."""
         if not self.tomogram.exists():
             raise FileNotFoundError(f"Tomogram not found: {self.tomogram}")
-        if not self.metadata.exists():
+        if self.metadata and not self.metadata.exists():
             raise FileNotFoundError(f"Metadata not found: {self.metadata}")
         if self.mask and not self.mask.exists():
             raise FileNotFoundError(f"Mask not found: {self.mask}")
+        if self.orientations and not self.orientations.exists():
+            raise FileNotFoundError(f"Orientations not found: {self.orientations}")
 
 
 @dataclass
@@ -74,6 +78,13 @@ class DatasetDiscovery(ABC):
         pass
 
     @staticmethod
+    def safe_get(mapping, key, default=""):
+        try:
+            return mapping.get(key)[0].absolute()
+        except Exception:
+            return default
+
+    @staticmethod
     def parse_id_from_filename(filename: str) -> str:
         """Extract the tomogram ID from filename by removing technical suffixes."""
         base = Path(filename).stem
@@ -110,36 +121,77 @@ class TomoDatasetDiscovery(DatasetDiscovery):
 
     #: Glob pattern for tomogram files, e.g., "/data/tomograms/*.mrc"
     mrc_pattern: str
-    #: Glob pattern for metadata files, e.g., "/data/metadata/*.xml"
-    metadata_pattern: str
+    #: Optional glob pattern for metadata files, e.g., "/data/metadata/*.xml"
+    metadata_pattern: Optional[str] = None
     #: Optional glob pattern for mask files, e.g., "/data/masks/*.mrc"
     mask_pattern: Optional[str] = None
+    #: Optional glob pattern for seed points, e.g., "/data/seed_points/*.star"
+    orientation_pattern: Optional[str] = None
+    #: Whether discovery should be verbose.
+    verbose: bool = False
+    #: Raise an error if not all provided patterns yield results for all tomograms.
+    strict: bool = False
 
     def discover(self, tomo_list: Optional[List[str]] = None) -> List[TomoFiles]:
         """Find all matching tomogram files."""
         mrc_files = self.create_mapping_table(self.mrc_pattern)
         meta_files = self.create_mapping_table(self.metadata_pattern)
         mask_files = self.create_mapping_table(self.mask_pattern)
+        orientation_files = self.create_mapping_table(self.orientation_pattern)
 
         if tomo_list:
             mrc_files = {k: v for k, v in mrc_files.items() if k in tomo_list}
             meta_files = {k: v for k, v in meta_files.items() if k in tomo_list}
             mask_files = {k: v for k, v in mask_files.items() if k in tomo_list}
+            orientation_files = {
+                k: v for k, v in orientation_files.items() if k in tomo_list
+            }
 
-        tomo_files = []
-        for key, value in mrc_files.items():
-            if key not in meta_files:
-                print(f"No metadata for {key}, skipping it for now.")
-                continue
+        missing_str = "\033[91mNo\033[0m"
+        strict_errors, tomo_files = [], []
+        for key in sorted(list(mrc_files.keys())):
+            value = mrc_files[key]
+            has_meta = "Ok" if key in meta_files else missing_str
+            has_mask = "Ok" if key in mask_files else missing_str
+            has_ori = "Ok" if key in orientation_files else missing_str
+
+            if self.verbose:
+                strout = f"[INFO] {key}: tomo Ok"
+                if self.metadata_pattern is not None:
+                    strout += f" | metadata {has_meta}"
+                if self.mask_pattern is not None:
+                    strout += f" | mask {has_mask}"
+                if self.orientation_pattern is not None:
+                    strout += f" | orientations {has_ori}"
+                print(strout)
+
+            if self.strict:
+                missing = []
+                if has_meta == missing_str and self.metadata_pattern:
+                    missing.append("metadata")
+                if has_mask == missing_str and self.mask_pattern:
+                    missing.append("mask")
+                if has_ori == missing_str and self.orientation_pattern:
+                    missing.append("orientations")
+
+                if missing:
+                    strict_errors.append(f"  - {key}: missing {', '.join(missing)}")
 
             tomo_files.append(
                 TomoFiles(
                     tomo_id=key,
                     tomogram=value[0].absolute(),
-                    metadata=meta_files[key][0].absolute(),
-                    mask=mask_files.get(key, [""])[0],
+                    metadata=self.safe_get(meta_files, key),
+                    mask=self.safe_get(mask_files, key),
+                    orientations=self.safe_get(orientation_files, key),
                 )
             )
+
+        if self.strict and strict_errors:
+            error_msg = "Strict mode enabled but files are missing:\n" + "\n".join(
+                strict_errors
+            )
+            raise ValueError(error_msg)
         return tomo_files
 
 
@@ -301,11 +353,18 @@ class TMParameters(AbstractParameters):
     # Backend selection
     backend: str = "numpy"
     gpu_indices: Optional[str] = None
+    memory_scaling: float = 0.85
 
     # Reconstruction
     reconstruction_filter: str = "ramp"
     reconstruction_interpolation_order: int = 1
     no_filter_target: bool = field(default=False, metadata={"flag": True})
+
+    # Constrained matching
+    orientations: str = None
+    orientations_scaling: float = 1
+    orientations_cone: float = 20
+    orientations_uncertainty: str = "10"
 
     def __post_init__(self):
         """Validate parameters and convert units."""
@@ -362,6 +421,11 @@ class TMParameters(AbstractParameters):
         if files.metadata:
             args["ctf-file"] = str(files.metadata)
             args["tilt-angles"] = str(files.metadata)
+        if files.orientations:
+            args["orientations"] = str(files.orientations)
+            args["orientations-scaling"] = self.orientations_scaling
+            args["orientations-cone"] = self.orientations_cone
+            args["orientations-uncertainty"] = self.orientations_uncertainty
 
         if self.background_correction:
             args["background-correction"] = self.background_correction
@@ -381,6 +445,8 @@ class TMParameters(AbstractParameters):
             args["gpu-indices"] = self.gpu_indices
         if self.backend != "numpy":
             args["backend"] = self.backend
+        if self.memory_scaling:
+            args["memory-scaling"] = self.memory_scaling
 
         # Angular sampling
         if self.angular_sampling:
@@ -427,6 +493,7 @@ class AnalysisParameters(AbstractParameters):
 
     # Advanced options
     extraction_box_size: Optional[int] = None
+    snr: bool = field(default=False, metadata={"flag": True})
 
     def to_command_args(
         self, files: AnalysisFiles, output_path: Path
@@ -765,6 +832,22 @@ def add_job_submission(parser, default_output_dir="./results"):
     return job_group
 
 
+def add_discovery_options(parser):
+    """Add discovery verbosity options to a parser."""
+    discovery_group = parser.add_argument_group("Discovery Options")
+    discovery_group.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Suppress per-tomogram file discovery information",
+    )
+    discovery_group.add_argument(
+        "--strict",
+        action="store_true",
+        help="Raise error if any provided pattern doesn't match all tomograms",
+    )
+    return discovery_group
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Batch runner for PyTME.",
@@ -790,7 +873,7 @@ def parse_args():
     )
     tm_input_group.add_argument(
         "--metadata",
-        required=True,
+        required=False,
         help="Glob pattern for metadata files (e.g., '/data/metadata/*.xml')",
     )
     tm_input_group.add_argument(
@@ -832,6 +915,45 @@ def parse_args():
     )
     tm_group.add_argument(
         "--score-threshold", type=float, default=0.0, help="Minimum score threshold"
+    )
+    tm_group.add_argument(
+        "--memory-scaling",
+        required=False,
+        type=float,
+        default=0.85,
+        help="Fraction of available RAM/vRAM to be used.",
+    )
+
+    constrain_group = matching_parser.add_argument_group("Constrained Matching")
+    constrain_group.add_argument(
+        "--orientations",
+        required=False,
+        help="Glob pattern for seed point files (e.g., '/data/seed_points/*.star')",
+    )
+    constrain_group.add_argument(
+        "--orientations-scaling",
+        required=False,
+        type=float,
+        default=1.0,
+        help="Conversion factor from coordinates to voxels (divides translations). "
+        "If coordinates are in Å and target sampling rate is 3Å/voxel, "
+        "use --orientations-scaling 3 to convert Å to voxels.",
+    )
+    constrain_group.add_argument(
+        "--orientations-cone",
+        required=False,
+        type=float,
+        default=20.0,
+        help="Accept matches within specified cone angle in degrees.",
+    )
+    constrain_group.add_argument(
+        "--orientations-uncertainty",
+        required=False,
+        type=str,
+        default="10",
+        help="Accept matches within specified radius of each candidate (in voxels). "
+        "Provide a single value (e.g., '10') or comma-separated values for "
+        "per-axis uncertainty (e.g., '10,15,10').",
     )
 
     # Microscope parameters
@@ -890,6 +1012,7 @@ def parse_args():
         default_partition="gpu-el8",
     )
     _ = add_job_submission(matching_parser, "./matching_results")
+    _ = add_discovery_options(matching_parser)
 
     analysis_parser = subparsers.add_parser(
         "analysis",
@@ -978,6 +1101,12 @@ def parse_args():
         default=None,
         help="Number of accepted false-positive picks to determine minimum score",
     )
+    peak_group.add_argument(
+        "--snr",
+        action="store_true",
+        default=False,
+        help="Normalize scores of individual inputs to SNR-like values (z-scores).",
+    )
 
     # Output options
     output_group = analysis_parser.add_argument_group("Output Options")
@@ -1029,21 +1158,29 @@ def run_matching(args, resources):
         mrc_pattern=args.tomograms,
         metadata_pattern=args.metadata,
         mask_pattern=args.masks,
+        orientation_pattern=args.orientations,
+        verbose=not args.quiet,
+        strict=args.strict,
     )
-    files = discovery.discover(tomo_list=args.tomo_list)
     print_block(
         name="Discovering Dataset",
         data={
             "Tomogram Pattern": args.tomograms,
             "Metadata Pattern": args.metadata,
             "Mask Pattern": args.masks,
-            "Valid Runs": len(files),
+            "Orientation Pattern": args.orientations,
         },
         label_width=30,
     )
+
+    if not args.quiet:
+        print("\nScanning tomograms:")
+    files = discovery.discover(tomo_list=args.tomo_list)
     if not files:
         print("No tomograms found! Check your patterns.")
         return
+
+    print(f"\nFound {len(files)} valid tomogram{'s' if len(files) > 1 else ''}")
 
     params = TMParameters(
         template=args.template,
@@ -1062,6 +1199,10 @@ def run_matching(args, resources):
         whiten_spectrum=args.whiten_spectrum,
         scramble_phases=args.scramble_phases,
         background_correction=args.background_correction,
+        orientations_scaling=args.orientations_scaling,
+        orientations_cone=args.orientations_cone,
+        orientations_uncertainty=args.orientations_uncertainty,
+        memory_scaling=args.memory_scaling,
     )
     print_params = params.to_command_args(files[0], "")
     _ = print_params.pop("target")
@@ -1118,6 +1259,7 @@ def run_analysis(args, resources):
         n_false_positives=args.n_false_positives,
         output_format=args.output_format,
         extraction_box_size=args.extraction_box_size,
+        snr=args.snr,
     )
     print_params = params.to_command_args(files[0], Path(""))
     _ = print_params.pop("input-files", None)

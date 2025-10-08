@@ -76,13 +76,15 @@ def ctf_filter(
         defocus_angle=defocus_angle,
         sampling_rate=np.max(sampling_rate),
         flip_phase=flip_phase,
-    )(shape=template.shape, return_real_fourier=True)["data"]
-    template = _apply_fourier_filter(template, ctf)
+    )(shape=fast_shape, return_real_fourier=True)["data"]
+    template_pad = _apply_fourier_filter(template_pad, ctf)
     return be.topleft_pad(template_pad, template.shape)
 
 
 def gaussian_filter(template: NDArray, sigma: float, **kwargs: dict) -> NDArray:
-    return preprocessor.gaussian_filter(template=template, sigma=sigma, **kwargs)
+    return preprocessor.gaussian_filter(
+        template=template.astype(np.float32), sigma=sigma, **kwargs
+    )
 
 
 def difference_of_gaussian_filter(template, sigmas: Tuple[float, float], **kwargs):
@@ -149,8 +151,7 @@ def wedge(
 
 
 def compute_power_spectrum(template: NDArray) -> NDArray:
-    return np.fft.fftshift(np.log(1 + np.abs(np.fft.fftn(template))))
-    # return np.fft.fftshift(np.log(np.abs(np.fft.fftn(template))))
+    return np.fft.fftshift(np.log(1 + np.abs(np.fft.fftn(template)) ** 2))
 
 
 def invert_contrast(template: NDArray) -> NDArray:

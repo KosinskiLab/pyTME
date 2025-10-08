@@ -188,7 +188,12 @@ def parse_args():
         help="[Experimental] Perform local optimization of candidates. Useful when the "
         "number of identified candidats is small (< 10).",
     )
-
+    additional_group.add_argument(
+        "--snr",
+        action="store_true",
+        default=False,
+        help="Normalize scores of individual inputs to SNR-like values (z-scores).",
+    )
     args = parser.parse_args()
 
     if args.output_prefix is None:
@@ -218,11 +223,22 @@ def load_template(
     return template, center, template_is_density
 
 
-def load_matching_output(path: str) -> List:
+def load_matching_output(path: str, compute_snr: bool = False) -> List:
     data = load_pickle(path)
     if data[0].ndim != data[2].ndim:
         data = _peaks_to_volume(data)
-    return list(data)
+    data = list(data)
+    if compute_snr:
+        mean = data[0].mean()
+        std = data[0].std()
+        std = np.where(std <= 1e-6, 1, std)
+        data[0] = (data[0] - mean) / std
+
+        # Update variance if present (index 4)
+        # After z-score: Var[(X - μ) / σ] = Var[X] / σ²
+        if len(data) == 6:
+            data[4] = data[4] / std**2
+    return data
 
 
 def _peaks_to_volume(data):
@@ -284,7 +300,9 @@ def simple_stats(arr, decimals=3):
     }
 
 
-def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
+def normalize_input(
+    foregrounds: Tuple[str], backgrounds: Tuple[str], compute_snr: bool = False
+) -> Tuple:
     # Determine output array shape and create consistent rotation map
     new_rotation_mapping, out_shape = prepare_pickle_merge(foregrounds)
 
@@ -298,7 +316,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
 
     # We reload to avoid potential memory bottlenecks
     for entity_index, foreground in enumerate(foregrounds):
-        data = load_matching_output(foreground)
+        data = load_matching_output(foreground, compute_snr=compute_snr)
         scores, _, rotations, rotation_mapping, *_ = data
 
         indices = tuple(slice(0, x) for x in scores.shape)
@@ -347,7 +365,7 @@ def normalize_input(foregrounds: Tuple[str], backgrounds: Tuple[str]) -> Tuple:
 
     scores_norm = np.full(out_shape_norm, fill_value=0, dtype=np.float32)
     for background in backgrounds:
-        data_norm = load_matching_output(background)
+        data_norm = load_matching_output(background, compute_snr=compute_snr)
         scores, _, rotations, rotation_mapping, *_ = data_norm
 
         indices = tuple(slice(0, x) for x in scores.shape)
@@ -409,7 +427,9 @@ def main():
             label_width=25,
         )
 
-    data, entities = normalize_input(args.input_file, args.background_file)
+    data, entities = normalize_input(
+        args.input_file, args.background_file, compute_snr=args.snr
+    )
 
     if args.output_format == "pickle":
         write_pickle(data, f"{args.output_prefix}.pickle")
