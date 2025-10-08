@@ -1,22 +1,42 @@
 """
 Compute memory consumption of template matching components.
 
-Copyright (c) 2023 European Molecular Biology Laboratory
+Copyright (c) 2023-2025 European Molecular Biology Laboratory
 
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 
 from .backends import backend as be
 
+MATCHING_MEMORY_REGISTRY = {}
+
+
+def register_memory(*names: str):
+    """
+    Decorator to auto-register memory estimators.
+
+    Parameters
+    ----------
+    *names : str
+        Names to register this memory estimator under.
+    """
+
+    def decorator(cls):
+        for name in names:
+            MATCHING_MEMORY_REGISTRY[name] = cls
+        return cls
+
+    return decorator
+
 
 class MatchingMemoryUsage(ABC):
     """
-    Class specification for estimating the memory requirements of template matching.
+    Strategy class for estimating memory requirements.
 
     Parameters
     ----------
@@ -30,25 +50,12 @@ class MatchingMemoryUsage(ABC):
         Number of bytes of the used complex, e.g. 8 for complex64.
     integer_nbytes : int
         Number of bytes of the used integer, e.g. 4 for int32.
-
-    Attributes
-    ----------
-    real_array_size : int
-        Number of elements in real array.
-    complex_array_size : int
-        Number of elements in complex array.
-    float_nbytes : int
-        Number of bytes of the used float, e.g. 4 for float32.
-    complex_nbytes : int
-        Number of bytes of the used complex, e.g. 8 for complex64.
-    integer_nbytes : int
-        Number of bytes of the used integer, e.g. 4 for int32.
     """
 
     def __init__(
         self,
-        fast_shape: Tuple[int],
-        ft_shape: Tuple[int],
+        fast_shape: Tuple[int, ...],
+        ft_shape: Tuple[int, ...],
         float_nbytes: int,
         complex_nbytes: int,
         integer_nbytes: int,
@@ -68,201 +75,108 @@ class MatchingMemoryUsage(ABC):
         """Return the memory usage per fork in bytes."""
 
 
-class CCMemoryUsage(MatchingMemoryUsage):
-    """
-    Memory usage estimation for CC scoring.
+class MemoryProfile(MatchingMemoryUsage):
+    """Memory estimator for methods with uniform array requirements."""
 
-    See Also
-    --------
-    :py:meth:`tme.matching_scores.cc_setup`.
-    """
-
-    def base_usage(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes
-        complex_arrays = self.complex_array_size * self.complex_nbytes
-        return float_arrays + complex_arrays
-
-    def per_fork(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes
-        complex_arrays = self.complex_array_size * self.complex_nbytes
-        return float_arrays + complex_arrays
-
-
-class LCCMemoryUsage(CCMemoryUsage):
-    """
-    Memory usage estimation for LCC scoring.
-
-    See Also
-    --------
-    :py:meth:`tme.matching_scores.lcc_setup`.
-    """
-
-
-class CORRMemoryUsage(MatchingMemoryUsage):
-    """
-    Memory usage estimation for CORR scoring.
-
-    See Also
-    --------
-    :py:meth:`tme.matching_scores.corr_setup`.
-    """
+    #: Number of shared real arrays
+    base_float: int = 0
+    #: Number of shared complex arrays
+    base_complex: int = 0
+    #: Number of real arrays per fork
+    fork_float: int = 0
+    #: Number of complex arrays per fork
+    fork_complex: int = 0
 
     def base_usage(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes * 4
-        complex_arrays = self.complex_array_size * self.complex_nbytes
-        return float_arrays + complex_arrays
+        return (
+            self.base_float * self.real_array_size * self.float_nbytes
+            + self.base_complex * self.complex_array_size * self.complex_nbytes
+        )
 
     def per_fork(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes
-        complex_arrays = self.complex_array_size * self.complex_nbytes
-        return float_arrays + complex_arrays
+        return (
+            self.fork_float * self.real_array_size * self.float_nbytes
+            + self.fork_complex * self.complex_array_size * self.complex_nbytes
+        )
 
 
-class CAMMemoryUsage(CORRMemoryUsage):
-    """
-    Memory usage estimation for CAM scoring.
+@register_memory("CC", "LCC")
+class CCMemoryUsage(MemoryProfile):
+    """:py:meth:`tme.matching_scores.cc_setup` memory estimator."""
 
-    See Also
-    --------
-    :py:meth:`tme.matching_scores.cam_setup`.
-    """
+    base_float, base_complex = 1, 1
+    fork_float, fork_complex = 1, 1
 
 
-class FLCSphericalMaskMemoryUsage(CORRMemoryUsage):
-    """
-    Memory usage estimation for FLCMSphericalMask scoring.
+@register_memory("CORR", "NCC", "CAM", "FLCSphericalMask", "batchFLCSphericalMask")
+class CORRMemoryUsage(MemoryProfile):
+    """:py:meth:`tme.matching_scores.corr_setup` memory estimator."""
 
-    See Also
-    --------
-    :py:meth:`tme.matching_scores.flcSphericalMask_setup`.
-    """
+    base_float, base_complex = 4, 1
+    fork_float, fork_complex = 1, 1
 
 
-class FLCMemoryUsage(MatchingMemoryUsage):
-    """
-    Memory usage estimation for FLC scoring.
+@register_memory("FLC", "batchFLC")
+class FLCMemoryUsage(MemoryProfile):
+    """:py:meth:`tme.matching_scores.flc_setup` memory estimator."""
 
-    See Also
-    --------
-    :py:meth:`tme.matching_scores.flc_setup`.
-    """
-
-    def base_usage(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes * 2
-        complex_arrays = self.complex_array_size * self.complex_nbytes * 2
-        return float_arrays + complex_arrays
-
-    def per_fork(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes * 3
-        complex_arrays = self.complex_array_size * self.complex_nbytes * 2
-        return float_arrays + complex_arrays
+    base_float, base_complex = 2, 2
+    fork_float, fork_complex = 3, 2
 
 
-class MCCMemoryUsage(MatchingMemoryUsage):
-    """
-    Memory usage estimation for MCC scoring.
+@register_memory("MCC")
+class MCCMemoryUsage(MemoryProfile):
+    """:py:meth:`tme.matching_scores.mcc_setup` memory estimator."""
 
-    See Also
-    --------
-    :py:meth:`tme.matching_scores.mcc_setup`.
-    """
-
-    def base_usage(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes * 2
-        complex_arrays = self.complex_array_size * self.complex_nbytes * 3
-        return float_arrays + complex_arrays
-
-    def per_fork(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes * 6
-        complex_arrays = self.complex_array_size * self.complex_nbytes
-        return float_arrays + complex_arrays
+    base_float, base_complex = 2, 3
+    fork_float, fork_complex = 6, 1
 
 
-class MaxScoreOverRotationsMemoryUsage(MatchingMemoryUsage):
-    """
-    Memory usage estimation MaxScoreOverRotations Analyzer.
+@register_memory("MaxScoreOverRotations")
+class MaxScoreOverRotationsMemoryUsage(MemoryProfile):
+    """:py:class:`tme.analyzer.MaxScoreOverRotations` memory estimator."""
 
-    See Also
-    --------
-    :py:class:`tme.analyzer.MaxScoreOverRotations`.
-    """
-
-    def base_usage(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes * 2
-        return float_arrays
-
-    def per_fork(self) -> int:
-        return 0
+    base_float = 2
 
 
-class PeakCallerMaximumFilterMemoryUsage(MatchingMemoryUsage):
-    """
-    Memory usage estimation MaxScoreOverRotations Analyzer.
+@register_memory("MaxScoreOverRotationsConstrained")
+class MaxScoreOverRotationsConstrainedMemoryUsage(MemoryProfile):
+    """:py:class:`tme.analyzer.MaxScoreOverRotationsConstrained` memory estimator."""
 
-    See Also
-    --------
-    :py:class:`tme.analyzer.PeakCallerMaximumFilter`.
-    """
-
-    def base_usage(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes
-        return float_arrays
-
-    def per_fork(self) -> int:
-        float_arrays = self.real_array_size * self.float_nbytes
-        return float_arrays
+    # This ultimately depends on the number of seed points and mask size.
+    # Ideally we would use that in the memory estimation, but for now we
+    # approximate by reqesting memory for another real array
+    base_float = 3
 
 
-class CupyBackendMemoryUsage(MatchingMemoryUsage):
-    """
-    Memory usage estimation for CupyBackend.
+@register_memory("PeakCallerMaximumFilter")
+class PeakCallerMaximumFilterMemoryUsage(MemoryProfile):
+    """:py:class:`tme.analyzer.peaks.PeakCallerMaximumFilter` memory estimator."""
 
-    See Also
-    --------
-    :py:class:`tme.backends.CupyBackend`.
-    """
-
-    def base_usage(self) -> int:
-        # FFT plans, overhead from assigning FFT result, rotation interpolation
-        complex_arrays = self.real_array_size * self.complex_nbytes * 3
-        float_arrays = self.complex_array_size * self.float_nbytes * 2
-        return float_arrays + complex_arrays
-
-    def per_fork(self) -> int:
-        return 0
+    base_float, fork_float = 1, 1
 
 
-MATCHING_MEMORY_REGISTRY = {
-    "CC": CCMemoryUsage,
-    "LCC": LCCMemoryUsage,
-    "CORR": CORRMemoryUsage,
-    "NCC": CORRMemoryUsage,
-    "CAM": CAMMemoryUsage,
-    "MCC": MCCMemoryUsage,
-    "FLCSphericalMask": FLCSphericalMaskMemoryUsage,
-    "FLC": FLCMemoryUsage,
-    "MaxScoreOverRotations": MaxScoreOverRotationsMemoryUsage,
-    "PeakCallerMaximumFilter": PeakCallerMaximumFilterMemoryUsage,
-    "cupy": CupyBackendMemoryUsage,
-    "pytorch": CupyBackendMemoryUsage,
-    "batchFLCSphericalMask": FLCSphericalMaskMemoryUsage,
-    "batchFLC": FLCMemoryUsage,
-}
+@register_memory("cupy", "pytorch")
+class CupyBackendMemoryUsage(MemoryProfile):
+    """:py:class:`tme.backends.CupyBackend` memory estimator."""
+
+    # FFT plans, overhead from assigning FFT result, rotation interpolation
+    base_complex, base_float = 3, 2
 
 
 def estimate_memory_usage(
-    shape1: Tuple[int],
-    shape2: Tuple[int],
+    shape1: Tuple[int, ...],
+    shape2: Tuple[int, ...],
     matching_method: str,
     ncores: int,
-    analyzer_method: str = None,
-    backend: str = None,
+    analyzer_method: Optional[str] = None,
+    backend: Optional[str] = None,
     float_nbytes: int = 4,
     complex_nbytes: int = 8,
     integer_nbytes: int = 4,
 ) -> int:
     """
-    Estimate the memory usage for a given template matching operation.
+    Estimate the memory usage for a given template matching run.
 
     Parameters
     ----------
@@ -300,10 +214,7 @@ def estimate_memory_usage(
             f"Supported options are {','.join(MATCHING_MEMORY_REGISTRY.keys())}"
         )
 
-    convolution_shape, fast_shape, ft_shape = be.compute_convolution_shapes(
-        shape1, shape2
-    )
-
+    _, fast_shape, ft_shape = be.compute_convolution_shapes(shape1, shape2)
     memory_instance = MATCHING_MEMORY_REGISTRY[matching_method](
         fast_shape=fast_shape,
         ft_shape=ft_shape,
@@ -314,9 +225,8 @@ def estimate_memory_usage(
 
     nbytes = memory_instance.base_usage() + memory_instance.per_fork() * ncores
 
-    analyzer_instance = MATCHING_MEMORY_REGISTRY.get(analyzer_method, None)
-    if analyzer_instance is not None:
-        analyzer_instance = analyzer_instance(
+    if analyzer_method in MATCHING_MEMORY_REGISTRY:
+        analyzer_instance = MATCHING_MEMORY_REGISTRY[analyzer_method](
             fast_shape=fast_shape,
             ft_shape=ft_shape,
             float_nbytes=float_nbytes,
@@ -325,9 +235,8 @@ def estimate_memory_usage(
         )
         nbytes += analyzer_instance.base_usage() + analyzer_instance.per_fork() * ncores
 
-    backend_instance = MATCHING_MEMORY_REGISTRY.get(backend, None)
-    if backend_instance is not None:
-        backend_instance = backend_instance(
+    if backend in MATCHING_MEMORY_REGISTRY:
+        backend_instance = MATCHING_MEMORY_REGISTRY[backend](
             fast_shape=fast_shape,
             ft_shape=ft_shape,
             float_nbytes=float_nbytes,
