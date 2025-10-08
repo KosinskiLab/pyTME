@@ -1,4 +1,4 @@
-tme/backends/jax_backend.py """
+"""
 Backend using jax for template matching.
 
 Copyright (c) 2023-2024 European Molecular Biology Laboratory

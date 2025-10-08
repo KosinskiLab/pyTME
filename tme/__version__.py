@@ -1,3 +1,1 @@
-from importlib.metadata import version
-
-__version__ = version("pytme")
+__version__ = "0.3.4a"

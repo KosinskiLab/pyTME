@@ -1,4 +1,4 @@
-tme/matching_utils.py """
+"""
 Utility functions for template matching.
 
 Copyright (c) 2023 European Molecular Biology Laboratory
