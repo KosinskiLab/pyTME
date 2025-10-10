@@ -108,7 +108,7 @@ In all cases, the tool will report statistics for foreground, background, and no
    > Background mean 0.089, std 0.023, max 0.234
    > Normalized mean 0.067, std 0.078, max 0.298
 
-Since the background of the individual entities may differ, we can also compare SNR-like cross-correlations instead, using ``--snr``. This is also useful when comparing the scores across an entire dataset.
+Since the background of the individual entities may differ, we can also compare SNR-like cross-correlations instead, using ``--snr``. This is also useful when comparing scores across an entire dataset.
 
 
 Local Optimization and Refinement
@@ -140,21 +140,21 @@ Our convention follows the schematics outlined in [1]_. We use a right-handed co
 Details for Developers
 ----------------------
 
-The output of ``match_template.py`` is a `pickle <https://docs.python.org/3/library/pickle.html>`_ file. All but the last element will correspond to the return value of a given :doc:`analyzer </reference/analyzer/base>`'s merge method. The file can be read using :py:meth:`load_pickle <tme.matching_utils.load_pickle>`. For the default analyzer :py:class:`MaxScoreOverRotations <tme.analyzer.MaxScoreOverRotations>` the pickle file contains
+The output of ``match_template.py`` is a `pickle <https://docs.python.org/3/library/pickle.html>`_ file containing a tuple. All but the last element will correspond to the return value of a given :doc:`analyzer </reference/analyzer/base>`'s merge method. The file can be read using :py:meth:`load_pickle <tme.matching_utils.load_pickle>`. For the default analyzer :py:class:`MaxScoreOverRotations <tme.analyzer.MaxScoreOverRotations>` the pickle file contains
 
-- **Scores**: An array with scores mapped to translations.
-- **Offset**: Offset informing about shifts in coordinate sytems.
-- **Rotations**: An array of optimal rotation indices for each translation.
-- **Rotation Dictionary**: Mapping of rotation indices to rotation matrices.
+- **Scores**: Score for each position in the target.
+- **Offset**: Coordinate system shift.
+- **Rotations**: Optimal rotation index for each translation.
+- **Rotation Dictionary**: Dictionary mapping rotation indices to rotation matrices.
 - **Sum of Squares**: Sum of squares of scores for statistics.
 - **Metadata**: Coordinate system information and parameters for reproducibility.
 
 However, when you use the `-p` flag the output structure differs
 
-- **Translations**: A numpy array containing translations of peaks.
-- **Rotations**: A numpy array containing rotations of peaks.
-- **Scores**: Score of each peak.
-- **Details**: Additional information regarding each peak.
+- **Translations**: Peak position.
+- **Rotations**: Rotation matrix describing template orientation at peak.
+- **Scores**: Score at peak.
+- **Details**: Additional properties of peak.
 - **Metadata**: Coordinate system information and parameters for reproducibility.
 
 

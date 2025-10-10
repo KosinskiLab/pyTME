@@ -115,11 +115,11 @@ To integrate orientational constraints, we need to ensure the template used for 
         --sampling-rate 6.8 \
         --lowpass 15 \
         --box-size 60 \
-        --align-axis 2 \
-        --invert-contrast \
-        --flip-axis
+        --align-axis 2
 
-For NA we need to provide the ``--flip-axis`` flag due to the handedness of the alignment problem. When aligning a protein structure to a principal axis, the algorithm determines the orientation based on the distribution of mass around the center. However, this can result in two possible orientations that are 180° apart - the protein could point "up" or "down" along the chosen axis.
+.. note::
+
+    In some cases we need to provide the ``--flip-axis`` flag due to the handedness of the alignment problem. When aligning a protein structure to a principal axis, the algorithm determines the orientation based on the distribution of mass around the center. However, this can result in two possible orientations that are 180° apart - the protein could point "up" or "down" along the chosen axis.
 
 After alignment, your templates should look similar to what is shown here, with the transmembrane region pointing in the direction of negative z and the extracellular domain pointing in direction of z
 
@@ -159,7 +159,7 @@ Alternatively, you can do this using Python
         mask_type="tube",
         shape=(60,60,60),
         symmetry_axis=2,
-        base_center=(29,29,23.5),
+        center=(29,29,23.5),
         inner_radius=0,
         outer_radius=10,
         height=37
@@ -200,7 +200,7 @@ For NA, simply use ``-i templates/na_6.8_aligned.mrc`` and ``-o results/na_match
 
     You can also constrain the rotational search to account for properties like template symmetry. For instance for the C3 symmetric HA, try replacing ``--angular-sampling 10`` with ``--cone-angle 180 --cone-sampling 10 --axis-symmetry 3``.
 
-The output of constrained template matching is a pickle file containing the score space and identified orientations. We can explore the score space in the ``preprocessor_gui.py`` using the **Import Pickle** button. Shown below is a comparison of HA and NA matching using constrained and unconstrained matching, respectively. Note the increase in peak sharpness and decreased contribution of the membrane density in constrained matching. Achieving more uniform matching scores for HA would require a more stringently created mask. In essence, HAs orthogonal to the missing wedge score lower, because applying a wedge mask to the template density stretches the template, and pushes a considerable amount outside the mask. Alternatively, background correction could be performed, for instance using ``--background-correction phase-scrambling``.
+The output of constrained template matching is a pickle file containing the score space and identified orientations. We can explore the score space in the ``preprocessor_gui.py`` using the **Import Pickle** button. Shown below is a comparison of HA and NA matching using constrained and unconstrained matching, respectively. Note the increase in peak sharpness and decreased contribution of the membrane density in constrained matching.
 
 .. figure:: ../../_static/examples/constrained/scores.png
 

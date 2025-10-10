@@ -176,7 +176,7 @@ def estimate_memory_usage(
     integer_nbytes: int = 4,
 ) -> int:
     """
-    Estimate the memory usage for a given template matching run.
+    Estimate the memory usage of a given template matching run.
 
     Parameters
     ----------
@@ -185,19 +185,19 @@ def estimate_memory_usage(
     shape2 : tuple
         Shape of the template array.
     matching_method : str
-        Matching method to estimate memory usage for.
+        Matching method used to compute scores.
     analyzer_method : str, optional
-        The method used for score analysis.
+        Analyzer used for score analysis.
     backend : str, optional
         Backend used for computation.
     ncores : int
-        The number of CPU cores used for the operation.
+        The number of operations running in parallel.
     float_nbytes : int
-        Number of bytes of the used float, defaults to 4 (float32).
+        Byte size of used float, defaults to 4 (float32).
     complex_nbytes : int
-        Number of bytes of the used complex, defaults to 8 (complex64).
+        Byte size of used complex, defaults to 8 (complex64).
     integer_nbytes : int
-        Number of bytes of the used integer, defaults to 4 (int32).
+        Byte size of used integer, defaults to 4 (int32).
 
     Returns
     -------
@@ -215,34 +215,24 @@ def estimate_memory_usage(
         )
 
     _, fast_shape, ft_shape = be.compute_convolution_shapes(shape1, shape2)
-    memory_instance = MATCHING_MEMORY_REGISTRY[matching_method](
-        fast_shape=fast_shape,
-        ft_shape=ft_shape,
-        float_nbytes=float_nbytes,
-        complex_nbytes=complex_nbytes,
-        integer_nbytes=integer_nbytes,
-    )
 
-    nbytes = memory_instance.base_usage() + memory_instance.per_fork() * ncores
+    kwargs = {
+        "fast_shape": fast_shape,
+        "ft_shape": ft_shape,
+        "float_nbytes": float_nbytes,
+        "complex_nbytes": complex_nbytes,
+        "integer_nbytes": integer_nbytes,
+    }
+
+    instance = MATCHING_MEMORY_REGISTRY[matching_method](**kwargs)
+    nbytes = instance.base_usage() + instance.per_fork() * ncores
 
     if analyzer_method in MATCHING_MEMORY_REGISTRY:
-        analyzer_instance = MATCHING_MEMORY_REGISTRY[analyzer_method](
-            fast_shape=fast_shape,
-            ft_shape=ft_shape,
-            float_nbytes=float_nbytes,
-            complex_nbytes=complex_nbytes,
-            integer_nbytes=integer_nbytes,
-        )
-        nbytes += analyzer_instance.base_usage() + analyzer_instance.per_fork() * ncores
+        instance = MATCHING_MEMORY_REGISTRY[analyzer_method](**kwargs)
+        nbytes += instance.base_usage() + instance.per_fork() * ncores
 
     if backend in MATCHING_MEMORY_REGISTRY:
-        backend_instance = MATCHING_MEMORY_REGISTRY[backend](
-            fast_shape=fast_shape,
-            ft_shape=ft_shape,
-            float_nbytes=float_nbytes,
-            complex_nbytes=complex_nbytes,
-            integer_nbytes=integer_nbytes,
-        )
-        nbytes += backend_instance.base_usage() + backend_instance.per_fork() * ncores
+        instance = MATCHING_MEMORY_REGISTRY[backend](**kwargs)
+        nbytes += instance.base_usage() + instance.per_fork() * ncores
 
     return nbytes
