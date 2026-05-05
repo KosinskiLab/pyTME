@@ -2,6 +2,7 @@
 """
 PyTME Batch Runner - Refactored Core Classes
 """
+
 import re
 import argparse
 import subprocess
@@ -1295,6 +1296,7 @@ def main():
         memory_gb=args.memory,
         time_limit=args.time_limit,
         partition=args.partition,
+        qos=args.qos,
         gpu_count=getattr(args, "gpu_count", 0),
         gpu_type=getattr(args, "gpu_type", None),
     )
