@@ -161,11 +161,11 @@ py::dict max_index_by_label(
     const U* labels_ptr = labels.data();
     const T* scores_ptr = scores.data();
 
-    std::unordered_map<U, std::pair<T, ssize_t>> max_scores;
+    std::unordered_map<U, std::pair<T, py::ssize_t>> max_scores;
 
     U label;
     T score;
-    for (ssize_t i = 0; i < labels.size(); ++i) {
+    for (py::ssize_t i = 0; i < labels.size(); ++i) {
         label = labels_ptr[i];
         score = scores_ptr[i];
 
