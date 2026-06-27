@@ -700,12 +700,19 @@ class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
 
     __doc__ += _MatchCoordinatesToDensity.__doc__
 
-    def __init__(self, **kwargs):
-        kwargs["target"] = np.subtract(kwargs["target"], kwargs["target"].mean())
-        kwargs["template_weights"] = np.subtract(
-            kwargs["template_weights"], kwargs["template_weights"].mean()
-        )
-        super().__init__(**kwargs)
+    def __call__(self) -> float:
+        """Returns the score of the current configuration."""
+        # Centre by the mean of the *matched* values, as the docstring and the score name
+        # ("...Mean") specify. The previous implementation subtracted the global target-array
+        # mean in __init__ — a constant offset that does not centre the overlapping values and
+        # so did not compute the documented Pearson-about-the-mean (it ignored the local mean
+        # of the target over the template footprint).
+        target_values = self._target_values - self._target_values.mean()
+        template_weights = self.template_weights - self.template_weights.mean()
+        denominator = float(np.linalg.norm(target_values) * np.linalg.norm(template_weights))
+        if denominator < self.eps:
+            return 0.0
+        return float(np.dot(target_values, template_weights) / denominator) * self.score_sign
 
 
 class MaskedCrossCorrelation(_MatchCoordinatesToDensity):
