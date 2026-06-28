@@ -714,6 +714,51 @@ class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
             return 0.0
         return float(np.dot(target_values, template_weights) / denominator) * self.score_sign
 
+    def grad(self):
+        """Gradient of the matched-mean score w.r.t. translation and rotation.
+
+        Identical in form to :py:meth:`NormalizedCrossCorrelation.grad`, but evaluated on the
+        *centered* values ``v - mean(v)`` and weights ``w - mean(w)``. The mean-subtraction adds no
+        extra terms: because ``sum(v - mean(v)) = sum(w - mean(w)) = 0``, the derivatives of the two
+        means cancel against the centered weights/values (``d<v-v̄, w-w̄>/dp = <dv/dp, w-w̄>`` and
+        ``d||v-v̄||/dp = <v-v̄, dv/dp>/||v-v̄||``). This makes the inherited gradient consistent with
+        the (mean-subtracted) ``__call__``; the previous version inherited the non-centered gradient.
+        """
+        grad = self._interpolate_gradient(positions=self.template_rotated)
+        torque = self._torques(
+            positions=self.template_rotated, gradients=grad, center=self.template_center
+        )
+
+        values = self._target_values - self._target_values.mean()
+        weights = self.template_weights - self.template_weights.mean()
+
+        norm = be.multiply(
+            be.power(be.sqrt(be.sum(be.square(values))), 3),
+            be.sqrt(be.sum(be.square(weights))),
+        )
+        values_sq = be.sum(be.square(values))
+        values_weights = be.sum(be.multiply(values, weights))
+
+        translation_grad = be.multiply(
+            be.sum(be.multiply(grad, weights), axis=1), values_sq
+        )
+        translation_grad -= be.multiply(
+            be.sum(be.multiply(grad, values), axis=1), values_weights
+        )
+
+        torque_grad = be.multiply(
+            be.sum(be.multiply(torque, weights), axis=1), values_sq
+        )
+        torque_grad -= be.multiply(
+            be.sum(be.multiply(torque, values), axis=1), values_weights
+        )
+
+        total_grad = be.concatenate([translation_grad, torque_grad])
+        if norm > 0:
+            total_grad = be.divide(total_grad, norm, out=total_grad)
+        total_grad = be.divide(total_grad, self.n_points, out=total_grad)
+        return -total_grad
+
 
 class MaskedCrossCorrelation(_MatchCoordinatesToDensity):
     """
