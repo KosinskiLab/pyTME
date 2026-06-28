@@ -704,7 +704,7 @@ class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
         """Returns the score of the current configuration."""
         # Centre by the mean of the *matched* values, as the docstring and the score name
         # ("...Mean") specify. The previous implementation subtracted the global target-array
-        # mean in __init__ — a constant offset that does not centre the overlapping values and
+        # mean in __init__ -- a constant offset that does not centre the overlapping values and
         # so did not compute the documented Pearson-about-the-mean (it ignored the local mean
         # of the target over the template footprint).
         target_values = self._target_values - self._target_values.mean()
@@ -717,12 +717,16 @@ class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
     def grad(self):
         """Gradient of the matched-mean score w.r.t. translation and rotation.
 
-        Identical in form to :py:meth:`NormalizedCrossCorrelation.grad`, but evaluated on the
-        *centered* values ``v - mean(v)`` and weights ``w - mean(w)``. The mean-subtraction adds no
-        extra terms: because ``sum(v - mean(v)) = sum(w - mean(w)) = 0``, the derivatives of the two
-        means cancel against the centered weights/values (``d<v-v̄, w-w̄>/dp = <dv/dp, w-w̄>`` and
-        ``d||v-v̄||/dp = <v-v̄, dv/dp>/||v-v̄||``). This makes the inherited gradient consistent with
-        the (mean-subtracted) ``__call__``; the previous version inherited the non-centered gradient.
+        Same form as :py:meth:`NormalizedCrossCorrelation.grad`, but evaluated on the *centred*
+        values ``vc = v - mean(v)`` and weights ``wc = w - mean(w)``. The mean-subtraction adds no
+        extra terms: because ``sum(vc) = sum(wc) = 0``, the derivatives of the two means cancel
+        against the centred weights/values (``d<vc, wc>/dp = <dv/dp, wc>`` and
+        ``d||vc||/dp = <vc, dv/dp> / ||vc||``), so this is the non-centred formula with v, w replaced
+        by vc, wc. The previous version inherited the non-centred gradient, inconsistent with the
+        (mean-subtracted) ``__call__``.
+
+        Returns ``score_sign * d(score)/dp`` so it is correct for both ``negate_score`` settings
+        (the parent classes hardcode ``-total_grad``, which only holds for ``negate_score=True``).
         """
         grad = self._interpolate_gradient(positions=self.template_rotated)
         torque = self._torques(
@@ -757,7 +761,7 @@ class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
         if norm > 0:
             total_grad = be.divide(total_grad, norm, out=total_grad)
         total_grad = be.divide(total_grad, self.n_points, out=total_grad)
-        return -total_grad
+        return self.score_sign * total_grad
 
 
 class MaskedCrossCorrelation(_MatchCoordinatesToDensity):
