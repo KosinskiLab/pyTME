@@ -703,12 +703,14 @@ class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
     def __call__(self) -> float:
         """Returns the score of the current configuration."""
         # Centre by the mean of the matched values (the target sampled over the template footprint).
-        target_values = self._target_values - self._target_values.mean()
-        template_weights = self.template_weights - self.template_weights.mean()
-        denominator = float(np.linalg.norm(target_values) * np.linalg.norm(template_weights))
+        target_values = self._target_values - be.mean(self._target_values)
+        template_weights = self.template_weights - be.mean(self.template_weights)
+        denominator = be.sqrt(be.sum(be.square(target_values))) * be.sqrt(
+            be.sum(be.square(template_weights))
+        )
         if denominator < self.eps:
             return 0.0
-        return float(np.dot(target_values, template_weights) / denominator) * self.score_sign
+        return float(be.dot(target_values, template_weights) / denominator) * self.score_sign
 
     def grad(self):
         """Gradient of the score w.r.t. translation (first three) and rotation (last three).
@@ -723,8 +725,8 @@ class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
             positions=self.template_rotated, gradients=grad, center=self.template_center
         )
 
-        values = self._target_values - self._target_values.mean()
-        weights = self.template_weights - self.template_weights.mean()
+        values = self._target_values - be.mean(self._target_values)
+        weights = self.template_weights - be.mean(self.template_weights)
 
         norm = be.multiply(
             be.power(be.sqrt(be.sum(be.square(values))), 3),
