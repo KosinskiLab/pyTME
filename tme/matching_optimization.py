@@ -425,10 +425,7 @@ class _MatchCoordinatesToCoordinates(_MatchDensityToDensity):
             use_geometric_center=False,
         )
 
-        return self(
-            transformed_coordinates=self.template_coordinates_rotated,
-            transformed_coordinates_mask=self.template_mask_coordinates_rotated,
-        )
+        return self()
 
 
 class FLC(_MatchDensityToDensity):
