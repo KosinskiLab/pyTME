@@ -1,0 +1,6 @@
+CTFReconstructed.defocus\_angle
+==========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.defocus_angle

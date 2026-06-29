@@ -1,0 +1,6 @@
+CCMemoryUsage.base\_float
+===================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CCMemoryUsage.base_float

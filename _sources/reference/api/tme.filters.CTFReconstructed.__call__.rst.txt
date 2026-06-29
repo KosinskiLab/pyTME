@@ -1,0 +1,6 @@
+CTFReconstructed.\_\_call\_\_
+=====================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: CTFReconstructed.__call__

@@ -1,0 +1,58 @@
+﻿Wedge
+=====
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: Wedge
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            Wedge.angles
+         
+         
+            Wedge.frequency_cutoff
+         
+         
+            Wedge.opening_axis
+         
+         
+            Wedge.sampling_rate
+         
+         
+            Wedge.tilt_axis
+         
+         
+            Wedge.weight_type
+         
+         
+            Wedge.weights
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            Wedge.__call__
+      
+
+      
+         
+         
+            Wedge.from_file
+         
+
+   
+   

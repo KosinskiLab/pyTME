@@ -1,0 +1,6 @@
+AbstractAnalyzer.correct\_background
+================================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: AbstractAnalyzer.correct_background

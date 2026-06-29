@@ -1,0 +1,6 @@
+CCMemoryUsage.fork\_float
+===================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CCMemoryUsage.fork_float

@@ -1,0 +1,6 @@
+MatchingBackend.ssum
+=================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: MatchingBackend.ssum

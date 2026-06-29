@@ -1,0 +1,787 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Constrained Template Matching &#8212; pytme 0.3.4a documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/general.css?v=2e4b593a" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
+
+    <script src="../../_static/documentation_options.js?v=97414d2f"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4ea706d9"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart/matching/constrained';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Fitting Atomic Structures" href="fitting.html" />
+    <link rel="prev" title="Picking Ribosomes" href="particle_picking.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pytme</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference/index.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../genindex.html">
+    Index
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/KosinskiLab/pyTME" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Template Matching</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="example.html">Practical Example</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="particle_picking.html">Picking Ribosomes</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Constrained Template Matching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting.html">Fitting Atomic Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alignment.html">Alignment of Densities</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster.html">Cluster Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">Moving Forward</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Postprocessing</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../postprocessing/motivation.html">Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../postprocessing/example.html">Practical Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../postprocessing/summary.html">Summary</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Further Reading</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing/masks.html">Masking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing/filters.html">Filtering Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing/gui.html">Using the GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../issues.html">Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">User Guide</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="example.html" class="nav-link">Practical Example</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Constrained Template Matching</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="constrained-template-matching">
+<h1>Constrained Template Matching<a class="headerlink" href="#constrained-template-matching" title="Link to this heading">#</a></h1>
+<p>Constrained template matching builds upon standard template matching by integrating prior knowledge about where and how particles are oriented in the data. This is particularly valuable for membrane-associated proteins, with known relative orientation to the membrane surface. Such constraints are imposed by seed points, which can be generated from surface parametrizations, but could also originate from unrefined initial picks, e.g., picks from deep-learning without corresponding angular assignment.</p>
+<p>Here, we use a specific formulation of constrained template matching that remains computationally efficient and accurate in large or highly curved biological systems <a class="footnote-reference brackets" href="#id5" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. In the following, we demonstrate the typical workflow for a synthetic Influenza A virus (IAV), where we identify the two glycoproteins hemagglutinin (HA) and neuraminidase (NA) using template matching.</p>
+<figure class="align-default" id="id9">
+<a class="reference internal image-reference" href="../../_images/data_overview.png"><img alt="../../_images/data_overview.png" src="../../_images/data_overview.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Simulating IAV tomograms using Mepsi <a class="footnote-reference brackets" href="#id6" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id9" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
+<p>Before starting with constrained template matching, ensure you have access to</p>
+<ul class="simple">
+<li><p>GPU with CUDA support</p></li>
+<li><p>16 GB of RAM</p></li>
+</ul>
+<p>You can optionally install <a class="reference external" href="https://github.com/maurerv/mosaic">Mosaic</a> to generate seed points.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Constrained template matching is available from version 0.3.0 and above.</p>
+</div>
+</section>
+<section id="data-structure">
+<h2>Data Structure<a class="headerlink" href="#data-structure" title="Link to this heading">#</a></h2>
+<p>All data used throughout the example is available from <a class="reference external" href="https://oc.embl.de/index.php/s/KhbLe0Y1JI61ct8">ownCloud</a>. The data is organized as follows</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>iav_example/
+├── tomogram_solvated_ctf_noise.mrc # Simulated IAV tomogram
+├── tomogram_segmentation.mrc       # Membrane segmentation
+├── tilt_angles.txt                 # Tilt angles for missing wedge correction
+├── *.sh                            # Scripts for preprocessing and matching
+├── templates/
+│   ├── ha.pdb                      # HA structure
+│   ├── na.pdb                      # NA structure
+│   ├── ha_6.8_aligned.mrc          # Preprocessed HA template
+│   ├── na_6.8_aligned.mrc          # Preprocessed NA template
+│   └── template_mask_6.8.mrc       # Template mask
+├── seed_points/
+│   ├── SeedingPoints_40_80.star    # Pre-generated seed points
+│   └── picks.star                  # HA/NA picks
+└── results/
+    ├── ha_matching.pickle          # Constrained HA matching results
+    ├── na_matching.pickle          # Constrained NA matching results
+    ├── ha.pickle                   # Unconstrained HA matching results
+    └── na.pickle                   # Unconstrained NA matching results
+</pre></div>
+</div>
+<p>You can mirror this structure locally to follow along with the example.</p>
+</section>
+<section id="generating-seed-points">
+<h2>Generating Seed Points<a class="headerlink" href="#generating-seed-points" title="Link to this heading">#</a></h2>
+<p>When working with membrane proteins, we like to generate seed points using membrane mesh representations from Mosaic <a class="footnote-reference brackets" href="#id7" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>. Mosaic is a graphical user interface that unifies deep-learning-based membrane segmentation, interactive refinement and mesh generation and is available from <a class="reference external" href="https://github.com/maurerv/mosaic">GitHub</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can use your own methods for generating seed points. Constrained template matching merely expects a STAR file as specification of the constraints with columns for coordinates (rlnCoordinateX, rlnCoordinateY, rlnCoordinateZ) and zyz angles (rlnAngleRot, rlnAngleTilt, rlnAnglePsi).</p>
+</div>
+<p>Briefly, Mosaic uses membrain-seg <a class="footnote-reference brackets" href="#id8" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> to create an initial segmentation of the viral membrane. This process can be triggered using the <strong>Membrane</strong> button in the <strong>Intelligence</strong> tab. Since the membrane is well resolved, we only need to remove noise clusters prior to mesh creation.</p>
+<div class="video_wrapper" style="padding-bottom: 56.250000%; padding-top: 30px; position: relative; width: 100%">
+<iframe allowfullscreen="true" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/Qb_qzMMBjSI" style="border: 0; height: 100%; left: 0; position: absolute; top: 0; width: 100%">
+</iframe></div><p>To parametrize the virus geometry, we select the outer membrane cluster and click the <strong>Sphere</strong> button in the <strong>Parametrization</strong> tab. Subsequently, we <strong>Sample</strong> points from the sphere model and fit a convex hull using <strong>Mesh</strong>. We can now draw seed points from the created mesh. The seed points should roughly align with the center of mass of the glycoproteins, because this is where the templates are expected to match. This alignment does not have to be very precise, but it helps to further constrain matching down the line. You can draw seed points by clicking the drop-down arrow of the <strong>Sample</strong> button, changing the <em>Mode</em> to <em>Distance</em> and</p>
+<ul class="simple">
+<li><p>Sampling (40 Å): This controls the distance between adjacent seed points on the surface. Smaller values create denser sampling with more seed points.</p></li>
+<li><p>Offset (80 Å): This moves seed points away from the membrane surface along the normal vector. For this IAV example, 80 Å positions the seed points approximately at the center of mass of the glycoproteins.</p></li>
+</ul>
+<figure class="align-default" id="id10">
+<a class="reference internal image-reference" href="../../_images/iav_seedpoints.png"><img alt="../../_images/iav_seedpoints.png" src="../../_images/iav_seedpoints.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Membrane mesh in blue and drawn seed points in red.</span><a class="headerlink" href="#id10" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The distance distribution between seed points and relative to the mesh can be assessed using the <strong>Properties</strong> button in the <strong>Segmentation</strong> tab. To export the created points, right-click the corresponding cluster object and export it as STAR file.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The Mosaic tutorial features <a class="reference external" href="https://kosinskilab.github.io/mosaic/tutorial/workflows/iav.html">additional examples</a>.</p>
+</div>
+</section>
+<section id="creating-templates">
+<h2>Creating Templates<a class="headerlink" href="#creating-templates" title="Link to this heading">#</a></h2>
+<p>To integrate orientational constraints, we need to ensure the template used for matching is in a consistent orientation. Here, we align the principal axis of the template to the z-axis of the coordinate system</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>preprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>templates/ha.pdb<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>templates/ha_6.8_aligned.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--sampling-rate<span class="w"> </span><span class="m">6</span>.8<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">15</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--box-size<span class="w"> </span><span class="m">60</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--invert-contrast<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--align-axis<span class="w"> </span><span class="m">2</span>
+
+preprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>templates/na.pdb<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>templates/na_6.8_aligned.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--sampling-rate<span class="w"> </span><span class="m">6</span>.8<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lowpass<span class="w"> </span><span class="m">15</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--box-size<span class="w"> </span><span class="m">60</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--align-axis<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In some cases we need to provide the <code class="docutils literal notranslate"><span class="pre">--flip-axis</span></code> flag due to the handedness of the alignment problem. When aligning a protein structure to a principal axis, the algorithm determines the orientation based on the distribution of mass around the center. However, this can result in two possible orientations that are 180° apart - the protein could point “up” or “down” along the chosen axis.</p>
+</div>
+<p>After alignment, your templates should look similar to what is shown here, with the transmembrane region pointing in the direction of negative z and the extracellular domain pointing in direction of z</p>
+<figure class="align-right" id="id11">
+<a class="reference internal image-reference" href="../../_images/templates.png"><img alt="../../_images/templates.png" src="../../_images/templates.png" style="width: 50%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">HA (left) and NA (right) template densities.</span><a class="headerlink" href="#id11" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For proteins where the alignment axis is not the axis with maximal variation, e.g., membrane proteins including sections of the membrane, the <code class="docutils literal notranslate"><span class="pre">--align_eigenvector</span></code> needs to be adapted (typically to 2 in such cases). For 3D data this value can either be 0, 1, or 2, with the default value being 0.</p>
+</div>
+</section>
+<section id="creating-template-masks">
+<h2>Creating Template Masks<a class="headerlink" href="#creating-template-masks" title="Link to this heading">#</a></h2>
+<p>Given the overall shape similarity between HA and NA, we can use a cylindrical mask for both. The mask can be created using the <code class="docutils literal notranslate"><span class="pre">preprocessor_gui.py</span></code> utility, by selecting Mask &gt; Tube with height 37, outer radius 10, inner radius 0, center z 23.50, center y 29, center x 29 and symmetry axis 2 (the size of the mask is specified in voxels). Click on the created mask in the layer list and use the <strong>Export</strong> button to write it to disk.</p>
+<figure class="align-default" id="id12">
+<a class="reference internal image-reference" href="../../_images/masks.png"><img alt="../../_images/masks.png" src="../../_images/masks.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Using the napari GUI to create template matching masks. You can use the <em>Invert Contrast</em> filter to visualize the templates.</span><a class="headerlink" href="#id12" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>In general, we find it’s beneficial to not make the mask too narrow. For HA for instance, a cylindrical mask of that diameter is not ideal (it should be larger), but sufficient for the data we are dealing with here. Furthermore, the mask should not include excessive amounts of membrane density, but rather focus on peripheral template components.</p>
+</div>
+<p>Alternatively, you can do this using Python</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tme</span><span class="w"> </span><span class="kn">import</span> <span class="n">Density</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tme.matching_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_mask</span>
+
+<span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span>
+    <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;tube&quot;</span><span class="p">,</span>
+    <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span><span class="mi">60</span><span class="p">),</span>
+    <span class="n">symmetry_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">29</span><span class="p">,</span><span class="mi">29</span><span class="p">,</span><span class="mf">23.5</span><span class="p">),</span>
+    <span class="n">inner_radius</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">outer_radius</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">37</span>
+<span class="p">)</span>
+<span class="n">Density</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="mf">6.8</span><span class="p">)</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;template_mask_6.8.mrc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="template-matching">
+<h2>Template Matching<a class="headerlink" href="#template-matching" title="Link to this heading">#</a></h2>
+<p>The only difference to unconstrained template matching is that the seed points need to be passed to <code class="docutils literal notranslate"><span class="pre">match_template.py</span></code> via the <code class="docutils literal notranslate"><span class="pre">--orientations</span></code> argument.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>match_template.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-m<span class="w"> </span>tomogram_solvated_ctf_noise.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-i<span class="w"> </span>templates/ha_6.8_aligned.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--template-mask<span class="w"> </span>templates/template_mask_6.8.mrc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-s<span class="w"> </span>FLC<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--angular-sampling<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--backend<span class="w"> </span>cupy<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--orientations<span class="w"> </span>seed_points/SeedingPoints_40_80.star<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--orientations-cone<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--orientations-uncertainty<span class="w"> </span><span class="m">6</span>,6,10<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--defocus<span class="w"> </span><span class="m">50000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--tilt-angles<span class="w"> </span>tilt_angles.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>results/ha_matching.pickle
+</pre></div>
+</div>
+<p>For NA, simply use <code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">templates/na_6.8_aligned.mrc</span></code> and <code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">results/na_matching.pickle</span></code>. We recommend running the above on a GPU using the cupy or jax backend as shown.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--orientations-cone</span> <span class="pre">20</span></code>: Limits template orientations to within a 20-degree cone around the normal vector of each seed point. This ensures that particles are only matched in biologically relevant orientations (e.g., membrane proteins oriented relative to the membrane surface).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--orientations-uncertainty</span> <span class="pre">6,6,10</span></code>: Defines an ellipsoidal search region around each seed point in voxels. The values represent the search radii in x, y, and z directions respectively. This accounts for uncertainty in the exact position of particles relative to seed points.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--defocus</span> <span class="pre">50000</span></code>: Defocus value in Ångstrom for CTF correction (5 μm defocus).</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can also constrain the rotational search to account for properties like template symmetry. For instance for the C3 symmetric HA, try replacing <code class="docutils literal notranslate"><span class="pre">--angular-sampling</span> <span class="pre">10</span></code> with <code class="docutils literal notranslate"><span class="pre">--cone-angle</span> <span class="pre">180</span> <span class="pre">--cone-sampling</span> <span class="pre">10</span> <span class="pre">--axis-symmetry</span> <span class="pre">3</span></code>.</p>
+</div>
+<p>The output of constrained template matching is a pickle file containing the score space and identified orientations. We can explore the score space in the <code class="docutils literal notranslate"><span class="pre">preprocessor_gui.py</span></code> using the <strong>Import Pickle</strong> button. Shown below is a comparison of HA and NA matching using constrained and unconstrained matching, respectively. Note the increase in peak sharpness and decreased contribution of the membrane density in constrained matching.</p>
+<figure class="align-default" id="id13">
+<img alt="../../_images/scores.png" src="../../_images/scores.png" />
+<figcaption>
+<p><span class="caption-text">Comparison of scores acquired from constrained and unconstrained matching of HA and NA.</span><a class="headerlink" href="#id13" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="analysis">
+<h2>Analysis<a class="headerlink" href="#analysis" title="Link to this heading">#</a></h2>
+<p>The output of constrained template matching can be used in the default postprocessing schemes, e.g., for particle picking. The following will use both matching results and identify no more than 475 particles with a minimum spacing of 12 voxels, which is in the order of the expected 10nm glycoprotein spacing. Whether a given pick corresponds to an HA or NA instance is indicated in <code class="docutils literal notranslate"><span class="pre">_rlnClassNumber</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--input-file<span class="w"> </span>results/ha_matching.pickle<span class="w"> </span>results/na_matching.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--peak-caller<span class="w"> </span>PeakCallerMaximumFilter<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--num-peaks<span class="w"> </span><span class="m">475</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--min-distance<span class="w"> </span><span class="m">12</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output-format<span class="w"> </span>relion4<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output-prefix<span class="w"> </span>orientations/picks
+</pre></div>
+</div>
+<p>This should provide you with a decent particle set. However, since we are confident that the angles we determined are reasonable, we constrained them after all, we can use a different peak calling algorithm to express that. Instead of dividing the scores into a regular grid with spacing <code class="docutils literal notranslate"><span class="pre">--min-distance</span></code>, <code class="docutils literal notranslate"><span class="pre">--peak-caller</span> <span class="pre">PeakCallerRecursiveMasking</span></code> will identify peaks sequentially and mask scores around it using the identified template orientation and provided mask.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>postprocess.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--input-file<span class="w"> </span>results/ha_matching.pickle<span class="w"> </span>results/na_matching.pickle<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--peak-caller<span class="w"> </span>PeakCallerMaximumFilter<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--num-peaks<span class="w"> </span><span class="m">475</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--min-distance<span class="w"> </span><span class="m">12</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output-format<span class="w"> </span>relion4<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output-prefix<span class="w"> </span>orientations/picks
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>See the <a class="reference internal" href="../postprocessing/motivation.html"><span class="doc">postprocessing section</span></a> for all options.</p>
+</div>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Maurer, V. J., Grunwald, L., Kennes, D. M., Kosinski, J. Constrained template matching using rejection sampling. bioRxiv 2025</p>
+</aside>
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Rodriguez de Francisco, B., Bezault A., Xu, X. P., Hanein, D., Volkmann, N. MEPSi: A tool for simulating tomograms of membrane-embedded proteins JSB 214, 107921 (2022).</p>
+</aside>
+<aside class="footnote brackets" id="id7" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>Maurer, V. J., Siggel, M., Jensen, R. K., Mahamid, J., Kosinski, J., Pezeshkian, W. Helfrich Monte Carlo Flexible Fitting: physics-based, data-driven cell-scale simulations. bioRxiv 2025</p>
+</aside>
+<aside class="footnote brackets" id="id8" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
+<p>Lamm, L., Sieber, J., Chung, J.E. et al. (2024). MemBrain-seg: Deep learning-based segmentation of cellular membranes in cryo-electron tomography. bioRxiv, doi.org/10.1101/2024.01.05.574336</p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="particle_picking.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Picking Ribosomes</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="fitting.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Fitting Atomic Structures</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-structure">Data Structure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-seed-points">Generating Seed Points</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-templates">Creating Templates</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-template-masks">Creating Template Masks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#template-matching">Template Matching</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis">Analysis</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/quickstart/matching/constrained.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, European Molecular Biology Laboratory.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

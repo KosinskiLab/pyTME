@@ -1,0 +1,6 @@
+MaxScoreOverRotationsConstrained.shareable
+=======================================================
+
+.. currentmodule:: tme.analyzer
+
+.. autoproperty:: MaxScoreOverRotationsConstrained.shareable

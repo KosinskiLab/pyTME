@@ -1,0 +1,6 @@
+CTF.opening\_axis
+============================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.opening_axis

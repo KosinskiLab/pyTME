@@ -1,0 +1,6 @@
+WedgeReconstructed.\_\_call\_\_
+=======================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: WedgeReconstructed.__call__

@@ -1,0 +1,6 @@
+CORRMemoryUsage.base\_float
+=====================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CORRMemoryUsage.base_float

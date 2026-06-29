@@ -1,0 +1,6 @@
+PytorchBackend.copy
+================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: PytorchBackend.copy

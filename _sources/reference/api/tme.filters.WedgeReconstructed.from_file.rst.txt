@@ -1,0 +1,6 @@
+WedgeReconstructed.from\_file
+========================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: WedgeReconstructed.from_file

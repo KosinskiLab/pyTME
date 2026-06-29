@@ -1,0 +1,67 @@
+﻿WedgeReconstructed
+==================
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: WedgeReconstructed
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            WedgeReconstructed.angles
+         
+         
+            WedgeReconstructed.create_continuous_wedge
+         
+         
+            WedgeReconstructed.frequency_cutoff
+         
+         
+            WedgeReconstructed.opening_axis
+         
+         
+            WedgeReconstructed.reconstruction_filter
+         
+         
+            WedgeReconstructed.sampling_rate
+         
+         
+            WedgeReconstructed.tilt_axis
+         
+         
+            WedgeReconstructed.weight_type
+         
+         
+            WedgeReconstructed.weight_wedge
+         
+         
+            WedgeReconstructed.weights
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            WedgeReconstructed.__call__
+      
+
+      
+         
+         
+            WedgeReconstructed.from_file
+         
+
+   
+   

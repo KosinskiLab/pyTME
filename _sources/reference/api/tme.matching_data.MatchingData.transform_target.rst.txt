@@ -1,0 +1,6 @@
+MatchingData.transform\_target
+===============================================
+
+.. currentmodule:: tme.matching_data
+
+.. automethod:: MatchingData.transform_target

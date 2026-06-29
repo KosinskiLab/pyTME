@@ -1,0 +1,6 @@
+PeakCallerMaximumFilter.init\_state
+===============================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerMaximumFilter.init_state

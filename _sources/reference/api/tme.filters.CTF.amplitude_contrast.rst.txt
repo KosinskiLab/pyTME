@@ -1,0 +1,6 @@
+CTF.amplitude\_contrast
+==================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.amplitude_contrast

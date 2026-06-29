@@ -1,0 +1,6 @@
+MatchingData.free
+===================================
+
+.. currentmodule:: tme.matching_data
+
+.. automethod:: MatchingData.free

@@ -1,0 +1,6 @@
+CTF.phase\_shift
+===========================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.phase_shift

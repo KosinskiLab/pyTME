@@ -1,0 +1,6 @@
+PeakCallerSort.correct\_background
+==============================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerSort.correct_background

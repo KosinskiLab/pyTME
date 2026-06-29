@@ -1,0 +1,6 @@
+AbstractAnalyzer.\_\_call\_\_
+======================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: AbstractAnalyzer.__call__

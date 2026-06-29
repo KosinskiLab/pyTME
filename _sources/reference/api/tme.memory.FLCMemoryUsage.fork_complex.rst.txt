@@ -1,0 +1,6 @@
+FLCMemoryUsage.fork\_complex
+======================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: FLCMemoryUsage.fork_complex

@@ -1,0 +1,68 @@
+﻿Preprocessor
+============
+
+.. currentmodule:: tme.preprocessor
+
+.. autoclass:: Preprocessor
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            Preprocessor.apply_method
+         
+         
+            Preprocessor.blob_filter
+         
+         
+            Preprocessor.difference_of_gaussian_filter
+         
+         
+            Preprocessor.edge_gaussian_filter
+         
+         
+            Preprocessor.gaussian_filter
+         
+         
+            Preprocessor.hamming_filter
+         
+         
+            Preprocessor.interpolate_box
+         
+         
+            Preprocessor.kaiserb_filter
+         
+         
+            Preprocessor.local_gaussian_alignment_filter
+         
+         
+            Preprocessor.local_gaussian_filter
+         
+         
+            Preprocessor.mean_filter
+         
+         
+            Preprocessor.median_filter
+         
+         
+            Preprocessor.method_to_id
+         
+         
+            Preprocessor.rank_filter
+         
+
+   
+   

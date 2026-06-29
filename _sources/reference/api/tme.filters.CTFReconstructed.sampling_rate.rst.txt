@@ -1,0 +1,6 @@
+CTFReconstructed.sampling\_rate
+==========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.sampling_rate

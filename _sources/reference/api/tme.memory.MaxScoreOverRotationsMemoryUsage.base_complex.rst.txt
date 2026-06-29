@@ -1,0 +1,6 @@
+MaxScoreOverRotationsMemoryUsage.base\_complex
+========================================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: MaxScoreOverRotationsMemoryUsage.base_complex

@@ -1,0 +1,6 @@
+CORRMemoryUsage.base\_complex
+=======================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CORRMemoryUsage.base_complex

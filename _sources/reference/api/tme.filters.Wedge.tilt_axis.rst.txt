@@ -1,0 +1,6 @@
+Wedge.tilt\_axis
+===========================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: Wedge.tilt_axis

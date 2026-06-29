@@ -1,0 +1,6 @@
+MaxScoreOverRotations.result
+=========================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: MaxScoreOverRotations.result

@@ -1,0 +1,6 @@
+BandPass.sampling\_rate
+==================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: BandPass.sampling_rate

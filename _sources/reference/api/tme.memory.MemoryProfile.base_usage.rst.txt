@@ -1,0 +1,6 @@
+MemoryProfile.base\_usage
+===================================
+
+.. currentmodule:: tme.memory
+
+.. automethod:: MemoryProfile.base_usage

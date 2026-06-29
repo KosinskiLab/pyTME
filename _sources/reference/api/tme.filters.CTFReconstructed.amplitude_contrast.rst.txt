@@ -1,0 +1,6 @@
+CTFReconstructed.amplitude\_contrast
+===============================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.amplitude_contrast

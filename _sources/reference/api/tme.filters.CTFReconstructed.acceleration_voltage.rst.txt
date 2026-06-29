@@ -1,0 +1,6 @@
+CTFReconstructed.acceleration\_voltage
+=================================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.acceleration_voltage

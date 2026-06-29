@@ -1,0 +1,6 @@
+Structure.align\_to\_axis
+=====================================
+
+.. currentmodule:: tme.structure
+
+.. automethod:: Structure.align_to_axis
