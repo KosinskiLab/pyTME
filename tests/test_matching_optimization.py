@@ -1,15 +1,15 @@
 import numpy as np
 import pytest
-
-from tme.rotations import euler_from_rotationmatrix
 from tme.matching_optimization import (
     MATCHING_OPTIMIZATION_REGISTER,
-    register_matching_optimization,
-    _MatchCoordinatesToDensity,
+    NormalizedCrossCorrelationMean,
     _MatchCoordinatesToCoordinates,
-    optimize_match,
+    _MatchCoordinatesToDensity,
     create_score_object,
+    optimize_match,
+    register_matching_optimization,
 )
+from tme.rotations import euler_from_rotationmatrix
 
 density_to_density = ["FLC"]
 
@@ -219,3 +219,66 @@ class TestUtils:
     def test_register_matching_optimization_error(self):
         with pytest.raises(ValueError):
             register_matching_optimization(match_name="new_score", match_class=None)
+
+
+class TestNormalizedCrossCorrelationMean:
+    """Regression tests for the matched-mean fix and its analytic gradient."""
+
+    def setup_method(self):
+        rng = np.random.default_rng(0)
+        n, center, sigma = 40, 20.0, 5.0
+        xx, yy, zz = np.mgrid[0:n, 0:n, 0:n]
+        self.target = np.exp(
+            -((xx - center) ** 2 + (yy - center) ** 2 + (zz - center) ** 2) / (2 * sigma ** 2)
+        ).astype(np.float32)
+        pts = (center + rng.normal(0, 3, (3, 120))).astype(np.float32)
+        self.coordinates = pts
+        self.weights = np.exp(
+            -((pts[0] - center) ** 2 + (pts[1] - center) ** 2 + (pts[2] - center) ** 2) / (2 * sigma ** 2)
+        ).astype(np.float32)
+
+    def _obj(self, **kwargs):
+        return NormalizedCrossCorrelationMean(
+            target=self.target,
+            template_coordinates=self.coordinates.copy(),
+            template_weights=self.weights.copy(),
+            **kwargs,
+        )
+
+    def test_score_equals_matched_pearson(self):
+        # The score is the Pearson correlation of the matched target values and template weights.
+        obj = self._obj(negate_score=False)
+        v, w = obj._target_values, obj.template_weights
+        assert np.isclose(obj(), np.corrcoef(v, w)[0, 1], atol=1e-4)
+
+    def test_differs_from_global_mean_centring(self):
+        # With a strong local offset (the matched footprint sits in a dense region), centring by the
+        # matched mean differs from the old global-target-mean centring.
+        obj = self._obj(negate_score=False)
+        v, w = obj._target_values, obj.template_weights
+        global_mean = float(self.target.mean())
+        wc = w - w.mean()
+        old = float(np.dot(v - global_mean, wc) / (np.linalg.norm(v - global_mean) * np.linalg.norm(wc)))
+        assert v.mean() > global_mean + 0.1                       # strong local offset
+        assert abs(obj() - old) > 1e-2                            # matched-mean != global-mean
+
+    def test_grad_matches_finite_difference_direction(self):
+        # The analytic gradient points along the finite-difference gradient (its magnitude is scaled
+        # by the shared Sobel factor, as for NormalizedCrossCorrelation.grad).
+        x0 = np.array([0.6, -0.4, 0.5, 0.05, -0.03, 0.04])
+        _, g = self._obj(negate_score=True, return_gradient=True).score(x0)
+        ref, eps = self._obj(negate_score=True), 1e-4
+        fd = np.array([
+            (ref.score(x0 + np.eye(6)[i] * eps) - ref.score(x0 - np.eye(6)[i] * eps)) / (2 * eps)
+            for i in range(6)
+        ])
+        g, fd = np.asarray(g)[:3], fd[:3]                         # translation block
+        assert np.dot(g, fd) / (np.linalg.norm(g) * np.linalg.norm(fd)) > 0.99
+
+    def test_grad_sign_follows_negate_score(self):
+        # grad() returns score_sign * d(score)/dp, so flipping negate_score flips the gradient
+        # (consistent with __call__); a hardcoded -total_grad would not.
+        x0 = np.array([0.6, -0.4, 0.5, 0.05, -0.03, 0.04])
+        g_neg = np.asarray(self._obj(negate_score=True, return_gradient=True).score(x0)[1])
+        g_pos = np.asarray(self._obj(negate_score=False, return_gradient=True).score(x0)[1])
+        assert np.allclose(g_pos, -g_neg)

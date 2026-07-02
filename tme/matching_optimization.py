@@ -700,12 +700,60 @@ class NormalizedCrossCorrelationMean(NormalizedCrossCorrelation):
 
     __doc__ += _MatchCoordinatesToDensity.__doc__
 
-    def __init__(self, **kwargs):
-        kwargs["target"] = np.subtract(kwargs["target"], kwargs["target"].mean())
-        kwargs["template_weights"] = np.subtract(
-            kwargs["template_weights"], kwargs["template_weights"].mean()
+    def __call__(self) -> float:
+        """Returns the score of the current configuration."""
+        # Centre by the mean of the matched values (the target sampled over the template footprint).
+        target_values = self._target_values - be.mean(self._target_values)
+        template_weights = self.template_weights - be.mean(self.template_weights)
+        denominator = be.sqrt(be.sum(be.square(target_values))) * be.sqrt(
+            be.sum(be.square(template_weights))
         )
-        super().__init__(**kwargs)
+        if denominator < self.eps:
+            return 0.0
+        return float(be.dot(target_values, template_weights) / denominator) * self.score_sign
+
+    def grad(self):
+        """Gradient of the score w.r.t. translation (first three) and rotation (last three).
+
+        Has the same form as :py:meth:`NormalizedCrossCorrelation.grad` evaluated on the centred
+        values ``vc = v - mean(v)`` and weights ``wc = w - mean(w)``; the mean-subtraction
+        contributes no extra terms because ``sum(vc) = sum(wc) = 0`` (so ``d<vc, wc>/dp = <dv/dp, wc>``
+        and ``d||vc||/dp = <vc, dv/dp> / ||vc||``). Returns ``score_sign * d(score)/dp``.
+        """
+        grad = self._interpolate_gradient(positions=self.template_rotated)
+        torque = self._torques(
+            positions=self.template_rotated, gradients=grad, center=self.template_center
+        )
+
+        values = self._target_values - be.mean(self._target_values)
+        weights = self.template_weights - be.mean(self.template_weights)
+
+        norm = be.multiply(
+            be.power(be.sqrt(be.sum(be.square(values))), 3),
+            be.sqrt(be.sum(be.square(weights))),
+        )
+        values_sq = be.sum(be.square(values))
+        values_weights = be.sum(be.multiply(values, weights))
+
+        translation_grad = be.multiply(
+            be.sum(be.multiply(grad, weights), axis=1), values_sq
+        )
+        translation_grad -= be.multiply(
+            be.sum(be.multiply(grad, values), axis=1), values_weights
+        )
+
+        torque_grad = be.multiply(
+            be.sum(be.multiply(torque, weights), axis=1), values_sq
+        )
+        torque_grad -= be.multiply(
+            be.sum(be.multiply(torque, values), axis=1), values_weights
+        )
+
+        total_grad = be.concatenate([translation_grad, torque_grad])
+        if norm > 0:
+            total_grad = be.divide(total_grad, norm, out=total_grad)
+        total_grad = be.divide(total_grad, self.n_points, out=total_grad)
+        return self.score_sign * total_grad
 
 
 class MaskedCrossCorrelation(_MatchCoordinatesToDensity):
