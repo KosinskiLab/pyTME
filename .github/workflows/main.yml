@@ -1,12 +1,20 @@
+name: CI
+
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
   release:
     types: [created]
 
-jobs:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
+jobs:
   build:
     runs-on: ubuntu-latest
     container:
@@ -18,9 +26,11 @@ jobs:
 
       - name: Build Package
         run: |
-          python -mpip install .
-          python -mpip install setuptools wheel
-          python setup.py sdist bdist_wheel
+          python -m pip install --upgrade pip build
+          python -m build
+
+      - name: Install built wheel
+        run: python -m pip install dist/*.whl
 
       - name: Upload Distribution as Artifact
         uses: actions/upload-artifact@v4
@@ -30,7 +40,7 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pip install pytest pytest-cov importlib-resources
+          pip install pytest pytest-cov
           ulimit -n 4096
           pytest -vvv
 
@@ -38,10 +48,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: python:3.11.5
-
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
       - name: Install dependencies
         run: |
           python -mpip install .
@@ -54,9 +63,11 @@ jobs:
             sphinx-tabs \
             matplotlib \
             sphinxcontrib-youtube
+
       - name: Sphinx build
         run: |
           sphinx-build doc _build
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -68,19 +79,22 @@ jobs:
   pypi_release:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install build twine
+
       - name: Build package
-        run: python -m build
+        run: python -m build --sdist
+
       # - name: Publish to PyPI
       #   if: success()
       #   env:
@@ -90,6 +104,7 @@ jobs:
       #     twine upload dist/*
 
   docker:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

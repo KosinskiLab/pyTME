@@ -69,7 +69,7 @@ include = ["tme/external/**/*", "tme/data/**/*"]
 pytest = ">=6.2.5"
 
 [tool.poetry.build]
-script = "build.py"
+script = "build_extensions.py"
 generate-setup-file = true
 
 [build-system]
