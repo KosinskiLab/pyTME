@@ -9,14 +9,14 @@ RELION (for REgularised LIkelihood OptimisatioN) uses a Bayesian approach for re
 Example
 -------
 
-The input required by RELION can be readily generated using ``postprocess.py`` with ``output_format relion`` relion.
+The input required by RELION can be readily generated using ``postprocess`` with ``output_format relion`` relion.
 
 .. code-block:: bash
 
-    postprocess.py \
+    postprocess \
         --input-file output.pickle \
         --output-prefix output \
-        --output-format relion \
+        --output-format relion4 \
         --min-distance 20 \
         --num-peaks 1000 \
         -—wegde-mask mask.mrc

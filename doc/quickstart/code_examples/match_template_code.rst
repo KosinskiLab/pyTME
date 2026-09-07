@@ -1,6 +1,6 @@
-match_template.py
-=================
+match_template
+==============
 
-.. literalinclude:: ../../../scripts/match_template.py
+.. literalinclude:: ../../../tme/scripts/match_template.py
    :language: python
 

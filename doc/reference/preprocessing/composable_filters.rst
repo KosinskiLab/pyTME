@@ -76,7 +76,7 @@ Frequency Filters
 
    BandPass
    BandPassReconstructed
-   LinearWhiteningFilter
+   Curve
 
 
 Cryo-EM Filters

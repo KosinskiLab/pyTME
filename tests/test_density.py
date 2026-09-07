@@ -1,14 +1,15 @@
 from os import remove
-from tempfile import mkstemp
 from itertools import permutations
 from importlib_resources import files
 
 import pytest
 import numpy as np
 
-from tme import Density, Structure, Preprocessor
+from scipy.ndimage import gaussian_filter
+
+from tme import Density, Structure
 from tme.rotations import euler_to_rotationmatrix
-from tme.matching_utils import create_mask
+from tme.matching_utils import create_mask, generate_tempfile_name
 
 DEFAULT_DATA = create_mask(
     mask_type="ellipse",
@@ -16,7 +17,7 @@ DEFAULT_DATA = create_mask(
     radius=(10, 5, 10),
     shape=(50, 50, 50),
 )
-DEFAULT_DATA = Preprocessor().gaussian_filter(DEFAULT_DATA * 10, sigma=2)
+DEFAULT_DATA = gaussian_filter(DEFAULT_DATA * 10.0, sigma=2)
 DEFAULT_DATA = DEFAULT_DATA.astype(np.float32)
 DEFAULT_ORIGIN = np.array([0, 0, 0])
 DEFAULT_SAMPLING_RATE = np.array([1, 1, 1])
@@ -37,7 +38,7 @@ class TestDensity:
                 "std": DEFAULT_DATA.std(),
             },
         )
-        _, self.path = mkstemp()
+        self.path = generate_tempfile_name()
         self.structure_path = str(BASEPATH.joinpath("Structures/5khe.cif"))
 
     def teardown_method(self):
@@ -127,7 +128,7 @@ class TestDensity:
             data_subset = tuple(slice(0, x) for x in base.shape)
 
         suffix = f".{extension}.gz" if gzip else f".{extension}"
-        _, output_file = mkstemp(suffix=suffix)
+        output_file = generate_tempfile_name(suffix=suffix)
         base.to_file(output_file, gzip=gzip)
         temp = Density.from_file(output_file, use_memmap=use_memmap, subset=data_subset)
         assert np.allclose(base.data[data_subset], temp.data)
@@ -139,7 +140,7 @@ class TestDensity:
         base = Density(
             data=np.random.rand(50, 50, 50), origin=(0, 0, 0), sampling_rate=(1, 1, 1)
         )
-        _, output_file = mkstemp()
+        output_file = generate_tempfile_name()
         base.to_file(output_file)
         with pytest.raises((ValueError, OSError)):
             Density.from_file(output_file, subset=(slice(0, 10),))

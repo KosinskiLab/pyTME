@@ -6,27 +6,21 @@ User Guide
    :caption: Get Started
 
    installation
+   overview
 
 
 .. toctree::
-   :caption: Template Matching
-   :maxdepth: 2
+   :caption: Practical Examples
 
-   matching/example
-   matching/cluster
-   matching/summary
+   matching/particle_picking
+   matching/constrained
+   matching/fitting
 
-
-.. toctree::
-   :caption: Postprocessing
-
-   postprocessing/motivation
-   postprocessing/example
-   postprocessing/summary
 
 .. toctree::
    :caption: Further Reading
 
+   matching/cluster
    preprocessing/masks
    preprocessing/filters
    preprocessing/gui
@@ -35,6 +29,7 @@ User Guide
 .. toctree::
    :caption: Miscellaneous
 
+   conventions
    contribution
    issues
    license

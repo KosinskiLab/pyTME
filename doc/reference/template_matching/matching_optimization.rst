@@ -1,3 +1,5 @@
+:tocdepth: 1
+
 .. include:: ../../substitutions.rst
 .. currentmodule:: tme.matching_optimization
 

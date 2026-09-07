@@ -1,22 +1,16 @@
-.. include:: ../substitutions.rst
+.. rst-class:: hide-page-title
 
 Orientations
-============
+~~~~~~~~~~~~
 
 .. currentmodule:: tme.orientations
 
-Constructor
-~~~~~~~~~~~
-
-.. autosummary::
-   :toctree: api/
-   :nosignatures:
-
-   Orientations
+.. autoclass:: Orientations
 
 Attributes and underlying data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
+   :toctree: ./api
 
    Orientations.translations
    Orientations.rotations
@@ -24,10 +18,10 @@ Attributes and underlying data
    Orientations.details
 
 
-
 Serialization
 ~~~~~~~~~~~~~
 .. autosummary::
+   :toctree: ./api
 
    Orientations.to_file
    Orientations.from_file
@@ -36,6 +30,7 @@ Serialization
 Subsetting
 ~~~~~~~~~~
 .. autosummary::
+   :toctree: ./api
 
    Orientations.get_extraction_slices
 

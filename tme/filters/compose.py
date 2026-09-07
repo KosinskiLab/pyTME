@@ -1,5 +1,8 @@
 """
-Combine filters using an interface analogous to pytorch's Compose.
+Implements an interface for the composition of complex Fourier fitlers.
+
+Defines ComposableFilter, an abstract representation of filters that can
+be used in composition, and Compose, which implements the actual composition.
 
 Copyright (c) 2024 European Molecular Biology Laboratory
 
@@ -65,8 +68,12 @@ class ComposableFilter(ABC):
     def __call__(self, return_real_fourier: bool = False, **kwargs) -> Dict:
         """
         This method provides the standard interface for creating of composable
-        filter masks. It merges instance attributes with runtime parameters,
-        and ensures Fourier conventions are consistent across filters.
+        filter masks.
+
+        It merges instance attributes with runtime parameters, and ensures
+        Fourier conventions are consistent across filters. By default, the
+        full unreduced shape of the filters is returned with the DC component
+        at the origin of the array.
 
         Parameters
         ----------
@@ -77,15 +84,14 @@ class ComposableFilter(ABC):
             and computation time for real-valued inputs. Default is False.
         **kwargs : dict
             Additional keyword arguments passed to :py:meth:`_evaluate`.
-            These will override any matching instance attributes during
-            parameter merging.
+            These will override existing class instance attributes.
 
         Returns
         -------
         Dict
             - data : BackendArray
                 The processed filter data, converted to the appropriate backend
-                array type and with fourier operations applied as needed
+                array type and with fourier operations applied as needed.
             - shape : tuple of int or None
                 Shape for which the filter was created
             - return_real_fourier : bool
@@ -102,7 +108,8 @@ class ComposableFilter(ABC):
         if return_real_fourier:
             ret["data"] = crop_real_fourier(ret["data"])
 
-        ret["data"] = be.to_backend_array(ret["data"])
+        if ret["data"] is not None:
+            ret["data"] = be.to_backend_array(ret["data"])
         ret["return_real_fourier"] = return_real_fourier
         return ret
 
@@ -157,18 +164,14 @@ class Compose:
         if not len(self.transforms):
             return meta
 
-        meta = self.transforms[0](**kwargs)
-        for transform in self.transforms[1:]:
+        for transform in self.transforms:
             kwargs.update(meta)
             ret = transform(**kwargs)
 
-            if "data" not in ret:
-                continue
-
             if ret.get("is_multiplicative_filter", True):
-                prev_data = meta.pop("data")
-                ret["data"] = be.multiply(ret["data"], prev_data)
-                ret["merge"], prev_data = None, None
+                prev_data = meta.pop("data", None)
+                if prev_data is not None:
+                    ret["data"] = be.multiply(ret["data"], prev_data)
             meta = ret
 
         if return_real_fourier:

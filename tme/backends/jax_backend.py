@@ -38,6 +38,8 @@ class JaxBackend(NumpyFFTWBackend):
         import jax.scipy as jsp
         import jax.numpy as jnp
 
+        from ._jax_utils import distance_transform_edt
+
         float_dtype = jnp.float32 if float_dtype is None else float_dtype
         complex_dtype = jnp.complex64 if complex_dtype is None else complex_dtype
         int_dtype = jnp.int32 if int_dtype is None else int_dtype
@@ -48,8 +50,11 @@ class JaxBackend(NumpyFFTWBackend):
             complex_dtype=complex_dtype,
             int_dtype=int_dtype,
             overflow_safe_dtype=float_dtype,
+            float16_dtype=jnp.float16,
+            uint16_dtype=jnp.uint16,
         )
         self.scipy = jsp
+        self.distance_transform_edt = distance_transform_edt
         self._create_ufuncs()
 
     def from_sharedarr(self, arr: JaxArray) -> JaxArray:
@@ -89,6 +94,7 @@ class JaxBackend(NumpyFFTWBackend):
             "square",
             "sqrt",
             "maximum",
+            "minimum",
             "exp",
             "mod",
             "dot",
@@ -131,7 +137,7 @@ class JaxBackend(NumpyFFTWBackend):
         JaxArray
             Coordinate grid of shape (ndim + int(homogeneous), n_points)
         """
-        indices = self._array_backend.indices(shape, dtype=self._float_dtype)
+        indices = self._array_backend.indices(shape, dtype=self._float)
         indices = indices.reshape((len(shape), -1))
         ones = self._array_backend.ones((1, indices.shape[1]), dtype=indices.dtype)
         return self._array_backend.concatenate([indices, ones], axis=0)
@@ -200,8 +206,6 @@ class JaxBackend(NumpyFFTWBackend):
     def _unbatch(self, data, target_ndim, index):
         if not isinstance(data, type(self.zeros(1))):
             return data
-        elif data.ndim <= target_ndim:
-            return data
         return data[index]
 
     def scan(
@@ -225,27 +229,22 @@ class JaxBackend(NumpyFFTWBackend):
 
         pad_target = True if len(splits) > 1 else False
         target_pad = matching_data.target_padding(pad_target=pad_target)
-        template_shape = matching_data._batch_shape(
-            matching_data.template.shape, matching_data._target_batch
-        )
+        _, template_shape = matching_data._matching_shapes()
 
-        score_mask = 1
-        target_shape = tuple(
-            (x.stop - x.start + p) for x, p in zip(splits[0][0], target_pad)
-        )
-        conv_shape, fast_shape, fast_ft_shape, shift = matching_data.fourier_padding(
-            target_shape=target_shape
-        )
+        # Shapes after cropping
+        score_mask, split = 1, splits[0][0]
+        target_shape = tuple((x.stop - x.start + p) for x, p in zip(split, target_pad))
+        conv, fwd, inv, shift = matching_data.fourier_padding(target_shape=target_shape)
 
         analyzer_args = {
-            "shape": fast_shape,
+            "shape": fwd,
             "fourier_shift": shift,
-            "fast_shape": fast_shape,
+            "fast_shape": fwd,
             "templateshape": template_shape,
-            "convolution_shape": conv_shape,
+            "convolution_shape": conv,
             "convolution_mode": "valid" if pad_target else "same",
             "thread_safe": False,
-            "aggregate_axis": matching_data._batch_axis(matching_data._batch_mask),
+            "aggregate_axis": matching_data._batch_shape(fwd)[1],
             "n_rotations": matching_data.rotations.shape[0],
             "jax_mode": True,
         }
@@ -260,15 +259,16 @@ class JaxBackend(NumpyFFTWBackend):
             bg_tmpl = matching_data.transform_template(
                 "phase_randomization", reverse=True
             )
-            bg_tmpl = self.astype(bg_tmpl, self._float_dtype)
+            bg_tmpl = self.astype(bg_tmpl, self._float)
 
-        rotations = self.astype(matching_data.rotations, self._float_dtype)
+        rotations = self.astype(matching_data.rotations, self._float)
         ret, template_filter, target_filter = [], 1, 1
         rotation_mapping = {
             self.tobytes(rotations[i]): i for i in range(rotations.shape[0])
         }
-        for split_start in range(0, len(splits), n_jobs):
 
+        for split_start in range(0, len(splits), n_jobs):
+            check_mem(threshold_fraction=0.35)
             analyzer_kwargs = []
             split_subset = splits[split_start : (split_start + n_jobs)]
             if not len(split_subset):
@@ -276,28 +276,30 @@ class JaxBackend(NumpyFFTWBackend):
 
             targets = []
             for target_split, template_split in split_subset:
-                base, translation_offset = matching_data.subset_by_slice(
+                base, offset, pos = matching_data.subset_by_slice(
                     target_slice=target_split,
                     target_pad=target_pad,
                     template_slice=template_split,
+                    return_global_position=True,
                 )
-                cur_args = analyzer_args.copy()
-                cur_args["offset"] = translation_offset
-                cur_args["targetshape"] = base._output_shape
+                cur_args = analyzer_args
+                if n_jobs > 1:
+                    cur_args = cur_args.copy()
+
+                cur_args["offset"] = offset
+                cur_args["centered_position"] = pos
+                cur_args["targetshape"] = base._matching_shapes()[0]
                 analyzer_kwargs.append(cur_args)
 
-                if pad_target:
-                    score_mask = base._score_mask(fast_shape, shift)
-
                 # We prepad outside of jit to guarantee the stack operation works
-                targets.append(self.topleft_pad(base._target, fast_shape))
+                targets.append(self.topleft_pad(base._target, fwd))
 
             if create_filter:
                 # This is technically inaccurate for whitening filters
                 template_filter, target_filter = setup_filter(
                     matching_data=base,
-                    fast_shape=fast_shape,
-                    fast_ft_shape=fast_ft_shape,
+                    fast_shape=fwd,
+                    fast_ft_shape=inv,
                     pad_template_filter=False,
                     apply_target_filter=False,
                 )
@@ -307,21 +309,23 @@ class JaxBackend(NumpyFFTWBackend):
                 # as the number of tilts does not necessarily coincide with the ideal
                 # fourier shape. Hence we pad the target_filter with zeros here
                 if target_filter.shape != (1,):
-                    target_filter = self.topleft_pad(target_filter, fast_ft_shape)
+                    target_filter = self.topleft_pad(target_filter, inv)
+
+            if pad_target:
+                score_mask = base._score_mask(fwd, shift)
 
             base, targets = None, self._array_backend.stack(targets)
             scan_inner = setup_scan(
                 analyzer_kwargs=analyzer_kwargs,
                 analyzer=callback_class,
-                fast_shape=fast_shape,
+                fast_shape=fwd,
                 rotate_mask=rotate_mask,
-                match_projection=match_projection,
             )
 
             states = scan_inner(
-                self.astype(targets, self._float_dtype),
-                self.astype(matching_data.template, self._float_dtype),
-                self.astype(matching_data.template_mask, self._float_dtype),
+                self.astype(targets, self._float),
+                self.astype(matching_data.template, self._float),
+                self.astype(matching_data.template_mask, self._float),
                 rotations,
                 template_filter,
                 target_filter,
@@ -339,6 +343,9 @@ class JaxBackend(NumpyFFTWBackend):
                     state[2] = rotation_mapping
 
                 ret.append(analyzer.result(state, **kwargs))
+
+            # For MaxScoreOverRotationsConstrained the ref can be quite large
+            states, state, analyzer = None, None, None
         return ret
 
     def get_available_memory(self) -> int:
@@ -355,3 +362,34 @@ class JaxBackend(NumpyFFTWBackend):
         if _memory["gpu"] > 0:
             return _memory["gpu"]
         return _memory["cpu"]
+
+
+def check_mem(threshold_fraction=None, threshold_gb=None):
+    """
+    Check if device memory usage exceeds given thresholds and explicitly
+    clear cache if so.
+    """
+    import gc
+    import jax
+
+    try:
+        device = jax.devices()[0]
+        stats = device.memory_stats()
+        used = stats["bytes_in_use"]
+        limit = stats["bytes_limit"]
+
+        should_clear = False
+        if threshold_fraction is not None:
+            should_clear |= (used / limit) > threshold_fraction
+        if threshold_gb is not None:
+            should_clear |= (used / 1e9) > threshold_gb
+
+        if should_clear:
+            jax.clear_caches()
+            gc.collect()
+            return True
+        return False
+
+    # No devices found, potentially due to running on CPU
+    except Exception:
+        return True

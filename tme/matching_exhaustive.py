@@ -10,17 +10,16 @@ import sys
 import warnings
 from functools import wraps
 from itertools import product
-from typing import Callable, Tuple, Dict, Optional
+from typing import Callable, Tuple, Dict, Optional, Union
 
 from joblib import Parallel, delayed
 from multiprocessing.managers import SharedMemoryManager
 
 from .backends import backend as be
-from .matching_utils import split_shape, setup_filter
 from .types import CallbackClass, MatchingData
 from .analyzer.proxy import SharedAnalyzerProxy
+from .matching_utils import split_shape, setup_filter
 from .matching_scores import MATCHING_EXHAUSTIVE_REGISTER
-from .memory import MatchingMemoryUsage, MATCHING_MEMORY_REGISTRY
 
 __all__ = ["match_exhaustive"]
 
@@ -34,6 +33,36 @@ def _wrap_backend(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def _shift_splits(splits, shape: Tuple[int]) -> Tuple[Tuple[slice, ...], ...]:
+    """Shift split boxes so they fit within ``shape``. Box size is preserved
+    when possible; boxes wider than the volume along an axis are clipped to it.
+    Handles both negative starts and stops beyond the boundary.
+    """
+    result = []
+    for box in splits:
+        new_box = []
+        for s, dim in zip(box, shape):
+            start = 0 if s.start is None else int(s.start)
+            stop = int(dim) if s.stop is None else int(s.stop)
+
+            if start < 0 and stop > dim and be._backend_name == "jax":
+                raise ValueError(
+                    f"Split box (start={start}, stop={stop}) exceeds axis of "
+                    f"size {dim} on both sides. The jax backend requires "
+                    "equal-sized boxes; choose a different backend or adjust "
+                    "the split definition."
+                )
+            if start < 0:
+                stop -= start
+                start = 0
+            if stop > dim:
+                start = max(0, start - (stop - dim))
+                stop = dim
+            new_box.append(slice(start, stop))
+        result.append(tuple(new_box))
+    return tuple(result)
 
 
 def device_memory_handler(func: Callable):
@@ -106,31 +135,25 @@ def _match_exhaustive(
         Target subset to process.
     template_slice : tuple of slice, optional
         Template subset to process.
-    background_correction : str, optional
-        Background correctoin use use. Supported methods are 'phase-scrambling'.
+    background_correction : str {'phase-scrambling'}, optional
+        Background correction to use.
 
     Returns
     -------
     Optional[Tuple]
         The merged results from callback_class if provided otherwise None.
-
-    Notes
-    -----
-    Schematically, this function is identical to :py:meth:`match_exhaustive`,
-    with the distinction that the objects contained in ``matching_data`` are not
-    split and the search is only parallelized over angles.
     """
-    matching_data, translation_offset = matching_data.subset_by_slice(
+    matching_data, offset, pos = matching_data.subset_by_slice(
         target_slice=target_slice,
         template_slice=template_slice,
         target_pad=matching_data.target_padding(pad_target=pad_target),
+        return_global_position=True,
     )
 
     matching_data.to_backend()
-    template_shape = matching_data._batch_shape(
-        matching_data._template.shape, matching_data._template_batch
-    )
     conv, fwd, inv, shift = matching_data.fourier_padding()
+    _, aggregate_axis, _ = matching_data._batch_shape(fwd)
+    targetshape, templateshape = matching_data._matching_shapes()
 
     # Mask invalid scores from padding to not skew score statistics
     score_mask = be.full(shape=(1,), fill_value=1, dtype=bool)
@@ -143,20 +166,21 @@ def _match_exhaustive(
         fast_ft_shape=inv,
         pad_template_filter=False,
         apply_target_filter=True,
+        centered_position=pos,
     )
 
     default_callback_args = {
         "shape": fwd,
-        "offset": translation_offset,
+        "offset": offset,
         "fourier_shift": shift,
         "fast_shape": fwd,
-        "targetshape": matching_data._output_shape,
-        "templateshape": template_shape,
+        "targetshape": targetshape,
+        "templateshape": templateshape,
         "convolution_shape": conv,
         "thread_safe": n_jobs > 1,
         "convolution_mode": "valid" if pad_target else "same",
         "shm_handler": shm_handler,
-        "aggregate_axis": matching_data._batch_axis(matching_data._batch_mask),
+        "aggregate_axis": aggregate_axis,
         "n_rotations": matching_data.rotations.shape[0],
         "inversion_mapping": n_jobs == 1,
     }
@@ -170,6 +194,7 @@ def _match_exhaustive(
         shm_handler=shm_handler,
     )
 
+    setup["background_correction"] = background_correction
     if background_correction == "phase-scrambling":
         # Use getter to make sure template is reversed correctly
         matching_data.template = matching_data.transform_template("phase_randomization")
@@ -188,6 +213,9 @@ def _match_exhaustive(
         )
         for _ in range(n_callback_classes)
     ]
+    template_filter = be.to_sharedarr(template_filter, shm_handler)
+    score_mask = be.to_sharedarr(score_mask, shm_handler)
+
     ret = Parallel(n_jobs=n_jobs)(
         delayed(_wrap_backend(matching_score))(
             backend_name=be._backend_name,
@@ -197,8 +225,8 @@ def _match_exhaustive(
             rotations=rotation,
             callback=callback_classes[index % n_callback_classes],
             interpolation_order=interpolation_order,
-            template_filter=be.to_sharedarr(template_filter, shm_handler),
-            score_mask=be.to_sharedarr(score_mask, shm_handler),
+            template_filter=template_filter,
+            score_mask=score_mask,
             **setup,
         )
         for index, rotation in enumerate(matching_data._split_rotations_on_jobs(n_jobs))
@@ -219,9 +247,8 @@ def match_exhaustive(
     callback_class: CallbackClass,
     callback_class_args: Dict = {},
     job_schedule: Tuple[int] = (1, 1),
-    target_splits: Dict = {},
-    template_splits: Dict = {},
-    target_subset: Optional[Tuple[slice, ...]] = None,
+    target_splits: Union[Dict, Tuple[Tuple[slice, ...]]] = {},
+    template_splits: Union[Dict, Tuple[Tuple[slice, ...]]] = {},
     pad_target_edges: bool = False,
     interpolation_order: int = 3,
     jobs_per_callback_class: int = 8,
@@ -251,14 +278,15 @@ def match_exhaustive(
         Job scheduling scheme, default is (1, 1). First value corresponds
         to the number of splits that are processed in parallel, the second
         to the number of angles evaluated in parallel on each split.
-    target_splits : dict, optional
-        Splits for target. Default is an empty dictionary, i.e. no splits.
-        See :py:meth:`tme.matching_utils.compute_parallelization_schedule`.
+    target_splits : dict or tuple of tuple of slice, optional
+        Splits for target. Can be either:
+
+        - dict: Split factors per axis (e.g., {0: 2} splits axis 0 twice)
+        - tuple of tuple of slice: Actual split boxes
+
+        Default is an empty dictionary, i.e., no splits.
     template_splits : dict, optional
-        Splits for template. Default is an empty dictionary, i.e. no splits.
-        See :py:meth:`tme.matching_utils.compute_parallelization_schedule`.
-    target_subset : tuple of slice
-        Match on target subset. Results will be w.r.t. the original shape.
+        Like target_splits but for the template.
     pad_target_edges : bool, optional
         Pad the target boundaries to avoid edge effects.
     interpolation_order : int, optional
@@ -268,8 +296,8 @@ def match_exhaustive(
         if ones is provided.
     verbose : bool, optional
         Indicate matching progress, defaults to False.
-    background_correction : str, optional
-        Background correctoin use use. Supported methods are 'phase-scrambling'.
+    background_correction : {'phase-scrambling', None}
+        Background correction to use.
 
     Returns
     -------
@@ -310,9 +338,9 @@ def match_exhaustive(
     >>> callback_class_args = {"score_threshold" : 0}
 
     In case the entire template matching problem does not fit into memory, we can
-    determine the splitting procedure. In this case, we halv the first axis of the target
+    determine the splitting procedure. In this case, we halve the first axis of the target
     once. Splitting and ``job_schedule`` is typically computed using
-    :py:meth:`tme.matching_utils.compute_parallelization_schedule`.
+    :py:meth:`tme.memory.compute_schedule`.
 
     >>> target_splits = {0 : 1}
 
@@ -333,42 +361,30 @@ def match_exhaustive(
 
     See Also
     --------
-    :py:meth:`tme.matching_utils.compute_parallelization_schedule`
+    :py:meth:`tme.memory.compute_schedule`
     """
-    if background_correction not in (None, "phase-scrambling"):
+    _valid_corrections = (None, "phase-scrambling")
+    if background_correction not in _valid_corrections:
         raise ValueError(
-            "Argument background_correction can be either None or "
-            f"'phase-scrambling', got {background_correction}."
+            f"Argument background_correction must be one of "
+            f"{_valid_corrections}, got {background_correction!r}."
         )
 
     target_shape = matching_data._target.shape
-    target_scheme = split_shape(target_shape, splits=target_splits)
-    if target_subset is not None:
-        if len(target_subset) != len(target_shape):
-            raise ValueError(f"target_subset needs to be len {len(target_shape)}.")
+    if isinstance(target_splits, dict):
+        target_splits = split_shape(target_shape, target_splits)
 
-        offsets = tuple(s.start if s.start is not None else 0 for s in target_subset)
-        subset = tuple(
-            (s.stop if s.stop is not None else target_shape[i])
-            - (s.start if s.start is not None else 0)
-            for i, s in enumerate(target_subset)
-        )
-        target_scheme = split_shape(subset, splits=target_splits)
-        target_scheme = tuple(
-            tuple(
-                slice(s.start + offsets[i], s.stop + offsets[i])
-                for i, s in enumerate(split_tuple)
-            )
-            for split_tuple in target_scheme
-        )
+    if isinstance(template_splits, dict):
+        template_splits = split_shape(matching_data._template.shape, template_splits)
 
-    template_scheme = split_shape(matching_data._template.shape, splits=template_splits)
-    if (len(target_scheme) > 1) and not pad_target_edges:
+    target_splits = _shift_splits(target_splits, target_shape)
+
+    splits = tuple(product(target_splits, template_splits))
+    if (len(target_splits) > 1) and not pad_target_edges:
         warnings.warn(
             "Target splitting without padding target edges leads to unreliable "
             "similarity estimates around the split border."
         )
-    splits = tuple(product(target_scheme, template_scheme))
 
     kwargs = {
         "match_projection": kwargs.get("match_projection", False),
@@ -377,9 +393,11 @@ def match_exhaustive(
         "callback_class_args": callback_class_args,
     }
     outer_jobs, inner_jobs = job_schedule
+    tar_shape, tmpl_shape = matching_data._matching_shapes()
+
     if be._backend_name == "jax":
         score = MATCHING_EXHAUSTIVE_REGISTER.get("FLC", (None, None))[1]
-        results = be.scan(
+        ret = be.scan(
             splits=splits,
             n_jobs=outer_jobs,
             rotate_mask=matching_score == score,
@@ -387,7 +405,7 @@ def match_exhaustive(
             **kwargs,
         )
     else:
-        results = Parallel(n_jobs=outer_jobs, verbose=verbose)(
+        ret = Parallel(n_jobs=outer_jobs, verbose=verbose, prefer="processes")(
             [
                 delayed(_wrap_backend(_match_exhaustive))(
                     backend_name=be._backend_name,
@@ -406,19 +424,13 @@ def match_exhaustive(
                 for index, (target_split, template_split) in enumerate(splits)
             ]
         )
-
-    if target_subset is None:
-        return callback_class.merge(results, **callback_class_args)
-    return callback_class.merge(
-        results, output_shape=target_shape, **callback_class_args
-    )
+    return callback_class.merge(ret, output_shape=tar_shape, **callback_class_args)
 
 
 def register_matching_exhaustive(
     matching: str,
     matching_setup: Callable,
     matching_scoring: Callable,
-    memory_class: MatchingMemoryUsage,
 ) -> None:
     """
     Registers a new matching scheme.
@@ -431,29 +443,22 @@ def register_matching_exhaustive(
         Corresponding setup function.
     matching_scoring : Callable
         Corresponing scoring function.
-    memory_class : MatchingMemoryUsage
-        Child of :py:class:`tme.memory.MatchingMemoryUsage`.
 
     Raises
     ------
     ValueError
-        If a function with the name ``matching`` already exists in the registry, or
-        if ``memory_class`` is no child of :py:class:`tme.memory.MatchingMemoryUsage`.
+        If a function with the name ``matching`` already exists in the registry.
     """
 
     if matching in MATCHING_EXHAUSTIVE_REGISTER:
         raise ValueError(f"A method with name '{matching}' is already registered.")
-    if not issubclass(memory_class, MatchingMemoryUsage):
-        raise ValueError(f"{memory_class} is not a subclass of {MatchingMemoryUsage}.")
-
     MATCHING_EXHAUSTIVE_REGISTER[matching] = (matching_setup, matching_scoring)
-    MATCHING_MEMORY_REGISTRY[matching] = memory_class
 
 
 def scan(*args, **kwargs):
     warnings.warn(
-        "Using scan directly is deprecated and will raise an error "
-        "in future releases. Please use match_exhaustive instead.",
+        "scan is deprecated and will be removed in "
+        "in v0.3.5. Please use match_exhaustive instead.",
         DeprecationWarning,
         stacklevel=2,
     )
@@ -462,8 +467,8 @@ def scan(*args, **kwargs):
 
 def scan_subsets(*args, **kwargs):
     warnings.warn(
-        "Using scan_subsets directly is deprecated and will raise an error "
-        "in future releases. Please use match_exhaustive instead.",
+        "scan_subsets is deprecated and will be removed "
+        "in v0.3.5. Please use match_exhaustive instead.",
         DeprecationWarning,
     )
     return match_exhaustive(*args, **kwargs)
