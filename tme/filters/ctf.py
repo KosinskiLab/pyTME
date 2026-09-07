@@ -8,7 +8,7 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 
 import re
 from dataclasses import dataclass
-from typing import Tuple, Dict, Optional
+from typing import Tuple, Dict, Optional, Literal
 
 import numpy as np
 
@@ -28,12 +28,10 @@ __all__ = ["CTF", "CTFReconstructed", "create_ctf"]
 
 @dataclass
 class CTF(ComposableFilter):
-    """
-    Generate per-tilt contrast transfer function filter.
-    """
+    """Generate per-tilt contrast transfer function filter masks."""
 
-    #: The defocus in x direction (in units of sampling rate).
-    defocus_x: Tuple[float] = None
+    #: The mean defocus value in Ångstrom (positive is underfocus).
+    defocus: Tuple[float] = None
     #: The tilt angles in degrees.
     angles: Tuple[float] = None
     #: The microscope projection axis, defaults to 2 (z).
@@ -42,20 +40,24 @@ class CTF(ComposableFilter):
     tilt_axis: int = 0
     #: The sampling rate, defaults to 1 Ångstrom / voxel.
     sampling_rate: Tuple[float, ...] = 1
-    #: The acceleration voltage in Volts, defaults to 300e3.
-    acceleration_voltage: Tuple[float, ...] = 300e3
-    #: The spherical aberration, defaults to 2.7e7 (in units of sampling rate).
+    #: The acceleration voltage in kV, defaults to 300
+    acceleration_voltage: Tuple[float, ...] = 300
+    #: The spherical aberration, defaults to 2.7e7 (in Angstrom).
     spherical_aberration: Tuple[float, ...] = 2.7e7
     #: The amplitude contrast, defaults to 0.07.
     amplitude_contrast: Tuple[float, ...] = 0.07
     #: The phase shift in radians, defaults to 0.
     phase_shift: Tuple[float, ...] = 0
-    #: The defocus angle in radians, defaults to 0.
-    defocus_angle: Tuple[float, ...] = 0
-    #: The defocus value in y direction, defaults to None (in units of sampling rate).
-    defocus_y: Optional[Tuple[float, ...]] = None
-    #: Whether the returned CTF should be phase-flipped, defaults to True.
-    flip_phase: Optional[bool] = True
+    #: The astigmatism angle in radians, defaults to 0.
+    astigmatism_angle: Tuple[float, ...] = 0
+    #: The defocus difference (half-delta) in Ångstrom, defaults to 0.
+    defocus_delta: Optional[Tuple[float, ...]] = 0
+    #: CTF correction mode: 'raw', 'wiener', 'phase-flip', 'phase-flip-weighted'.
+    correction_mode: Literal["raw", "wiener", "phase-flip", "phase-flip-weighted"] = (
+        "phase-flip"
+    )
+    #: B-factor style falloff for Wiener filter (Å²). Controls SNR decay with frequency.
+    wiener_falloff: Optional[float] = None
 
     @classmethod
     def from_file(cls, filename: str, **kwargs) -> "CTF":
@@ -65,7 +67,7 @@ class CTF(ComposableFilter):
         Parameters
         ----------
         filename : str
-            The path to a file with ctf parameters. Supports extensions are:
+            The path to a file with ctf parameters. Supports formats are:
 
             +-------+---------------------------------------------------------+
             | .star | GCTF file                                               |
@@ -73,6 +75,8 @@ class CTF(ComposableFilter):
             | .xml  | WARP/M XML file                                         |
             +-------+---------------------------------------------------------+
             | .mdoc | SerialEM file                                           |
+            +-------+---------------------------------------------------------+
+            | .*    | AreTomo3 CTF file (auto-detected by header)             |
             +-------+---------------------------------------------------------+
             | .*    | CTFFIND4 file                                           |
             +-------+---------------------------------------------------------+
@@ -86,20 +90,22 @@ class CTF(ComposableFilter):
             func = _from_xml
         elif filename.lower().endswith("mdoc"):
             func = _from_mdoc
+        elif _is_aretomo(filename):
+            func = _from_aretomo
 
         data = func(filename=filename)
 
         # Pixel size needs to be overwritten by pixel size the ctf is generated for
         init_kwargs = {
             "angles": data.get("angles", None),
-            "defocus_x": data["defocus_1"],
-            "sampling_rate": data["pixel_size"],
-            "acceleration_voltage": np.multiply(data["acceleration_voltage"], 1e3),
+            "defocus": data["defocus"],
+            "sampling_rate": data.get("pixel_size", 1.0),
+            "acceleration_voltage": data.get("acceleration_voltage", 300),
             "spherical_aberration": data.get("spherical_aberration"),
             "amplitude_contrast": data.get("amplitude_contrast"),
             "phase_shift": data.get("additional_phase_shift"),
-            "defocus_angle": data.get("azimuth_astigmatism"),
-            "defocus_y": data["defocus_2"],
+            "astigmatism_angle": data.get("astigmatism_angle"),
+            "defocus_delta": data.get("defocus_delta"),
         }
         for k, v in kwargs.items():
             if k in init_kwargs and init_kwargs.get(k) is None:
@@ -109,26 +115,31 @@ class CTF(ComposableFilter):
         # Moved format conversion from __post__init
         if "phase_shift" in init_kwargs:
             init_kwargs["phase_shift"] = np.radians(init_kwargs["phase_shift"])
-        if "defocus_angle" in init_kwargs:
-            init_kwargs["defocus_angle"] = np.radians(init_kwargs["defocus_angle"])
+        if "astigmatism_angle" in init_kwargs:
+            init_kwargs["astigmatism_angle"] = np.radians(
+                init_kwargs["astigmatism_angle"]
+            )
         return cls(**init_kwargs)
 
     def _evaluate(
         self,
         shape: Tuple[int, ...],
-        defocus_x: Tuple[float],
+        defocus: Tuple[float],
         angles: Tuple[float],
         opening_axis: int = 2,
         tilt_axis: int = 0,
         amplitude_contrast: Tuple[float] = 0.07,
         phase_shift: Tuple[float] = 0,
-        defocus_angle: Tuple[float] = 0,
-        defocus_y: Tuple[float] = None,
+        astigmatism_angle: Tuple[float] = 0,
+        defocus_delta: Tuple[float] = 0,
         sampling_rate: Tuple[float] = 1,
-        acceleration_voltage: float = 300e3,
+        acceleration_voltage: float = 300,
         spherical_aberration: float = 2.7e7,
-        flip_phase: bool = True,
-        cutoff_frequency: float = 0.5,
+        correction_mode: Literal[
+            "raw", "phase-flip", "phase-flip-weighted", "wiener"
+        ] = "phase-flip",
+        wiener_falloff: Optional[float] = None,
+        centered_position: Optional[Tuple[float, float, float]] = None,
         **kwargs: Dict,
     ) -> Dict:
         """
@@ -138,8 +149,8 @@ class CTF(ComposableFilter):
         ----------
         shape : tuple of int
             The shape of the CTF.
-        defocus_x : tuple of float
-            Defocus along the first principal axis in spatial units of sampling rate.
+        defocus : tuple of float
+            Mean defocus value in Ångstrom (positive is underfocus).
         angles : tuple of float
             The tilt angles in degrees.
         opening_axis : int, optional
@@ -150,26 +161,28 @@ class CTF(ComposableFilter):
             Amplitude contrast of microscope, defaults to 0.07.
         phase_shift : tuple of float, optional
            CTF phase shift in radians, defaults to 0.
-        defocus_angle : tuple of float, optional
+        astigmatism_angle : tuple of float, optional
             Astigmatism angle in radians, defaults to 0.
-        defocus_y : tuple of float, optional
-            Defocus along the second principal axis in spatial units of sampling rate.
+        defocus_delta : tuple of float, optional
+            Defocus difference (half-delta) in Ångstrom, defaults to 0.
         sampling_rate : tuple of float, optional
             The sampling rate, defaults to 1.
         acceleration_voltage : float, optional
-            The acceleration voltage in electron microscopy, defaults to 300e3.
+            Electron acceleration voltage in kV, defaults to 300.
         spherical_aberration : float, optional
             Spherical aberration of microscope in units of sampling rate.
-        flip_phase : bool, optional
-            Whether the returned CTF should be phase-flipped, defaults to True.
+        correction_mode : str, optional
+            CTF correction method: 'phase-flip' (default), 'multiply', or 'wiener'.
+        wiener_falloff : float, optional
+            B-factor style falloff for Wiener filter SNR estimation (Å²).
         **kwargs : Dict
             Additional keyword arguments.
         """
         angles = np.atleast_1d(angles)
-        defoci_x = pad_to_length(defocus_x, angles.size)
-        defoci_y = pad_to_length(defocus_y, angles.size)
+        defoci = pad_to_length(defocus, angles.size)
+        defoci_delta = pad_to_length(defocus_delta, angles.size)
         phase_shift = pad_to_length(phase_shift, angles.size)
-        defocus_angle = pad_to_length(defocus_angle, angles.size)
+        astigmatism_angle = pad_to_length(astigmatism_angle, angles.size)
         spherical_aberration = pad_to_length(spherical_aberration, angles.size)
         amplitude_contrast = pad_to_length(amplitude_contrast, angles.size)
         acceleration_voltage = pad_to_length(acceleration_voltage, angles.size)
@@ -180,35 +193,50 @@ class CTF(ComposableFilter):
         )
         stack = np.zeros((len(angles), *ctf_shape))
 
-        # Shift tilt axis forward
-        corrected_tilt_axis = tilt_axis
-        if opening_axis and tilt_axis is not None:
-            if opening_axis < tilt_axis:
-                corrected_tilt_axis -= 1
+        if centered_position is not None:
+            tilt_rad = np.radians(angles)
+            defocus_offset = (
+                np.sin(tilt_rad) * centered_position[tilt_axis]
+                + np.cos(tilt_rad) * centered_position[opening_axis]
+            )
+            defocus_offset = defocus_offset * sampling_rate
+            defoci = defoci + defocus_offset
 
         for index, angle in enumerate(angles):
             chi = create_ctf(
                 angle=angle,
                 shape=ctf_shape,
-                defocus_x=defoci_x[index],
-                defocus_y=defoci_y[index],
+                defocus=defoci[index],
+                defocus_delta=defoci_delta[index],
                 sampling_rate=sampling_rate,
                 acceleration_voltage=acceleration_voltage[index],
                 spherical_aberration=spherical_aberration[index],
-                cutoff_frequency=cutoff_frequency,
                 phase_shift=phase_shift[index],
-                defocus_angle=defocus_angle[index],
+                astigmatism_angle=astigmatism_angle[index],
                 amplitude_contrast=amplitude_contrast[index],
-                tilt_axis=corrected_tilt_axis,
+                tilt_axis=tilt_axis,
                 opening_axis=opening_axis,
                 full_shape=shape,
             )
 
             stack[index] = chi
 
-        if flip_phase:
-            stack = np.abs(stack, out=stack)
-        return {"data": be.to_backend_array(stack), "shape": shape}
+        mode = correction_mode
+        if correction_mode == "phase-flip-weighted":
+            mode = "phase-flip"
+
+        stack = _apply_ctf_correction(
+            ctf=stack,
+            correction_mode=mode,
+            sampling_rate=sampling_rate,
+            shape=ctf_shape,
+            wiener_falloff=wiener_falloff,
+        )
+        ret = {"data": be.to_backend_array(stack), "shape": shape}
+        if correction_mode == "phase-flip-weighted":
+            ret["data"] = be.multiply(ret["data"], ret["data"])
+            ret["data_weights"] = be.to_backend_array(np.abs(stack))
+        return ret
 
 
 @dataclass
@@ -220,16 +248,16 @@ class CTFReconstructed(CTF):
     def _evaluate(
         self,
         shape: Tuple[int],
-        defocus_x: Tuple[float],
+        defocus: Tuple[float],
         amplitude_contrast: float = 0.07,
         phase_shift: Tuple[float] = 0,
-        defocus_angle: Tuple[float] = 0,
-        defocus_y: Tuple[float] = None,
+        astigmatism_angle: Tuple[float] = 0,
+        defocus_delta: Tuple[float] = 0,
         sampling_rate: Tuple[float] = 1,
-        acceleration_voltage: float = 300e3,
-        spherical_aberration: float = 2.7e3,
-        flip_phase: bool = True,
-        cutoff_frequency: float = 0.5,
+        acceleration_voltage: float = 300,
+        spherical_aberration: float = 2.7e7,
+        correction_mode: str = "phase-flip",
+        wiener_falloff: Optional[float] = None,
         **kwargs: Dict,
     ) -> Dict:
         """
@@ -239,26 +267,28 @@ class CTFReconstructed(CTF):
         ----------
         shape : tuple of int
             The shape of the CTF.
-        defocus_x : tuple of float
-            Defocus along the first principal axis in spatial units of sampling rate.
+        defocus : tuple of float
+            Mean defocus value in Ångstrom (positive is underfocus).
         opening_axis : int, optional
             The axis around which the wedge is opened, defaults to 2.
         amplitude_contrast : float, optional
             The amplitude contrast, defaults to 0.07.
         phase_shift : tuple of float, optional
            CTF phase shift in radians, defaults to 0.
-        defocus_angle : tuple of float, optional
-            The defocus angle in radians, defaults to 0.
-        defocus_y : tuple of float, optional
-            Defocus along the second principal axis in spatial units of sampling rate.
+        astigmatism_angle : tuple of float, optional
+            The astigmatism angle in radians, defaults to 0.
+        defocus_delta : tuple of float, optional
+            Defocus difference (half-delta) in Ångstrom, defaults to 0.
         sampling_rate : tuple of float, optional
             The sampling rate, defaults to 1.
         acceleration_voltage : float, optional
-            The acceleration voltage in electron microscopy, defaults to 300e3.
+            The acceleration voltage in kV, defaults to 300.
         spherical_aberration : float, optional
-            The spherical aberration coefficient, defaults to 2.7e3.
-        flip_phase : bool, optional
-            Whether the returned CTF should be phase-flipped.
+            The spherical aberration coefficient, defaults to 2.7e7.
+        correction_mode : str, optional
+            CTF correction mode: 'phase-flip', 'raw', 'wiener', or 'wiener-phase-flip'.
+        wiener_falloff : float, optional
+            B-factor style falloff for Wiener filter SNR estimation (Å²).
         **kwargs : Dict
             Additional keyword arguments.
 
@@ -267,21 +297,85 @@ class CTFReconstructed(CTF):
         NDArray
             A stack containing the CTF weight.
         """
+        sampling_rate = np.max(sampling_rate)
         stack = create_ctf(
             shape=shape,
-            defocus_x=defocus_x,
-            defocus_y=defocus_y,
-            sampling_rate=np.max(sampling_rate),
-            acceleration_voltage=self.acceleration_voltage,
+            defocus=defocus,
+            defocus_delta=defocus_delta,
+            sampling_rate=sampling_rate,
+            acceleration_voltage=acceleration_voltage,
             spherical_aberration=spherical_aberration,
-            cutoff_frequency=cutoff_frequency,
             phase_shift=phase_shift,
-            defocus_angle=defocus_angle,
+            astigmatism_angle=astigmatism_angle,
             amplitude_contrast=amplitude_contrast,
         )
-        if flip_phase:
-            stack = np.abs(stack, out=stack)
+        stack = _apply_ctf_correction(
+            ctf=stack,
+            correction_mode=correction_mode,
+            sampling_rate=sampling_rate,
+            shape=shape,
+            wiener_falloff=wiener_falloff,
+        )
         return {"data": be.to_backend_array(stack), "shape": shape}
+
+
+def _is_aretomo(filename: str) -> bool:
+    """Check whether *filename* looks like an AreTomo3 CTF output file."""
+    with open(filename, mode="r", encoding="utf-8") as infile:
+        first_line = infile.readline().strip()
+    return first_line.startswith("# Columns:")
+
+
+def _from_aretomo(filename: str) -> Dict:
+    """
+    Parse an AreTomo3 *_CTF.txt file.
+
+    The file contains a header line with 8 columnes of whitespace-delimited data
+
+        #1 micrograph number
+        #2 defocus1 [Å]
+        #3 defocus2 [Å]
+        #4 azimuth of astigmatism [deg]
+        #5 additional phase shift [rad]
+        #6 cross-correlation
+        #7 spacing [Å]
+        #8 dfHand
+
+    Notes
+    -----
+    Micorscope parameters for the current run, i.e., pixel size, voltage, Cs, and
+    amplitude contrast are not stored in the file and must be specified.
+    """
+    with open(filename, mode="r", encoding="utf-8") as infile:
+        lines = [x.strip() for x in infile.read().split("\n")]
+        lines = [x for x in lines if len(x) and not x.startswith("#")]
+
+    columns = {
+        "defocus_1": 1,
+        "defocus_2": 2,
+        "astigmatism_angle": 3,
+        "additional_phase_shift": 4,
+    }
+
+    output = {key: [] for key in columns}
+    for line in lines:
+        values = line.split()
+        for key, col in columns.items():
+            output[key].append(float(values[col]))
+
+    for key in columns:
+        output[key] = np.array(output[key])
+
+    output["defocus"], output["defocus_delta"] = _ctffind_to_warp_defocus(
+        output.pop("defocus_1", None), output.pop("defocus_2", None)
+    )
+    output["additional_phase_shift"] = np.degrees(output["additional_phase_shift"])
+
+    output["pixel_size"] = None
+    output["acceleration_voltage"] = None
+    output["spherical_aberration"] = None
+    output["amplitude_contrast"] = None
+    return output
 
 
 def _from_xml(filename: str) -> Dict:
@@ -333,16 +427,16 @@ def _from_xml(filename: str) -> Dict:
         k: np.array(v) if hasattr(v, "__len__") else float(v) for k, v in params.items()
     }
 
-    # Convert units to sampling rate (we assume it is Angstrom)
+    # Convert units to Angstrom
     params["Cs"] = float(params["Cs"] * 1e7)
     params["Defocus"] = params["Defocus"] * 1e4
-    params["Defocus2"] = np.subtract(params["Defocus"], params["DefocusDelta"] * 1e4)
+    params["DefocusDelta"] = params["DefocusDelta"] * 0.5 * 1e4
 
     mapping = {
         "angles": "Angles",
-        "defocus_1": "Defocus",
-        "defocus_2": "Defocus2",
-        "azimuth_astigmatism": "DefocusAngle",
+        "defocus": "Defocus",
+        "defocus_delta": "DefocusDelta",
+        "astigmatism_angle": "DefocusAngle",
         "additional_phase_shift": "PhaseShift",
         "acceleration_voltage": "Voltage",
         "spherical_aberration": "Cs",
@@ -374,7 +468,7 @@ def _from_ctffind(filename: str) -> Dict:
         "micrograph_number": 0,
         "defocus_1": 1,
         "defocus_2": 2,
-        "azimuth_astigmatism": 3,
+        "astigmatism_angle": 3,
         "additional_phase_shift": 4,
         "cross_correlation": 5,
         "spacing": 6,
@@ -392,10 +486,12 @@ def _from_ctffind(filename: str) -> Dict:
     for key in columns:
         output[key] = np.array(output[key])
 
+    output["defocus"], output["defocus_delta"] = _ctffind_to_warp_defocus(
+        output.pop("defocus_1", None), output.pop("defocus_2", None)
+    )
     output["additional_phase_shift"] = np.degrees(output["additional_phase_shift"])
-    cs = output.get("spherical_aberration")
-    if cs is not None:
-        output["spherical_aberration"] = float(cs) * 1e7
+    if output.get("spherical_aberration") is not None:
+        output["spherical_aberration"] = float(output["spherical_aberration"]) * 1e7
     return output
 
 
@@ -413,10 +509,9 @@ def _from_star(filename: str) -> Dict:
             "spherical_aberration": ("_cs", float, 1e7),
             "amplitude_contrast": ("_amp_contrast", float, 1),
             "additional_phase_shift": (None, float, 1),
-            "azimuth_astigmatism": (None, float, 1),
+            "astigmatism_angle": (None, float, 1),
         }
     else:
-        key = "data_"
         mapping = {
             "defocus_1": ("_rlnDefocusU", float, 1),
             "defocus_2": ("_rlnDefocusV", float, 1),
@@ -425,8 +520,16 @@ def _from_star(filename: str) -> Dict:
             "spherical_aberration": ("_rlnSphericalAberration", float, 1),
             "amplitude_contrast": ("_rlnAmplitudeContrast", float, 1),
             "additional_phase_shift": (None, float, 1),
-            "azimuth_astigmatism": ("_rlnDefocusAngle", float, 1),
+            "astigmatism_angle": ("_rlnDefocusAngle", float, 1),
+            "angles": ("_rlnTomoNominalStageTiltAngle", float, 1),
         }
+
+        potential_keys = [x for x in parser.keys() if x.startswith("data_")]
+        if len(potential_keys) != 1:
+            raise ValueError(
+                f"Expected one 'data_*' field, got {len(potential_keys)} {potential_keys}"
+            )
+        key = potential_keys[0]
 
     output = {}
     ctf_data = parser[key]
@@ -438,6 +541,10 @@ def _from_star(filename: str) -> Dict:
             except Exception:
                 pass
         output[out_key] = key_value
+
+    output["defocus"], output["defocus_delta"] = _ctffind_to_warp_defocus(
+        output.pop("defocus_1", None), output.pop("defocus_2", None)
+    )
     return output
 
 
@@ -454,14 +561,21 @@ def _from_mdoc(filename: str) -> Dict:
         "spherical_aberration": ("_rlnSphericalAberration", float),
         "amplitude_contrast": ("_rlnAmplitudeContrast", float),
         "additional_phase_shift": (None, float),
-        "azimuth_astigmatism": ("_rlnDefocusAngle", float),
+        "astigmatism_angle": ("_rlnDefocusAngle", float),
     }
     output = {}
     for out_key, (key, key_dtype) in mapping.items():
         output[out_key] = parser.get(key, None)
 
-    # Adjust convention and convert to Angstrom
-    output["defocus_1"] = np.multiply(output["defocus_1"], -1e4)
+    defocus1 = output.pop("defocus_1", None)
+    defocus2 = output.pop("defocus_2", None)
+    defocus, defocus_delta = _ctffind_to_warp_defocus(defocus1, defocus2)
+
+    # Convert from microns to Angstrom
+    output["defocus"] = np.multiply(-defocus, 1e4)
+    if defocus_delta is not None:
+        defocus_delta = np.multiply(defocus_delta, 1e4)
+    output["defocus_delta"] = defocus_delta
     return output
 
 
@@ -485,17 +599,85 @@ def _compute_electron_wavelength(acceleration_voltage: int = 300e3):
     return electron_wavelength
 
 
+def _ctffind_to_warp_defocus(defocus1, defocus2):
+    if defocus2 is None:
+        return defocus1, None
+
+    defocus = np.add(defocus1, defocus2) / 2
+    defocus_delta = np.subtract(defocus1, defocus2) / 2
+    return defocus, defocus_delta
+
+
+def _apply_ctf_correction(
+    ctf: NDArray,
+    correction_mode: str,
+    sampling_rate: float,
+    shape: Tuple[int, ...],
+    wiener_falloff: float = 100.0,
+) -> NDArray:
+    """
+    Apply CTF correction based on the specified mode.
+
+    Parameters
+    ----------
+    ctf : NDArray
+        Raw CTF values (can be 2D or 3D stack).
+    correction_mode : str
+        Correction mode based on tomogram state:
+        'phase-flip' for phase-flip corrected tomograms,
+        'wiener' for tomograms without CTF correction with Wiener filter,
+        'raw' for tomograms without CTF correction.
+    sampling_rate : float
+        Sampling rate in Å/voxel.
+    shape : tuple of int
+        Shape of the CTF array (excluding batch dimension if present).
+    wiener_falloff : float
+        B-factor style falloff for Wiener filter (Å²), default is 100.
+
+    Returns
+    -------
+    NDArray
+        Corrected CTF filter.
+    """
+    if correction_mode == "phase-flip":
+        return np.abs(ctf)
+    elif correction_mode == "raw":
+        return ctf
+    elif correction_mode == "wiener":
+        freq_grid = fftfreqn(
+            shape,
+            sampling_rate=sampling_rate,
+            compute_euclidean_norm=True,
+            fftshift=False,
+        )
+
+        # Estimate SNR as SNR(k) = exp(-B * k^2 / 4) with k 1/Å and B as falloff
+        if wiener_falloff is None:
+            wiener_falloff = 100.0
+
+        snr = np.exp(-wiener_falloff * np.square(freq_grid) / 4.0)
+
+        # CTF / (CTF^2 + 1/SNR + e)
+        ctf_sq = np.square(ctf)
+        denominator = ctf_sq + np.divide(1.0, snr + 1e-10)
+        return np.divide(ctf, denominator + 1e-10)
+    else:
+        raise ValueError(
+            f"Unknown correction_mode '{correction_mode}'. "
+            "Expected 'phase-flip', 'wiener', or 'raw'."
+        )
+
+
 def create_ctf(
     shape: Tuple[int],
-    defocus_x: float,
-    acceleration_voltage: float = 300e3,
-    defocus_angle: float = 0,
+    defocus: float,
+    acceleration_voltage: float = 300,
+    astigmatism_angle: float = 0,
     phase_shift: float = 0,
-    defocus_y: float = None,
+    defocus_delta: float = 0,
     sampling_rate: float = 1,
     spherical_aberration: float = 2.7e7,
     amplitude_contrast: float = 0.07,
-    cutoff_frequency: float = 0.5,
     angle: float = None,
     tilt_axis: int = 0,
     opening_axis: int = None,
@@ -508,21 +690,20 @@ def create_ctf(
     ----------
     shape : Tuple[int]
         Shape of the returned CTF mask.
-    defocus_x : float
-        Defocus along the first principal axis in spatial units of sampling rate,
-        e.g. 30000 Angstrom.
+    defocus : float
+        Mean defocus value in Ångstrom (positive is underfocus).
     acceleration_voltage : float, optional
-        Acceleration voltage in keV, defaults to 300e3.
-    defocus_angle : float, optional
+        Acceleration voltage in kV, defaults to 300.
+    astigmatism_angle : float, optional
         Astigmatism angle in radians, defaults to 0.
     phase_shift : float, optional
        CTF phase shift in radians, defaults to 0.
-    defocus_y : float, optional
-        Defocus along the second principal axis in spatial units of sampling rate.
+    defocus_delta : float, optional
+        Defocus difference (half-delta) in Ångstrom, defaults to 0.
     tilt_axis : int, optional
         Axes the specimen was tilted over, defaults to 0 (x-axis).
     sampling_rate : float or tuple of floats
-        Sampling rate throughout shape, e.g., 4 Angstrom per voxel.
+        Sampling rate throughout shape, e.g., 4 Ångstrom per voxel.
     amplitude_contrast : float, optional
         Amplitude contrast of microscope, defaults to 0.07.
     spherical_aberration : float, optional
@@ -547,37 +728,27 @@ def create_ctf(
     .. [1]  CTFFIND4: Fast and accurate defocus estimation from electron micrographs.
             Alexis Rohou and Nikolaus Grigorieff. Journal of Structural Biology 2015.
     """
-    electron_wavelength = _compute_electron_wavelength(acceleration_voltage)
-    electron_wavelength /= sampling_rate
-    aberration = (spherical_aberration / sampling_rate) * electron_wavelength**2
+    electron_wavelength = _compute_electron_wavelength(acceleration_voltage * 1e3)
+    aberration = spherical_aberration * electron_wavelength**2
 
-    defocus_x = defocus_x / sampling_rate if defocus_x is not None else None
-    defocus_y = defocus_y / sampling_rate if defocus_y is not None else None
-    if defocus_y is not None:
+    # WARP style effective defocus
+    # eff_defocus = defocus + defocus_delta * cos(2 * (angle - astigmatism_angle))
+    eff_defocus = defocus
+    if defocus_delta is not None and defocus_delta != 0:
         if len(shape) < 2:
             raise ValueError(f"Length of shape needs to be at least 2, got {shape}")
 
-        # Axial distance from grid center in voxels
         grid = fftfreqn(
             shape=shape,
             sampling_rate=None,
             return_sparse_grid=True,
             fftshift=False,
         )
-
-    # 0.5 * (dx + dy) + cos(2 * (azimuth - astigmatism) * (dx - dy))
-    if defocus_y is not None:
-        defocus_sum = np.add(defocus_x, defocus_y)
-        defocus_difference = np.subtract(defocus_x, defocus_y)
-
-        # Reusing grid, but in principle pure frequencies would suffice
+        # x/y definition is swapped because we transpose input
         angular_grid = np.arctan2(grid[1], grid[0])
-        defocus_difference = np.multiply(
-            defocus_difference,
-            np.cos(2 * (angular_grid - defocus_angle)),
+        eff_defocus = defocus + defocus_delta * np.cos(
+            2 * (angular_grid - astigmatism_angle)
         )
-        defocus_x = np.add(defocus_sum, defocus_difference)
-        defocus_x *= 0.5
 
     frequency_grid = fftfreqn(
         shape, sampling_rate=1, compute_euclidean_norm=True, fftshift=False
@@ -591,11 +762,11 @@ def create_ctf(
             sampling_rate=1,
             fftshift=False,
         )
-    frequency_mask = frequency_grid <= cutoff_frequency
+    frequency_grid = np.divide(frequency_grid, sampling_rate, out=frequency_grid)
 
-    # k^2*π*λ(dx - 0.5 * sph_abb * λ^2 * k^2) + phase_shift + ampl_contrast_term)
+    # k^2*π*λ(defocus - 0.5 * sph_abb * λ^2 * k^2) + phase_shift + ampl_contrast_term)
     frequency_grid = np.square(frequency_grid, out=frequency_grid)
-    chi = defocus_x - 0.5 * aberration * frequency_grid
+    chi = eff_defocus - 0.5 * aberration * frequency_grid
     chi = np.multiply(chi, np.pi * electron_wavelength, out=chi)
     chi = np.multiply(chi, frequency_grid, out=chi)
     chi += phase_shift
@@ -605,6 +776,4 @@ def create_ctf(
             np.sqrt(1 - np.square(amplitude_contrast)),
         )
     )
-    # Avoid contrast inversion
-    chi = np.sin(chi, out=chi)
-    return np.multiply(chi, frequency_mask, out=chi)
+    return np.sin(chi, out=chi)

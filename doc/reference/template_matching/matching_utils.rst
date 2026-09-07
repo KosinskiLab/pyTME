@@ -15,18 +15,6 @@ Subsetting
    split_shape
    center_slice
    apply_convolution_mode
-   compute_full_convolution_index
-   compute_parallelization_schedule
-
-
-Serialization
-~~~~~~~~~~~~~
-.. autosummary::
-   :toctree: ../api/
-
-   load_pickle
-   write_pickle
-
 
 Utilities
 ~~~~~~~~~

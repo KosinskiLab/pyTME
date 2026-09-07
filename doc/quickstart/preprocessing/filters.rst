@@ -21,13 +21,14 @@ Real-world data often contains noise from various sources, including sensor impe
    import matplotlib.colors as colors
    from skimage.util import random_noise
 
-   from tme.cli import match_template
-   from tme import Density, Preprocessor
+   from scipy.ndimage import gaussian_filter, median_filter
+
+   from tme import Density
+   from tme.utils.cli import match_template
 
    def compute_score(*args, **kwargs):
       return match_template(*args, **kwargs)[0]
 
-   preprocessor = Preprocessor()
    target = Density.from_file("../../_static/examples/preprocessing_target.png").data
    template_dens = Density.from_file("../../_static/examples/preprocessing_template.png")
    template_dens.data = template_dens.data.astype(np.float32)
@@ -51,7 +52,7 @@ Real-world data often contains noise from various sources, including sensor impe
    axs[0, 2].set_title("Score", color="#24a9bb")
 
    target_noisy = random_noise(target, mode="gaussian", mean=0, var=0.75)
-   target_filter = preprocessor.gaussian_filter(target_noisy, sigma=3)
+   target_filter = gaussian_filter(target_noisy, sigma=3)
    axs[1, 0].imshow(target_noisy, cmap="gray")
    axs[1, 0].set_title("Target + Gaussian Noise", color="#24a9bb")
    axs[1, 1].imshow(target_filter, cmap="gray")
@@ -63,7 +64,7 @@ Real-world data often contains noise from various sources, including sensor impe
    axs[1, 2].set_title("Score", color="#24a9bb")
 
    target_noisy = random_noise(target, mode="s&p", amount=0.8)
-   target_filter = preprocessor.median_filter(target_noisy, size=9)
+   target_filter = median_filter(target_noisy, size=9)
    axs[2, 0].imshow(target_noisy, cmap="gray")
    axs[2, 0].set_title("Target + S&P", color="#24a9bb")
    axs[2, 1].imshow(target_filter, cmap="gray")
@@ -109,8 +110,8 @@ Low-pass, high-pass and band-pass filters serve as prototypical modulators of an
    :caption: Application of Frequency Filters.
 
    from tme import Density
+   from tme.utils.cli import match_template
    from tme.filters import BandPassReconstructed
-   from tme.cli import match_template
 
    target = Density.from_file("../../_static/examples/preprocessing_target.png").data
    target_ft = np.fft.fftshift(np.fft.fft2(target))
@@ -177,22 +178,21 @@ Spectral whitening normalizes each frequency by dividing the amplitude of each f
 
    import copy
    from tme import Density
-   from tme.cli import match_template
-   from tme.filters import LinearWhiteningFilter
+   from tme.utils.cli import match_template
+   from tme.filters import estimate_radial_noise_spectrum, Curve
 
    target = Density.from_file("../../_static/examples/preprocessing_target.png").data
    template = Density.from_file(
       "../../_static/examples/preprocessing_template.png"
    ).data
 
-   whitening_filter = LinearWhiteningFilter()
+   profile = estimate_radial_noise_spectrum(target)
+   whitening_filter = Curve(spectrum=profile)
    target_filter = whitening_filter(
-      data_rfft=np.fft.rfftn(target),
       shape=target.shape,
-      return_real_fourier=True
+      return_real_fourier=True,
    )["data"]
    template_filter = whitening_filter(
-      data_rfft=np.fft.rfftn(target),
       shape=template.shape,
       return_real_fourier=True,
    )["data"]
@@ -239,12 +239,11 @@ Shown below is how we can use the CTF to inspect an object at different defoci.
    target = Density.from_file("../../_static/examples/preprocessing_target.png")
 
    ctf = CTFReconstructed(
-       sampling_rate=target.sampling_rate[0],
-       acceleration_voltage=200 * 1e3,
-       defocus_x=[1000],
+       sampling_rate=1,
+       acceleration_voltage=300,
+       defocus=[1000],
        spherical_aberration=2.7e7,
        amplitude_contrast=0.08,
-       flip_phase=False,
    )
 
    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(10, 5), constrained_layout=True)
@@ -256,13 +255,13 @@ Shown below is how we can use the CTF to inspect an object at different defoci.
    axs[0].imshow(target_filtered, cmap="gray")
    axs[0].set_title("Defocus 1000", color="#24a9bb")
 
-   ctf.defocus_x[0] = 2500
+   ctf.defocus[0] = 2500
    ctf_mask = ctf(shape=target.shape, return_real_fourier=True)["data"]
    target_filtered = np.fft.irfftn(np.fft.rfftn(target.data) * ctf_mask)
    axs[1].imshow(target_filtered, cmap="gray")
    axs[1].set_title("Defocus 2500", color="#24a9bb")
 
-   ctf.defocus_x[0] = 5000
+   ctf.defocus[0] = 5000
    ctf_mask = ctf(shape=target.shape, return_real_fourier=True)["data"]
    target_filtered = np.fft.irfftn(np.fft.rfftn(target.data) * ctf_mask)
    axs[2].imshow(target_filtered, cmap="gray")
@@ -282,34 +281,36 @@ Broadly speaking, |project| distinguishes between continuous, discrete and weigh
 
    from tme import Density
    from tme.filters import WedgeReconstructed
+   from tme.filters._utils import create_reconstruction_filter
 
    wedge = WedgeReconstructed(
-       angles = [60,60],
-       opening_axis = 0,
-       tilt_axis = 1,
-       create_continuous_wedge = True,
-       weight_wedge = False,
-       reconstruction_filter = "cosine"
+       angles=[60,60],
+       opening_axis=0,
+       tilt_axis=1,
+       create_continuous_wedge=True,
+       weight_wedge=False,
    )
 
    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(10, 5), constrained_layout=True)
    for ax in axs.flat:
        ax.axis("off")
 
-   mask = wedge(shape = (100,100), return_real_fourier = False)["data"]
-   axs[0].imshow(np.fft.fftshift(mask), cmap = "gray")
-   axs[0].set_title('Continuous Wedge', color = '#24a9bb')
+   shape=(101, 101, 101)
+
+   mask = wedge(shape=shape, return_real_fourier=False)["data"]
+   axs[0].imshow(np.fft.fftshift(mask)[..., shape[-1]//2], cmap="gray")
+   axs[0].set_title('Continuous Wedge', color='#24a9bb')
 
    wedge.create_continuous_wedge = False
    wedge.angles = np.linspace(-60, 60, 20)
-   mask = wedge(shape = (100,100), return_real_fourier = False)["data"]
-   axs[1].imshow(np.fft.fftshift(mask), cmap = "gray")
-   axs[1].set_title('Discrete Wedge', color = '#24a9bb')
+   mask = wedge(shape=shape, return_real_fourier=False)["data"]
+   axs[1].imshow(np.fft.fftshift(mask)[..., shape[-1]//2], cmap="gray")
+   axs[1].set_title('Discrete Wedge', color='#24a9bb')
 
    wedge.weight_wedge = True
-   mask = wedge(shape = (100,100), return_real_fourier = False)["data"]
-   axs[2].imshow(np.fft.fftshift(mask), cmap = "gray")
-   axs[2].set_title('Weighted Discrete Wedge', color = '#24a9bb')
+   mask = wedge(shape=shape, return_real_fourier=False, reconstruction_filter="ramp")["data"]
+   axs[2].imshow(np.fft.fftshift(mask)[..., shape[-1]//2], cmap="gray")
+   axs[2].set_title('Weighted Discrete Wedge', color='#24a9bb')
 
    plt.show()
 

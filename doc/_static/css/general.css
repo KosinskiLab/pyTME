@@ -93,3 +93,7 @@ html[data-theme=dark] .bd-content img:not(.only-dark):not(.dark-light) {
     border: none !important;
     padding: 0 !important;
 }
+
+.hide-page-title h1:first-of-type {
+    display: none;
+}

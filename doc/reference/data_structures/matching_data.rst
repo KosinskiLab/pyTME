@@ -1,17 +1,11 @@
+.. rst-class:: hide-page-title
+
 MatchingData
-============
+~~~~~~~~~~~~
 
 .. currentmodule:: tme.matching_data
 
-The `matching_data` module serves as data container for exhaustive template matching.
-
-
-Constructor
-~~~~~~~~~~~
-.. autosummary::
-   :toctree: ../api/
-
-   MatchingData
+.. autoclass:: MatchingData
 
 Conversion
 ~~~~~~~~~~

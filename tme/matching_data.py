@@ -7,15 +7,17 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import warnings
-from typing import Tuple, List, Optional, Generator, Dict
+from typing import Tuple, List, Optional
 
 import numpy as np
 
 from . import Density
 from .filters import Compose
 from .backends import backend as be
+from .memory import compute_schedule
 from .types import BackendArray, NDArray
-from .matching_utils import compute_parallelization_schedule, copy_docstring
+from .matching_utils import copy_docstring
+
 
 __all__ = ["MatchingData"]
 
@@ -67,12 +69,10 @@ class MatchingData:
         self.template = template
         if template_mask is not None:
             self.template_mask = template_mask
-
-        self.rotations = rotations
         self._invert_target = invert_target
-        self._translation_offset = tuple(0 for _ in range(len(target.shape)))
 
-        self._set_matching_dimension()
+        self.set_matching_dimension()
+        self.rotations = rotations
 
     @staticmethod
     def _shape_to_slice(shape: Tuple[int]) -> Tuple[slice]:
@@ -85,13 +85,6 @@ class MatchingData:
         ranges = [range(slc.start, slc.stop) for slc in slice_variable]
         indices = np.meshgrid(*ranges, sparse=True, indexing="ij")
         return indices
-
-    @staticmethod
-    def _load_array(arr: BackendArray) -> BackendArray:
-        """Load ``arr``, if ``arr`` type is a :obj:`numpy.memmap`, reload from disk."""
-        if isinstance(arr, np.memmap):
-            return np.memmap(arr.filename, mode="r", shape=arr.shape, dtype=arr.dtype)
-        return arr
 
     def subset_array(
         self,
@@ -141,11 +134,16 @@ class MatchingData:
         arr_slice = tuple(slice(*pos) for pos in zip(arr_start, arr_stop))
         arr_mesh = self._slice_to_mesh(arr_slice, arr.shape)
 
-        # Note different from joblib memmaps, the memmaps created by
-        # Density are guaranteed to only contain the array of interest
+        # Inputs are either tme.density.Density objects or regular numpy arrays
         if isinstance(arr, Density):
+            # Memmaps created by Density contain only the array of interest, while
+            # joblib memmap files contain multiple objects. Hence we need to
+            # distinguish between them in the following
             if isinstance(arr.data, np.memmap):
-                arr = Density.from_file(arr.data.filename, subset=arr_slice).data
+                try:
+                    arr = Density.from_file(arr.data.filename, subset=arr_slice).data
+                except Exception:
+                    arr = np.asarray(arr.data[*arr_mesh])
             else:
                 arr = np.asarray(arr.data[*arr_mesh])
         else:
@@ -159,7 +157,7 @@ class MatchingData:
             )
         )
         # The reflections are later cropped from the scores
-        arr = np.pad(arr, padding, mode="reflect")
+        arr = np.pad(arr, padding, mode="symmetric")
 
         if invert:
             arr = -arr
@@ -172,6 +170,7 @@ class MatchingData:
         target_pad: NDArray = None,
         template_pad: NDArray = None,
         invert_target: bool = False,
+        return_global_position: bool = False,
     ) -> Tuple["MatchingData", Tuple]:
         """
         Subset class instance based on slices.
@@ -243,26 +242,27 @@ class MatchingData:
             rotations=self.rotations,
             invert_target=self._invert_target,
         )
-
-        # Deal with splitting offsets
-        mask = np.subtract(1, self._template_batch).astype(bool)
-        target_offset = np.zeros(len(self._output_target_shape), dtype=int)
-        target_offset[mask] = [x.start for x in target_slice]
-        mask = np.subtract(1, self._target_batch).astype(bool)
-        # template_offset = np.zeros(len(self._output_template_shape), dtype=int)
-        # template_offset[mask] = [x.start for x in template_slice]
-
-        translation_offset = tuple(x for x in target_offset)
-
+        ret.set_matching_dimension(
+            target_batched=self._target_batched,
+            template_batched=self._template_batched,
+        )
         ret.target_filter = self.target_filter
         ret.template_filter = self.template_filter
 
-        ret.set_matching_dimension(
-            target_dim=getattr(self, "_target_dim", None),
-            template_dim=getattr(self, "_template_dim", None),
-        )
+        starts = [s.start for s in target_slice]
 
-        return ret, translation_offset
+        initial_shape = self._output_target_shape
+        return_shape = ret._output_target_shape
+        global_pos = tuple(
+            int((y + z // 2) - x // 2)
+            for x, y, z in zip(initial_shape, starts, return_shape)
+        )
+        if self._has_batch:
+            starts.insert(1, 0)
+
+        if return_global_position:
+            return ret, tuple(int(x) for x in starts), global_pos
+        return ret, tuple(int(x) for x in starts)
 
     def to_backend(self):
         """
@@ -272,7 +272,7 @@ class MatchingData:
         --------
         >>> matching_data.to_backend()
         """
-        backend_arr = type(be.zeros((1), dtype=be._float_dtype))
+        backend_arr = type(be.zeros((1), dtype=be._float))
         for attr_name, attr_value in vars(self).items():
             converted_array = None
             if isinstance(attr_value, np.ndarray):
@@ -287,273 +287,148 @@ class MatchingData:
 
             # Optional, but scores are float so we avoid casting and potential issues
             if attr_name in ("_template", "_template_mask", "_target", "_target_mask"):
-                target_dtype = be._float_dtype
+                target_dtype = be._float
 
             if target_dtype != current_dtype:
                 converted_array = be.astype(converted_array, target_dtype)
 
             setattr(self, attr_name, converted_array)
 
-    def set_matching_dimension(self, target_dim: int = None, template_dim: int = None):
+    def set_matching_dimension(
+        self, target_batched: bool = False, template_batched: bool = False
+    ):
         """
-        Sets matching batch dimensions for target and template.
+        Configure batch dimensions for target and template
 
         Parameters
         ----------
-        target_dim : int, optional
-            Target batch dimension, None by default.
-        template_dim : int, optional
-            Template batch dimension, None by default.
+        target_batched : bool, optional
+            Whether the target has a leading batch dimension.
+        template_batched : bool, optional
+            Whether the template has a leading batch dimension.
 
         Examples
         --------
-        >>> matching_data.set_matching_dimension(target_dim=0, template_dim=None)
+        >>> matching_data.set_matching_dimension(target_batched=True)
 
         Notes
         -----
-        If target and template share a batch dimension, the target will take
-        precendence and the template dimension will be shifted to the right. If target
-        and template have the same dimension, but target specifies batch dimensions,
-        the leftmost template dimensions are assumed to be collapse dimensions.
+        The batch dimension, if present, is always at position 0. When either
+        side is batched, the other gets a singleton leading dimension so that
+        both output shapes share the same number of dimensions.
         """
-        target_ndim = len(self._target.shape)
-        _, target_dims = self._compute_batch_dims(target_dim, ndim=target_ndim)
-        template_ndim = len(self._template.shape)
-        _, template_dims = self._compute_batch_dims(template_dim, ndim=template_ndim)
+        self._target_batched = target_batched
+        self._template_batched = template_batched
+        self._has_batch = target_batched or template_batched
 
-        target_ndim -= len(target_dims)
-        template_ndim -= len(template_dims)
-        self._set_matching_dimension(
-            target_dims=target_dims, template_dims=template_dims
-        )
+    @property
+    def _output_target_shape(self):
+        if self._has_batch and not self._target_batched:
+            return (1,) + self._target.shape
+        return self._target.shape
 
-    def _set_matching_dimension(
-        self, target_dims: Tuple[int] = (), template_dims: Tuple[int] = ()
-    ):
-        self._target_dim, self._template_dim = target_dims, template_dims
+    @property
+    def _output_template_shape(self):
+        if self._has_batch and not self._template_batched:
+            return (1,) + self._template.shape
+        return self._template.shape
 
-        target_ndim, template_ndim = len(self._target.shape), len(self._template.shape)
-        batch_dims = len(target_dims) + len(template_dims)
-        target_measurement_dims = target_ndim - len(target_dims)
-        collapse_dims = max(
-            template_ndim - len(template_dims) - target_measurement_dims, 0
-        )
-        matching_dims = target_measurement_dims + batch_dims
+    def _batch_shape(
+        self, shape: Tuple[int], target: bool = True
+    ) -> Tuple[Tuple[int], Tuple[int]]:
+        pad_shape = tuple(shape)
+        reduced = axes = tuple(range(len(shape)))
+        if self._has_batch:
+            axes = axes[2:]
+            reduced = tuple(range(1, len(shape) - 1))
+            pad_shape = (shape[0], 1) if target else (1, shape[1])
+            pad_shape = pad_shape + shape[2:]
+        return pad_shape, axes, reduced
 
-        target_shape = np.full(shape=matching_dims, fill_value=1, dtype=int)
-        template_shape = np.full(shape=matching_dims, fill_value=1, dtype=int)
-        template_batch = np.full(shape=matching_dims, fill_value=1, dtype=int)
-        target_batch = np.full(shape=matching_dims, fill_value=1, dtype=int)
+    def _to_full_batch(self, arr, target=True):
+        if self._has_batch:
+            return arr[:, None, ...] if target else arr[None, ...]
+        return arr
 
-        target_index, template_index = 0, 0
-        for k in range(matching_dims):
-            target_dim = k - target_index
-            template_dim = k - template_index
-
-            if target_dim in target_dims:
-                target_shape[k] = self._target.shape[target_dim]
-                template_batch[k] = 0
-                if target_index == len(template_dims) and collapse_dims > 0:
-                    template_shape[k] = self._template.shape[template_dim]
-                    collapse_dims -= 1
-                template_index += 1
-                continue
-
-            if template_dim in template_dims:
-                template_shape[k] = self._template.shape[template_dim]
-                target_batch[k] = 0
-                target_index += 1
-                continue
-
-            target_batch[k] = template_batch[k] = 0
-            if target_dim < target_ndim:
-                target_shape[k] = self._target.shape[target_dim]
-            if template_dim < template_ndim:
-                template_shape[k] = self._template.shape[template_dim]
-
-        batch_mask = np.logical_or(target_batch, template_batch)
-        self._output_target_shape = tuple(int(x) for x in target_shape)
-        self._output_template_shape = tuple(int(x) for x in template_shape)
-        self._batch_mask = tuple(int(x) for x in batch_mask)
-        self._template_batch = tuple(int(x) for x in template_batch)
-        self._target_batch = tuple(int(x) for x in target_batch)
-
-        output_shape = np.add(
-            self._output_target_shape,
-            np.multiply(self._template_batch, self._output_template_shape),
-        )
-        output_shape = np.subtract(output_shape, self._template_batch)
-        self._output_shape = tuple(int(x) for x in output_shape)
-
-    @staticmethod
-    def _compute_batch_dims(batch_dims: Tuple[int], ndim: int) -> Tuple:
-        """
-        Computes a mask for the batch dimensions and the validated batch dimensions.
-
-        Parameters
-        ----------
-        batch_dims : tuple of int
-            A tuple of integers representing the batch dimensions.
-        ndim : int
-            The number of dimensions of the array.
-
-        Returns
-        -------
-        Tuple[ArrayLike, tuple of int]
-            Mask and the corresponding batch dimensions.
-
-        Raises
-        ------
-        ValueError
-            If any dimension in batch_dims is not less than ndim.
-        """
-        mask = np.zeros(ndim, dtype=int)
-        if batch_dims is None:
-            return mask, ()
-
-        if isinstance(batch_dims, int):
-            batch_dims = (batch_dims,)
-
-        for dim in batch_dims:
-            if dim < ndim:
-                mask[dim] = 1
-                continue
-            raise ValueError(f"Batch indices needs to be < {ndim}, got {dim}.")
-
-        return mask, batch_dims
-
-    @staticmethod
-    def _batch_shape(shape: Tuple[int], mask: Tuple[int], keepdims=True) -> Tuple[int]:
-        if keepdims:
-            return tuple(x if y == 0 else 1 for x, y in zip(shape, mask))
-        return tuple(x for x, y in zip(shape, mask) if y == 0)
-
-    @staticmethod
-    def _batch_iter(shape: Tuple[int], mask: Tuple[int]) -> Generator:
-        def _recursive_gen(current_shape, current_mask, current_slices):
-            if not current_shape:
-                yield current_slices
-                return
-
-            if current_mask[0] == 1:
-                for i in range(current_shape[0]):
-                    new_slices = current_slices + (slice(i, i + 1),)
-                    yield from _recursive_gen(
-                        current_shape[1:], current_mask[1:], new_slices
-                    )
-            else:
-                new_slices = current_slices + (slice(None),)
-                yield from _recursive_gen(
-                    current_shape[1:], current_mask[1:], new_slices
-                )
-
-        return _recursive_gen(shape, mask, ())
-
-    @staticmethod
-    def _batch_axis(mask: Tuple[int]) -> Tuple[int]:
-        return tuple(i for i in range(len(mask)) if mask[i] == 0)
+    def _matching_shapes(self):
+        targetshape = self._output_target_shape
+        templateshape = self._output_template_shape
+        if self._has_batch:
+            targetshape = (targetshape[0], 1) + targetshape[1:]
+            templateshape = (1,) + templateshape
+        return targetshape, templateshape
 
     def target_padding(self, pad_target: bool = False) -> Tuple[int]:
         """
-        Computes the padding of the target to the full convolution
-        shape given the registered template.
+        Return padding to full convolution shape given the template.
 
         Parameters
         ----------
         pad_target : bool, optional
-            Whether to pad the target, defaults to False.
+            Whether output shape is full convolution or same shape as target.
 
         Returns
         -------
         tuple of int
             Padding along each dimension.
-
-        Examples
-        --------
-        >>> matching_data.target_padding(pad_target=True)
         """
-        padding = np.zeros(len(self._output_target_shape), dtype=int)
+        padding = (0,) * len(self._output_target_shape)
         if pad_target:
             padding = np.subtract(self._output_template_shape, 1)
-            if hasattr(self, "_target_batch"):
-                padding = np.multiply(padding, np.subtract(1, self._target_batch))
-
-        if hasattr(self, "_template_batch"):
-            padding = tuple(x for x, i in zip(padding, self._template_batch) if i == 0)
-
+            if self._has_batch:
+                padding[0] = 0
         return tuple(int(x) for x in padding)
 
-    @staticmethod
-    def _fourier_padding(
-        target_shape: NDArray,
-        template_shape: NDArray,
-        target_batch: NDArray = None,
-        template_batch: NDArray = None,
-        **kwargs,
-    ) -> Tuple[Tuple, Tuple, Tuple, Tuple]:
-        if target_batch is None:
-            target_batch = np.zeros_like(target_shape)
-        if template_batch is None:
-            template_batch = np.zeros_like(target_shape)
-
-        batch_mask = np.logical_or(target_batch, template_batch)
-
-        fourier_pad = np.ones(len(template_shape), dtype=int)
-        fourier_pad = np.multiply(fourier_pad, 1 - batch_mask)
-        fourier_pad = np.add(fourier_pad, batch_mask)
-
-        # Avoid padding batch dimensions
-        pad_shape = np.maximum(target_shape, template_shape)
-        pad_shape = np.where(target_batch, target_shape, pad_shape)
-        pad_shape = np.where(template_batch, template_shape, pad_shape)
-
-        ret = be.compute_convolution_shapes(pad_shape, fourier_pad)
-        conv_shape, fast_shape, fast_ft_shape = ret
-
-        template_mod = np.mod(template_shape, 2)
-        fourier_shift = 1 - np.divide(template_shape, 2).astype(int)
-        fourier_shift = np.subtract(fourier_shift, template_mod)
-
-        shape_diff = np.multiply(
-            np.subtract(target_shape, template_shape), 1 - batch_mask
-        )
-        shape_mask = shape_diff < 0
-        if np.sum(shape_mask):
-            shape_shift = np.divide(shape_diff, 2)
-            offset = np.mod(shape_diff, 2)
-            warnings.warn(
-                "Template is larger than target and padding is turned off. Consider "
-                "swapping them or activate padding. Correcting the shift for now."
-            )
-            shape_shift = np.multiply(np.add(shape_shift, offset), shape_mask)
-            fourier_shift = np.subtract(fourier_shift, shape_shift).astype(int)
-
-        fourier_shift = tuple(np.multiply(fourier_shift, 1 - batch_mask).astype(int))
-        return tuple(conv_shape), tuple(fast_shape), tuple(fast_ft_shape), fourier_shift
-
-    def fourier_padding(self, **kwargs) -> Tuple:
+    def fourier_padding(self, target_shape=None, template_shape=None) -> Tuple:
         """
-        Computes efficient shape four Fourier transforms and potential associated shifts.
+        Computes efficient shape for Fourier transforms and potential associated shifts.
 
         Returns
         -------
         Tuple[tuple of int, tuple of int, tuple of int, tuple of int]
             Tuple with convolution, forward FT, inverse FT shape and corresponding shift.
-
-        Examples
-        --------
-        >>> conv, fwd, inv, shift = matching_data.fourier_padding(pad_fourier=True)
+            When batched, shapes are prefixed with (target_batch, template_batch).
         """
-        target_shape = kwargs.get("target_shape", self._output_target_shape)
-        template_shape = kwargs.get("template_shape", self._output_template_shape)
-        target_batch = kwargs.get("target_batch", self._target_batch)
-        template_batch = kwargs.get("template_batch", self._template_batch)
-        return self._fourier_padding(
-            target_shape=be.to_numpy_array(target_shape),
-            template_shape=be.to_numpy_array(template_shape),
-            target_batch=be.to_numpy_array(target_batch),
-            template_batch=be.to_numpy_array(template_batch),
+        batch_prefix = ()
+
+        if target_shape is None:
+            target_shape = self._output_target_shape
+        if template_shape is None:
+            template_shape = self._output_template_shape
+
+        if self._has_batch:
+            batch_prefix = (int(target_shape[0]), int(template_shape[0]))
+            target_shape = target_shape[1:]
+            template_shape = template_shape[1:]
+
+        pad_shape = np.maximum(target_shape, template_shape)
+        conv, fwd, inv = be.compute_convolution_shapes(
+            pad_shape, np.ones_like(pad_shape)
         )
+
+        fourier_shift = (
+            1 - np.divide(template_shape, 2).astype(int) - np.mod(template_shape, 2)
+        )
+
+        shape_diff = np.subtract(target_shape, template_shape)
+        if np.sum(shape_diff < 0):
+            warnings.warn(
+                "Template is larger than target and padding is turned off. Consider "
+                "swapping them or activate padding. Correcting the shift for now."
+            )
+            shape_shift = np.divide(shape_diff, 2)
+            offset = np.mod(shape_diff, 2)
+            shape_shift = np.multiply(np.add(shape_shift, offset), shape_diff < 0)
+            fourier_shift = np.subtract(fourier_shift, shape_shift).astype(int)
+
+        fourier_shift = tuple(int(x) for x in fourier_shift)
+
+        conv = batch_prefix + tuple(conv)
+        fwd = batch_prefix + tuple(fwd)
+        inv = batch_prefix + tuple(inv)
+        fourier_shift = (0,) * len(batch_prefix) + fourier_shift
+
+        return conv, fwd, inv, fourier_shift
 
     def _score_mask(self, fast_shape: Tuple[int], shift: Tuple[int]) -> BackendArray:
         """
@@ -563,12 +438,11 @@ class MatchingData:
         offset = tuple(x // 2 for x in padding)
         shape = tuple(y - x for x, y in zip(padding, self.target.shape))
 
-        subset = []
-        for i in range(len(offset)):
-            if self._batch_mask[i]:
-                subset.append(slice(None))
-            else:
-                subset.append(slice(offset[i], offset[i] + shape[i]))
+        # Spatial-only slicing; batch dims handled by prefixing slice(None)
+        skip = 1 if self._has_batch else 0
+        subset = [slice(None)] * (2 * skip)
+        for i in range(skip, len(offset)):
+            subset.append(slice(offset[i], offset[i] + shape[i]))
 
         score_mask = np.zeros(fast_shape, dtype=bool)
         score_mask[tuple(subset)] = 1
@@ -580,18 +454,22 @@ class MatchingData:
         return be.to_backend_array(score_mask)
 
     def _transform_data(
-        self, method: str, data: BackendArray, batch_mask: Tuple[int], **kwargs
+        self, method: str, data: BackendArray, batched: bool = False, **kwargs
     ) -> BackendArray:
         """
         Transform data using the specified method.
 
         Parameters
         ----------
+        data : BackendArray
+            Data to transform.
         method : str, optional
             Transformation method, default "phase_randomization".
             - "phase_randomization": Scrambles phase while preserving amplitude spectrum
             - "standardize": Standardize to zero mean and unit variance
             - "laplace": Applies Laplacian edge detection filter
+        batched : bool
+            Whether data has a leading batch dimension.
         **kwargs : dict
             Method-specific arguments (e.g., mode="wrap" for laplace).
 
@@ -603,55 +481,57 @@ class MatchingData:
         from scipy.ndimage import laplace
         from .matching_utils import scramble_phases, standardize
 
-        def _standardize(arr: NDArray, **kwargs) -> NDArray:
-            return standardize(arr, 1, arr.size)
-
-        _supported_methods = {
-            "phase_randomization": scramble_phases,
-            "laplace": laplace,
-            "standardize": _standardize,
+        _methods = {
+            "phase_randomization": lambda a, **kw: scramble_phases(
+                be.to_numpy_array(a), **kw
+            ),
+            "laplace": lambda a, **kw: laplace(be.to_numpy_array(a), **kw),
+            "standardize": lambda a, **kw: standardize(a, 1, be.size(a)),
         }
-        func = _supported_methods.get(method)
+        func = _methods.get(method)
         if func is None:
-            _supported = ",".join([str(x) for x in _supported_methods])
+            _supported = ",".join([str(x) for x in _methods])
             raise ValueError(f"Only methods {_supported} are supported.")
 
-        data = be.to_numpy_array(data)
+        if not batched:
+            return be.to_backend_array(func(data, **kwargs))
 
-        ret = np.zeros_like(data)
-        for subset in self._batch_iter(data.shape, batch_mask):
-            ret[subset] = func(data[subset], **kwargs)
-        return be.to_backend_array(ret)
+        ret = be.zeros(data.shape, data.dtype)
+        for i in range(data.shape[0]):
+            slc = slice(i, i + 1)
+            ret = be.at(ret, slc, be.to_backend_array(func(data[slc], **kwargs)))
+        return ret
 
     @copy_docstring(_transform_data)
     def transform_target(self, method: str = "phase_randomization", **kwargs):
-        return self._transform_data(method, self.target, self._target_batch, **kwargs)
+        ret = self._transform_data(method, self.target, self._target_batched, **kwargs)
+        if self._has_batch and not self._target_batched:
+            return ret[0]
+        return ret
 
     @copy_docstring(_transform_data)
-    def transform_template(
-        self, method: str = "phase_randomization", reverse: bool = False, **kwargs
-    ):
-        """
-        Notes
-        -----
-        The returned template is in the original not reversed orientation.
-        """
+    def transform_template(self, method: str = "phase_randomization", **kwargs):
         template = self._get_data(
-            self._template, self._output_template_shape, reverse, self._template_dim
+            self._template,
+            self._output_template_shape,
+            False,
+            (0,) if self._has_batch else (),
         )
-        return self._transform_data(method, template, self._template_batch, **kwargs)
+        ret = self._transform_data(method, template, self._template_batched, **kwargs)
+        if self._has_batch and not self._template_batched:
+            return ret[0]
+        return ret
 
     def computation_schedule(
         self,
         matching_method: str = "FLCSphericalMask",
-        max_cores: int = 1,
-        use_gpu: bool = False,
+        max_workers: int = 1,
         pad_fourier: bool = False,
         pad_target_edges: bool = False,
         analyzer_method: str = None,
-        available_memory: int = None,
-        max_splits: int = 256,
-    ) -> Tuple[Dict, Tuple]:
+        max_memory: int = None,
+        **mode_kwargs,
+    ) -> Tuple[Tuple[Tuple[slice, ...]], Tuple[int, int]]:
         """
         Computes a parallelization schedule for a given template matching operation.
 
@@ -659,63 +539,63 @@ class MatchingData:
         ----------
         matching_method : str
             Matching method to use, default "FLCSphericalMask".
-        max_cores : int, optional
-            Maximum number of CPU cores to use, default 1.
-        use_gpu : bool, optional
-            Whether to utilize GPU acceleration, default False.
+        max_workers : int, optional
+            Maximum number of concurrent workers.
         pad_fourier : bool, optional
             Apply Fourier padding, default False.
         pad_target_edges : bool, optional
             Apply padding to target edges, default False.
         analyzer_method : str, optional
             Method used for score analysis, default None.
-        available_memory : int, optional
-            Available memory in bytes. If None, uses all available system memory.
-        max_splits : int, optional
-            Maximum number of splits to consider, default 256.
+        max_memory : int, optional
+            Maximum amount of memory that can be used in bytes.
+        **mode_kwargs:
+            Keyword arguments passed to :py:mesh:`tme.memory.compute_schedule`.
 
         Returns
         -------
-        target_splits : dict
-            Optimal splits for each axis of the target tensor
-        schedule : tuple
-            (n_outer_jobs, n_inner_jobs_per_outer) defining the parallelization schedule
+        tuple of tuple of slice
+            Tuple of slices defining a region in shape1 coordinates.
+        tuple of int int
+            Parallelization strategy as n_outer_jobs, n_inner_workers.
         """
+        if max_memory is None:
+            max_memory = be.get_available_memory() * be.device_count()
 
-        if available_memory is None:
-            available_memory = be.get_available_memory() * be.device_count()
+        shape = target = self._output_target_shape
+        template = self._output_template_shape
+        if self._has_batch:
+            target = (target[0], 1) + target[1:]
+            template = (1, template[0]) + template[1:]
+            shape = np.broadcast_shapes(target, template)
 
-        _template = self._output_template_shape
-        shape1 = np.broadcast_shapes(
-            self._output_target_shape,
-            self._batch_shape(_template, np.subtract(1, self._template_batch)),
-        )
-
-        shape2 = tuple(0 for _ in _template)
-        if pad_fourier:
-            shape2 = np.multiply(_template, np.subtract(1, self._batch_mask))
-
-        padding = tuple(0 for _ in self._output_target_shape)
+        padding = tuple(0 for _ in target)
         if pad_target_edges:
-            padding = tuple(
-                x if y == 0 else 1 for x, y in zip(_template, self._template_batch)
-            )
+            padding = template if not self._has_batch else (0, 0) + template[2:]
 
-        return compute_parallelization_schedule(
-            shape1=shape1,
-            shape2=shape2,
-            shape1_padding=padding,
-            max_cores=max_cores,
-            max_ram=available_memory,
+        if "split_axes" not in mode_kwargs and self._target_batched:
+            mode_kwargs["split_axes"] = (0,)
+
+        mode = mode_kwargs.get("mode")
+        if self._has_batch and mode != "uniform":
+            warnings.warn(
+                f"'{mode}' is not supported for batches. Falling back to 'uniform'"
+            )
+            mode_kwargs["mode"] = "uniform"
+
+        return compute_schedule(
+            shape=shape,
+            padding=padding,
+            max_workers=max_workers,
+            max_memory=max_memory,
             matching_method=matching_method,
             analyzer_method=analyzer_method,
             backend=be._backend_name,
-            float_nbytes=be.datatype_bytes(be._float_dtype),
-            complex_nbytes=be.datatype_bytes(be._complex_dtype),
-            integer_nbytes=be.datatype_bytes(be._int_dtype),
-            split_only_outer=use_gpu,
-            split_axes=self._target_dim if len(self._target_dim) else None,
-            max_splits=max_splits,
+            float_nbytes=be.datatype_bytes(be._float),
+            complex_nbytes=be.datatype_bytes(be._complex),
+            integer_nbytes=be.datatype_bytes(be._int),
+            equal_shape=be._backend_name == "jax" and max_workers > 1,
+            **mode_kwargs,
         )
 
     @property
@@ -734,13 +614,11 @@ class MatchingData:
             Rotations matrices with shape (d, d) or (n, d, d).
         """
         if rotations is None:
-            print("No rotations provided, assuming identity for now.")
-            rotations = np.eye(len(self._target.shape))
+            rotations = np.eye(len(self._target.shape) - int(self._target_batched))
 
         if rotations.ndim not in (2, 3):
             raise ValueError("Rotations have to be a rank 2 or 3 array.")
         elif rotations.ndim == 2:
-            print("Reshaping rotations array to rank 3.")
             rotations = rotations.reshape(1, *rotations.shape)
         self._rotations = rotations.astype(np.float32)
 
@@ -770,33 +648,27 @@ class MatchingData:
     @property
     def target_mask(self) -> BackendArray:
         """Return the target mask."""
-        target_mask = getattr(self, "_target_mask", None)
-        if target_mask is None:
-            return None
-
-        _output_shape = self._output_target_shape
-        if be.size(target_mask) != np.prod(_output_shape):
-            _output_shape = self._batch_shape(_output_shape, self._target_batch, True)
-
-        return self._get_data(target_mask, _output_shape, False)
+        return self._get_data(self._target_mask, self._output_target_shape, False)
 
     @property
     def template(self) -> BackendArray:
         """Return the reversed template."""
-        _output_shape = self._output_template_shape
-        return self._get_data(self._template, _output_shape, True, self._template_dim)
+        return self._get_data(
+            self._template,
+            self._output_template_shape,
+            True,
+            (0,) if self._template_batched else (),
+        )
 
     @property
     def template_mask(self) -> BackendArray:
         """Return the reversed template mask."""
-        template_mask = getattr(self, "_template_mask", None)
-        if template_mask is None:
-            return None
-
-        _output_shape = self._output_template_shape
-        if np.prod([int(i) for i in template_mask.shape]) != np.prod(_output_shape):
-            _output_shape = self._batch_shape(_output_shape, self._template_batch, True)
-        return self._get_data(template_mask, _output_shape, True, self._template_dim)
+        return self._get_data(
+            self._template_mask,
+            self._output_template_shape,
+            True,
+            (0,) if self._template_batched else (),
+        )
 
     @target.setter
     def target(self, arr: NDArray):
@@ -917,7 +789,7 @@ class MatchingData:
         list of NDArray
             List of split rotation matrices.
         """
-        nrot_per_job = self.rotations.shape[0] // n_jobs
+        nrot_per_job = int(self.rotations.shape[0] // n_jobs)
         rot_list = []
         for n in range(n_jobs):
             init_rot = n * nrot_per_job

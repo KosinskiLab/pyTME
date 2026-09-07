@@ -6,9 +6,8 @@ Copyright (c) 2023 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-import re
-import xml.etree.ElementTree as ET
-
+from re import search as re_search
+from re import compile as re_compile
 from collections import deque
 from abc import ABC, abstractmethod
 from typing import List, Dict, Union
@@ -33,24 +32,20 @@ class Parser(ABC):
     Classes inheriting from :py:class:`Parser` need to define a function
     :py:meth:`Parser.parse_input` that creates a dictionary representation
     of the given file. The input is a deque of all lines in the file.
+
+    Parameters
+    ----------
+    filename : str
+        File name to parse data from.
+    mode : str, optional
+        Mode to open the file. Default is 'r' for read.
+    kwargs : Dict, optional
+        Optional keyword arguments passed to the child's parse_input method.
     """
 
     def __init__(self, filename: str, mode: str = "r", **kwargs) -> None:
-        """
-        Initialize a Parser object.
-
-        Parameters
-        ----------
-        filename : str
-            File name to parse data from.
-        mode : str, optional
-            Mode to open the file. Default is 'r' for read.
-        kwargs : Dict, optional
-            Optional keyword arguments passed to the child's parse_input method.
-
-        """
         try:
-            with open(filename, mode) as infile:
+            with open(filename, mode, encoding="utf-8") as infile:
                 data = infile.read()
         except UnicodeDecodeError:
             with open(filename, mode, encoding="utf-16") as infile:
@@ -205,20 +200,20 @@ class PDBParser(Parser):
             A dictionary containing the parsed data from the PDB file.
         """
         metadata = {
-            "resolution": re.compile(
+            "resolution": re_compile(
                 r"(.)+?(EFFECTIVE RESOLUTION\s+\(ANGSTROMS\)){1}(.)+?(\d+\.\d+)(\s)*$"
             ),
-            "reconstruction_method": re.compile(
+            "reconstruction_method": re_compile(
                 r"(.)+?(RECONSTRUCTION METHOD)+(.)+?(\w+\s*\w+)(\s)*$"
             ),
-            "electron_source": re.compile(r"(.)+?(SOURCE)+(.)+?(\w+\s*\w+)(\s)*$"),
-            "illumination_mode": re.compile(
+            "electron_source": re_compile(r"(.)+?(SOURCE)+(.)+?(\w+\s*\w+)(\s)*$"),
+            "illumination_mode": re_compile(
                 r"(.)+?(ILLUMINATION MODE)+(.)+?(\w+\s*\w+)(\s)*$"
             ),
-            "microscope_mode": re.compile(
+            "microscope_mode": re_compile(
                 r"(.)+?(IMAGING MODE)+(.)+?(\w+\s*\w+)(\s)*$"
             ),
-            "microscope_model": re.compile(
+            "microscope_model": re_compile(
                 r"(.)+?(MICROSCOPE MODEL)+(.+?:\s+)+?(.+)(\s)*$"
             ),
         }
@@ -441,7 +436,7 @@ class MMCIFParser(Parser):
         list of str
             A list of substrings resulting from the split operation on the given string.
         """
-        if not re.search("['\"]", line):
+        if not re_search("['\"]", line):
             return line.split()
 
         chars = deque(line.strip())
@@ -489,7 +484,7 @@ class GROParser(Parser):
         if not lines:
             return data
 
-        time_pattern = re.compile(r"t=\s*(\d+\.?\d*)")
+        time_pattern = re_compile(r"t=\s*(\d+\.?\d*)")
         file_index = -1
 
         # GRO files can be concatenated. Parse one per invocation
@@ -569,7 +564,7 @@ class StarParser(MMCIFParser):
     """
 
     def parse_input(self, lines: List[str], delimiter: str = None) -> Dict:
-        pattern = re.compile(r"\s*#.*")
+        pattern = re_compile(r"\s*#.*")
 
         ret, category, block = {}, None, []
         while lines:
@@ -614,6 +609,8 @@ class XMLParser(Parser):
     """
 
     def parse_input(self, lines: deque, **kwargs) -> Dict:
+        import xml.etree.ElementTree as ET
+
         root = ET.fromstring("\n".join(lines))
         return self._element_to_dict(root)
 
@@ -705,8 +702,8 @@ class MDOCParser(Parser):
         data = {}
         global_params = {}
         in_zvalue_section = False
-        zvalue_pattern = re.compile(r"\[ZValue\s*=\s*(\d+)\]")
-        section_pattern = re.compile(r"\[T\s*=\s*(.*?)\]")
+        zvalue_pattern = re_compile(r"\[ZValue\s*=\s*(\d+)\]")
+        section_pattern = re_compile(r"\[T\s*=\s*(.*?)\]")
 
         if not lines:
             return data

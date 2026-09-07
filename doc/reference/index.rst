@@ -8,11 +8,6 @@ API
    data_structures/density
    data_structures/structure
    data_structures/matching_data
-
-.. toctree::
-   :caption: Preprocessing
-
-   preprocessing/preprocessor
    preprocessing/composable_filters
 
 .. toctree::
@@ -38,5 +33,6 @@ API
 .. toctree::
    :caption: Miscellaneous
 
+   serialization
    orientations
    utilities

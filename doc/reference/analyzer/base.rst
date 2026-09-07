@@ -1,3 +1,5 @@
+:tocdepth: 1
+
 .. _analyzer-label:
 
 .. currentmodule:: tme.analyzer
@@ -5,13 +7,11 @@
 Specification
 =============
 
-Analyzers are callbacks passed to :py:class:`match_exhaustive <tme.matching_exhaustive.match_exhaustive>` to enable custom analysis workflows of exhaustive searches. Rather than storing all intermediate results in memory, analyzers accumulate only the most relevant data.
+Analyzers are callbacks passed to :py:class:`match_exhaustive <tme.matching_exhaustive.match_exhaustive>` to enable custom analysis workflows of exhaustive searches. Rather than storing all intermediate results in memory, analyzers accumulate only the most relevant data. Analyzer
 
-Key characteristics of analyzers
-
-- Called individually for each rotation in the search space
-- Support distributed computation with result merging capabilities
-- Maintain internal state that evolves throughout the matching process
+- are called individually for each rotation in the search space
+- support distributed computation with result merging capabilities
+- maintain internal state that evolves throughout the matching process
 
 :py:class:`AbstractAnalyzer <tme.analyzer.AbstractAnalyzer>` defines the interface specification that all analyzers must implement.
 

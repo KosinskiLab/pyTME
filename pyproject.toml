@@ -1,65 +1,104 @@
-[build-system]
-requires = ["setuptools", "numpy", "pytest", "pybind11"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name="pytme"
+name = "pytme"
+version = "0.3.4"
+description = "Python Template Matching Engine"
+readme = "README.md"
+license = "GPL-2.0-only"
 authors = [
-  { name = "Valentin Maurer", email = "valentin.maurer@embl-hamburg.de" },
+    { name = "Valentin Maurer", email = "valentin.maurer@embl-hamburg.de" },
 ]
-version="0.3.4a0"
-description="Python Template Matching Engine"
-readme="README.md"
-requires-python = ">=3.11"
-dependencies=[
+requires-python = ">=3.11,<4.0"
+dependencies = [
     "mrcfile>=1.4.3",
     "numpy>=1.22.2",
     "scipy>=1.9.1",
     "pyfftw>=0.13.1",
-    "pytest>=6.2.5",
     "PyYAML>=6.0",
-    "scikit-image>=0.19.0",
-    "scikit_learn>=1.2.1",
+    "scikit-image>=0.21.0",
+    "scikit-learn>=1.2.1",
     "pybind11",
     "psutil",
     "h5py",
-    "importlib_resources",
+    "importlib-resources",
     "joblib",
     "pydantic",
 ]
-license = "GPL-2.0-only"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent",
-]
 
 [project.optional-dependencies]
-cupy = ["cupy-cuda12x>13.0.0", "voltools"]
-pytorch = ["torch", "torchvision"]
-jax = ["jax[cuda12]", "jaxlib"]
-jax_cpu = ["jax", "jaxlib"]
-mlx = ["mlx"]
+cupy = ["cupy-cuda12x>=13.0", "voltools"]
+cupy-cu12 = ["cupy-cuda12x>=13.0", "voltools"]
+cupy-cu13 = ["cupy-cuda13x>=13.6", "voltools"]
 
-[project.scripts]
-match_template = "scripts:match_template.main"
-estimate_memory_usage = "scripts:estimate_memory_usage.main"
-preprocessor_gui = "scripts:preprocessor_gui.main"
-preprocess = "scripts:preprocess.main"
-postprocess = "scripts:postprocess.main"
-pytme_runner = "scripts:pytme_runner.main"
+pytorch = ["torch", "torchvision"]
+
+jax = ["jax<0.11", "jaxlib<0.11"]
+jax-cu12 = ["jax[cuda12]<0.11"]
+jax-cu13 = ["jax[cuda13]<0.11"]
+
+mlx = ["mlx; sys_platform == 'darwin' and platform_machine == 'arm64'"]
+
+mesh = ["open3d"]
+
+gui = [
+    "napari[pyqt5]>=0.5,<0.7",
+    "magicgui>=0.8",
+    "pandas",
+    "matplotlib",
+]
 
 [project.urls]
-"Homepage" = "https://github.com/KosinskiLab/pyTME"
+Homepage = "https://github.com/KosinskiLab/pyTME"
 
-[tool.setuptools]
-include-package-data = true
+[project.scripts]
+# Primary entry point
+pytme = "tme.scripts.cli:main"
+
+# Legacy aliases (deprecated, emit FutureWarning)
+match_template = "tme.scripts.cli:match_template_deprecated"
+estimate_memory_usage = "tme.scripts.cli:estimate_memory_usage_deprecated"
+preprocessor_gui = "tme.scripts.cli:preprocessor_gui_deprecated"
+preprocess = "tme.scripts.cli:preprocess_deprecated"
+postprocess = "tme.scripts.cli:postprocess_deprecated"
+pytme_runner = "tme.scripts.cli:pytme_runner_deprecated"
+
+[tool.poetry]
+packages = [{ include = "tme" }]
+include = ["tme/external/**/*", "tme/data/**/*"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=6.2.5"
+
+[tool.poetry.build]
+script = "build.py"
+generate-setup-file = true
+
+[build-system]
+requires = ["poetry-core>=2.0", "setuptools", "pybind11", "numpy"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 addopts = [
+    "--cov=tme",
+    "--cov-report=html",
     "--import-mode=importlib",
 ]
+testpaths = ["tests"]
 
 [tool.coverage.run]
-omit = [
-    "tests/*"
+source = ["tme"]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "if typing.TYPE_CHECKING:",
+    "@abstractmethod",
 ]
+precision = 2
+show_missing = true
+skip_covered = false

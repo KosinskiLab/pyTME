@@ -18,13 +18,23 @@ from ..backends import backend as be
 
 __all__ = ["StatelessSharedAnalyzerProxy", "SharedAnalyzerProxy"]
 
+_manager = None
+
+
+def _get_manager():
+    """Return a module-level Manager singleton."""
+    global _manager
+    if _manager is None or _manager._process.exitcode is not None:
+        _manager = Manager()
+    return _manager
+
 
 class StatelessSharedAnalyzerProxy:
     """
     Proxy that wraps functional analyzers for concurrent access via shared memory.
 
     Enables multiple processes/threads to safely update the same analyzer
-    while preserving the functional interface of the underlying analyzer.
+    while preserving its functional interface.
     """
 
     def __init__(self, analyzer_class: type, analyzer_params: dict):
@@ -42,19 +52,19 @@ class StatelessSharedAnalyzerProxy:
             self._shared = True
             state = self._to_shared(state, shm_handler)
 
-            self._lock = Manager().Lock()
+            self._lock = _get_manager().Lock()
             self._process = self._thread_safe_call
         return state
 
     def _to_shared(self, state: Tuple, shm_handler):
-        backend_arr = type(be.zeros((1), dtype=be._float_dtype))
+        backend_arr = type(be.zeros((1), dtype=be._float))
 
         ret = []
         for v in state:
             if isinstance(v, backend_arr):
                 v = be.to_sharedarr(v, shm_handler)
             elif isinstance(v, dict):
-                v = Manager().dict(**v)
+                v = _get_manager().dict(**v)
             ret.append(v)
         return tuple(ret)
 
@@ -88,7 +98,7 @@ class StatelessSharedAnalyzerProxy:
     def correct_background(self, state, *args, **kwargs):
         if self._shared:
             # Copy to not correct the internal score array across processes
-            backend_arr = type(be.zeros((1), dtype=be._float_dtype))
+            backend_arr = type(be.zeros((1), dtype=be._float))
             state = tuple(self._shared_to_object(x) for x in state)
             state = tuple(
                 be.copy(x) if isinstance(x, backend_arr) else x for x in state

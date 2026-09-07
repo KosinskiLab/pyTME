@@ -8,6 +8,7 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import argparse
+from os.path import exists, abspath
 
 import numpy as np
 from . import __version__
@@ -124,3 +125,36 @@ def check_positive(value):
     if ivalue <= 0:
         raise argparse.ArgumentTypeError("%s is an invalid positive float." % value)
     return ivalue
+
+
+def check_bounded_dtype(dtype, min_val=None, max_val=None):
+    min_val = dtype(min_val) if min_val is not None else min_val
+    max_val = dtype(max_val) if max_val is not None else max_val
+
+    def validator(value):
+        fvalue = dtype(value)
+
+        if min_val is not None and max_val is not None:
+            if not min_val <= fvalue <= max_val:
+                raise argparse.ArgumentTypeError(
+                    f"Value must be between {min_val} and {max_val}, got {fvalue}"
+                )
+        elif min_val is not None and fvalue < min_val:
+            raise argparse.ArgumentTypeError(
+                f"Value must be >= {min_val}, got {fvalue}"
+            )
+        elif max_val is not None and fvalue > max_val:
+            raise argparse.ArgumentTypeError(
+                f"Value must be <= {max_val}, got {fvalue}"
+            )
+
+        return fvalue
+
+    return validator
+
+
+def existing_file(path: str) -> str:
+    """Validate that file exists."""
+    if not exists(path):
+        raise argparse.ArgumentTypeError(f"File not found: {path}")
+    return abspath(path)

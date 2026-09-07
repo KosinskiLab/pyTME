@@ -6,15 +6,15 @@ Copyright (c) 2024 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-from typing import List, Tuple
-from dataclasses import dataclass
+import warnings
+from typing import Dict, List, Tuple
+from dataclasses import dataclass, field, InitVar
 from string import ascii_lowercase, ascii_uppercase
 
 import numpy as np
 
+from .types import ArrayLike
 from .parser import StarParser
-from .__version__ import __version__
-from .matching_utils import compute_extraction_box
 
 # Exceeds available numpy dimensions for default installations
 NAMES = ["x", "y", "z", *ascii_lowercase[:-3], *ascii_uppercase]
@@ -33,13 +33,9 @@ class Orientations:
     >>> from tme import Orientations
     >>> translations = np.random.randint(low = 0, high = 100, size = (100,3))
     >>> rotations = np.random.rand(100, 3)
-    >>> scores = np.random.rand(100)
-    >>> details = np.full((100,), fill_value = -1)
     >>> orientations = Orientations(
-    >>>     translations = translations,
-    >>>     rotations = rotations,
-    >>>     scores = scores,
-    >>>     details = details,
+    >>>     translations=translations,
+    >>>     rotations=rotations,
     >>> )
 
     The created ``orientations`` object can be written to disk in a range of formats.
@@ -57,50 +53,95 @@ class Orientations:
 
     Parameters
     ----------
-    translations: np.ndarray
+    translations: array_like
         Array with translations of each orientations (n, d).
-    rotations: np.ndarray
+    rotations: array_like
         Array with euler angles of each orientation in zxy convention (n, d).
-    scores: np.ndarray
-        Array with the score of each orientation (n, ).
-    details: np.ndarray
-        Array with additional orientation details (n, ).
+    scores: array_like, optional
+        Array with the score of each orientation (n, ). When provided, stored in
+        ``metadata["_pytmeScore"]`` and overrides any preexisting value there.
+    details: array_like, optional
+        Array with additional orientation details (n, ). When provided, stored in
+        ``metadata["_rlnClassNumber"]`` and overrides any preexisting value there.
+    metadata: dict, optional
+        Per-particle metadata. Array values whose first dimension matches the
+        number of orientations are sliced by :py:meth:`__getitem__`.
+    optics: dict, optional
+        File-level optics-group metadata (Relion-style).
     """
 
-    #: Array with translations of each orientation (n, d).
-    translations: np.ndarray
+    translations: ArrayLike
+    rotations: ArrayLike
+    scores: InitVar[ArrayLike] = None
+    details: InitVar[ArrayLike] = None
+    metadata: Dict = field(default_factory=dict)
+    optics: Dict = field(default_factory=dict)
 
-    #: Array with zyz euler angles of each orientation (n, d).
-    rotations: np.ndarray
+    _METADATA_ALIASES = {"scores": "_pytmeScore", "details": "_rlnClassNumber"}
 
-    #: Array with scores of each orientation (n, ).
-    scores: np.ndarray
+    def __post_init__(self, scores, details):
+        self.translations = np.asarray(self.translations).astype(np.float32)
+        self.rotations = np.asarray(self.rotations).astype(np.float32)
 
-    #: Array with additional details of each orientation(n, ).
-    details: np.ndarray
+        if not isinstance(self.metadata, dict):
+            raise ValueError("metadata must be a dict.")
+        if not isinstance(self.optics, dict):
+            raise ValueError("optics must be a dict.")
+        if self.translations.ndim != 2 or self.rotations.ndim != 2:
+            raise ValueError("Expected stack of translations and rotations.")
 
-    def __post_init__(self):
-        self.translations = np.array(self.translations).astype(np.float32)
-        self.rotations = np.array(self.rotations).astype(np.float32)
-        self.scores = np.array(self.scores).astype(np.float32)
-        self.details = np.array(self.details).astype(np.float32)
-        n_orientations = set(
-            [
-                self.translations.shape[0],
-                self.rotations.shape[0],
-                self.scores.shape[0],
-                self.details.shape[0],
-            ]
-        )
-        if len(n_orientations) != 1:
+        n = self.translations.shape[0]
+        if scores is not None:
+            warnings.warn(
+                "The `scores=` argument is deprecated and will be removed in a "
+                "future release; set metadata['_pytmeScore'] instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self.metadata["_pytmeScore"] = np.asarray(scores, dtype=np.float32)
+        elif "_pytmeScore" not in self.metadata:
+            self.metadata["_pytmeScore"] = np.zeros(n, np.float32)
+
+        if details is not None:
+            warnings.warn(
+                "The `details=` argument is deprecated and will be removed in a "
+                "future release; set metadata['_rlnClassNumber'] instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self.metadata["_rlnClassNumber"] = np.asarray(details)
+        elif "_rlnClassNumber" not in self.metadata:
+            self.metadata["_rlnClassNumber"] = np.full(n, -1)
+
+        if self.rotations.shape[0] != n:
             raise ValueError(
                 "The first dimension of all parameters needs to be of equal length."
             )
-        if self.translations.ndim != 2:
-            raise ValueError("Expected two dimensional translations parameter.")
+        for key, val in self.metadata.items():
+            if isinstance(val, np.ndarray) and val.ndim >= 1 and val.shape[0] != n:
+                raise ValueError(
+                    "The first dimension of all parameters needs to be of equal length."
+                )
 
-        if self.rotations.ndim != 2:
-            raise ValueError("Expected two dimensional rotations parameter.")
+    def __getattr__(self, name):
+        key = type(self)._METADATA_ALIASES.get(name)
+        if key is None:
+            raise AttributeError(name)
+        return self.metadata.get(key)
+
+    def __setstate__(self, state: Dict) -> None:
+        # Pre v0.3.4 pickles lack metadata; pre-optics pickles lack optics
+        state.setdefault("metadata", {})
+        state.setdefault("optics", {})
+        legacy_scores = state.pop("scores", None)
+        legacy_details = state.pop("details", None)
+        if legacy_scores is not None and "_pytmeScore" not in state["metadata"]:
+            state["metadata"]["_pytmeScore"] = np.asarray(
+                legacy_scores, dtype=np.float32
+            )
+        if legacy_details is not None and "_rlnClassNumber" not in state["metadata"]:
+            state["metadata"]["_rlnClassNumber"] = np.asarray(legacy_details)
+        self.__dict__.update(state)
 
     def __iter__(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -113,6 +154,10 @@ class Orientations:
             A tuple of arrays defining the given orientation.
         """
         yield from zip(self.translations, self.rotations, self.scores, self.details)
+
+    def __len__(self) -> int:
+        """Return the number of distinct particles"""
+        return self.translations.shape[0]
 
     def __getitem__(self, indices: List[int]) -> "Orientations":
         """
@@ -129,14 +174,18 @@ class Orientations:
             A new :py:class:`Orientations`instance containing only the selected orientations.
         """
         indices = np.asarray(indices)
-        attributes = (
-            "translations",
-            "rotations",
-            "scores",
-            "details",
+        new_metadata = {}
+        for key, val in self.metadata.items():
+            new_metadata[key] = val
+            if isinstance(val, np.ndarray) and val.shape[0] == len(self):
+                new_metadata[key] = val[indices].copy()
+
+        return self.__class__(
+            translations=self.translations[indices].copy(),
+            rotations=self.rotations[indices].copy(),
+            metadata=new_metadata,
+            optics=dict(self.optics),
         )
-        kwargs = {attr: getattr(self, attr)[indices].copy() for attr in attributes}
-        return self.__class__(**kwargs)
 
     def copy(self) -> "Orientations":
         """
@@ -147,8 +196,7 @@ class Orientations:
         :py:class:`Orientations`
             Copy of the class instance.
         """
-        indices = np.arange(self.scores.size)
-        return self[indices]
+        return self[np.arange(self.scores.size)]
 
     def to_file(self, filename: str, file_format: type = None, **kwargs) -> None:
         """
@@ -162,13 +210,13 @@ class Orientations:
             The format in which to save the orientations. Defaults to None and infers
             the file_format from the typical extension. Supported formats are
 
-            +---------------+----------------------------------------------------+
-            | text          | pytme's standard tab-separated orientations file   |
-            +---------------+----------------------------------------------------+
-            | star          | Creates a STAR file of orientations                |
-            +---------------+----------------------------------------------------+
-            | dynamo        | Creates a dynamo table                             |
-            +---------------+----------------------------------------------------+
+            +------------+----------------------------------------------------+
+            | tsv        | pytme's standard tab-separated orientations file   |
+            +------------+----------------------------------------------------+
+            | star       | Creates a STAR file of orientations                |
+            +------------+----------------------------------------------------+
+            | dynamo     | Creates a dynamo table                             |
+            +------------+----------------------------------------------------+
 
         **kwargs : dict
             Additional keyword arguments specific to the file format.
@@ -179,16 +227,17 @@ class Orientations:
             If an unsupported file format is specified.
         """
         mapping = {
-            "text": self._to_text,
+            "tsv": self._to_text,
             "star": self._to_star,
             "dynamo": self._to_dynamo_tbl,
         }
         if file_format is None:
-            file_format = "text"
             if filename.lower().endswith(".star"):
                 file_format = "star"
             elif filename.lower().endswith(".tbl"):
                 file_format = "dynamo"
+            elif filename.lower().endswith(".tsv"):
+                file_format = "tsv"
 
         func = mapping.get(file_format, None)
         if func is None:
@@ -313,9 +362,12 @@ class Orientations:
             The name of the file to save the orientations.
         source_path : str
             Path to image file the orientation is in reference to.
+            Per-particle sources from ``metadata["source"]`` take precedence.
         version : str
             Version indicator.
         """
+        from .__version__ import __version__
+
         header = [
             "data_particles",
             "",
@@ -326,7 +378,6 @@ class Orientations:
             "_rlnAngleRot",
             "_rlnAngleTilt",
             "_rlnAnglePsi",
-            "_rlnClassNumber",
         ]
 
         target_identifer = "_rlnMicrographName"
@@ -339,7 +390,22 @@ class Orientations:
         if source_path is not None:
             header.append(target_identifer)
 
-        header.append("_pytmeScore")
+        n = self.translations.shape[0]
+        extra_meta_keys = [
+            key
+            for key, val in self.metadata.items()
+            if isinstance(val, np.ndarray) and val.shape[0] == n and key not in header
+        ]
+        header.extend(extra_meta_keys)
+
+        optics_block = ""
+        if self.optics:
+            optics_block = ["data_optics", "", "loop_"]
+            optics_block.extend(self.optics.keys())
+            optics_block.append(" ".join(str(v) for v in self.optics.values()))
+            optics_block.append("")
+            optics_block = "\n".join(optics_block) + "\n"
+
         header = "\n".join(header)
         with open(filename, mode="w", encoding="utf-8") as ofile:
             _ = ofile.write(f"# Created using pytme (version {__version__}).\n\n")
@@ -347,16 +413,18 @@ class Orientations:
             if version is not None:
                 _ = ofile.write(f"{version.strip()}\n\n")
 
+            _ = ofile.write(optics_block)
+
             _ = ofile.write(f"{header}\n")
-            for index, (translation, rotation, score, detail) in enumerate(self):
+            for index, (translation, rotation, _, _) in enumerate(self):
                 line = [str(x) for x in translation]
                 line.extend([str(x) for x in rotation])
-                line.extend([str(detail)])
 
                 if source_path is not None:
                     line.append(source_path)
-                line.append(score)
 
+                for key in extra_meta_keys:
+                    line.append(str(self.metadata[key][index]))
                 _ = ofile.write("\t".join([str(x) for x in line]) + "\n")
 
         return None
@@ -376,13 +444,13 @@ class Orientations:
             The format of the file. Defaults to None and infers
             the file_format from the typical extension. Supported formats are
 
-            +---------------+----------------------------------------------------+
-            | text          | pyTME's standard tab-separated orientations file   |
-            +---------------+----------------------------------------------------+
-            | star          | Creates a STAR file of orientations                |
-            +---------------+----------------------------------------------------+
-            | dynamo        | Creates a dynamo table                             |
-            +---------------+----------------------------------------------------+
+            +------------+----------------------------------------------------+
+            | tsv        | Read pytme's tab-separated orientations file       |
+            +------------+----------------------------------------------------+
+            | star       | Read a STAR file of orientations                   |
+            +------------+----------------------------------------------------+
+            | dynamo     | Read a dynamo table                                |
+            +------------+----------------------------------------------------+
 
         **kwargs
             Additional keyword arguments specific to the file format.
@@ -398,17 +466,17 @@ class Orientations:
             If an unsupported file format is specified.
         """
         mapping = {
-            "text": cls._from_text,
+            "tsv": cls._from_text,
             "star": cls._from_star,
             "tbl": cls._from_tbl,
         }
         if file_format is None:
-            file_format = "text"
-
             if filename.lower().endswith(".star"):
                 file_format = "star"
             elif filename.lower().endswith(".tbl"):
                 file_format = "tbl"
+            elif filename.lower().endswith(".tsv"):
+                file_format = "tsv"
 
         func = mapping.get(file_format, None)
         if func is None:
@@ -416,18 +484,18 @@ class Orientations:
                 f"{file_format} not implemented. Supported are {','.join(mapping.keys())}."
             )
 
-        translations, rotations, scores, details, *_ = func(filename=filename, **kwargs)
+        translation, rotation, meta, optics = func(filename=filename, **kwargs)
         return cls(
-            translations=translations,
-            rotations=rotations,
-            scores=scores,
-            details=details,
+            translations=translation,
+            rotations=rotation,
+            metadata=meta,
+            optics=optics,
         )
 
     @staticmethod
     def _from_text(
         filename: str,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[np.ndarray, np.ndarray, Dict, Dict]:
         """
         Read orientations from a text file.
 
@@ -438,9 +506,8 @@ class Orientations:
 
         Returns
         -------
-        Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-            A tuple containing numpy arrays for translations, rotations, scores,
-            and details.
+        Tuple[np.ndarray, np.ndarray, Dict, Dict]
+            Translation, rotation, meta dict with scores/class and empty optics dict.
 
         Notes
         -----
@@ -467,11 +534,7 @@ class Orientations:
             score.append(candidate[-2])
             detail.append(candidate[-1])
 
-        translation = np.vstack(translation)
-        rotation = np.vstack(rotation)
-        score = np.array(score)
-        detail = np.array(detail)
-
+        translation, rotation = np.vstack(translation), np.vstack(rotation)
         if translation.shape[1] == len(header):
             rotation = np.zeros(translation.shape, dtype=np.float32)
             score = np.zeros(translation.shape[0], dtype=np.float32)
@@ -493,7 +556,8 @@ class Orientations:
         )
         rotation = rotation[..., sort_order]
 
-        return translation, rotation, score, detail
+        metadata = {"_pytmeScore": score, "_rlnClassNumber": detail}
+        return translation, rotation, metadata, {}
 
     @classmethod
     def _from_star(
@@ -540,11 +604,25 @@ class Orientations:
         )
         rotation = rotation.astype(np.float32).T
 
-        default = np.zeros(translation.shape[0])
+        metadata = {}
+        consumed_keys = set(keys) | {"_rlnAngleRot", "_rlnAngleTilt", "_rlnAnglePsi"}
+        for key, val in ret.items():
+            if key in consumed_keys:
+                continue
+            try:
+                metadata[key] = np.array(val, dtype=float)
+            except (ValueError, TypeError):
+                metadata[key] = np.array(val)
 
-        details = ret.get("_rlnClassNumber", default)
-        scores = ret.get("_pytmeScore", default)
-        return translation, rotation, scores, details
+        optics, section = {}, parser.get("data_optics", {})
+        for key, values in section.items():
+            if not values:
+                continue
+            try:
+                optics[key] = float(values[0])
+            except (TypeError, ValueError):
+                optics[key] = values[0]
+        return translation, rotation, metadata, optics
 
     @staticmethod
     def _from_tbl(
@@ -566,9 +644,8 @@ class Orientations:
             details.append(-1)
             translations.append((peak[23], peak[24], peak[25]))
 
-        translations, rotations = np.array(translations), np.array(rotations)
-        scores, details = np.array(scores), np.array(details)
-        return translations, rotations, scores, details
+        metadata = {"_pytmeScore": scores, "_rlnClassNumber": details}
+        return translations, rotations, metadata, {}
 
     def get_extraction_slices(
         self,
@@ -604,6 +681,8 @@ class Orientations:
         SystemExit
             If no peak remains after filtering, indicating an error.
         """
+        from .matching_utils import compute_extraction_box
+
         obs_beg, obs_end, cand_beg, cand_end, keep = compute_extraction_box(
             self.translations.astype(int),
             extraction_shape=extraction_shape,
@@ -634,3 +713,9 @@ class Orientations:
         if return_orientations:
             return subset, candidate_slices, observation_slices
         return candidate_slices, observation_slices
+
+
+# The `scores`/`details` InitVar defaults register as class attributes that
+# would shadow __getattr__; remove them so reads fall through to metadata.
+del Orientations.scores
+del Orientations.details

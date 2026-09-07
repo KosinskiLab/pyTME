@@ -11,13 +11,6 @@ from typing import Tuple, List, Dict
 from abc import ABC, abstractmethod
 
 import numpy as np
-from scipy.ndimage import laplace, map_coordinates, sobel
-from scipy.optimize import (
-    minimize,
-    basinhopping,
-    LinearConstraint,
-    differential_evolution,
-)
 
 from .backends import backend as be
 from .types import ArrayLike, NDArray
@@ -121,6 +114,8 @@ class _MatchDensityToDensity(ABC):
 
     @staticmethod
     def _interpolate(data, positions, order: int = 1, out=None):
+        from scipy.ndimage import map_coordinates
+
         return map_coordinates(
             data, positions, order=order, mode="constant", output=out
         )
@@ -175,10 +170,10 @@ class _MatchDensityToDensity(ABC):
         translation, rotation_matrix = _format_rigid_transform(x)
         self.template_rot.fill(0)
 
-        voxel_translation = be.astype(translation, be._int_dtype)
+        voxel_translation = be.astype(translation, be._int)
         subvoxel_translation = be.subtract(translation, voxel_translation)
 
-        center = be.astype(be.divide(self.template.shape, 2), be._int_dtype)
+        center = be.astype(be.divide(self.template.shape, 2), be._int)
         right_pad = be.subtract(self.template.shape, center)
 
         translated_center = be.add(voxel_translation, center)
@@ -207,7 +202,7 @@ class _MatchDensityToDensity(ABC):
             "translation": subvoxel_translation,
             "out": self.template_rot,
             "order": self.interpolation_order,
-            "use_geometric_center": True,
+            "center": "geometric",
         }
         if self.rotate_mask:
             self.template_mask_rot.fill(0)
@@ -256,6 +251,8 @@ class _MatchCoordinatesToDensity(_MatchDensityToDensity):
         interpolation_order: int = 1,
         **kwargs: Dict,
     ):
+        from scipy.ndimage import sobel
+
         self.target = target.astype(np.float32)
         self.target_mask = None
         if target_mask is not None:
@@ -560,6 +557,8 @@ class LaplaceCrossCorrelation(CrossCorrelation):
     __doc__ += _MatchCoordinatesToDensity.__doc__
 
     def __init__(self, **kwargs):
+        from scipy.ndimage import laplace
+
         kwargs["target"] = laplace(kwargs["target"])
 
         coordinates = kwargs["template_coordinates"]
@@ -1176,6 +1175,13 @@ def optimize_match(
     >>> )
 
     """
+    from scipy.optimize import (
+        minimize,
+        basinhopping,
+        LinearConstraint,
+        differential_evolution,
+    )
+
     ndim = 3
     _optimization_method = {
         "differential_evolution": differential_evolution,

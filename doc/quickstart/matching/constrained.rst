@@ -6,7 +6,7 @@ Constrained Template Matching
 
 Constrained template matching builds upon standard template matching by integrating prior knowledge about where and how particles are oriented in the data. This is particularly valuable for membrane-associated proteins, with known relative orientation to the membrane surface. Such constraints are imposed by seed points, which can be generated from surface parametrizations, but could also originate from unrefined initial picks, e.g., picks from deep-learning without corresponding angular assignment.
 
-Here, we use a specific formulation of constrained template matching that remains computationally efficient and accurate in large or highly curved biological systems [1]_. In the following, we demonstrate the typical workflow for a synthetic Influenza A virus (IAV), where we identify the two glycoproteins hemagglutinin (HA) and neuraminidase (NA) using template matching.
+Here, we use a specific formulation of constrained template matching that remains computationally efficient and accurate in large or highly curved biological systems [1]_. The example below identifies the two glycoproteins hemagglutinin (HA) and neuraminidase (NA) in a synthetic Influenza A virus (IAV) tomogram.
 
 .. figure:: ../../_static/examples/constrained/data_overview.png
    :width: 100 %
@@ -77,8 +77,8 @@ Briefly, Mosaic uses membrain-seg [4]_ to create an initial segmentation of the 
 
 To parametrize the virus geometry, we select the outer membrane cluster and click the **Sphere** button in the **Parametrization** tab. Subsequently, we **Sample** points from the sphere model and fit a convex hull using **Mesh**. We can now draw seed points from the created mesh. The seed points should roughly align with the center of mass of the glycoproteins, because this is where the templates are expected to match. This alignment does not have to be very precise, but it helps to further constrain matching down the line. You can draw seed points by clicking the drop-down arrow of the **Sample** button, changing the *Mode* to *Distance* and
 
-- Sampling (40 Å): This controls the distance between adjacent seed points on the surface. Smaller values create denser sampling with more seed points.
-- Offset (80 Å): This moves seed points away from the membrane surface along the normal vector. For this IAV example, 80 Å positions the seed points approximately at the center of mass of the glycoproteins.
+- Sampling (40 Å): Controls the distance between adjacent seed points on the surface.
+- Offset (80 Å): Translate seed points along the surface normal vector. For this example, 80 Å positions the seed points approximately at the center of mass of the glycoproteins.
 
 
 .. figure:: ../../_static/examples/constrained/iav_seedpoints.png
@@ -88,10 +88,6 @@ To parametrize the virus geometry, we select the outer membrane cluster and clic
 
 The distance distribution between seed points and relative to the mesh can be assessed using the **Properties** button in the **Segmentation** tab. To export the created points, right-click the corresponding cluster object and export it as STAR file.
 
-.. tip::
-
-    The Mosaic tutorial features `additional examples <https://kosinskilab.github.io/mosaic/tutorial/workflows/iav.html>`_.
-
 
 Creating Templates
 ------------------
@@ -100,7 +96,7 @@ To integrate orientational constraints, we need to ensure the template used for 
 
 .. code-block:: bash
 
-    preprocess.py \
+    pytme template \
         -m templates/ha.pdb \
         -o templates/ha_6.8_aligned.mrc \
         --sampling-rate 6.8 \
@@ -109,7 +105,7 @@ To integrate orientational constraints, we need to ensure the template used for 
         --invert-contrast \
         --align-axis 2
 
-    preprocess.py \
+    pytme template \
         -m templates/na.pdb \
         -o templates/na_6.8_aligned.mrc \
         --sampling-rate 6.8 \
@@ -137,44 +133,59 @@ After alignment, your templates should look similar to what is shown here, with 
 Creating Template Masks
 -----------------------
 
-Given the overall shape similarity between HA and NA, we can use a cylindrical mask for both. The mask can be created using the ``preprocessor_gui.py`` utility, by selecting Mask > Tube with height 37, outer radius 10, inner radius 0, center z 23.50, center y 29, center x 29 and symmetry axis 2 (the size of the mask is specified in voxels). Click on the created mask in the layer list and use the **Export** button to write it to disk.
+Given the overall shape similarity between HA and NA, we can use a cylindrical mask for both. Generally speaking, the mask should not be too narrow or include excessive amounts of membran density, but rather focus on peripheral template components
+
+.. tab-set::
+
+    .. tab-item:: Command line
+
+        .. versionadded:: 0.3.4
+
+        .. code-block:: bash
+
+            pytme utils mask \
+                --template templates/ha_6.8_aligned.mrc \
+                --shape tube \
+                --height 37 \
+                --radius 10 \
+                --inner-radius 0 \
+                --center 29,29,23.5 \
+                --symmetry-axis 2 \
+                -o templates/template_mask_6.8
+
+    .. tab-item:: Python API
+
+        .. code-block:: python
+
+            from tme import Density
+            from tme.matching_utils import create_mask
+
+            mask = create_mask(
+                mask_type="tube",
+                shape=(60, 60, 60),
+                symmetry_axis=2,
+                center=(29, 29, 23.5),
+                inner_radius=0,
+                outer_radius=10,
+                height=37,
+            )
+            Density(mask, sampling_rate=6.8).to_file("template_mask_6.8.mrc")
+
+A third option is the interactive GUI. Run ``pytme gui``, select Mask > Tube with height 37, outer radius 10, inner radius 0, center z 23.50, center y 29, center x 29 and symmetry axis 2 (the size of the mask is specified in voxels). Click on the created mask in the layer list and use the **Export** button to write it to disk.
 
 .. figure:: ../../_static/examples/constrained/masks.png
    :width: 100 %
 
-   Using the napari GUI to create template matching masks. You can use the *Invert Contrast* filter to visualize the templates.
-
-.. tip::
-
-    In general, we find it's beneficial to not make the mask too narrow. For HA for instance, a cylindrical mask of that diameter is not ideal (it should be larger), but sufficient for the data we are dealing with here. Furthermore, the mask should not include excessive amounts of membrane density, but rather focus on peripheral template components.
-
-Alternatively, you can do this using Python
-
-.. code-block:: python
-
-    from tme import Density
-    from tme.matching_utils import create_mask
-
-    mask = create_mask(
-        mask_type="tube",
-        shape=(60,60,60),
-        symmetry_axis=2,
-        center=(29,29,23.5),
-        inner_radius=0,
-        outer_radius=10,
-        height=37
-    )
-    Density(mask, sampling_rate=6.8).to_file("template_mask_6.8.mrc")
-
+   Creating masks interactively via the GUI
 
 Template Matching
 -----------------
 
-The only difference to unconstrained template matching is that the seed points need to be passed to ``match_template.py`` via the ``--orientations`` argument.
+The only difference to unconstrained template matching is that the seed points need to be passed to ``pytme match`` via the ``--orientations`` argument.
 
 .. code-block:: bash
 
-    match_template.py \
+    pytme match \
         -m tomogram_solvated_ctf_noise.mrc \
         -i templates/ha_6.8_aligned.mrc \
         --template-mask templates/template_mask_6.8.mrc \
@@ -198,9 +209,9 @@ For NA, simply use ``-i templates/na_6.8_aligned.mrc`` and ``-o results/na_match
 
 .. tip::
 
-    You can also constrain the rotational search to account for properties like template symmetry. For instance for the C3 symmetric HA, try replacing ``--angular-sampling 10`` with ``--cone-angle 180 --cone-sampling 10 --axis-symmetry 3``.
+    You can also constrain the rotational search to account for properties like template symmetry. For instance for the C3 symmetric HA, add ``--symmetry C3`` to restrict the search to the symmetry's fundamental domain.
 
-The output of constrained template matching is a pickle file containing the score space and identified orientations. We can explore the score space in the ``preprocessor_gui.py`` using the **Import Pickle** button. Shown below is a comparison of HA and NA matching using constrained and unconstrained matching, respectively. Note the increase in peak sharpness and decreased contribution of the membrane density in constrained matching.
+The output of constrained template matching is a pickle file containing the score space and identified orientations. We can explore the score space in the ``pytme gui`` using the **Import Pickle** button. Shown below is a comparison of HA and NA matching using constrained and unconstrained matching, respectively. Note the increase in peak sharpness and decreased contribution of the membrane density in constrained matching.
 
 .. figure:: ../../_static/examples/constrained/scores.png
 
@@ -214,7 +225,7 @@ The output of constrained template matching can be used in the default postproce
 
 .. code-block:: bash
 
-    postprocess.py \
+    pytme postprocess \
       --input-file results/ha_matching.pickle results/na_matching.pickle \
       --peak-caller PeakCallerMaximumFilter \
       --num-peaks 475 \
@@ -222,13 +233,18 @@ The output of constrained template matching can be used in the default postproce
       --output-format relion4 \
       --output-prefix orientations/picks
 
-This should provide you with a decent particle set. However, since we are confident that the angles we determined are reasonable, we constrained them after all, we can use a different peak calling algorithm to express that. Instead of dividing the scores into a regular grid with spacing ``--min-distance``, ``--peak-caller PeakCallerRecursiveMasking`` will identify peaks sequentially and mask scores around it using the identified template orientation and provided mask.
+This should yield a decent particle set. Since the angles came from a
+constrained search, we can also use a peak caller that takes the angles into
+account. Instead of dividing the scores into a regular grid with spacing
+``--min-distance``, ``--peak-caller PeakCallerRecursiveMasking`` identifies
+peaks sequentially and masks scores around each one using the identified
+template orientation and the provided mask.
 
 .. code-block:: bash
 
-    postprocess.py \
+    pytme postprocess \
       --input-file results/ha_matching.pickle results/na_matching.pickle \
-      --peak-caller PeakCallerMaximumFilter \
+      --peak-caller PeakCallerRecursiveMasking \
       --num-peaks 475 \
       --min-distance 12 \
       --output-format relion4 \
@@ -236,7 +252,7 @@ This should provide you with a decent particle set. However, since we are confid
 
 .. tip::
 
-    See the :doc:`postprocessing section <../postprocessing/motivation>` for all options.
+    See :doc:`/quickstart/overview` for all options.
 
 References
 ----------

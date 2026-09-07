@@ -28,7 +28,7 @@ By default, |project| uses the entire area under the template as mask. However, 
     import copy
 
     from tme import Density
-    from tme.cli import match_template
+    from tme.utils.cli import match_template
     from tme.matching_utils import create_mask
 
     if __name__ == "__main__":
@@ -102,9 +102,9 @@ By default, |project| uses the entire area under the template as mask. However, 
 Mask Smoothing
 --------------
 
-The masks showed in the previous section contained sharp edges, which are troublesome to represent in Fourier space. In the following we look at the effect of smoothing the ellipsoidal mask using a Gaussian filter.
+The masks shown in the previous section contained sharp edges, which are troublesome to represent in Fourier space. The plot below shows the effect of smoothing the ellipsoidal mask with a Gaussian filter.
 
-Albeit difficult to see in this representation, smoothing the mask with a sigma of two results in 5% higher peaks, compared to their individual backgrounds. Nevertheless, the benefit of smoothing masks is less obvious and has to be evaluated on a per-problem basis.
+The effect is subtle in this representation, but smoothing the mask with a sigma of two yields 5% higher peaks relative to their individual backgrounds. The overall benefit of smoothing depends on the data and has to be evaluated case by case.
 
 .. plot::
     :caption: Influence of mask smoothing on template matching scores.
@@ -113,7 +113,7 @@ Albeit difficult to see in this representation, smoothing the mask with a sigma 
     import matplotlib.colors as colors
 
     from tme import Density
-    from tme.cli import match_template
+    from tme.utils.cli import match_template
     from tme.matching_utils import create_mask
 
 

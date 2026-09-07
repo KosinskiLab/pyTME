@@ -74,7 +74,8 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": False,
-    "navigation_depth": 3,
+    "navigation_depth": 2,
+    "show_nav_level": 1,
     "show_toc_level": 1,
 }
 
