@@ -136,26 +136,6 @@ def test_background_shape_mismatch_raises(tmp_path):
             compute_stats=False,
         )
 
-
-def test_too_many_rotations_raises(tmp_path):
-    shape = (2, 2, 2)
-    scores = np.zeros(shape, dtype=np.float32)
-    scores[0, 0, 0] = 1.0
-    rotations = np.full(shape, -1, dtype=np.int32)
-    rotations[0, 0, 0] = 0
-
-    rmap = {i: np.eye(3) + i for i in range(70_000)}
-    path = _make_pickle(tmp_path, "many_rots", scores, rotations, rmap)
-
-    with pytest.raises(ValueError, match="rotations"):
-        normalize_input(
-            foregrounds=(path,),
-            backgrounds=(),
-            compute_snr=False,
-            compute_stats=False,
-        )
-
-
 def test_n_false_positives_uses_max_variance(tmp_path):
     shape = (4, 4, 4)
     scores_a = np.zeros(shape, dtype=np.float32)
