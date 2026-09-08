@@ -34,9 +34,9 @@ from tme.analyzer import (
 logger = logging.get_logger("postprocess")
 
 
-ROTATION_DTYPE = np.uint16
-NO_ROTATION = np.iinfo(ROTATION_DTYPE).max  # 65535, reserved sentinel
-MAX_ROTATIONS = NO_ROTATION - 1  # 65534 distinct rotation indices allowed
+ROTATION_DTYPE = np.uint32
+NO_ROTATION = np.iinfo(ROTATION_DTYPE).max
+MAX_ROTATIONS = NO_ROTATION - 1
 
 
 _SCRATCH_FILES: List[str] = []
