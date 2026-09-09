@@ -34,7 +34,7 @@ from tme.analyzer import (
 logger = logging.get_logger("postprocess")
 
 
-ROTATION_DTYPE = np.uint32
+ROTATION_DTYPE = np.int32
 NO_ROTATION = np.iinfo(ROTATION_DTYPE).max
 MAX_ROTATIONS = NO_ROTATION - 1
 
