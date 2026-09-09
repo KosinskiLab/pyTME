@@ -1,18 +1,12 @@
+.. rst-class:: hide-page-title
+
 Structure
-=========
+~~~~~~~~~
 
 .. currentmodule:: tme.structure
 
-The `structure` module represents atomic structures in accordance with the Protein Data Bank (PDB) specification, ensuring standardized handling of molecular data.
+.. autoclass:: Structure
 
-Constructor
-~~~~~~~~~~~
-
-.. autosummary::
-   :toctree: ../api/
-   :nosignatures:
-
-   Structure
 
 Attributes and underlying data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

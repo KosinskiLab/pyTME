@@ -6,12 +6,27 @@ Copyright (c) 2024 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
+from functools import wraps
 from typing import Tuple, List
 
 import numpy as np
 
 from .npfftw_backend import NumpyFFTWBackend
 from ..types import NDArray, MlxArray, Scalar, shm_type
+
+
+def emulate_out(func):
+    """Adds an out argument to write output of ``func`` to."""
+
+    @wraps(func)
+    def inner(*args, out=None, **kwargs):
+        ret = func(*args, **kwargs)
+        if out is not None:
+            out[:] = ret
+            return out
+        return ret
+
+    return inner
 
 
 class MLXBackend(NumpyFFTWBackend):
@@ -21,7 +36,6 @@ class MLXBackend(NumpyFFTWBackend):
 
     def __init__(
         self,
-        device="cpu",
         float_dtype=None,
         complex_dtype=None,
         int_dtype=None,
@@ -30,7 +44,6 @@ class MLXBackend(NumpyFFTWBackend):
     ):
         import mlx.core as mx
 
-        device = mx.cpu if device == "cpu" else mx.gpu
         float_dtype = mx.float32 if float_dtype is None else float_dtype
         complex_dtype = mx.complex64 if complex_dtype is None else complex_dtype
         int_dtype = mx.int32 if int_dtype is None else int_dtype
@@ -43,12 +56,18 @@ class MLXBackend(NumpyFFTWBackend):
             complex_dtype=complex_dtype,
             int_dtype=int_dtype,
             overflow_safe_dtype=overflow_safe_dtype,
+            # We omit them on purpose
+            float16_dtype=float_dtype,
+            uint16_dtype=int_dtype,
         )
 
-        self.device = device
+        self._create_ufuncs()
 
-    def to_backend_array(self, arr: NDArray) -> MlxArray:
-        return self._array_backend.array(arr)
+    def to_backend_array(self, arr: NDArray, dtype: type = None) -> MlxArray:
+        # Older mlx releases reject dtype=None, so branch explicitly.
+        if dtype is None:
+            return self._array_backend.array(arr)
+        return self._array_backend.array(arr, dtype=dtype)
 
     def to_numpy_array(self, arr: MlxArray) -> NDArray:
         return np.array(arr)
@@ -59,29 +78,26 @@ class MLXBackend(NumpyFFTWBackend):
     def free_cache(self):
         pass
 
-    def mod(self, arr1: MlxArray, arr2: MlxArray, out: MlxArray = None) -> MlxArray:
-        if out is not None:
-            out[:] = arr1 % arr2
-            return None
-        return arr1 % arr2
+    def _create_ufuncs(self):
+        ufuncs = [
+            "add",
+            "subtract",
+            "multiply",
+            "divide",
+            "square",
+            "sqrt",
+            "maximum",
+            "exp",
+        ]
+        for ufunc in ufuncs:
+            backend_method = emulate_out(getattr(self._array_backend, ufunc))
+            setattr(self, ufunc, staticmethod(backend_method))
 
-    def add(self, x1, x2, out: MlxArray = None, **kwargs) -> MlxArray:
-        x1 = self.to_backend_array(x1)
-        x2 = self.to_backend_array(x2)
+        backend_method = getattr(self._array_backend, "remainder")
+        setattr(self, "mod", staticmethod(backend_method))
 
-        if out is not None:
-            out[:] = self._array_backend.add(x1, x2, **kwargs)
-            return None
-        return self._array_backend.add(x1, x2, **kwargs)
-
-    def multiply(self, x1, x2, out: MlxArray = None, **kwargs) -> MlxArray:
-        x1 = self.to_backend_array(x1)
-        x2 = self.to_backend_array(x2)
-
-        if out is not None:
-            out[:] = self._array_backend.multiply(x1, x2, **kwargs)
-            return None
-        return self._array_backend.multiply(x1, x2, **kwargs)
+        backend_method = getattr(self._array_backend, "tensordot")
+        setattr(self, "dot", staticmethod(backend_method))
 
     def std(self, arr: MlxArray, axis) -> Scalar:
         return self._array_backend.sqrt(arr.var(axis=axis))
@@ -96,6 +112,8 @@ class MLXBackend(NumpyFFTWBackend):
         return self.to_numpy_array(arr).tobytes()
 
     def full(self, shape, fill_value, dtype=None):
+        if dtype is bool:
+            dtype = None
         return self._array_backend.full(shape=shape, dtype=dtype, vals=fill_value)
 
     def fill(self, arr: MlxArray, value: Scalar) -> MlxArray:
@@ -115,11 +133,23 @@ class MLXBackend(NumpyFFTWBackend):
         )
         return self.to_backend_array(ret)
 
-    def rfftn(self, arr, *args, **kwargs):
-        return self.fft.rfftn(arr, stream=self._array_backend.cpu, **kwargs)
+    def rfftn(self, arr, out=None, *args, **kwargs):
+        return self.fft.rfftn(arr, **kwargs)
 
-    def irfftn(self, arr, *args, **kwargs):
-        return self.fft.irfftn(arr, stream=self._array_backend.cpu, **kwargs)
+    def irfftn(self, arr, out=None, *args, **kwargs):
+        return self.fft.irfftn(arr, **kwargs)
+
+    def max_score_over_rotations(
+        self,
+        scores: MlxArray,
+        max_scores: MlxArray,
+        rotations: MlxArray,
+        rotation_index: int,
+    ) -> Tuple[MlxArray, MlxArray]:
+        update = self.greater(max_scores, scores)
+        max_scores = self.where(update, max_scores, scores)
+        rotations = self.where(update, rotations, rotation_index)
+        return max_scores, rotations
 
     def from_sharedarr(self, arr: MlxArray) -> MlxArray:
         return arr
@@ -143,7 +173,6 @@ class MLXBackend(NumpyFFTWBackend):
         use_geometric_center: bool = False,
         out: NDArray = None,
         out_mask: NDArray = None,
-        order: int = 3,
         **kwargs,
     ) -> None:
         arr = self.to_numpy_array(arr)
@@ -166,7 +195,7 @@ class MLXBackend(NumpyFFTWBackend):
             arr_mask=arr_mask,
             translation=translation,
             use_geometric_center=use_geometric_center,
-            order=order,
+            **kwargs,
         )
 
         out_pass, out_mask_pass = ret

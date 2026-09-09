@@ -52,54 +52,40 @@ We recommend creating a virtual environment for a clean and isolated setup.
          Latest corresponds to the current version of the main branch. Releases are tagged accordingly.
 
 
-After setting up your environment, |project| and GUI dependencies can be installed from PyPi
-
-.. _gui-installation:
+After setting up your environment, |project| can be installed from PyPi
 
 .. code-block:: bash
 
-   pip install -U \
-      pytme \
-      "napari==0.4.19.post1" \
-      magicgui \
-      git+https://github.com/maurerv/napari-density-io.git
+   pip install -U pytme
 
+|project| ships with a base CPU install. Additional features and accelerators are available as optional extras:
 
-If you would like to run |project| with GPU acceleration, install one of the options below
+.. _gui-installation:
 
-.. tab-set::
+.. list-table:: Optional extras
+   :widths: 14 60 26
+   :header-rows: 1
 
-   .. tab-item:: CuPy (Recommended)
+   * - **Extra**
+     - **What it adds**
+     - **Install**
+   * - ``gui``
+     - ``napari`` gui for mask creation and template matching analysis.
+     - ``pip install git+https://github.com/maurerv/napari-density-io.git 'pytme[gui]'``
+   * - ``mesh``
+     - Mesh handling via ``open3d``, used for constrained template matching.
+     - ``pip install 'pytme[mesh]'``
+   * - ``cupy``
+     - GPU acceleration on NVIDIA hardware via CuPy. See the `CuPy installation guide <https://docs.cupy.dev/en/stable/install.html>`_.
+     - ``pip install 'pytme[cupy]'``
+   * - ``jax``
+     - Fastest GPU/TPU backend for aggregation workflows. See the `JAX installation guide <https://jax.readthedocs.io/en/latest/installation.html>`_.
+     - ``pip install 'pytme[jax]'``
+   * - ``pytorch``
+     - PyTorch backend (CPU or GPU); general-purpose alternative to JAX or CuPy. See `PyTorch <https://pytorch.org/>`_.
+     - ``pip install 'pytme[pytorch]'``
 
-      .. code-block:: bash
-
-         pip install "pytme[cupy]"
-
-      See the `CuPy documentation <https://docs.cupy.dev/en/stable/install.html>`_ for system-specific installation instructions.
-
-   .. tab-item:: JAX (Fastest)
-
-      .. code-block:: bash
-
-         pip install "pytme[jax]"
-
-      See the `JAX documentation <https://jax.readthedocs.io/en/latest/installation.html>`_ for system-specific installation instructions.
-
-   .. tab-item:: PyTorch
-
-      .. code-block:: bash
-
-         pip install "pytme[torch]"
-
-      See the `PyTorch website <https://pytorch.org/>`_ for system-specific installation instructions.
-
-   .. tab-item:: MLX
-
-      .. code-block:: bash
-
-         pip install "pytme[mlx]"
-
-      MLX is only available for Apple Silicon chips. See the `MLX documentation <https://ml-explore.github.io/mlx/build/html/install.html>`_ for installation instructions.
+Extras can be combined, e.g. ``pip install 'pytme[gui,cupy]'`` for the GUI plus CUDA acceleration.
 
 
 Troubleshooting

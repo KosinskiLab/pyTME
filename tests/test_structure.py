@@ -1,5 +1,4 @@
 from os import remove
-from tempfile import mkstemp
 from importlib_resources import files
 
 import pytest
@@ -7,6 +6,7 @@ import numpy as np
 
 from tme import Structure
 from tme.rotations import euler_to_rotationmatrix
+from tme.matching_utils import generate_tempfile_name
 
 
 STRUCTURE_ATTRIBUTES = [
@@ -33,7 +33,7 @@ class TestStructure:
         self.structure = Structure.from_file(
             str(files("tests.data").joinpath("Structures/5khe.cif"))
         )
-        _, self.path = mkstemp()
+        self.path = generate_tempfile_name()
 
     def teardown_method(self):
         del self.structure
@@ -157,7 +157,7 @@ class TestStructure:
 
     @pytest.mark.parametrize("file_format", ["cif", "pdb", "gro"])
     def test_to_file(self, file_format):
-        _, path = mkstemp()
+        path = generate_tempfile_name()
         path = f"{path}.{file_format}"
         self.structure.to_file(path)
         read = self.structure.from_file(path)
@@ -169,7 +169,7 @@ class TestStructure:
             assert np.allclose(comparison.atom_coordinate, read.atom_coordinate)
 
     def test_to_file_error(self):
-        _, path = mkstemp()
+        path = generate_tempfile_name()
         path = f"{path}.RAISERROR"
         with pytest.raises(NotImplementedError):
             self.structure.to_file(path)

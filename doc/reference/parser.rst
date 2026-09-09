@@ -1,14 +1,12 @@
+.. rst-class:: hide-page-title
+
 Parser
-======
+~~~~~~
 
 .. currentmodule:: tme.parser
 
-Constructor
-~~~~~~~~~~~
-.. autosummary::
-   :toctree: api/
-
-   Parser
+.. autoclass:: Parser
+   :noindex:
 
 Attributes
 ~~~~~~~~~~
@@ -28,3 +26,7 @@ Supported formats
 
    PDBParser
    MMCIFParser
+   GROParser
+   StarParser
+   XMLParser
+   MDOCParser

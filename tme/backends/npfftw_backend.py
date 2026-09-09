@@ -8,10 +8,9 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 
 from psutil import virtual_memory
 from contextlib import contextmanager
-from typing import Tuple, List, Type
+from typing import Tuple, List, Type, Literal
 
 import numpy as np
-from scipy.ndimage import maximum_filter, affine_transform
 from pyfftw import (
     zeros_aligned,
     simd_alignment,
@@ -86,6 +85,8 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         complex_dtype=np.complex64,
         int_dtype=np.int32,
         overflow_safe_dtype=np.float32,
+        float16_dtype=np.float16,
+        uint16_dtype=np.uint16,
         **kwargs,
     ):
         super().__init__(
@@ -94,15 +95,24 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
             complex_dtype=complex_dtype,
             int_dtype=int_dtype,
             overflow_safe_dtype=overflow_safe_dtype,
+            float16_dtype=float16_dtype,
+            uint16_dtype=uint16_dtype,
         )
-        self.affine_transform = affine_transform
 
         self.cholesky = self._linalg_cholesky
         self.solve_triangular = self._solve_triangular
 
         from scipy.linalg import solve_triangular
+        from scipy.ndimage import (
+            maximum_filter,
+            affine_transform,
+            distance_transform_edt,
+        )
 
+        self.maximum_filter = maximum_filter
+        self.affine_transform = affine_transform
         self.linalg.solve_triangular = solve_triangular
+        self.distance_transform_edt = distance_transform_edt
 
         try:
             from ._numpyfftw_utils import rfftn as rfftn_cache
@@ -131,10 +141,12 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         mask = self._array_backend.tril if lower else self._array_backend.triu
         return self._array_backend.linalg.solve(mask(a), b, *args, **kwargs)
 
-    def to_backend_array(self, arr: NDArray) -> NDArray:
+    def to_backend_array(self, arr: NDArray, dtype: Type = None) -> NDArray:
         if isinstance(arr, self._array_backend.ndarray):
+            if dtype is not None and arr.dtype != dtype:
+                return arr.astype(dtype)
             return arr
-        return self._array_backend.asarray(arr)
+        return self._array_backend.asarray(arr, dtype=dtype)
 
     def to_numpy_array(self, arr: NDArray) -> NDArray:
         return np.array(arr)
@@ -176,8 +188,6 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         return temp.nbytes
 
     def astype(self, arr, dtype: Type) -> NDArray:
-        if self._array_backend.iscomplexobj(arr):
-            arr = arr.real
         return arr.astype(dtype)
 
     @staticmethod
@@ -189,7 +199,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         self._array_backend.add.at(arr, indices, *args, **kwargs)
         return arr
 
-    def topk_indices(self, arr: NDArray, k: int):
+    def topk_indices(self, arr: NDArray, k: int) -> Tuple:
         temp = arr.reshape(-1)
         indices = self._array_backend.argpartition(temp, -k)[-k:][:k]
         sorted_indices = indices[self._array_backend.argsort(temp[indices])][::-1]
@@ -215,13 +225,17 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
     def unravel_index(self, indices: NDArray, shape: Tuple[int]) -> NDArray:
         return self._array_backend.unravel_index(indices=indices, shape=shape)
 
-    def max_filter_coordinates(self, score_space: NDArray, min_distance: Tuple[int]):
+    def max_filter_coordinates(
+        self, score_space, min_distance: Tuple[int], min_score: float = None
+    ):
         score_box = tuple(min_distance for _ in range(score_space.ndim))
-        max_filter = maximum_filter(score_space, size=score_box, mode="constant")
-        max_filter = max_filter == score_space
+        max_filter = self.maximum_filter(score_space, size=score_box, mode="constant")
 
-        peaks = np.array(np.nonzero(max_filter)).T
-        return peaks
+        if min_score is not None:
+            max_filter -= score_space < min_score
+
+        max_filter = max_filter == score_space
+        return self._array_backend.array(self._array_backend.nonzero(max_filter)).T
 
     @staticmethod
     def zeros(shape: Tuple[int], dtype: type = None) -> NDArray:
@@ -321,19 +335,20 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         rotation_matrix: BackendArray,
         translation: BackendArray = None,
         center: BackendArray = None,
+        batched=False,
         **kwargs,
     ) -> BackendArray:
         ndim = rotation_matrix.shape[0]
 
         spatial_slice = slice(0, ndim)
-        matrix = self.eye(ndim + 1, dtype=self._float_dtype)
+        matrix = self.eye(ndim + 1, dtype=self._float)
 
-        rotation_matrix = self.astype(rotation_matrix, self._float_dtype)
+        rotation_matrix = self.astype(rotation_matrix, self._float)
         matrix = self.at(matrix, (spatial_slice, spatial_slice), rotation_matrix)
 
-        total_translation = self.zeros(ndim, dtype=self._float_dtype)
+        total_translation = self.zeros(ndim, dtype=self._float)
         if translation is not None:
-            translation = self.astype(translation, self._float_dtype)
+            translation = self.astype(translation, self._float)
             total_translation = self.subtract(total_translation, translation)
 
         if center is not None:
@@ -342,7 +357,10 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
             total_translation = self.subtract(total_translation, rotated_center)
 
         matrix = self.at(matrix, (spatial_slice, ndim), total_translation)
-        return self.to_backend_array(matrix)
+        matrix = self.to_backend_array(matrix)
+        if batched:
+            return self._batch_transform_matrix(matrix)
+        return matrix
 
     def _batch_transform_matrix(self, matrix: NDArray) -> NDArray:
         ndim = matrix.shape[0] + 1
@@ -355,14 +373,20 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         return ret
 
     def _compute_transform_center(
-        self, arr: NDArray, use_geometric_center: bool, batched: bool = False
+        self,
+        arr: NDArray,
+        center: Literal["mass", "geometric", "fourier"] = "mass",
+        batched: bool = False,
     ) -> NDArray:
-        center = self.divide(self.to_backend_array(arr.shape) - 1, 2)
-        if not use_geometric_center:
-            center = self.center_of_mass(arr, cutoff=0)
+        if center == "mass":
+            ret = self.center_of_mass(arr, cutoff=0)
+        elif center == "fourier":
+            ret = tuple(x // 2 for x in arr.shape)
+        elif center == "geometric":
+            ret = tuple((x - 1) / 2 for x in arr.shape)
         if batched:
-            return center[1:]
-        return center
+            ret = ret[1:]
+        return self.to_backend_array(ret)
 
     def _transform(
         self,
@@ -373,12 +397,11 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         order: int,
         **kwargs,
     ) -> NDArray:
-        out_slice = tuple(slice(0, stop) for stop in data.shape)
         return self.affine_transform(
             input=data,
             matrix=matrix,
             mode="constant",
-            output=output[out_slice],
+            output=output,
             order=order,
             prefilter=prefilter,
         )
@@ -425,25 +448,23 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
     def rigid_transform(
         self,
         arr: NDArray,
-        rotation_matrix: NDArray,
+        matrix: NDArray = None,
+        rotation_matrix: NDArray = None,
         arr_mask: NDArray = None,
         translation: NDArray = None,
-        use_geometric_center: bool = False,
+        center: Literal["mass", "geometric", "fourier"] = "mass",
         out: NDArray = None,
         out_mask: NDArray = None,
         order: int = 3,
         cache: bool = False,
         batched: bool = False,
     ) -> Tuple[NDArray, NDArray]:
-        matrix = rotation_matrix
-
-        # Build transformation matrix from rotation matrix
-        if matrix.shape[-1] == (arr.ndim - int(batched)):
-            center = self._compute_transform_center(arr, use_geometric_center, batched)
+        if matrix is None:
+            center = self._compute_transform_center(arr, center, batched)
             matrix = self._build_transform_matrix(
                 rotation_matrix=rotation_matrix,
                 translation=translation,
-                center=self.astype(center, self._float_dtype),
+                center=self.astype(center, self._float),
                 shape=arr.shape[1:] if batched else arr.shape,
             )
 
@@ -458,7 +479,6 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
             matrix=matrix,
             cache=cache,
             order=order,
-            batched=batched,
         )
 
     def center_of_mass(self, arr: BackendArray, cutoff: float = None) -> BackendArray:
@@ -486,9 +506,7 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
         denominator = self.sum(arr)
         for i, x in enumerate(arr.shape):
             baseline_dims = tuple(1 if i != t else x for t in range(len(arr.shape)))
-            grids.append(
-                self.reshape(self.arange(x, dtype=self._float_dtype), baseline_dims)
-            )
+            grids.append(self.reshape(self.arange(x, dtype=self._float), baseline_dims))
 
         center_of_mass = [self.sum((arr * grid) / denominator) for grid in grids]
 
@@ -593,6 +611,6 @@ class NumpyFFTWBackend(_NumpyWrapper, MatchingBackend):
 
         # Assume that low stdev regions also have low scores
         # See :py:meth:`tme.matching_scores.flcSphericalMask_setup` for correct norm
-        sq_exp[sq_exp < eps] = 1
+        sq_exp = self.where(sq_exp < eps, 1, sq_exp)
         sq_exp = self.multiply(sq_exp, n_obs, out=sq_exp)
         return self.divide(arr, sq_exp, out=out)

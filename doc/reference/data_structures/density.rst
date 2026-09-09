@@ -1,19 +1,11 @@
+.. rst-class:: hide-page-title
+
 Density
-=======
+~~~~~~~
 
 .. currentmodule:: tme.density
 
-The `density` module provides an abstract representation of N-dimensional densities, facilitating operations and manipulations of multi-dimensional data.
-
-
-Constructor
-~~~~~~~~~~~
-
-.. autosummary::
-   :toctree: ../api/
-   :nosignatures:
-
-   Density
+.. autoclass:: Density
 
 Attributes and underlying data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -9,33 +9,15 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 import warnings
 from io import BytesIO
 from copy import deepcopy
+from os.path import splitext
 from gzip import open as gzip_open
-from typing import Tuple, Dict, Set
-from os.path import splitext, basename
+from typing import Tuple, Dict, Set, Optional
 
-import h5py
-import mrcfile
 import numpy as np
 
-from scipy.ndimage import (
-    zoom,
-    laplace,
-    sobel,
-    minimum_filter,
-    binary_erosion,
-    generic_gradient_magnitude,
-)
-
 from .types import NDArray
-from .rotations import align_to_axis
-from .backends import NumpyFFTWBackend
-from .structure import Structure
-from .matching_utils import (
-    array_to_memmap,
-    memmap_to_array,
-    minimum_enclosing_box,
-    is_gzipped,
-)
+from .utils import serialization
+
 
 __all__ = ["Density"]
 
@@ -92,12 +74,16 @@ class Density:
     def __init__(
         self,
         data: NDArray,
-        origin: NDArray = None,
-        sampling_rate: NDArray = None,
-        metadata: Dict = {},
+        origin: Optional[Tuple[float, ...]] = None,
+        sampling_rate: Optional[Tuple[float, ...]] = None,
+        metadata: Optional[Dict] = None,
     ):
-        origin = np.zeros(data.ndim) if origin is None else origin
-        sampling_rate = 1 if sampling_rate is None else sampling_rate
+        metadata = {} if metadata is None else metadata
+        if origin is None:
+            origin = np.zeros(data.ndim)
+        if sampling_rate is None:
+            sampling_rate = np.ones(data.ndim)
+
         origin, sampling_rate = np.asarray(origin), np.asarray(sampling_rate)
         origin = np.repeat(origin, data.ndim // origin.size)
         sampling_rate = np.repeat(sampling_rate, data.ndim // sampling_rate.size)
@@ -112,8 +98,8 @@ class Density:
         if not isinstance(metadata, dict):
             raise ValueError("Argument metadata has to be of class dict.")
 
-        self.data, self.origin, self.sampling_rate = data, origin, sampling_rate
-        self.metadata = metadata
+        self.data = data
+        self.origin, self.sampling_rate, self.metadata = origin, sampling_rate, metadata
 
     def __repr__(self):
         response = "Density object at {}\nOrigin: {}, Sampling Rate: {}, Shape: {}"
@@ -135,7 +121,7 @@ class Density:
         ----------
         filename : str
             Path to a file in CCP4/MRC, EM, HDF5 or a format supported by
-            :obj:`skimage.io.imread`. The file can be gzip compressed.
+            :obj:`imageio.v3.imread`. The file can be gzip compressed.
         subset : tuple of slices, optional
             Slices representing the desired subset along each dimension.
         use_memmap : bool, optional
@@ -150,12 +136,12 @@ class Density:
         ----------
         .. [1] Burnley T et al., Acta Cryst. D, 2017
         .. [2] Nickell S. et al, Journal of Structural Biology, 2005.
-        .. [3] https://scikit-image.org/docs/stable/api/skimage.io.html
+        .. [3] https://imageio.readthedocs.io/en/stable/reference/userapi.html
 
         Examples
         --------
         :py:meth:`Density.from_file` reads files in CCP4/MRC, EM, or a format supported
-        by skimage.io.imread and converts them into a :py:class:`Density` instance. The
+        by imageio.v3.imread and converts them into a :py:class:`Density` instance. The
         following outlines how to read a file in the CCP4/MRC format [1]_:
 
         >>> from tme import Density
@@ -183,7 +169,7 @@ class Density:
         >>> Density.from_file("/path/to/file.em.gz")
 
         If the file format is not CCP4/MRC or EM, :py:meth:`Density.from_file` attempts
-        to use :obj:`skimage.io.imread` to read the file [3]_, which does not extract
+        to use :obj:`imageio.v3.imread` to read the file [3]_, which does not extract
         origin or sampling_rate information from the file:
 
         >>> Density.from_file("/path/to/other_format.tif")
@@ -192,7 +178,7 @@ class Density:
         -----
         If ``filename`` ends ".em" or ".h5" it will be parsed as EM or HDF5 file.
         Otherwise, the default reader is CCP4/MRC and on failure
-        :obj:`skimage.io.imread` is used regardless of extension. The later does
+        :obj:`imageio.v3.imread` is used regardless of extension. The later does
         not extract origin or sampling_rate information from the file.
 
         See Also
@@ -206,6 +192,8 @@ class Density:
                     func = cls._load_em
                 elif filename.endswith("h5") or filename.endswith("h5.gz"):
                     func = cls._load_hdf5
+                elif filename.endswith("npy") or filename.endswith("npz"):
+                    func = cls._load_npy
                 else:
                     func = cls._load_mrc
                     warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -219,6 +207,60 @@ class Density:
                 data = data[subset].copy()
 
         return cls(data=data, origin=origin, sampling_rate=sampling_rate, metadata=meta)
+
+    @classmethod
+    def _load_npy(
+        cls, filename: str, subset: Tuple[int] = None, use_memmap: bool = False
+    ) -> Tuple[NDArray, NDArray, NDArray, Dict]:
+        """
+        Extracts data from a NumPy ``.npy`` or ``.npz`` file.
+
+        For ``.npz`` files, expects keys ``data`` and optionally ``origin``,
+        ``sampling_rate``, and any additional arrays stored as metadata.
+        For ``.npy`` files, only the data array is loaded.
+
+        Parameters
+        ----------
+        filename : str
+            Path to a ``.npy`` or ``.npz`` file.
+        subset : tuple of slices, optional
+            Slices representing the desired subset along each dimension.
+        use_memmap : bool, optional
+            Whether the data should be memory mapped. Only supported for
+            ``.npy`` files; ignored for ``.npz``.
+
+        Returns
+        -------
+        Tuple[NDArray, NDArray, NDArray, Dict]
+            File data, coordinate origin, sampling rate array and metadata dict.
+
+        See Also
+        --------
+        :py:meth:`Density.from_file`, :py:meth:`Density._save_npy`
+        """
+        if filename.endswith(".npz"):
+            archive = np.load(filename)
+            data = archive["data"]
+            origin = archive.get("origin", np.zeros(data.ndim))
+            sampling_rate = archive.get("sampling_rate", np.ones(data.ndim))
+            metadata = {}
+            for key in archive.files:
+                if key not in ("data", "origin", "sampling_rate"):
+                    metadata[key] = archive[key]
+        else:
+            metadata = {}
+            if use_memmap:
+                data = np.load(filename, mmap_mode="r")
+            else:
+                data = np.load(filename)
+            origin = np.zeros(data.ndim)
+            sampling_rate = np.ones(data.ndim)
+
+        if subset is not None:
+            cls._validate_slices(slices=subset, shape=data.shape)
+            data = data[subset].copy()
+
+        return data, origin, sampling_rate, metadata
 
     @classmethod
     def _load_mrc(
@@ -252,6 +294,8 @@ class Density:
         :py:meth:`Density.from_file`
 
         """
+        import mrcfile
+
         with mrcfile.open(filename, header_only=True, permissive=True) as mrc:
             data_shape = mrc.header.nz, mrc.header.ny, mrc.header.nx
             data_type = mrcfile.utils.data_dtype_from_header(mrc.header)
@@ -292,7 +336,7 @@ class Density:
         if non_standard_crs:
             warnings.warn("Non standard MAPC, MAPR, MAPS, adapting data and origin.")
 
-        if is_gzipped(filename):
+        if serialization.is_gzipped(filename):
             if use_memmap:
                 warnings.warn(
                     f"Cannot open gzipped file {filename} as memmap."
@@ -382,9 +426,9 @@ class Density:
             9: np.complex128,
         }
 
-        func = gzip_open if is_gzipped(filename) else open
+        func = gzip_open if serialization.is_gzipped(filename) else open
         with func(filename, mode="rb") as f:
-            if is_gzipped(filename):
+            if serialization.is_gzipped(filename):
                 f = BytesIO(f.read())
 
             f.seek(3, 1)
@@ -526,9 +570,9 @@ class Density:
         full_row_bytes = data_shape[2] * bytes_per_item
         x_offset = slices[2].start * bytes_per_item
 
-        func = gzip_open if is_gzipped(filename) else open
+        func = gzip_open if serialization.is_gzipped(filename) else open
         with func(filename, mode="rb") as f:
-            if is_gzipped(filename):
+            if serialization.is_gzipped(filename):
                 f = BytesIO(f.read())
 
             for z in range(slices[0].start, slices[0].stop):
@@ -545,12 +589,13 @@ class Density:
     @staticmethod
     def _load_skio(filename: str) -> Tuple[NDArray, NDArray, NDArray, Dict]:
         """
-        Uses :obj:`skimage.io.imread` to extract data from filename [1]_.
+        Uses :obj:`imageio.v3.imread` to extract data from filename [1]_.
 
         Parameters
         ----------
         filename : str
-            Path to a file whose format is supported by :obj:`skimage.io.imread`.
+            Path to a file whose format is supported by :obj:`imageio.v3.imread`.
+            The file can be gzip compressed.
 
         Returns
         -------
@@ -559,7 +604,7 @@ class Density:
 
         References
         ----------
-        .. [1] https://scikit-image.org/docs/stable/api/skimage.io.html
+        .. [1] https://imageio.readthedocs.io/en/stable/reference/userapi.html
 
         Warns
         -----
@@ -569,14 +614,15 @@ class Density:
         --------
         :py:meth:`Density.from_file`
         """
-        import skimage.io as skio
+        import imageio.v3 as iio
 
-        swap = filename
-        if is_gzipped(filename):
+        swap, kwargs = filename, {}
+        if serialization.is_gzipped(filename):
+            kwargs["extension"] = splitext(splitext(filename)[0])[1]
             with gzip_open(filename, "rb") as infile:
                 swap = BytesIO(infile.read())
 
-        data = skio.imread(swap)
+        data = iio.imread(swap, **kwargs)
         warnings.warn(
             "origin and sampling_rate are not yet extracted from non CCP4/MRC files."
         )
@@ -607,6 +653,8 @@ class Density:
         --------
         :py:meth:`Density._save_hdf5`
         """
+        import h5py
+
         subset = ... if subset is None else subset
 
         with h5py.File(filename, mode="r") as infile:
@@ -632,7 +680,7 @@ class Density:
         cls,
         filename_or_structure: str,
         shape: Tuple[int] = None,
-        sampling_rate: NDArray = np.ones(1),
+        sampling_rate: NDArray = None,
         origin: Tuple[float] = None,
         weight_type: str = "atomic_weight",
         weight_type_args: Dict = {},
@@ -759,6 +807,10 @@ class Density:
         :py:meth:`tme.structure.Structure.from_file`
         :py:meth:`tme.structure.Structure.to_volume`
         """
+        from .structure import Structure
+
+        sampling_rate = np.ones(1) if sampling_rate is None else sampling_rate
+
         structure = filename_or_structure
         if isinstance(filename_or_structure, str):
             structure = Structure.from_file(
@@ -799,7 +851,7 @@ class Density:
         ----------
         .. [1] Burnley T et al., Acta Cryst. D, 2017
         .. [2] Nickell S. et al, Journal of Structural Biology, 2005
-        .. [3] https://scikit-image.org/docs/stable/api/skimage.io.html
+        .. [3] https://imageio.readthedocs.io/en/stable/reference/userapi.html
 
         Examples
         --------
@@ -830,7 +882,7 @@ class Density:
         Notes
         -----
         If ``filename`` endswith ".em" or ".h5" a EM file or HDF5 file will be created.
-        The default output format is CCP4/MRC and on failure, :obj:`skimage.io.imsave`
+        The default output format is CCP4/MRC and on failure, :obj:`imageio.v3.imwrite`
         is used.
 
         See Also
@@ -846,6 +898,8 @@ class Density:
                 func = self._save_em
             elif filename.endswith("h5") or filename.endswith("h5.gz"):
                 func = self._save_hdf5
+            elif filename.endswith("npy") or filename.endswith("npz"):
+                func = self._save_npy
             _ = func(filename=filename, gzip=gzip)
         except ValueError:
             _ = self._save_skio(filename=filename, gzip=gzip)
@@ -865,13 +919,15 @@ class Density:
         ----------
         .. [1] Burnley T et al., Acta Cryst. D, 2017
         """
+        import mrcfile
+
         compression = "gzip" if gzip else None
         data = np.swapaxes(self.data, 0, 2)
         try:
             _ = mrcfile.utils.mode_from_dtype(data.dtype)
         except ValueError:
             warnings.warn(
-                "Current data type not supported by MRC format. Defaulting to float32."
+                "Current data type not supported by MRC format. Defaulting to float32.",
             )
             data = data.astype(np.float32)
 
@@ -925,28 +981,26 @@ class Density:
 
     def _save_skio(self, filename: str, gzip: bool = False) -> None:
         """
-        Uses :obj:`skimage.io.imsave` to write data to filename [1]_.
+        Uses :obj:`imageio.v3.imwrite` to write data to filename [1]_.
 
         Parameters
         ----------
         filename : str
-            Path to write to with a format supported by :obj:`skimage.io.imsave`.
+            Path to write to with a format supported by :obj:`imageio.v3.imwrite`.
         gzip : bool, optional
             If True, the output will be gzip compressed.
 
         References
         ----------
-        .. [1] https://scikit-image.org/docs/stable/api/skimage.io.html
+        .. [1] https://imageio.readthedocs.io/en/stable/reference/userapi.html
         """
-        import skimage.io as skio
+        import imageio.v3 as iio
 
         swap, kwargs = filename, {}
         if gzip:
             swap = BytesIO()
-            kwargs["format"] = splitext(basename(filename.replace(".gz", "")))[
-                1
-            ].replace(".", "")
-        skio.imsave(fname=swap, arr=self.data.astype("float32"), **kwargs)
+            kwargs["extension"] = splitext(filename.replace(".gz", ""))[1]
+        iio.imwrite(swap, self.data.astype("float32"), **kwargs)
         if gzip:
             with gzip_open(filename, "wb") as outfile:
                 outfile.write(swap.getvalue())
@@ -966,6 +1020,8 @@ class Density:
         --------
         :py:meth:`Density._load_hdf5`
         """
+        import h5py
+
         compression = "gzip" if gzip else None
         with h5py.File(filename, mode="w") as f:
             f.create_dataset(
@@ -990,6 +1046,41 @@ class Density:
 
             for key, val in self.metadata.items():
                 f.attrs[key] = val
+
+    def _save_npy(self, filename: str, gzip: bool = False) -> None:
+        """
+        Saves the Density instance to a NumPy ``.npy`` or ``.npz`` file.
+
+        For ``.npz``, origin, sampling_rate and any array-valued metadata are
+        stored alongside the data for lossless round-trips. For ``.npy``, only
+        the raw data array is written.
+
+        Parameters
+        ----------
+        filename : str
+            Path to write to. Use ``.npz`` to preserve origin, sampling_rate
+            and metadata; use ``.npy`` for data only.
+        gzip : bool, optional
+            If True and the format is ``.npz``, the archive is compressed.
+            Ignored for ``.npy`` files.
+
+        See Also
+        --------
+        :py:meth:`Density._load_npy`
+        """
+        if filename.endswith(".npz"):
+            arrays = {
+                "data": self.data,
+                "origin": np.asarray(self.origin),
+                "sampling_rate": np.asarray(self.sampling_rate),
+            }
+            for key, val in self.metadata.items():
+                if isinstance(val, np.ndarray):
+                    arrays[key] = val
+            save_fn = np.savez_compressed if gzip else np.savez
+            save_fn(filename, **arrays)
+        else:
+            np.save(filename, self.data)
 
     @property
     def empty(self) -> "Density":
@@ -1071,6 +1162,8 @@ class Density:
         --------
         :py:meth:`Density.to_numpy`
         """
+        from .matching_utils import array_to_memmap
+
         if isinstance(self.data, np.memmap):
             return None
         self.data = array_to_memmap(arr=self.data)
@@ -1090,6 +1183,8 @@ class Density:
         --------
         :py:meth:`Density.to_memmap`
         """
+        from .matching_utils import memmap_to_array
+
         self.data = memmap_to_array(self.data)
 
     @property
@@ -1417,11 +1512,13 @@ class Density:
         :py:meth:`Density.adjust_box`
         :py:meth:`tme.matching_utils.minimum_enclosing_box`
         """
+        from .matching_utils import minimum_enclosing_box as min_encl_box
+
         if cutoff is None:
             cutoff = self.data.min() - 1
 
         coordinates = self.to_pointcloud(threshold=cutoff)
-        shape = minimum_enclosing_box(
+        shape = min_encl_box(
             coordinates=coordinates,
             use_geometric_center=use_geometric_center,
         )
@@ -1635,6 +1732,8 @@ class Density:
         --------
         :py:meth:`Density.centered`, :py:meth:`Density.minimum_enclosing_box`
         """
+        from .backends import NumpyFFTWBackend
+
         ret = self.empty
         data = self.data
         if not isinstance(data.dtype, np.floating):
@@ -1645,7 +1744,7 @@ class Density:
             arr=data,
             rotation_matrix=rotation_matrix,
             translation=translation,
-            use_geometric_center=use_geometric_center,
+            center="geometric" if use_geometric_center else "mass",
             out=ret.data,
             order=order,
         )
@@ -1722,6 +1821,8 @@ class Density:
         Origin: (0.0, 0.0), sampling_rate: (4, 1), Shape: (6, 22)
 
         """
+        from scipy import ndimage
+
         _supported_methods = ("spline", "fourier")
         if method not in _supported_methods:
             raise ValueError(
@@ -1735,31 +1836,33 @@ class Density:
         ret = self.copy()
         scale_factor = np.divide(ret.sampling_rate, new_sampling_rate)
         if method == "spline":
-            ret.data = zoom(ret.data, scale_factor, order=order)
+            ret.data = ndimage.zoom(ret.data, scale_factor, order=order)
         elif method == "fourier":
-            ret_shape = np.round(np.multiply(scale_factor, ret.shape)).astype(int)
+            input_shape = np.array(self.shape)
+            output_shape = np.round(np.multiply(scale_factor, ret.shape)).astype(int)
 
-            axis = range(len(ret_shape))
-            mask = np.zeros(self.shape, dtype=bool)
-            mask[tuple(slice(0, x) for x in ret_shape)] = 1
-            mask = np.roll(
-                mask, shift=-np.floor(np.divide(ret_shape, 2)).astype(int), axis=axis
+            fft_image = np.fft.fftshift(np.fft.fftn(self.data))
+
+            center = input_shape // 2
+            overhang = output_shape // 2
+
+            start = np.maximum(center - overhang, 0)
+            end = np.minimum(center + overhang + output_shape % 2, input_shape)
+            fft_image = fft_image[tuple(slice(*x) for x in zip(start, end))]
+
+            # Upsampling
+            lpad = np.maximum((output_shape - input_shape) // 2, 0)
+            rpad = np.maximum(output_shape - input_shape - lpad, 0)
+            fft_image = np.pad(
+                fft_image,
+                tuple((x, y) for x, y in zip(lpad, rpad)),
+                mode="constant",
+                constant_values=0,
             )
-            mask_ret = np.zeros(ret_shape, dtype=bool)
-            mask_ret[tuple(slice(0, x) for x in self.shape)] = 1
-            mask_ret = np.roll(
-                mask_ret,
-                shift=-np.floor(np.divide(self.shape, 2)).astype(int),
-                axis=axis,
-            )
 
-            mask, mask_ret = np.where(mask), np.where(mask_ret)
-
-            arr_ft = np.fft.fftn(self.data)[mask]
-            arr_ft *= np.prod(ret_shape) / np.prod(self.shape)
-            ret_ft = np.zeros(ret_shape, dtype=arr_ft.dtype)
-            np.add.at(ret_ft, mask_ret, arr_ft)
-            ret.data = np.real(np.fft.ifftn(ret_ft)).astype(self.data.dtype)
+            data = np.real(np.fft.ifftn(np.fft.ifftshift(fft_image)))
+            scale_factor = np.prod(output_shape) / np.prod(input_shape)
+            ret.data = np.multiply(data, scale_factor, out=data)
         ret.sampling_rate = new_sampling_rate
         return ret
 
@@ -1845,7 +1948,7 @@ class Density:
             |              | apply a sobel filter and return density coordinates |
             |              | larger than 0.5 times the maximum filter value.     |
             +--------------+-----------------------------------------------------+
-            | Laplace      | Like 'Sobel', but with a Laplace filter.            |
+            | Laplace      | Like 'Sobel', but with a laplace filter.            |
             +--------------+-----------------------------------------------------+
             | Minimum      | Like 'Sobel' and 'Laplace' but with a spherical     |
             |              | minimum filter on the lower density bound.          |
@@ -1873,7 +1976,15 @@ class Density:
         :py:class:`tme.matching_optimization.Envelope`
         :py:class:`tme.matching_optimization.Chamfer`
         """
-        _available_methods = ["ConvexHull", "Weight", "Sobel", "Laplace", "Minimum"]
+        from scipy import ndimage
+
+        _available_methods = [
+            "ConvexHull",
+            "Weight",
+            "Sobel",
+            "Laplace",
+            "Minimum",
+        ]
 
         if method not in _available_methods:
             raise ValueError(
@@ -1891,12 +2002,12 @@ class Density:
 
         elif method == "Sobel":
             filtered_map = np.multiply(self.data, (self.data > lower_bound))
-            magn = generic_gradient_magnitude(filtered_map, sobel)
+            magn = ndimage.generic_gradient_magnitude(filtered_map, ndimage.sobel)
             surface_points = np.argwhere(magn > 0.5 * magn.max())
 
         elif method == "Laplace":
             filtered_map = self.data > lower_bound
-            magn = laplace(filtered_map)
+            magn = ndimage.laplace(filtered_map)
             surface_points = np.argwhere(magn > 0.5 * magn.max())
 
         elif method == "Minimum":
@@ -1910,7 +2021,7 @@ class Density:
                 fp[tuple(center - offset)] = 1
 
             filtered_map = (self.data > lower_bound).astype(int)
-            filtered_map_surface = minimum_filter(
+            filtered_map_surface = ndimage.minimum_filter(
                 filtered_map, footprint=fp, mode="constant", cval=0.8
             )
             filtered_map_surface = ((filtered_map - filtered_map_surface) == 1).astype(
@@ -2015,11 +2126,13 @@ class Density:
                 fitting into cryo-em density maps with powerfit. AIMS Biophysics,
                 2:73–87, 04 2015. doi:10.3934/biophy.2015.2.73
         """
+        from scipy import ndimage
+
         core_indices = np.zeros(self.shape)
         eroded_mask = self.data > 0
         while eroded_mask.sum() > 0:
             core_indices += eroded_mask
-            eroded_mask = binary_erosion(eroded_mask)
+            eroded_mask = ndimage.binary_erosion(eroded_mask)
         return core_indices
 
     def center_of_mass(self, arr: NDArray = None, cutoff: float = None) -> NDArray:
@@ -2038,6 +2151,8 @@ class Density:
         NDArray
             Center of mass with shape (arr.ndim).
         """
+        from .backends import NumpyFFTWBackend
+
         arr = self.data if arr is None else arr
         return NumpyFFTWBackend().center_of_mass(arr, cutoff)
 
@@ -2239,13 +2354,53 @@ class Density:
 
         return out, final_translation, rotation_matrix
 
-    def align_to_axis(self, data: NDArray = None, axis: int = 2, flip: bool = False):
+    def align_to_axis(
+        self,
+        data: NDArray = None,
+        axis: int = 2,
+        flip: bool = False,
+        threshold: float = 0.0,
+        eigenvector_index: int = 0,
+    ):
+        """
+        Calculate a rotation matrix that aligns the principal axis of a point cloud
+        with a specified coordinate axis.
+
+        Parameters
+        ----------
+        data : NDArray
+            n-D array of densities.
+        axis : int, optional
+            The target axis to align with, defaults to 2 (z-axis).
+        flip : bool, optional
+            Whether to align with the negative direction of the axis, default is False.
+        threshold : float, optional
+            Threshold upon which to consider densities for alignment.
+        eigenvector_index : int, optional
+            Index of eigenvector to select, sorted by descending eigenvalues.
+            0 = largest eigenvalue (most variance), 1 = second largest, etc.
+            Default is 0 (primary principal component).
+
+        Returns
+        -------
+        NDArray
+            3x3 rotation matrix that aligns the principal component of the
+            coordinates with the specified axis.
+        """
+        from .rotations import align_to_axis
+
         if data is None:
             data = self.data
 
-        coordinates = np.array(np.where(data > 0))
+        coordinates = np.array(np.where(data > threshold))
         weights = self.data[tuple(coordinates)]
-        return align_to_axis(coordinates.T, weights=weights, axis=axis, flip=flip)
+        return align_to_axis(
+            coordinates.T,
+            weights=weights,
+            axis=axis,
+            flip=flip,
+            eigenvector_index=eigenvector_index,
+        )
 
     @staticmethod
     def fourier_shell_correlation(density1: "Density", density2: "Density") -> NDArray:

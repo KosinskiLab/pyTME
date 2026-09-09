@@ -47,11 +47,11 @@ Your working directory should now contain
 Template and Mask Generation
 ----------------------------
 
-EMD-3228 has a different sampling rate than our tomogram, so we need to resample it to match. We can do this using the API (see :py:meth:`Density.resample <tme.density.Density.resample>`) or using ``preprocess.py``.
+We can resample EMD-3228 to match our tomogram using ``pytme template``
 
 .. code-block:: bash
 
-    preprocess.py \
+    pytme template \
         -m emd_3228.map.gz \
         --sampling-rate 13.48 \
         --box-size 70 \
@@ -64,24 +64,39 @@ Sufficiently sized boxes are essential for oscillating filters like the CTF. As 
 
     The cisTEM tool `simulate <https://grigoriefflab.umassmed.edu/simulate>`_ is a good alternative for template generation.
 
-The mask defines which parts of the template to use for matching. We can use the napari GUI to create the mask visually. Since we inverted the template contrast above, make sure to use the *Invert Contrast* filter when viewing the template.
+The mask defines which parts of the template to use for matching. Here we use ``pytme gui`` to create the mask interactively, but alternatively this can be done using
 
-Alternatively, you can create the mask programmatically
+.. tab-set::
 
-.. code-block:: python
+    .. tab-item:: Command line
 
-    from tme import Density
-    from tme.matching_utils import create_mask
+        .. versionadded:: 0.3.4
 
-    mask = create_mask(
-        mask_type="ellipse",
-        radius=(13,13,13),
-        center=(34.50,34.50,34.50),
-        sigma_decay = 1,
-        shape=(70,70,70)
-    )
-    mask = Density(mask, sampling_rate=13.48)
-    mask.to_file("emd_3228_resampled_mask.mrc")
+        .. code-block:: bash
+
+            pytme utils mask \
+                --template emd_3228_resampled.mrc \
+                --shape ellipse \
+                --radius 13 \
+                --soft-edge-width 3 \
+                -o emd_3228_resampled_mask
+
+    .. tab-item:: Python API
+
+        .. code-block:: python
+
+            from tme import Density
+            from tme.matching_utils import create_mask
+
+            mask = create_mask(
+                mask_type="ellipse",
+                radius=(13, 13, 13),
+                center=(35, 35, 35),
+                soft_edge_width=3,
+                method="cosine",
+                shape=(70, 70, 70),
+            )
+            Density(mask, sampling_rate=13.48).to_file("emd_3228_resampled_mask.mrc")
 
 Your prepared template and mask should look similar to the projection below
 
@@ -115,7 +130,7 @@ The code below will run template matching, taking about 1-2 minutes on a consume
 
 .. code-block:: bash
 
-    match_template.py \
+    pytme match \
         --target TS_037_subset.mrc \
         --template emd_3228_resampled.mrc \
         --template-mask emd_3228_resampled_mask.mrc \
@@ -162,7 +177,7 @@ The following outlines common filtering approaches to improve template matching 
 
         .. code-block:: bash
 
-            match_template.py \
+            pytme match \
                 --target TS_037_subset.mrc \
                 --template emd_3228_resampled.mrc \
                 --template-mask emd_3228_resampled_mask.mrc \
@@ -175,7 +190,7 @@ The following outlines common filtering approaches to improve template matching 
 
         .. code-block:: bash
 
-            match_template.py \
+            pytme match \
                 --target TS_037_subset.mrc \
                 --template emd_3228_resampled.mrc \
                 --template-mask emd_3228_resampled_mask.mrc \
@@ -188,7 +203,7 @@ The following outlines common filtering approaches to improve template matching 
 
         .. code-block:: bash
 
-            match_template.py \
+            pytme match \
                 --target TS_037_subset.mrc \
                 --template emd_3228_resampled.mrc \
                 --template-mask emd_3228_resampled_mask.mrc \
@@ -223,13 +238,13 @@ The following outlines common filtering approaches to improve template matching 
 
     .. tab-item:: CTF
 
-        CTF correction recovers high-resolution information and produces sharper peaks with better separation of closely spaced ribosomes. In the simplest case, a single defocus value can be provided, assuming constant defocus throughout the volume. 3D CTFs can be created using Warp/M XML, tomostar, mdoc, and ctffind4 files (use ``match_template.py --help`` to see all available formats for the ctf file).
+        CTF correction recovers high-resolution information and produces sharper peaks with better separation of closely spaced ribosomes. In the simplest case, a single defocus value can be provided, assuming constant defocus throughout the volume. 3D CTFs can be created using Warp/M XML, tomostar, mdoc, and ctffind4 files (use ``pytme match --help`` to see all available formats for the ctf file).
 
         For constant 3µm defocus (30000 Å)
 
         .. code-block:: bash
 
-            match_template.py \
+            pytme match \
                 --target TS_037_subset.mrc \
                 --template emd_3228_resampled.mrc \
                 --template-mask emd_3228_resampled_mask.mrc \
@@ -244,7 +259,7 @@ The following outlines common filtering approaches to improve template matching 
 
         .. code-block:: bash
 
-            match_template.py \
+            pytme match \
                 --target TS_037_subset.mrc \
                 --template emd_3228_resampled.mrc \
                 --template-mask emd_3228_resampled_mask.mrc \
@@ -279,7 +294,7 @@ The following outlines common filtering approaches to improve template matching 
 
         .. code-block:: bash
 
-            match_template.py \
+            pytme match \
                 --target TS_037_subset.mrc \
                 --template emd_3228_resampled.mrc \
                 --template-mask emd_3228_resampled_mask.mrc \
@@ -292,7 +307,7 @@ The following outlines common filtering approaches to improve template matching 
 
         .. code-block:: bash
 
-            postprocess.py \
+            pytme postprocess \
                 --input-file output_default.pickle \
                 --background-file output_scramble.pickle \
                 --output-format pickle \
@@ -314,7 +329,7 @@ The following outlines common filtering approaches to improve template matching 
 
         .. code-block:: bash
 
-            match_template.py \
+            pytme match \
                 --target TS_037_subset.mrc \
                 --template emd_3228_resampled.mrc \
                 --template-mask emd_3228_resampled_mask.mrc \
@@ -335,7 +350,7 @@ The following outlines common filtering approaches to improve template matching 
 
         .. code-block:: bash
 
-            match_template.py \
+            pytme match \
                 --target TS_037_subset.mrc \
                 --template emd_3228_resampled.mrc \
                 --template-mask emd_3228_resampled_mask.mrc \
@@ -350,84 +365,118 @@ The following outlines common filtering approaches to improve template matching 
 
             Template matching scores for spectral whitening
 
+Obtaining a Particle List
+-------------------------
 
-Remarks on Tomogram Preprocessing
----------------------------------
+We can obtain a particle list from template matching results using ``pytme postprocess.`` Recall the output of the previous template matching run. The peaks are fairly
+wide, well separated, and most likely include some false-positive results.
 
-We have seen that template matching performance can be improved using a variety of strategies. However, ultimately, it's limited by the quality of the experimental data.
+.. figure:: ../../_static/quickstart/particle_picking_default_full.png
+    :width: 100 %
+    :align: center
 
-Denoising approaches have recently found popularity, due to their ability to generate visually appealing tomograms. However, that does not necessarily make them more suitable for template matching. Cross-correlation-based template matching is fairly robust towards Gaussian and Poisson noise, which is commonly removed in denoising, leading to an overall reduction of high-frequency information. It is, however, the high-frequency information that enables truly unambiguous template matching [1]_. Albeit not possible to draw a general conclusion, denoising is most likely not the place to start if template matching is not working.
-
-Instead, processing before tomogram reconstruction, such as tilt-series alignment and CTF correction should be prioritized. To demonstrate the utility of CTF correction, we use a tomogram that was CTF corrected using IMOD's phase-flip (`source <https://dataverse.nl/dataset.xhtml?persistentId=doi:10.34894/TLGJCM>`_).
-
-Shown below is the raw data on the left, baseline scores in the middle, and on the right using a CTF-corrected template, which reproduces the results from Chaillet et al. [2]_.
-
-
-.. image:: ../../_static/quickstart/picking_ctf_tomogram.png
-    :width: 32%
-
-.. image:: ../../_static/quickstart/picking_ctf_scoresnoctf.png
-    :width: 32%
-
-.. image:: ../../_static/quickstart/picking_ctf_scores.png
-    :width: 32%
-
-
-The figure above was generated using the following template
+|project| ships several peak callers; the appropriate choice depends on the
+data. :py:class:`PeakCallerScipy <tme.analyzer.PeakCallerScipy>` is suitable
+here. In more crowded settings, :py:class:`PeakCallerMaximumFilter
+<tme.analyzer.PeakCallerMaximumFilter>` typically gives better results. The
+command below identifies up to 1,000 peaks with PeakCallerScipy and writes
+them to a STAR file.
 
 .. code-block:: bash
 
+    pytme postprocess \
+        --input-file output_default.pickle \
+        --output-prefix orientations
 
-    wget https://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-2938/map/emd_2938.map.gz
+Peaks can be imported into the GUI via drag-and-drop. A 2D projection of the
+point cloud colored by score is shown below. Some peaks are correctly identified in the
+centre, but many are too tightly packed and clustered around the tomogram
+borders. Inflated scores at the tomogram borders are common and arise from
+reconstruction artifacts and from padding during template matching.
 
-    preprocess.py \
-        -m emd_2938.map.gz \
-        --sampling-rate 13.79 \
-        --box-size 60 \
-        --invert-contrast \
-        --output emd_2938_resampled.mrc
+.. figure:: ../../_static/quickstart/pick_default.png
+    :scale: 50%
+    :align: left
 
-and a spherical mask
-
-.. code-block:: python
-
-    from tme import Density
-    from tme.matching_utils import create_mask
-
-    mask = create_mask(
-        mask_type="ellipse",
-        radius=(12,12,12),
-        center=(30,30,30),
-        sigma_decay=1,
-        shape=(60,60,60)
-    )
-    mask = Density(mask, sampling_rate=13.79)
-    mask.to_file("emd_2938_resampled_mask.mrc")
-
-CTF parameters were omitted from the command below to compute baseline scores
+The errors above can be avoided by setting a minimum distance between peaks
+and masking the edges of the tomogram, which excludes all scores computed
+using padding. Edge masking is based on the template shape. For heavily
+zero-padded templates, the exact distance can be set with
+``--min-boundary-distance``.
 
 .. code-block:: bash
 
-    match_template.py \
-        --target tomo200528_100.mrc \
-        --template emd_2938_resampled.mrc \
-        --template-mask emd_2938_resampled_mask.mrc \
-        --lowpass 40 \
-        --defocus 30000 \
-        --amplitude-contrast 0.08 \
-        --spherical-aberration 27000000.0 \
-        --acceleration-voltage 200 \
-        --angular-sampling 6
+    pytme postprocess \
+        --input-file output_default.pickle \
+        --output-prefix orientations_distance \
+        --min-distance 15 \
+        --mask-edges
 
+.. figure:: ../../_static/quickstart/pick_constrained.png
+    :scale: 50%
+    :align: left
 
-Next Steps
+Distance constraints and edge masking lead to a better separation between
+peaks and remove erroneous matches from the boundaries. However, with no
+constraint on minimum score or peak count, the result still includes many
+low-scoring particles. The number of peaks can be capped, score bounds can
+be set explicitly, or a suitable cutoff can be derived from the score
+statistics.
+
+.. code-block:: bash
+
+    pytme postprocess \
+        --input-file output_default.pickle \
+        --output-prefix orientations_distance_score \
+        --min-distance 15 \
+        --mask-edges \
+        --n-false-positives 5
+
+Refinement
 ----------
 
-Extract ribosome coordinates using :doc:`postprocessing <../postprocessing/example>`.
+The steps above yield a suitable dataset for downstream classification,
+refinement, and averaging in the majority of cases. The following additional
+steps can be used to obtain a purer dataset.
 
+Target Masking
+^^^^^^^^^^^^^^
 
-References
+The GUI can be used to define a target mask, specifying which regions of the
+target should be considered. Create a new *Shapes* layer in the GUI and press
+*P* to draw a polygon encapsulating the region of interest. Select the
+tomogram you want to mask and *Shape* from the *Choose Mask* tab, then click
+*Create Mask* to propagate the polygon through the remaining axis.
+Alternatively, select *Threshold* to mask elements that deviate significantly
+from the average density in the tomogram. An example mask projection
+obtained with both approaches is shown below.
+
+.. figure:: ../../_static/quickstart/napari_picking_masks.png
+    :width: 100%
+    :align: center
+
+Manual Curation
+^^^^^^^^^^^^^^^
+
+The GUI can also be used to exclude erroneous picks. Locate the layer
+controls in the top-left and use the *Select Points* tool. Select the points
+to exclude and press the delete key to remove them. Picks that were not
+considered before can be added using *Add Points*; their angular orientation
+will be trivial in that case. Once the picks are filtered, use *Export Point
+Cloud* to write a final orientations file for further analysis.
+
+See :doc:`/quickstart/overview` for background correction, which is another
+route to a cleaner particle set.
+
+Validation
 ----------
 
-.. [1] Maurer, V. J.; Siggel, M.; Kosinski, J. What shapes template-matching performance in cryogenic electron tomography in situ?. Acta Crys D 2024
-.. [2] Chaillet, M.L.; van der Schot, G; Gubbins, I.; Roet, S., Veltkamp, R.C; Foerster, F. Int. J. Mol. Sci  2023
+The final picks obtained with distance constraints and score cutoffs are
+shown below on the left. The right side shows the final picks obtained by
+passing a target mask to ``pytme postprocess``.
+
+.. figure:: ../../_static/quickstart/pick_final.png
+    :width: 100%
+    :align: left
+
+Comparing the final picks to `ground truth picks <https://www.ebi.ac.uk/empiar/EMPIAR-10988/>`_ yields 90% [335 / 398] accuracy.

@@ -1,3 +1,5 @@
+:tocdepth: 3
+
 .. include:: ../../substitutions.rst
 
 Exhaustive
@@ -24,27 +26,28 @@ If you wish to integrate custom template matching methods into |project|, please
 Methods
 ~~~~~~~
 
-:py:class:`match_exhaustive <tme.matching_exhaustive.match_exhaustive>` orchestrates the matching process, supporting parallel processing and post-scoring operations. Depending on user specification, parallelization can be performed by splitting the search region into subsets, and/or by distribution the angular search.
+:py:class:`match_exhaustive <tme.matching_exhaustive.match_exhaustive>` orchestrates the matching process, supporting parallel processing and analysis operations. Depending on user specification, parallelization can be performed by splitting the search region into subsets, and/or by distributing the angular search.
 
 .. autosummary::
    :toctree: ../api/
 
    match_exhaustive
 
+Concrete implementations are outlined below.
 
 .. _setup-functions:
 
 .. currentmodule:: tme.matching_scores
 
 Setup functions
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: ../api/
 
    cc_setup
    lcc_setup
-   corr_setup
+   ncc_setup
    cam_setup
    flc_setup
    flcSphericalMask_setup
@@ -54,12 +57,12 @@ Setup functions
 .. _scoring-functions:
 
 Scoring functions
-~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: ../api/
 
-   corr_scoring
+   ncc_scoring
    flc_scoring
    mcc_scoring
 
@@ -71,16 +74,50 @@ Scoring functions
 Adding Custom Methods
 ~~~~~~~~~~~~~~~~~~~~~
 
-New scoring methods need to be registered via :py:meth:`register_matching_exhaustive`. This enables developers to specify a unique name, setup function, scoring function, and a custom memory estimation class for their method. This ensures the modular and extensible design of |project|, allowing developers to continuously expand tme’s capabilities.
-
-Adding a new template matching methods requires defining the following parameters:
-
-- ``matching``: Name of the matching method.
-- ``matching_setup``: The setup function associated with the name.
-- ``matching_scoring``: The scoring function associated with the name.
-- ``memory_class``: A custom memory estimation class, which inherits from :py:class:`MatchingMemoryUsage <tme.memory.MatchingMemoryUsage>`
+New scoring methods are registered via :py:meth:`register_matching_exhaustive`.
 
 .. autosummary::
    :toctree: ../api/
 
    register_matching_exhaustive
+
+Adding a new template matching method requires defining the following:
+
+- Name of the matching method
+- Setup function associated with the name
+- Scoring function associated with the name
+- Custom memory estimation class inheriting from :py:class:`MatchingMemoryUsage <tme.memory.MatchingMemoryUsage>`
+
+
+The following outlines an example implementation.
+
+.. code-block:: python
+
+   from tme.memory import MemoryProfile, register_memory
+   from tme.matching_exhaustive import register_matching_exhaustive
+
+   @register_memory("CustomMethod")
+   class CustomMethodMemoryUsage(MemoryProfile):
+       """Memory estimator for CustomMethod."""
+       base_float = 2
+       base_complex = 1
+       fork_float = 1
+       fork_complex = 1
+
+   def custom_setup(target, template, **kwargs):
+       """
+       Prepare data structures for matching.
+
+       Returns context dictionary with shared parameters.
+       """
+       # Setup implementation
+       return context
+
+   def custom_scoring(score_space, rotated_template, **kwargs):
+       """
+       Compute similarity scores.
+       """
+       # Scoring implementation
+       pass
+
+   register_matching_exhaustive("CustomMethod", custom_setup, custom_scoring)

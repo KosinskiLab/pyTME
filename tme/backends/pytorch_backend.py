@@ -7,6 +7,7 @@ Copyright (c) 2023 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
+import warnings
 from typing import Tuple
 from contextlib import contextmanager
 from multiprocessing import shared_memory
@@ -46,16 +47,41 @@ class PytorchBackend(NumpyFFTWBackend):
             complex_dtype=complex_dtype,
             int_dtype=int_dtype,
             overflow_safe_dtype=overflow_safe_dtype,
+            # We omit them on purpose
+            float16_dtype=float_dtype,
+            uint16_dtype=int_dtype,
         )
+        if device != "cpu":
+            try:
+                torch.tensor(0, device=device)
+            except Exception:
+                warnings.warn(
+                    f"PyTorch device '{device}' is not available, "
+                    f"falling back to 'cpu'.",
+                    RuntimeWarning,
+                    stacklevel=3,
+                )
+                device = "cpu"
+
         self.device = device
         self.F = F
 
-    def to_backend_array(self, arr: NDArray, check_device: bool = True) -> TorchTensor:
+    def to_backend_array(
+        self,
+        arr: NDArray,
+        dtype: type = None,
+        check_device: bool = True,
+    ) -> TorchTensor:
         if isinstance(arr, self._array_backend.Tensor):
-            if arr.device == self.device or not check_device:
+            same_device = arr.device == self.device or not check_device
+            if same_device:
+                if dtype is not None and arr.dtype != dtype:
+                    return arr.to(dtype)
                 return arr
+            if dtype is not None:
+                return arr.to(self.device, dtype=dtype)
             return arr.to(self.device)
-        return self.tensor(arr, device=self.device)
+        return self.tensor(arr, device=self.device, dtype=dtype)
 
     def to_numpy_array(self, arr: TorchTensor) -> NDArray:
         if isinstance(arr, np.ndarray):
@@ -91,6 +117,9 @@ class PytorchBackend(NumpyFFTWBackend):
         if isinstance(ret, self._array_backend.Tensor):
             return ret
         return ret[0]
+
+    def tril(self, arr, k):
+        return self._array_backend.tril(arr, diagonal=k)
 
     def maximum(self, x1, x2, *args, **kwargs) -> NDArray:
         x1 = self.to_backend_array(x1, check_device=False)
@@ -141,6 +170,9 @@ class PytorchBackend(NumpyFFTWBackend):
         return arr
 
     def addat(self, arr, indices, values, *args, **kwargs) -> NDArray:
+        if not isinstance(values, self._array_backend.Tensor):
+            values = self.to_backend_array(values)
+
         if values.dtype != arr.dtype:
             values = values.to(arr.dtype, copy=False)
 
@@ -216,7 +248,9 @@ class PytorchBackend(NumpyFFTWBackend):
 
         return ret
 
-    def max_filter_coordinates(self, score_space, min_distance: Tuple[int]):
+    def max_filter_coordinates(
+        self, score_space, min_distance: Tuple[int], min_score: float = None
+    ):
         if score_space.ndim == 3:
             func = self._array_backend.nn.MaxPool3d
         elif score_space.ndim == 2:
@@ -227,10 +261,17 @@ class PytorchBackend(NumpyFFTWBackend):
         pool = func(
             kernel_size=min_distance, padding=min_distance // 2, return_indices=True
         )
-        _, indices = pool(score_space.reshape(1, 1, *score_space.shape))
+        values, indices = pool(score_space.reshape(1, 1, *score_space.shape))
+
+        if min_score is not None:
+            indices = indices[values > min_score]
+
         coordinates = self.unravel_index(indices.reshape(-1), score_space.shape)
-        coordinates = self.transpose(self.stack(coordinates))
-        return coordinates
+        return self.transpose(self.stack(coordinates))
+
+    def distance_transform_edt(self, arr, *args, **kwargs):
+        ret = super().distance_transform_edt(self.to_numpy_array(arr))
+        return self.to_backend_array(ret)
 
     def repeat(self, *args, **kwargs):
         return self._array_backend.repeat_interleave(*args, **kwargs)
@@ -290,6 +331,7 @@ class PytorchBackend(NumpyFFTWBackend):
         rotation_matrix: TorchTensor,
         translation: TorchTensor = None,
         center: TorchTensor = None,
+        batched=False,
         **kwargs,
     ) -> TorchTensor:
         """
@@ -309,7 +351,11 @@ class PytorchBackend(NumpyFFTWBackend):
             rotation_matrix=self.flip(rotation_matrix, [0, 1]),
             translation=translation,
             center=center,
+            batched=batched,
         )
+
+    def _batch_transform_matrix(self, matrix):
+        return matrix
 
     def _rigid_transform(
         self,
@@ -319,22 +365,24 @@ class PytorchBackend(NumpyFFTWBackend):
         out: TorchTensor = None,
         out_mask: TorchTensor = None,
         order: int = 1,
-        batched: bool = False,
         **kwargs,
     ) -> Tuple[TorchTensor, TorchTensor]:
         """Apply rigid transformation using homogeneous transformation matrix."""
         _mode_mapping = {0: "nearest", 1: "bilinear", 3: "bicubic"}
+
+        if arr.ndim == 4:
+            order = min(order, 1)
+
         mode = _mode_mapping.get(order, None)
         if mode is None:
             modes = ", ".join([str(x) for x in _mode_mapping.keys()])
             raise ValueError(
                 f"Got {order} but supported interpolation orders are: {modes}."
             )
-
+        batched = matrix.shape[0] == arr.ndim
         batch_size, spatial_dims = 1, arr.shape
         out_slice = tuple(slice(0, x) for x in arr.shape)
         if batched:
-            matrix = matrix[1:, 1:]
             batch_size, *spatial_dims = arr.shape
 
         # Remove homogeneous row and expand for batch processing
