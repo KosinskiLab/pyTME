@@ -134,6 +134,26 @@ class TestMatchCoordinateToCoordinates:
     def test_call(self, method):
         self.test_initialization(method=method, notest=True)()
 
+    def _chamfer(self):
+        return create_score_object(
+            score="Chamfer",
+            target_coordinates=self.target_coordinates,
+            target_weights=self.target_weights,
+            template_coordinates=self.coordinates,
+            template_weights=self.coordinates_weights,
+        )
+
+    def test_chamfer_score_runs(self):
+        # _MatchCoordinatesToCoordinates.score() must call __call__ without arguments: Chamfer.__call__
+        # takes none and reads self.template_coordinates_rotated written by _rigid_transform.
+        assert isinstance(self._chamfer().score((0, 0, 0, 0, 0, 0)), float)
+
+    def test_chamfer_optimize_match(self):
+        _, _, score = optimize_match(
+            score_object=self._chamfer(), optimization_method="basinhopping", maxiter=1
+        )
+        assert isinstance(score, float)
+
 
 class TestOptimizeMatch:
     def setup_method(self):
