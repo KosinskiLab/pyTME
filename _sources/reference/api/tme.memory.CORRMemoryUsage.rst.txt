@@ -1,0 +1,50 @@
+﻿CORRMemoryUsage
+===============
+
+.. currentmodule:: tme.memory
+
+.. autoclass:: CORRMemoryUsage
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            CORRMemoryUsage.base_complex
+         
+         
+            CORRMemoryUsage.base_float
+         
+         
+            CORRMemoryUsage.fork_complex
+         
+         
+            CORRMemoryUsage.fork_float
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            CORRMemoryUsage.base_usage
+         
+         
+            CORRMemoryUsage.per_fork
+         
+
+   
+   

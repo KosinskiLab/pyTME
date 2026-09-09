@@ -1,0 +1,6 @@
+﻿get\_cone\_rotations
+================================
+
+.. currentmodule:: tme.rotations
+
+.. autofunction:: get_cone_rotations

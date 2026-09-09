@@ -1,0 +1,6 @@
+FLCMemoryUsage.fork\_float
+====================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: FLCMemoryUsage.fork_float

@@ -1,0 +1,6 @@
+PytorchBackend.addat
+=================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: PytorchBackend.addat

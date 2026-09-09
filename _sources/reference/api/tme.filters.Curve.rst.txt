@@ -1,0 +1,37 @@
+﻿Curve
+=====
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: Curve
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            Curve.spectrum
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            Curve.__call__
+      
+
+      
+         
+
+   
+   

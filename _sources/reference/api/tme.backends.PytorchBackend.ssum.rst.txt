@@ -1,0 +1,6 @@
+PytorchBackend.ssum
+================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: PytorchBackend.ssum

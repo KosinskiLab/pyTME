@@ -1,0 +1,6 @@
+CupyBackendMemoryUsage.fork\_complex
+==============================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CupyBackendMemoryUsage.fork_complex

@@ -1,0 +1,6 @@
+PytorchBackend.distance\_transform\_edt
+==================================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: PytorchBackend.distance_transform_edt

@@ -1,0 +1,6 @@
+PeakCallerMaximumFilter.shareable
+==============================================
+
+.. currentmodule:: tme.analyzer
+
+.. autoproperty:: PeakCallerMaximumFilter.shareable

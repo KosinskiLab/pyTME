@@ -1,0 +1,6 @@
+MDOCParser.keys
+==========================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: MDOCParser.keys

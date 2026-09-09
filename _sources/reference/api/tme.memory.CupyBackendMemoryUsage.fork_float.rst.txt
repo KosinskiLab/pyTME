@@ -1,0 +1,6 @@
+CupyBackendMemoryUsage.fork\_float
+============================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CupyBackendMemoryUsage.fork_float

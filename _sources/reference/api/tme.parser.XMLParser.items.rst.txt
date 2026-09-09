@@ -1,0 +1,6 @@
+XMLParser.items
+==========================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: XMLParser.items

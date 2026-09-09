@@ -1,0 +1,6 @@
+Wedge.sampling\_rate
+===============================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: Wedge.sampling_rate

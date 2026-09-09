@@ -1,0 +1,6 @@
+ReconstructFromTilt.tilt\_axis
+=========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: ReconstructFromTilt.tilt_axis

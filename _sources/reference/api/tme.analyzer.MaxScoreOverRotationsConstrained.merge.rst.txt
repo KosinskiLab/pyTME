@@ -1,0 +1,6 @@
+MaxScoreOverRotationsConstrained.merge
+===================================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: MaxScoreOverRotationsConstrained.merge

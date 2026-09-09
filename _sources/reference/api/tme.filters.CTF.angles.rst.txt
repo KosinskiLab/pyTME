@@ -1,0 +1,6 @@
+CTF.angles
+======================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.angles

@@ -1,0 +1,6 @@
+StarParser.get
+=========================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: StarParser.get

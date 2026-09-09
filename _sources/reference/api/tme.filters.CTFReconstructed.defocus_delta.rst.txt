@@ -1,0 +1,6 @@
+CTFReconstructed.defocus\_delta
+==========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.defocus_delta

@@ -1,0 +1,6 @@
+ReconstructFromTilt.opening\_axis
+============================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: ReconstructFromTilt.opening_axis

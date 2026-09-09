@@ -1,0 +1,6 @@
+CupyBackendMemoryUsage.base\_float
+============================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CupyBackendMemoryUsage.base_float

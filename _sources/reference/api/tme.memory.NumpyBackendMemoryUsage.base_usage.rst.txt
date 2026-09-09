@@ -1,0 +1,6 @@
+NumpyBackendMemoryUsage.base\_usage
+=============================================
+
+.. currentmodule:: tme.memory
+
+.. automethod:: NumpyBackendMemoryUsage.base_usage

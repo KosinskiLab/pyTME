@@ -1,0 +1,6 @@
+PeakCallerScipy.correct\_background
+===============================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerScipy.correct_background

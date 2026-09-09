@@ -1,0 +1,6 @@
+CTFReconstructed.correction\_mode
+============================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.correction_mode

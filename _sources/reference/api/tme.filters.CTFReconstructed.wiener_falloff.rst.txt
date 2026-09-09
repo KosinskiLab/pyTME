@@ -1,0 +1,6 @@
+CTFReconstructed.wiener\_falloff
+===========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.wiener_falloff

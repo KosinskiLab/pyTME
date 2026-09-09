@@ -1,0 +1,6 @@
+AbstractAnalyzer.merge
+===================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: AbstractAnalyzer.merge

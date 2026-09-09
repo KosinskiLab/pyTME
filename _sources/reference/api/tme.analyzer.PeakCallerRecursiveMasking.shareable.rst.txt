@@ -1,0 +1,6 @@
+PeakCallerRecursiveMasking.shareable
+=================================================
+
+.. currentmodule:: tme.analyzer
+
+.. autoproperty:: PeakCallerRecursiveMasking.shareable

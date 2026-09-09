@@ -1,0 +1,6 @@
+WedgeReconstructed.weight\_wedge
+===========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: WedgeReconstructed.weight_wedge

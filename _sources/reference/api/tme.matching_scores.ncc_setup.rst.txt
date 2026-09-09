@@ -1,0 +1,6 @@
+﻿ncc\_setup
+=============================
+
+.. currentmodule:: tme.matching_scores
+
+.. autofunction:: ncc_setup

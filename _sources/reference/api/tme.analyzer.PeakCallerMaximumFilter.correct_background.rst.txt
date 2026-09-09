@@ -1,0 +1,6 @@
+PeakCallerMaximumFilter.correct\_background
+=======================================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerMaximumFilter.correct_background

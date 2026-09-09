@@ -1,0 +1,6 @@
+PeakCallerScipy.shareable
+======================================
+
+.. currentmodule:: tme.analyzer
+
+.. autoproperty:: PeakCallerScipy.shareable

@@ -1,0 +1,6 @@
+StarParser.values
+============================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: StarParser.values

@@ -1,0 +1,6 @@
+MLXBackend.ssum
+============================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: MLXBackend.ssum

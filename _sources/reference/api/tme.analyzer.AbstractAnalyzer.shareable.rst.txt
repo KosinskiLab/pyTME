@@ -1,0 +1,6 @@
+AbstractAnalyzer.shareable
+=======================================
+
+.. currentmodule:: tme.analyzer
+
+.. autoproperty:: AbstractAnalyzer.shareable

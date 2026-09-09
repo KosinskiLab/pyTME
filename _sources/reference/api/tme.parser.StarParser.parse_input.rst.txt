@@ -1,0 +1,6 @@
+StarParser.parse\_input
+=================================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: StarParser.parse_input

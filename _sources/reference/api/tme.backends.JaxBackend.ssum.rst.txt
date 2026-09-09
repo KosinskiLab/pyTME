@@ -1,0 +1,6 @@
+JaxBackend.ssum
+============================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: JaxBackend.ssum

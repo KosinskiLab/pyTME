@@ -1,0 +1,6 @@
+CCMemoryUsage.base\_complex
+=====================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CCMemoryUsage.base_complex

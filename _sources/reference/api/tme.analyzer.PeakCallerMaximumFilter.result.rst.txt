@@ -1,0 +1,6 @@
+PeakCallerMaximumFilter.result
+===========================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerMaximumFilter.result

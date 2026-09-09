@@ -1,0 +1,6 @@
+MDOCParser.parse\_input
+=================================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: MDOCParser.parse_input

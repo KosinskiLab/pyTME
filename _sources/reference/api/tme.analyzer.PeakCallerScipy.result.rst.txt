@@ -1,0 +1,6 @@
+PeakCallerScipy.result
+===================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerScipy.result
