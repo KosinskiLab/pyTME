@@ -11,8 +11,6 @@ from abc import abstractmethod
 from typing import Tuple, List, Dict
 
 import numpy as np
-from skimage.feature import peak_local_max
-from skimage.registration._phase_cross_correlation import _upsampled_dft
 
 from .base import AbstractAnalyzer
 from ._utils import score_to_cart
@@ -80,7 +78,7 @@ def filter_points_indices(
     if n_coords == 0:
         return ()
 
-    if batch_dims is not None:
+    if batch_dims is not None and len(batch_dims) is not None:
         coordinates_new = be.zeros(coordinates.shape, coordinates.dtype)
         coordinates_new[:] = coordinates
         coordinates_new[..., batch_dims] = be.astype(
@@ -95,14 +93,20 @@ def filter_points_indices(
         indices = find_candidate_indices(coordinates, min_distance)
         if scores is not None:
             return sorted_indices[indices]
-    elif n_coords > bucket_cutoff or not isinstance(coordinates, np.ndarray):
+    elif n_coords > bucket_cutoff:
         return _filter_bucket(coordinates, min_distance, scores)
 
-    distances = be.linalg.norm(coordinates[:, None] - coordinates, axis=-1)
-    distances = be.tril(distances)
-    keep = be.sum(distances > min_distance, axis=1)
-    indices = be.arange(coordinates.shape[0])
-    return indices[keep == indices]
+    order = be.arange(n_coords, dtype=be._int)
+    if scores is not None:
+        order = be.argsort(-scores)
+
+    coordinates = coordinates[order]
+    diff = coordinates[:, None] - coordinates
+
+    diff = be.sum(be.square(diff, out=diff), axis=-1)
+    diff = be.tril(diff < min_distance**2, k=-1)
+    keep = ~be.any(diff, axis=-1)
+    return order[keep]
 
 
 def filter_points(
@@ -114,7 +118,9 @@ def filter_points(
 
 
 def batchify(shape: Tuple[int], batch_dims: Tuple[int] = None) -> List:
-    if batch_dims is None:
+    # This function uses the opposite convention of numpy currently
+    # batch_dims None -> No split; batch_dims -> split over these
+    if batch_dims is None or len(batch_dims) == 0:
         yield (tuple(slice(None) for _ in shape), tuple(0 for _ in shape))
         return None
 
@@ -229,22 +235,18 @@ class PeakCaller(AbstractAnalyzer):
 
     def init_state(self):
         ndim = len(self.shape)
-        translations = be.full(
-            (self.num_peaks, ndim), fill_value=-1, dtype=be._int_dtype
-        )
+        translations = be.full((self.num_peaks, ndim), fill_value=-1, dtype=be._int)
 
         rdim = len(self.shape)
         if self.batch_dims:
             rdim = rdim - len(self.batch_dims) + len(self.projection_dims)
 
-        rotations = be.full(
-            (self.num_peaks, rdim, rdim), fill_value=0, dtype=be._float_dtype
-        )
+        rotations = be.full((self.num_peaks, rdim, rdim), fill_value=0, dtype=be._float)
         for i in range(rdim):
             rotations[:, i, i] = 1.0
 
-        scores = be.full((self.num_peaks,), fill_value=-1, dtype=be._float_dtype)
-        details = be.full((self.num_peaks,), fill_value=-1, dtype=be._float_dtype)
+        scores = be.full((self.num_peaks,), fill_value=-1, dtype=be._float)
+        details = be.full((self.num_peaks,), fill_value=-1, dtype=be._float)
         return translations, rotations, scores, details
 
     def _get_peak_mask(self, peaks: BackendArray, scores: BackendArray) -> BackendArray:
@@ -393,7 +395,7 @@ class PeakCaller(AbstractAnalyzer):
         return state
 
     def correct_background(self, state, mean, inv_std=1, **kwargs):
-        arr_type = type(be.zeros((1,), be._float_dtype))
+        arr_type = type(be.zeros((1,), be._float))
         translations, rotations, scores, details = state
 
         if isinstance(mean, arr_type):
@@ -446,85 +448,12 @@ class PeakCaller(AbstractAnalyzer):
                 peak_rotations=be.to_backend_array(rotations),
                 offset=kwargs.get("offset", None),
             )
-        return base_state
-
-    @staticmethod
-    def oversample_peaks(
-        scores: BackendArray, peak_positions: BackendArray, oversampling_factor: int = 8
-    ):
-        """
-        Refines peaks positions in the corresponding score space.
-
-        Parameters
-        ----------
-        scores : BackendArray
-            The d-dimensional array representing the score space.
-        peak_positions : BackendArray
-            An array of shape (n, d) containing the peak coordinates
-            to be refined, where n is the number of peaks and d is the
-            dimensionality of the score space.
-        oversampling_factor : int, optional
-            The oversampling factor for Fourier transforms. Defaults to 8.
-
-        Returns
-        -------
-        BackendArray
-            An array of shape (n, d) containing the refined subpixel
-            coordinates of the peaks.
-
-        Notes
-        -----
-        Floating point peak positions are determined by oversampling the
-        scores around peak_positions. The accuracy
-        of refinement scales with 1 / oversampling_factor.
-
-        References
-        ----------
-        .. [1]  https://scikit-image.org/docs/stable/api/skimage.registration.html
-        .. [2]  Manuel Guizar-Sicairos, Samuel T. Thurman, and
-                James R. Fienup, “Efficient subpixel image registration
-                algorithms,” Optics Letters 33, 156-158 (2008).
-                DOI:10.1364/OL.33.000156
-
-        """
-        scores = be.to_numpy_array(scores)
-        peak_positions = be.to_numpy_array(peak_positions)
-
-        peak_positions = np.round(
-            np.divide(
-                np.multiply(peak_positions, oversampling_factor), oversampling_factor
-            )
-        )
-        upsampled_region_size = np.ceil(np.multiply(oversampling_factor, 1.5))
-        dftshift = np.round(np.divide(upsampled_region_size, 2.0))
-        sample_region_offset = np.subtract(
-            dftshift, np.multiply(peak_positions, oversampling_factor)
-        )
-
-        scores_ft = np.fft.fftn(scores).conj()
-        for index in range(sample_region_offset.shape[0]):
-            cross_correlation_upsampled = _upsampled_dft(
-                data=scores_ft,
-                upsampled_region_size=upsampled_region_size,
-                upsample_factor=oversampling_factor,
-                axis_offsets=sample_region_offset[index],
-            ).conj()
-
-            maxima = np.unravel_index(
-                np.argmax(np.abs(cross_correlation_upsampled)),
-                cross_correlation_upsampled.shape,
-            )
-            maxima = np.divide(np.subtract(maxima, dftshift), oversampling_factor)
-            peak_positions[index] = np.add(peak_positions[index], maxima)
-
-        peak_positions = be.to_backend_array(peak_positions)
-
-        return peak_positions
+        return tuple(be.to_numpy_array(x) for x in base_state)
 
     def _top_peaks(self, positions, scores, num_peaks: int = None):
         num_peaks = be.size(scores) if not num_peaks else num_peaks
 
-        if self.batch_dims is None:
+        if self.batch_dims in (None, ()):
             top_n = min(be.size(scores), num_peaks)
             top_scores, *_ = be.topk_indices(scores, top_n)
             return top_scores
@@ -578,7 +507,7 @@ class PeakCaller(AbstractAnalyzer):
         """
         translations, rotations, scores, details = state
         if offset is not None:
-            offset = be.astype(be.to_backend_array(offset), peak_positions.dtype)
+            offset = be.to_backend_array(offset, peak_positions.dtype)
             peak_positions = be.add(peak_positions, offset, out=peak_positions)
 
         positions = be.concatenate((translations, peak_positions))
@@ -657,11 +586,86 @@ class PeakCaller(AbstractAnalyzer):
             convolution_mode=convolution_mode,
             **kwargs,
         )
-        translations = be.to_cpu_array(positions[valid_peaks])
-        rotations = be.to_cpu_array(rotations[valid_peaks])
-        scores = be.to_cpu_array(scores[valid_peaks])
-        details = be.to_cpu_array(details[valid_peaks])
+        translations = be.to_numpy_array(positions[valid_peaks])
+        rotations = be.to_numpy_array(rotations[valid_peaks])
+        scores = be.to_numpy_array(scores[valid_peaks])
+        details = be.to_numpy_array(details[valid_peaks])
         return translations, rotations, scores, details
+
+    @staticmethod
+    def oversample_peaks(
+        scores: BackendArray, peak_positions: BackendArray, oversampling_factor: int = 8
+    ):
+        """
+        Refines peaks positions in the corresponding score space.
+
+        Parameters
+        ----------
+        scores : BackendArray
+            The d-dimensional array representing the score space.
+        peak_positions : BackendArray
+            An array of shape (n, d) containing the peak coordinates
+            to be refined, where n is the number of peaks and d is the
+            dimensionality of the score space.
+        oversampling_factor : int, optional
+            The oversampling factor for Fourier transforms. Defaults to 8.
+
+        Returns
+        -------
+        BackendArray
+            An array of shape (n, d) containing the refined subpixel
+            coordinates of the peaks.
+
+        Notes
+        -----
+        Floating point peak positions are determined by oversampling the
+        scores around peak_positions. The accuracy
+        of refinement scales with 1 / oversampling_factor.
+
+        References
+        ----------
+        .. [1]  https://scikit-image.org/docs/stable/api/skimage.registration.html
+        .. [2]  Manuel Guizar-Sicairos, Samuel T. Thurman, and
+                James R. Fienup, “Efficient subpixel image registration
+                algorithms,” Optics Letters 33, 156-158 (2008).
+                DOI:10.1364/OL.33.000156
+
+        """
+        from ._utils import upsampled_dft
+
+        scores = be.to_numpy_array(scores)
+        peak_positions = be.to_numpy_array(peak_positions)
+
+        peak_positions = np.round(
+            np.divide(
+                np.multiply(peak_positions, oversampling_factor), oversampling_factor
+            )
+        )
+        upsampled_region_size = np.ceil(np.multiply(oversampling_factor, 1.5))
+        dftshift = np.round(np.divide(upsampled_region_size, 2.0))
+        sample_region_offset = np.subtract(
+            dftshift, np.multiply(peak_positions, oversampling_factor)
+        )
+
+        scores_ft = np.fft.fftn(scores).conj()
+        for index in range(sample_region_offset.shape[0]):
+            cross_correlation_upsampled = upsampled_dft(
+                data=scores_ft,
+                upsampled_region_size=upsampled_region_size,
+                upsample_factor=oversampling_factor,
+                axis_offsets=sample_region_offset[index],
+            ).conj()
+
+            maxima = np.unravel_index(
+                np.argmax(np.abs(cross_correlation_upsampled)),
+                cross_correlation_upsampled.shape,
+            )
+            maxima = np.divide(np.subtract(maxima, dftshift), oversampling_factor)
+            peak_positions[index] = np.add(peak_positions[index], maxima)
+
+        peak_positions = be.to_backend_array(peak_positions)
+
+        return peak_positions
 
 
 class PeakCallerSort(PeakCaller):
@@ -671,26 +675,19 @@ class PeakCallerSort(PeakCaller):
     """
 
     def call_peaks(self, scores: BackendArray, **kwargs) -> PeakType:
-        flat_scores = scores.reshape(-1)
-        k = min(self.num_peaks, be.size(flat_scores))
-
-        top_k_indices, *_ = be.topk_indices(flat_scores, k)
-
-        coordinates = be.unravel_index(top_k_indices, scores.shape)
-        coordinates = be.transpose(be.stack(coordinates))
-
-        return coordinates, None
+        k = min(self.num_peaks, be.size(scores))
+        top_k_indices = be.topk_indices(scores, k)
+        return be.transpose(be.stack(top_k_indices)), None
 
 
 class PeakCallerMaximumFilter(PeakCaller):
-    """
-    Find local maxima by applying a maximum filter and enforcing a distance
-    constraint subsequently. This is similar to the strategy implemented in
-    :obj:`skimage.feature.peak_local_max`.
-    """
+    """Call peaks using a maximum filter with optional distance constraint."""
 
     def call_peaks(self, scores: BackendArray, **kwargs) -> PeakType:
-        return be.max_filter_coordinates(scores, self.min_distance), None
+        return (
+            be.max_filter_coordinates(scores, self.min_distance, self.min_score),
+            None,
+        )
 
 
 class PeakCallerFast(PeakCaller):
@@ -741,15 +738,11 @@ class PeakCallerFast(PeakCaller):
 
 
 class PeakCallerRecursiveMasking(PeakCaller):
-    """
-    Identifies peaks iteratively by selecting the top score and masking
-    a region around it.
-    """
+    """Identifies peaks iteratively by finding the top score and masking around it."""
 
     def call_peaks(
         self,
         scores: BackendArray,
-        rotation_matrix: BackendArray,
         mask: BackendArray = None,
         min_score: float = None,
         rotations: BackendArray = None,
@@ -763,8 +756,6 @@ class PeakCallerRecursiveMasking(PeakCaller):
         ----------
         scores : BackendArray
             Data array of scores.
-        rotation_matrix : BackendArray
-            Rotation matrix.
         mask : BackendArray, optional
             Mask array, by default None.
         rotations : BackendArray, optional
@@ -785,7 +776,7 @@ class PeakCallerRecursiveMasking(PeakCaller):
         By default, scores are masked using a box with edge length self.min_distance.
         If mask is provided, elements around each peak will be multiplied by the mask
         values. If rotations and rotation_mapping is provided, the respective
-        rotation will be applied to the mask, otherwise rotation_matrix is used.
+        rotation will be applied to the mask.
         """
         peaks = []
         box = tuple(self.min_distance for _ in range(scores.ndim))
@@ -802,43 +793,57 @@ class PeakCallerRecursiveMasking(PeakCaller):
         if min_score is None:
             min_score = be.min(scores) - 1
 
-        _scores = be.zeros(scores.shape, dtype=scores.dtype)
-        _scores[:] = scores[:]
-        while True:
-            peak = be.unravel_index(indices=be.argmax(_scores), shape=_scores.shape)
-            if _scores[tuple(peak)] < min_score:
+        # Avoid overwriting the input scores
+        _scores = be.add(scores, 0)
+
+        score_mask, idx, top_peaks = 0, -1, ()
+        while len(peaks) < self.num_peaks:
+            idx += 1
+            if idx >= len(top_peaks):
+                # This is much cheaper than argmax for large score spaces. Naturally,
+                # many peaks will be rejected due to clustering, but the acceptance
+                # ratio typically increases with higher number of called peaks.
+                # TODO: This is surprisingly slow in numpy 2.4.2
+                idx, top_peaks = 0, be.topk_indices(_scores, k=100)
+                top_peaks = tuple(x for x in zip(*top_peaks))
+
+                sc_beg, sc_end, tmpl_beg, tmpl_end, keep = compute_extraction_box(
+                    centers=be.to_backend_array(top_peaks),
+                    extraction_shape=box,
+                    original_shape=scores.shape,
+                )
+
+            # Check if score has been masked since calling topk_indices
+            peak = top_peaks[idx]
+            score_insufficient = (_scores[peak] == 0) or (scores[peak] < min_score)
+            if score_insufficient and idx == 0:
                 break
+            elif score_insufficient:
+                continue
+
             peaks.append(peak)
-
-            score_beg, score_end, tmpl_beg, tmpl_end, _ = compute_extraction_box(
-                centers=be.to_backend_array(peak)[None],
-                extraction_shape=box,
-                original_shape=scores.shape,
-            )
-            score_slice = tuple(
-                slice(int(x), int(y)) for x, y in zip(score_beg[0], score_end[0])
-            )
-            tmpl_slice = tuple(
-                slice(int(x), int(y)) for x, y in zip(tmpl_beg[0], tmpl_end[0])
-            )
-
-            score_mask = 0
             if mask is not None:
                 mask_buffer.fill(0)
                 rmat = self._get_rotation_matrix(
                     peak=peak,
                     rotation_space=rotations,
                     rotation_mapping=rotation_mapping,
-                    rotation_matrix=rotation_matrix,
                 )
                 be.rigid_transform(
-                    arr=mask, rotation_matrix=rmat, order=1, out=mask_buffer
+                    arr=mask,
+                    rotation_matrix=rmat,
+                    order=1,
+                    out=mask_buffer,
+                    center="geometric",
+                )
+
+                tmpl_slice = tuple(
+                    slice(int(x), int(y)) for x, y in zip(tmpl_beg[idx], tmpl_end[idx])
                 )
                 score_mask = mask_buffer[tmpl_slice] <= 0.1
 
-            _scores[score_slice] = be.multiply(_scores[score_slice], score_mask)
-            if len(peaks) >= self.num_peaks:
-                break
+            slc = tuple(slice(int(x), int(y)) for x, y in zip(sc_beg[idx], sc_end[idx]))
+            be.multiply(_scores[slc], score_mask, out=_scores[slc])
 
         return be.to_backend_array(peaks), None
 
@@ -847,7 +852,6 @@ class PeakCallerRecursiveMasking(PeakCaller):
         peak: BackendArray,
         rotation_space: BackendArray,
         rotation_mapping: BackendArray,
-        rotation_matrix: BackendArray,
     ) -> BackendArray:
         """
         Get rotation matrix based on peak and rotation data.
@@ -860,17 +864,20 @@ class PeakCallerRecursiveMasking(PeakCaller):
             Rotation space array.
         rotation_mapping : Dict
             Dictionary mapping values in rotation_space to Euler angles.
-        rotation_matrix : BackendArray
-            Current rotation matrix.
 
         Returns
         -------
         BackendArray
             Rotation matrix.
         """
+        default = be.eye(len(peak))
         if rotation_space is None or rotation_mapping is None:
-            return rotation_matrix
-        return rotation_mapping[rotation_space[tuple(peak)]]
+            return default
+
+        rotation_index = rotation_space[tuple(peak)]
+        if rotation_index not in rotation_mapping:
+            return default
+        return rotation_mapping[rotation_index]
 
 
 class PeakCallerScipy(PeakCaller):
@@ -881,6 +888,8 @@ class PeakCallerScipy(PeakCaller):
     def call_peaks(
         self, scores: BackendArray, min_score: float = None, **kwargs
     ) -> PeakType:
+        from skimage.feature import peak_local_max
+
         scores = be.to_numpy_array(scores)
         num_peaks = self.num_peaks
         if min_score is not None:

@@ -7,18 +7,14 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import os
-import pickle
-from shutil import move
+import warnings
 from tempfile import mkstemp
 from itertools import product
-from gzip import open as gzip_open
-from typing import Tuple, Dict, Callable
-from concurrent.futures import ThreadPoolExecutor
+from typing import Tuple, Dict, Callable, Generator
 
 import numpy as np
 
 from .backends import backend as be
-from .memory import estimate_memory_usage
 from .types import NDArray, BackendArray, MatchingData
 
 
@@ -125,7 +121,7 @@ def _standardize_safe(
     return template
 
 
-def generate_tempfile_name(suffix: str = None) -> str:
+def generate_tempfile_name(suffix: str = None, tmpdir: str = None) -> str:
     """
     Returns the path to a temporary file with given suffix. If defined. the
     environment variable TMPDIR is used as base.
@@ -134,13 +130,18 @@ def generate_tempfile_name(suffix: str = None) -> str:
     ----------
     suffix : str, optional
         File suffix. By default the file has no suffix.
+    tmpdir : str, optional
+        Directory the file is created in. Defaults to the system temp location
+        honoring TMPDIR.
 
     Returns
     -------
     str
         The generated filename
     """
-    return mkstemp(suffix=suffix)[1]
+    fd, path = mkstemp(suffix=suffix, dir=tmpdir)
+    os.close(fd)
+    return path
 
 
 def array_to_memmap(arr: NDArray, filename: str = None, mode: str = "r") -> np.memmap:
@@ -184,253 +185,13 @@ def memmap_to_array(arr: NDArray) -> NDArray:
     """
     if isinstance(arr, np.memmap):
         memmap_filepath = arr.filename
-        arr = np.array(arr)
+        ret = np.array(arr)
+        # Windows refuses to remove a file while its mmap handle is open.
+        arr._mmap.close()
+        del arr
         os.remove(memmap_filepath)
+        arr = ret
     return arr
-
-
-def is_gzipped(filename: str) -> bool:
-    """Check if a file is a gzip file by reading its magic number."""
-    with open(filename, "rb") as f:
-        return f.read(2) == b"\x1f\x8b"
-
-
-def write_pickle(data: object, filename: str) -> None:
-    """
-    Serialize and write data to a file invalidating the input data.
-
-    Parameters
-    ----------
-    data : iterable or object
-        The data to be serialized.
-    filename : str
-        The name of the file where the serialized data will be written.
-
-    See Also
-    --------
-    :py:meth:`load_pickle`
-    """
-    if type(data) not in (list, tuple):
-        data = (data,)
-
-    dirname = os.path.dirname(filename)
-    with open(filename, "wb") as ofile, ThreadPoolExecutor() as executor:
-        for i in range(len(data)):
-            futures = []
-            item = data[i]
-            if isinstance(item, np.memmap):
-                _, new_filename = mkstemp(suffix=".mm", dir=dirname)
-                new_item = ("np.memmap", item.shape, item.dtype, new_filename)
-                futures.append(executor.submit(move, item.filename, new_filename))
-                item = new_item
-            pickle.dump(item, ofile)
-        for future in futures:
-            future.result()
-
-
-def load_pickle(filename: str) -> object:
-    """
-    Load and deserialize data written by :py:meth:`write_pickle`.
-
-    Parameters
-    ----------
-    filename : str
-        The name of the file to read and deserialize data from.
-
-    Returns
-    -------
-    object or iterable
-        The deserialized data.
-
-    See Also
-    --------
-    :py:meth:`write_pickle`
-    """
-
-    def _load_pickle(file_handle):
-        try:
-            while True:
-                yield pickle.load(file_handle)
-        except EOFError:
-            pass
-
-    def _is_pickle_memmap(data):
-        ret = False
-        if isinstance(data[0], str):
-            if data[0] == "np.memmap":
-                ret = True
-        return ret
-
-    items = []
-    func = open
-    if is_gzipped(filename):
-        func = gzip_open
-
-    with func(filename, "rb") as ifile:
-        for data in _load_pickle(ifile):
-            if isinstance(data, tuple):
-                if _is_pickle_memmap(data):
-                    _, shape, dtype, filename = data
-                    data = np.memmap(filename, shape=shape, dtype=dtype)
-            items.append(data)
-    return items[0] if len(items) == 1 else items
-
-
-def compute_parallelization_schedule(
-    shape1: NDArray,
-    shape2: NDArray,
-    max_cores: int,
-    max_ram: int,
-    matching_method: str,
-    split_axes: Tuple[int] = None,
-    backend: str = None,
-    split_only_outer: bool = False,
-    shape1_padding: NDArray = None,
-    analyzer_method: str = None,
-    max_splits: int = 256,
-    float_nbytes: int = 4,
-    complex_nbytes: int = 8,
-    integer_nbytes: int = 4,
-) -> Tuple[Dict, int, int]:
-    """
-    Computes a parallelization schedule for a given computation.
-
-    This function estimates the amount of memory that would be used by a computation
-    and breaks down the computation into smaller parts that can be executed in parallel
-    without exceeding the specified limits on the number of cores and memory.
-
-    Parameters
-    ----------
-    shape1 : NDArray
-        The shape of the first input array.
-    shape1_padding : NDArray, optional
-        Padding for shape1, None by default.
-    shape2 : NDArray
-        The shape of the second input array.
-    max_cores : int
-        The maximum number of cores that can be used.
-    max_ram : int
-        The maximum amount of memory that can be used.
-    matching_method : str
-        The metric used for scoring the computations.
-    split_axes : tuple
-        Axes that can be used for splitting. By default all are considered.
-    backend : str, optional
-        Backend used for computations.
-    split_only_outer : bool, optional
-        Whether only outer splits sould be considered.
-    analyzer_method : str
-        The method used for score analysis.
-    max_splits : int, optional
-        The maximum number of parts that the computation can be split into,
-        by default 256.
-    float_nbytes : int
-        Number of bytes of the used float, e.g. 4 for float32.
-    complex_nbytes : int
-        Number of bytes of the used complex, e.g. 8 for complex64.
-    integer_nbytes : int
-        Number of bytes of the used integer, e.g. 4 for int32.
-
-    Notes
-    -----
-        This function assumes that no residual memory remains after each split,
-        which not always holds true, e.g. when using
-        :py:class:`tme.analyzer.MaxScoreOverRotations`.
-
-    Returns
-    -------
-    dict
-        The optimal splits for each axis of the first input tensor.
-    int
-        The number of outer jobs.
-    int
-        The number of inner jobs per outer job.
-    """
-    shape1 = tuple(int(x) for x in shape1)
-    shape2 = tuple(int(x) for x in shape2)
-
-    if shape1_padding is None:
-        shape1_padding = np.zeros_like(shape1)
-    core_assignments = []
-    for i in range(1, int(max_cores**0.5) + 1):
-        if max_cores % i == 0:
-            core_assignments.append((i, max_cores // i))
-            core_assignments.append((max_cores // i, i))
-
-    if split_only_outer:
-        core_assignments = [(1, max_cores)]
-
-    possible_params, split_axis = [], np.argmax(shape1)
-
-    split_axis_index = split_axis
-    if split_axes is not None:
-        split_axis, split_axis_index = split_axes[0], 0
-    else:
-        split_axes = tuple(i for i in range(len(shape1)))
-
-    split_factor, n_splits = [1 for _ in range(len(shape1))], 0
-    while n_splits <= max_splits:
-        splits = {k: split_factor[k] for k in range(len(split_factor))}
-        array_slices = split_shape(shape=shape1, splits=splits)
-        array_widths = [
-            tuple(x.stop - x.start for x in split) for split in array_slices
-        ]
-        n_splits = np.prod(list(splits.values()))
-
-        for inner_cores, outer_cores in core_assignments:
-            if outer_cores > n_splits:
-                continue
-            ram_usage = [
-                estimate_memory_usage(
-                    shape1=tuple(sum(x) for x in zip(shp, shape1_padding)),
-                    shape2=shape2,
-                    matching_method=matching_method,
-                    analyzer_method=analyzer_method,
-                    backend=backend,
-                    ncores=inner_cores,
-                    float_nbytes=float_nbytes,
-                    complex_nbytes=complex_nbytes,
-                    integer_nbytes=integer_nbytes,
-                )
-                for shp in array_widths
-            ]
-            max_usage = 0
-            for i in range(0, len(ram_usage), outer_cores):
-                usage = np.sum(ram_usage[i : (i + outer_cores)])
-                if usage > max_usage:
-                    max_usage = usage
-
-            inits = n_splits // outer_cores
-            if max_usage < max_ram:
-                possible_params.append(
-                    (*split_factor, outer_cores, inner_cores, n_splits, inits)
-                )
-        split_factor[split_axis] += 1
-
-        split_axis_index += 1
-        if split_axis_index == len(split_axes):
-            split_axis_index = 0
-        split_axis = split_axes[split_axis_index]
-
-    possible_params = np.array(possible_params)
-    if not len(possible_params):
-        print(
-            "No suitable assignment found. Consider increasing "
-            "max_ram or decrease max_cores."
-        )
-        return None, None
-
-    init = possible_params.shape[1] - 1
-    possible_params = possible_params[
-        np.lexsort((possible_params[:, init], possible_params[:, (init - 1)]))
-    ]
-    splits = {k: possible_params[0, k] for k in range(len(shape1))}
-    core_assignment = (
-        possible_params[0, len(shape1)],
-        possible_params[0, (len(shape1) + 1)],
-    )
-
-    return splits, core_assignment
 
 
 def center_slice(current_shape: Tuple[int], new_shape: Tuple[int]) -> Tuple[slice]:
@@ -482,7 +243,7 @@ def apply_convolution_mode(
     # Remove padding to next fast Fourier length
     if convolution_shape is None:
         convolution_shape = [s1[i] + s2[i] - 1 for i in range(len(s1))]
-    arr = arr[tuple(slice(0, x) for x in convolution_shape)]
+    arr = arr[tuple(slice(x) for x in convolution_shape)]
 
     if convolution_mode not in ("full", "same", "valid"):
         raise ValueError("Supported convolution_mode are 'full', 'same' and 'valid'.")
@@ -496,50 +257,38 @@ def apply_convolution_mode(
     return arr[subset]
 
 
-def compute_full_convolution_index(
-    outer_shape: Tuple[int],
-    inner_shape: Tuple[int],
-    outer_split: Tuple[slice],
-    inner_split: Tuple[slice],
-) -> Tuple[slice]:
-    """
-    Computes the position of the convolution of pieces in the full convolution.
+def sliding_window_slices(
+    shape: Tuple[int, ...], length: int, step: int
+) -> Generator[Tuple[slice, ...], None, None]:
+    """Yield overlapping hypercubic window slices tiling ``shape``.
 
     Parameters
     ----------
-    outer_shape : tuple
-        Tuple of integers corresponding to the shape of the outer array.
-    inner_shape : tuple
-        Tuple of integers corresponding to the shape of the inner array.
-    outer_split : tuple
-        Tuple of slices used to split outer array (see :py:meth:`split_shape`).
-    inner_split : tuple
-        Tuple of slices used to split inner array (see :py:meth:`split_shape`).
+    shape : tuple of int
+        Shape of the array to tile, of any dimensionality.
+    length : int
+        Edge length of the window along every axis.
+    step : int
+        Stride between consecutive windows along every axis.
 
-    Returns
-    -------
-    tuple
-        Tuple of slices corresponding to the position of the given convolution
-        in the full convolution.
+    Yields
+    ------
+    tuple of slice
+        One slice per axis selecting a single window. The last window along
+        each axis is snapped to the array edge so the whole array is covered
+        even when ``length`` does not divide the extent.
     """
-    outer_shape = np.asarray(outer_shape)
-    inner_shape = np.asarray(inner_shape)
 
-    outer_width = np.array([outer.stop - outer.start for outer in outer_split])
-    inner_width = np.array([inner.stop - inner.start for inner in inner_split])
-    convolution_shape = outer_width + inner_width - 1
+    def starts(n):
+        s = list(range(0, n - length + 1, step))
+        if not s:
+            raise ValueError(f"window length {length} larger than extent {n}")
+        if s[-1] != n - length:
+            s.append(n - length)
+        return s
 
-    end_inner = np.array([inner.stop for inner in inner_split]).astype(int)
-    start_outer = np.array([outer.start for outer in outer_split]).astype(int)
-
-    offsets = start_outer + inner_shape - end_inner
-
-    score_slice = tuple(
-        (slice(offset, offset + shape))
-        for offset, shape in zip(offsets, convolution_shape)
-    )
-
-    return score_slice
+    for offsets in product(*(starts(n) for n in shape)):
+        yield tuple(slice(o, o + length) for o in offsets)
 
 
 def split_shape(
@@ -567,7 +316,7 @@ def split_shape(
     ret_shape = np.divide(shape, tuple(splits[i] for i in range(ndim)))
     if equal_shape:
         ret_shape = np.ceil(ret_shape).astype(int)
-    ret_shape = ret_shape.astype(int)
+    ret_shape = tuple(int(x) for x in ret_shape)
 
     slice_list = [
         tuple(
@@ -668,44 +417,34 @@ def minimum_enclosing_box(coordinates: NDArray, **kwargs) -> Tuple[int, ...]:
     return tuple(box_size for _ in range(coordinates.shape[1]))
 
 
-def scramble_phases(
-    arr: NDArray, noise_proportion: float = 1.0, seed: int = 42, **kwargs
-) -> NDArray:
+def scramble_phases(arr: NDArray, seed: int = 42, **kwargs) -> NDArray:
     """
-    Perform random phase scrambling of ``arr``.
+    Perform phase scrambling of ``arr``.
 
     Parameters
     ----------
     arr : NDArray
         Input data.
-    noise_proportion : float, optional
-        Proportion of scrambled phases, 1.0 by default.
     seed : int, optional
-        The seed for the random phase scrambling, 42 by default.
+        The seed for the phase scrambling, 42 by default.
 
     Returns
     -------
     NDArray
         Phase scrambled version of ``arr``.
     """
-    from .filters._utils import fftfreqn
+    amp = np.abs(np.fft.rfftn(arr))
+    eps = np.finfo(amp.dtype).resolution
 
-    np.random.seed(seed)
-    noise_proportion = max(min(noise_proportion, 1), 0)
+    rng = np.random.default_rng(seed)
+    noise = np.fft.rfftn(rng.standard_normal(arr.shape, dtype=amp.dtype))
+    np.divide(noise, np.maximum(np.abs(noise), eps), out=noise)
 
-    arr_fft = np.fft.fftn(arr)
-    amp, ph = np.abs(arr_fft), np.angle(arr_fft)
-
-    mask = (
-        fftfreqn(
-            arr_fft.shape, sampling_rate=1, compute_euclidean_norm=True, fftshift=False
-        )
-        <= 0.5
-    )
-
-    ph_noise = np.random.permutation(ph[mask])
-    ph[mask] = ph[mask] * (1 - noise_proportion) + ph_noise * noise_proportion
-    return np.real(np.fft.ifftn(amp * np.exp(1j * ph)))
+    noise = np.multiply(noise, amp, out=noise)
+    ret = np.fft.irfftn(noise, s=arr.shape, axes=range(arr.ndim))
+    if np.sign(ret.sum()) != np.sign(arr.sum()):
+        ret *= -1
+    return ret
 
 
 def compute_extraction_box(
@@ -761,7 +500,13 @@ def compute_extraction_box(
     return obs_beg_clamp, obs_end_clamp, cand_beg, cand_end, keep
 
 
-def create_mask(mask_type: str, sigma_decay: float = 0, **kwargs) -> NDArray:
+def create_mask(
+    mask_type: str,
+    soft_edge_width: float = 0,
+    sigma_decay: float = None,
+    method: str = "gaussian",
+    **kwargs,
+) -> NDArray:
     """
     Creates a mask of the specified type.
 
@@ -770,19 +515,26 @@ def create_mask(mask_type: str, sigma_decay: float = 0, **kwargs) -> NDArray:
     mask_type : str
         Type of the mask to be created. Can be one of:
 
-            +----------+---------------------------------------------------------+
-            | box      | Box mask (see :py:meth:`box_mask`)                      |
-            +----------+---------------------------------------------------------+
-            | tube     | Cylindrical mask (see :py:meth:`tube_mask`)             |
-            +----------+---------------------------------------------------------+
-            | membrane | Cylindrical mask (see :py:meth:`membrane_mask`)         |
-            +----------+---------------------------------------------------------+
-            | ellipse  | Ellipsoidal mask (see :py:meth:`elliptical_mask`)       |
-            +----------+---------------------------------------------------------+
+            +-----------+---------------------------------------------------------+
+            | box       | Box mask (see :py:meth:`box_mask`)                      |
+            +-----------+---------------------------------------------------------+
+            | tube      | Cylindrical mask (see :py:meth:`tube_mask`)             |
+            +-----------+---------------------------------------------------------+
+            | membrane  | Membrane mask (see :py:meth:`membrane_mask`)            |
+            +-----------+---------------------------------------------------------+
+            | ellipse   | Ellipsoidal mask (see :py:meth:`elliptical_mask`)       |
+            +-----------+---------------------------------------------------------+
+            | threshold | Density-based mask (see :py:meth:`threshold_mask`)      |
+            +-----------+---------------------------------------------------------+
+    soft_edge_width : float, optional
+        Soft-edge width in voxels, 0 by default (hard edge).
     sigma_decay : float, optional
-        Smoothing along mask edges using a Gaussian filter, 0 by default.
+        Deprecated alias for *soft_edge_width*. If both are given,
+        *soft_edge_width* takes precedence.
+    method : str, optional
+        Soft-edge method: ``"gaussian"`` (default) or ``"cosine"``.
     kwargs : dict
-        Parameters passed to the indivdual mask creation funcitons.
+        Parameters passed to the individual mask creation functions.
 
     Returns
     -------
@@ -794,19 +546,39 @@ def create_mask(mask_type: str, sigma_decay: float = 0, **kwargs) -> NDArray:
     ValueError
         If the mask_type is invalid.
     """
-    from .mask import elliptical_mask, box_mask, tube_mask, membrane_mask
+    import warnings
+    from .mask import (
+        elliptical_mask,
+        box_mask,
+        tube_mask,
+        membrane_mask,
+        threshold_mask,
+    )
+
+    if sigma_decay is not None:
+        warnings.warn(
+            "sigma_decay is deprecated, use soft_edge_width instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        if soft_edge_width == 0:
+            soft_edge_width = sigma_decay
 
     mapping = {
         "ellipse": elliptical_mask,
         "box": box_mask,
         "tube": tube_mask,
         "membrane": membrane_mask,
+        "threshold": threshold_mask,
     }
     if mask_type not in mapping:
         raise ValueError(f"mask_type has to be one of {','.join(mapping.keys())}")
 
-    mask = mapping[mask_type](**kwargs, sigma_decay=sigma_decay)
-    return mask
+    return mapping[mask_type](
+        **kwargs,
+        soft_edge_width=soft_edge_width,
+        method=method,
+    )
 
 
 def setup_filter(
@@ -815,12 +587,13 @@ def setup_filter(
     fast_ft_shape: Tuple[int],
     pad_template_filter: bool = False,
     apply_target_filter: bool = False,
+    **kwargs,
 ):
     from .filters import Compose
 
-    backend_arr = type(be.zeros((1), dtype=be._float_dtype))
-    template_filter = be.full(shape=(1,), fill_value=1, dtype=be._float_dtype)
-    target_filter = be.full(shape=(1,), fill_value=1, dtype=be._float_dtype)
+    backend_arr = type(be.zeros((1), dtype=be._float))
+    template_filter = be.full(shape=(1,), fill_value=1, dtype=be._float)
+    target_filter = be.full(shape=(1,), fill_value=1, dtype=be._float)
     if isinstance(matching_data.template_filter, backend_arr):
         template_filter = matching_data.template_filter
 
@@ -834,60 +607,40 @@ def setup_filter(
     if filter_target is None and target_filter is None:
         return template_filter
 
-    batch_mask = matching_data._batch_mask
-    real_shape = matching_data._batch_shape(fast_shape, batch_mask, keepdims=False)
-    cmpl_shape = matching_data._batch_shape(fast_ft_shape, batch_mask, keepdims=True)
+    # Extract spatial dimensions from 2-batch-dim fast_shape
+    _, axes, _ = matching_data._batch_shape(fast_shape)
+    real_shape = tuple(fast_shape[i] for i in axes)
+    cmpl_shape = list(fast_ft_shape[i] for i in axes)
 
     real_tmpl_shape, cmpl_tmpl_shape = real_shape, cmpl_shape
     if not pad_template_filter:
         shape = matching_data._output_template_shape
+        b = 1 if matching_data._has_batch else 0
 
-        real_tmpl_shape = matching_data._batch_shape(shape, batch_mask, keepdims=False)
-        cmpl_tmpl_shape = matching_data._batch_shape(shape, batch_mask, keepdims=True)
-        cmpl_tmpl_shape = list(cmpl_tmpl_shape)
+        real_tmpl_shape = shape[b:]
+        cmpl_tmpl_shape = list(real_tmpl_shape)
         cmpl_tmpl_shape[-1] = cmpl_tmpl_shape[-1] // 2 + 1
 
-    cmpl_shape = tuple(
-        -1 if y else x for x, y in zip(cmpl_shape, matching_data._target_batch)
-    )
-    cmpl_tmpl_shape = list(
-        -1 if y else x for x, y in zip(cmpl_tmpl_shape, matching_data._template_batch)
-    )
+    # Broadcast over respective batch dimensions
+    if matching_data._has_batch:
+        cmpl_shape = [-1] + cmpl_shape
+        cmpl_tmpl_shape = [-1] + cmpl_tmpl_shape
 
-    # We can have one flexible dimension and this makes projection matching easier
-    if not any(matching_data._template_batch):
-        cmpl_tmpl_shape[0] = -1
+    target = matching_data.target
+    tb = target.ndim - len(real_shape)
+    target_axes = tuple(range(tb, target.ndim))
 
-    # Avoid invalidating the meaning of some filters on padded batch dimensions
-    target_shape = np.maximum(
-        np.multiply(fast_shape, tuple(1 - x for x in matching_data._target_batch)),
-        matching_data.target.shape,
-    )
-    target_shape = tuple(int(x) for x in target_shape)
-    target_temp = be.topleft_pad(matching_data.target, target_shape)
-    shape = matching_data._batch_shape(
-        target_temp.shape, matching_data._target_batch, keepdims=False
-    )
-    axes = matching_data._batch_axis(matching_data._target_batch)
-    target_temp_ft = be.rfftn(
-        be.astype(target_temp, be._float_dtype), s=shape, axes=axes
-    )
-
-    # Setup composable filters
-    filter_kwargs = {
+    filter_kwargs = kwargs | {
+        "axes": target_axes,
         "return_real_fourier": True,
         "shape_is_real_fourier": False,
-        "data_rfft": target_temp_ft,
-        "axes": matching_data._target_dim,
     }
     if filter_template:
         template_filter = matching_data.template_filter(
             shape=real_tmpl_shape, **filter_kwargs
         )["data"]
         template_filter = be.reshape(template_filter, cmpl_tmpl_shape)
-        template_filter = be.astype(
-            be.to_backend_array(template_filter), be._float_dtype
-        )
+        template_filter = be.to_backend_array(template_filter, be._float)
         template_filter = be.at(template_filter, ((0,) * template_filter.ndim), 0)
 
     if filter_target:
@@ -895,12 +648,60 @@ def setup_filter(
             shape=real_shape, weight_type=None, **filter_kwargs
         )["data"]
         target_filter = be.reshape(target_filter, cmpl_shape)
-        target_filter = be.astype(be.to_backend_array(target_filter), be._float_dtype)
+        target_filter = be.to_backend_array(target_filter, be._float)
         target_filter = be.at(target_filter, ((0,) * target_filter.ndim), 0)
 
     if apply_target_filter and filter_target:
+        # Applying the target filter is the only step that needs the target FFT.
+        pad_shape = target.shape[:tb] + real_shape
+        target_temp = be.topleft_pad(target, pad_shape)
+        target_temp_ft = be.rfftn(
+            be.astype(target_temp, be._float), s=real_shape, axes=target_axes
+        )
         target_temp_ft = be.multiply(target_temp_ft, target_filter, out=target_temp_ft)
-        target_temp = be.irfftn(target_temp_ft, s=shape, axes=axes)
+        target_temp = be.irfftn(
+            target_temp_ft, s=target_temp.shape[tb:], axes=target_axes
+        )
         matching_data._target = be.topleft_pad(target_temp, matching_data.target.shape)
 
     return template_filter, target_filter
+
+
+def minimum_score_from_fp(std: float, n_correlations: int, n_fp: float) -> float:
+    """Rickgauer et al. 2017 false-positive threshold."""
+    from scipy.special import erfcinv
+
+    return float(erfcinv(2 * n_fp / n_correlations) * np.sqrt(2) * std)
+
+
+def write_pickle(data: object, filename: str) -> None:
+    from .utils.serialization import write_pickle as _write_pickle
+
+    warnings.warn(
+        "Using write_pickle is deprecated and will raise an error "
+        "in v0.3.5. Please use tme.utils.serialization.serialize instead.",
+        DeprecationWarning,
+    )
+    return _write_pickle(data, filename)
+
+
+def load_pickle(filename: str) -> object:
+    from .utils.serialization import load_pickle as _load_pickle
+
+    warnings.warn(
+        "Using load_pickle is deprecated and will raise an error "
+        "in v0.3.5. Please use tme.uils.serialization.deserialize instead.",
+        DeprecationWarning,
+    )
+    return _load_pickle(filename)
+
+
+def compute_parallelization_schedule(*args, **kwargs) -> Tuple[Dict, Tuple[int, int]]:
+    from .memory import compute_schedule as _compute_schedule
+
+    warnings.warn(
+        "Using compute_parallelization_schedule is deprecated and will raise an error "
+        "in v0.3.5. Please use tme.memory.compute_schedule instead.",
+        DeprecationWarning,
+    )
+    return _compute_schedule(*args, **kwargs)

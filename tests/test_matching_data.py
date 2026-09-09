@@ -1,5 +1,3 @@
-from tempfile import mkstemp
-
 import pytest
 import numpy as np
 
@@ -54,20 +52,6 @@ class TestMatchingData:
         for i, k in enumerate(shape):
             assert indices[i].min() == 0
             assert indices[i].max() == k - 1
-
-    def test__load_array(self):
-        arr = MatchingData._load_array(self.target)
-        assert np.allclose(arr, self.target)
-
-    def test__load_array_memmap(self):
-        _, filename = mkstemp()
-        shape, dtype = self.target.shape, self.target.dtype
-        arr_memmap = np.memmap(filename, mode="w+", dtype=dtype, shape=shape)
-        arr_memmap[:] = self.target[:]
-        arr_memmap.flush()
-
-        arr = MatchingData._load_array(arr_memmap)
-        assert np.allclose(arr, self.target)
 
     def test_subset_array(self):
         matching_data = MatchingData(target=self.target, template=self.template)

@@ -8,7 +8,7 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 
 from abc import ABC, abstractmethod
 from multiprocessing import shared_memory
-from typing import Tuple, Callable, List, Any, Union, Optional, Generator
+from typing import Tuple, Type, Callable, List, Any, Union, Optional, Generator
 
 from ..types import BackendArray, NDArray, Scalar, shm_type
 
@@ -41,14 +41,18 @@ class MatchingBackend(ABC):
     ----------
     array_backend : object
         The backend object providing array functionalities.
-    float_dtype : type
+    float_dtype : type, optional
         Data type of float array instances, e.g. np.float32.
-    complex_dtype : type
+    complex_dtype : type, optional
         Data type of complex array instances, e.g. np.complex64.
-    int_dtype : type
+    int_dtype : type, optional
         Data type of integer array instances, e.g. np.int32.
-    overflow_safe_dtype : type
-        Data type than can be used in reduction operations to avoid overflows.
+    overflow_safe_dtype : type, optional
+        Data type that can be used in reduction operations to avoid overflows.
+    float16_dtype : type, optional
+        Half-precision float dtype for memory-optimized storage (rotations, etc).
+    uint16_dtype : type, optional
+        16-bit unsigned int dtype for spatial indices.
 
     Attributes
     ----------
@@ -92,18 +96,41 @@ class MatchingBackend(ABC):
         complex_dtype: type,
         int_dtype: type,
         overflow_safe_dtype: type,
+        float16_dtype: type = None,
+        uint16_dtype: type = None,
+        **kwargs,
     ):
         self._array_backend = array_backend
-        self._float_dtype = float_dtype
-        self._complex_dtype = complex_dtype
-        self._int_dtype = int_dtype
-        self._overflow_safe_dtype = overflow_safe_dtype
+
+        self._float = float_dtype
+        self._complex = complex_dtype
+        self._int = int_dtype
+        self._overflow_safe = overflow_safe_dtype
+        self._float16 = float_dtype if float16_dtype is None else float16_dtype
+        self._uint16 = int_dtype if uint16_dtype is None else uint16_dtype
 
         self._fundamental_dtypes = {
-            int: self._int_dtype,
-            float: self._float_dtype,
-            complex: self._complex_dtype,
+            int: self._int,
+            float: self._float,
+            complex: self._complex,
         }
+
+    # Properties for backward compatibility
+    @property
+    def _float_dtype(self):
+        return self._float
+
+    @property
+    def _complex_dtype(self):
+        return self._complex
+
+    @property
+    def _int_dtype(self):
+        return self._int
+
+    @property
+    def _overflow_safe_dtype(self):
+        return self._overflow_safe
 
     def __getattr__(self, name: str):
         """
@@ -124,6 +151,8 @@ class MatchingBackend(ABC):
         AttributeError
             If the attribute is not found in the backend.
         """
+        if name == "_array_backend":
+            raise AttributeError(name)
         return getattr(self._array_backend, name)
 
     def __dir__(self) -> List:
@@ -143,7 +172,7 @@ class MatchingBackend(ABC):
         return sorted(base_attributes)
 
     @abstractmethod
-    def to_backend_array(self, arr: NDArray) -> BackendArray:
+    def to_backend_array(self, arr: NDArray, dtype: type = None) -> BackendArray:
         """
         Convert a numpy array instance to backend array type.
 
@@ -151,6 +180,11 @@ class MatchingBackend(ABC):
         ----------
         arr : NDArray
             The numpy array instance to be converted.
+        dtype : type, optional
+            If provided, the returned array is cast to this dtype. The cast
+            is fused with conversion where the underlying library supports
+            it. If the input is already a backend array with a different
+            dtype, it is cast.
 
         Returns
         -------

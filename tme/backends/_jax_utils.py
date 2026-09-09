@@ -9,15 +9,58 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 from typing import Tuple
 from functools import partial
 
+import jax
 import jax.numpy as jnp
-from jax import pmap, lax, jit
+from jax import pmap, lax, vmap, jit
 
 from ..types import BackendArray
 from ..backends import backend as be
 from ..matching_utils import standardize, to_padded
 
 
-__all__ = ["scan", "setup_scan"]
+__all__ = ["scan", "setup_scan", "distance_transform_edt"]
+
+
+def distance_transform_edt(mask):
+    """
+    Compute the Euclidean distance transform of a binary array.
+
+    Parameters
+    ----------
+    mask : array_like
+        Binary input array where non-zero values are foreground.
+
+    Returns
+    -------
+    jnp.ndarray
+        Distance transform. Background points have distance 0.
+    """
+    import numpy as np
+
+    mask = jnp.asarray(mask) != 0
+    try:
+        import cupy as cp
+        from cupyx.scipy.ndimage import distance_transform_edt
+
+        def callback(mask):
+            arr = cp.asarray(mask, dtype=bool)
+            result = distance_transform_edt(arr)
+            return cp.asnumpy(result).astype(np.float32, copy=False)
+
+    except ImportError:
+        from scipy.ndimage import distance_transform_edt
+
+        def callback(mask):
+            arr = np.asarray(mask, dtype=bool)
+            result = distance_transform_edt(arr)
+            return result.astype(np.float32, copy=False)
+
+    # This will be much slower than the equivalent cupy call but avoids polluting name
+    # spaces and GPU memory partitions. Ideally, one would build a jax implementation of
+    # the PBA (Thanh-Tung Cao et al).
+    return jax.pure_callback(
+        callback, jax.ShapeDtypeStruct(mask.shape, jnp.float32), mask
+    )
 
 
 def _correlate(template: BackendArray, ft_target: BackendArray) -> BackendArray:
@@ -107,7 +150,7 @@ def _apply_fourier_filter(arr: BackendArray, arr_filter: BackendArray) -> Backen
     return arr.at[:].set(jnp.fft.irfftn(arr_ft, s=arr.shape))
 
 
-def setup_scan(analyzer_kwargs, analyzer, fast_shape, rotate_mask, match_projection):
+def setup_scan(analyzer_kwargs, analyzer, fast_shape, rotate_mask):
     """Create separate scan function with initialized analyzer for each device"""
     device_scans = [
         partial(
@@ -254,3 +297,17 @@ def scan(
         state = analyzer.correct_background(state, bg_scores)
 
     return state
+
+
+def _flcSphere_scoring_safe(
+    ft_target: BackendArray,
+    template: BackendArray,
+    inv_denominator: BackendArray,
+    **kwargs,
+) -> BackendArray:
+    """
+    Computes :py:meth:`tme.matching_scores.corr_scoring`.
+    """
+    correlation = _correlate(template=template, ft_target=ft_target)
+    inv_denominator = inv_denominator.at[:].min(1 / correlation.max())
+    return correlation.at[:].multiply(inv_denominator)

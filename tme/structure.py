@@ -6,6 +6,8 @@ Copyright (c) 2023 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
+import os
+import pickle
 import warnings
 from copy import deepcopy
 from itertools import groupby
@@ -17,12 +19,265 @@ from os.path import splitext, basename
 import numpy as np
 
 from .types import NDArray
-from .rotations import align_to_axis
-from .preprocessor import atom_profile, Preprocessor
 from .parser import PDBParser, MMCIFParser, GROParser
-from .matching_utils import _rigid_transform
 
 __all__ = ["Structure"]
+
+
+def _get_scattering_factors(method: str) -> Dict:
+    path = os.path.join(os.path.dirname(__file__), "data", "scattering_factors.pickle")
+    with open(path, "rb") as infile:
+        data = pickle.load(infile)
+
+    if method not in data:
+        raise ValueError(f"{method} is not valid. Use {', '.join(data.keys())}.")
+    return data[method]
+
+
+def _electron_factor(
+    dist: NDArray, method: str, atom: str, fourier: bool = False
+) -> NDArray:
+    data = _get_scattering_factors(method)
+    n_range = len(data.get(atom, [])) // 2
+    default = np.zeros(n_range * 3)
+
+    res = 0.0
+    a_values = data.get(atom, default)[:n_range]
+    b_values = data.get(atom, default)[n_range : 2 * n_range]
+
+    if method == "dt1969":
+        b_values = data.get(atom, default)[1 : (n_range + 1)]
+
+    for i in range(n_range):
+        a = a_values[i]
+        b = b_values[i]
+
+        if fourier:
+            temp = a * np.exp(-b * np.power(dist, 2))
+        else:
+            b = b / (4 * np.power(np.pi, 2))
+            temp = a * np.sqrt(np.pi / b) * np.exp(-np.power(dist, 2) / (4 * b))
+
+        if not np.isnan(temp).any():
+            res += temp
+
+    return res / (2 * np.pi)
+
+
+def _sinc_mask(mask: NDArray, omega: float) -> NDArray:
+    mask_origin = int((mask.size - 1) / 2)
+    dist = np.arange(-mask_origin, mask_origin + 1)
+    return np.multiply(omega / np.pi, np.sinc((omega / np.pi) * dist))
+
+
+def _kaiser_mask(d: float, dw: float) -> NDArray:
+    from scipy.special import iv as bessel
+
+    dw *= np.pi
+    A = -20 * np.log10(d)
+    M = max(1, np.ceil((A - 8) / (2.285 * dw)))
+
+    beta = 0
+    if A > 50:
+        beta = 0.1102 * (A - 8.7)
+    elif A >= 21:
+        beta = 0.5842 * np.power(A - 21, 0.4) + 0.07886 * (A - 21)
+
+    mask_values = np.abs(np.arange(-M, M + 1))
+    mask = np.sqrt(1 - np.power(mask_values / M, 2))
+
+    return np.divide(bessel(0, beta * mask), bessel(0, beta))
+
+
+def _window_sinckb(omega: float, d: float, dw: float):
+    """
+    References
+    ----------
+    .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8-20.
+    """
+    kaiser = _kaiser_mask(d, dw)
+    sinc_m = _sinc_mask(np.zeros(kaiser.shape), omega)
+    mask = sinc_m * kaiser
+    return mask / np.sum(mask)
+
+
+def _window(arr, x0, xf, constant_values=0):
+    origin = int((arr.size - 1) / 2)
+
+    xs = origin - x0
+    xe = origin - xf
+
+    if xs >= 0 and xe <= arr.shape[0]:
+        if xs <= arr.shape[0] and xe > 0:
+            arr = arr[xs:xe]
+            xs = 0
+            xe = 0
+        elif xs <= arr.shape[0]:
+            arr = arr[xs:]
+            xs = 0
+    elif xe >= 0 and xe <= arr.shape[0]:
+        arr = arr[:xe]
+        xe = 0
+
+    xs *= -1
+    xe *= -1
+
+    return np.pad(
+        arr, (int(xs), int(xe)), mode="constant", constant_values=constant_values
+    )
+
+
+def _hlpf_fitness(
+    params: Tuple[float], T: float, M: float, profile: NDArray, atom: str, method: str
+) -> float:
+    """
+    References
+    ----------
+    .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8-20.
+    .. [2]  https://github.com/I2PC/xmipp/blob/707f921dfd29cacf5a161535034d28153b58215a/src/xmipp/libraries/data/pdb.cpp#L1344
+    """
+    from scipy import ndimage
+    from scipy.interpolate import splrep, BSpline
+
+    omega, d, dw = params
+
+    if not (0.7 <= omega <= 1.3) and (0 <= d <= 0.2) and (1e-3 <= dw <= 0.2):
+        return 1e38 * np.random.randint(1, 100)
+
+    mask = _window_sinckb(omega=omega * np.pi / M, d=d, dw=dw)
+
+    if profile.shape[0] > mask.shape[0]:
+        profile_origin = int((profile.size - 1) / 2)
+        mask = _window(mask, profile_origin, profile_origin)
+    else:
+        filter_origin = int((mask.size - 1) / 2)
+        profile = _window(profile, filter_origin, filter_origin)
+
+    f_mask = ndimage.convolve(profile, mask)
+
+    orig = int((f_mask.size - 1) / 2)
+    dist = np.arange(-orig, orig + 1) * T
+    t, c, k = splrep(x=dist, y=f_mask, k=3)
+    i_max = np.ceil(np.divide(f_mask.shape, M)).astype(int)[0]
+    coarse_mask = np.arange(-i_max, i_max + 1) * M
+    spline = BSpline(t, c, k)
+    coarse_values = spline(coarse_mask)
+
+    aux = _window(
+        coarse_values, x0=10 * coarse_values.shape[0], xf=10 * coarse_values.shape[0]
+    )
+    f_filter = np.fft.fftn(aux)
+    f_filter_mag = np.abs(f_filter)
+    freq = np.fft.fftfreq(f_filter.size)
+    freq /= M * T
+    amplitude_f = mask.sum() / coarse_values.sum()
+
+    size_f = f_filter_mag.shape[0] * amplitude_f
+    fourier_form_f = _electron_factor(dist=freq, atom=atom, method=method, fourier=True)
+
+    valid_freq_mask = freq >= 0
+    f1_values = np.log10(f_filter_mag[valid_freq_mask] * size_f)
+    f2_values = np.log10(np.divide(T, fourier_form_f[valid_freq_mask]))
+    squared_differences = np.square(f1_values - f2_values)
+    error = np.sum(squared_differences)
+    error /= np.sum(valid_freq_mask)
+
+    return error
+
+
+def _optimize_hlfp(profile, M, T, atom, method, filter_method):
+    """
+    References
+    ----------
+    .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8-20.
+    """
+    from scipy.optimize import minimize
+
+    initial_params = [1.0, 0.01, 1.0 / 8.0]
+    if filter_method == "brute":
+        best_fitness = float("inf")
+        OMEGA, D, DW = np.meshgrid(
+            np.arange(0.7, 1.3, 0.015),
+            np.arange(0.01, 0.2, 0.015),
+            np.arange(0.05, 0.2, 0.015),
+        )
+        for omega, d, dw in zip(OMEGA.ravel(), D.ravel(), DW.ravel()):
+            current_fitness = _hlpf_fitness([omega, d, dw], T, M, profile, atom, method)
+            if current_fitness < best_fitness:
+                best_fitness = current_fitness
+                initial_params = [omega, d, dw]
+        final_params = np.array(initial_params)
+    else:
+        res = minimize(
+            _hlpf_fitness,
+            initial_params,
+            args=tuple([T, M, profile, atom, method]),
+            method="SLSQP",
+            bounds=([0.2, 2], [1e-3, 2], [1e-3, 1]),
+        )
+        final_params = res.x
+        if np.any(final_params != final_params):
+            print(f"Solver returned NAs for atom {atom} at {M}" % (atom, M))
+            final_params = final_params
+
+    final_params[0] *= np.pi / M
+    mask = _window_sinckb(*final_params)
+
+    if profile.shape[0] > mask.shape[0]:
+        profile_origin = int((profile.size - 1) / 2)
+        mask = _window(mask, profile_origin, profile_origin)
+
+    return mask
+
+
+def _atom_profile(
+    M, atom, T=0.08333333, method="peng1995", lfilter=True, filter_method="minimize"
+):
+    """
+    References
+    ----------
+    .. [1]  Sorzano, Carlos et al (Mar. 2015). Fast and accurate conversion
+            of atomic models into electron density maps. AIMS Biophysics
+            2, 8-20.
+    .. [2]  https://github.com/I2PC/xmipp/blob/707f921dfd29cacf5a161535034d28153b58215a/src/xmipp/libraries/data/pdb.cpp#L1344
+    """
+    from scipy import ndimage
+    from scipy.interpolate import splrep, BSpline
+
+    M = M / T
+    imax = np.ceil(4 / T * np.sqrt(76.7309 / (2 * np.power(np.pi, 2))))
+    dist = np.arange(-imax, imax + 1) * T
+
+    profile = _electron_factor(dist, method, atom)
+
+    if lfilter:
+        window = _optimize_hlfp(
+            profile=profile,
+            M=M,
+            T=T,
+            atom=atom,
+            method=method,
+            filter_method=filter_method,
+        )
+        profile = ndimage.convolve(profile, window)
+
+        indices = np.where(profile > 1e-3)
+        min_indices = np.maximum(np.amin(indices, axis=1), 0)
+        max_indices = np.minimum(np.amax(indices, axis=1) + 1, profile.shape)
+        slices = tuple(slice(*coord) for coord in zip(min_indices, max_indices))
+        profile = profile[slices]
+
+    profile_origin = int((profile.size - 1) / 2)
+    dist = np.arange(-profile_origin, profile_origin + 1) * T
+    t, c, k = splrep(x=dist, y=profile, k=3)
+
+    return BSpline(t, c, k)
 
 
 @dataclass(repr=False)
@@ -421,10 +676,10 @@ class Structure:
         Examples
         --------
         >>> from importlib_resources import files
-        >>> from tempfile import NamedTemporaryFile
         >>> from tme import Structure
+        >>> from tme.matching_utils import generate_tempfile_name
         >>> fname = str(files("tests.data").joinpath("Structures/5khe.cif"))
-        >>> oname = NamedTemporaryFile().name
+        >>> oname = generate_tempfile_name()
         >>> structure = Structure.from_file(filename=fname)
         >>> structure.to_file(f"{oname}.cif") # Writes an mmCIF file to disk
         >>> structure.to_file(f"{oname}.pdb") # Writes a PDB file to disk
@@ -598,6 +853,8 @@ class Structure:
         >>>     translation = (0, 1, -5)
         >>> )
         """
+        from .matching_utils import _rigid_transform
+
         ndim = self.atom_coordinate.shape[1]
         if translation is None:
             translation = np.zeros((ndim))
@@ -715,7 +972,7 @@ class Structure:
         scattering_profiles, shape = dict(), volume.shape
         for atom_index, point in enumerate(positions):
             if atoms[atom_index] not in scattering_profiles:
-                spline = atom_profile(
+                spline = _atom_profile(
                     atom=atoms[atom_index],
                     M=downsampling_factor,
                     method=source,
@@ -752,7 +1009,6 @@ class Structure:
         weights: Tuple[float],
         resolution: float = 4,
         sigma_factor: float = 1 / (np.pi * np.sqrt(2)),
-        cutoff_value: float = 4.0,
         sampling_rate: float = None,
     ) -> NDArray:
         """
@@ -769,8 +1025,6 @@ class Structure:
             compute the discretized Gaussian.
         sigma_factor : float, optional
             The factor used with resolution to compute sigma. Default is 1 / (π√2).
-        cutoff_value : float, optional
-            The cutoff value for the Gaussian kernel. Default is 4.0.
         sampling_rate : float, optional
             Sampling rate along each dimension. One third of resolution by default.
 
@@ -783,6 +1037,8 @@ class Structure:
         NDArray
             A numpy array containing the simulated electron densities.
         """
+        from scipy.ndimage import gaussian_filter
+
         if sampling_rate is None:
             sampling_rate = resolution / 3
 
@@ -810,9 +1066,7 @@ class Structure:
         out = np.zeros(shape, dtype=np.float32)
         np.add.at(out, tuple(positions.T), weights)
 
-        out = Preprocessor().gaussian_filter(
-            template=out, sigma=sigma_grid, cutoff_value=cutoff_value
-        )
+        out = gaussian_filter(out, sigma=sigma_grid)
         return out, origin
 
     def _get_atom_weights(
@@ -1170,11 +1424,44 @@ class Structure:
         return ret, final_rmsd
 
     def align_to_axis(
-        self, coordinates: NDArray = None, axis: int = 2, flip: bool = False, **kwargs
+        self,
+        coordinates: NDArray = None,
+        axis: int = 2,
+        flip: bool = False,
+        eigenvector_index: int = 0,
     ):
+        """
+        Calculate a rotation matrix that aligns the principal axis of a Structure
+        with a specified coordinate axis.
+
+        Parameters
+        ----------
+        coordinates : NDArray
+            Array of 3D coordinates with shape (n, 3) representing the point cloud.
+        weights : NDArray
+            Coordinate weighting factors with shape (n,).
+        axis : int, optional
+            The target axis to align with, defaults to 2 (z-axis).
+        flip : bool, optional
+            Whether to align with the negative direction of the axis, default is False.
+        eigenvector_index : int, optional
+            Index of eigenvector to select, sorted by descending eigenvalues.
+            0 = largest eigenvalue (most variance), 1 = second largest, etc.
+            Default is 0 (primary principal component).
+
+        Returns
+        -------
+        NDArray
+            3x3 rotation matrix that aligns the principal component of the
+            coordinates with the specified axis.
+        """
+        from .rotations import align_to_axis as _align_to_axis
+
         if coordinates is None:
             coordinates = self.atom_coordinate
-        return align_to_axis(coordinates, axis=axis, flip=flip, **kwargs)
+        return _align_to_axis(
+            coordinates, axis=axis, flip=flip, eigenvector_index=eigenvector_index
+        )
 
 
 def _coordinate_to_position(

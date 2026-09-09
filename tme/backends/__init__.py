@@ -50,7 +50,7 @@ class BackendManager:
             "numpyfftw": NumpyFFTWBackend,
             "pytorch": PytorchBackend,
             "cupy": CupyBackend,
-            "mlx": MLXBackend,
+            # "mlx": MLXBackend,
             "jax": JaxBackend,
         }
         self._backend = NumpyFFTWBackend()
@@ -61,6 +61,8 @@ class BackendManager:
         return f"<BackendManager: using {self._backend_name}>"
 
     def __getattr__(self, name):
+        if name == "_backend":
+            raise AttributeError(name)
         return getattr(self._backend, name)
 
     def __dir__(self) -> List:

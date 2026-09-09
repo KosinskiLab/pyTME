@@ -6,7 +6,7 @@ Copyright (c) 2024 European Molecular Biology Laboratory
 Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
-from math import log, sqrt
+from math import log
 from typing import Tuple, Union, Optional
 from pydantic.dataclasses import dataclass
 
@@ -45,13 +45,9 @@ class BandPass(ComposableFilter):
     to determine the correct frequencies for non-cubical input shapes. The
     ``shape`` argument contains the shape of the reconstruction.
 
-    >>> ret = bpf_instance(shape=(50,50,25))
+    >>> ret = bpf_instance(shape=(50,50,25), return_real_fourier=False)
     >>> mask = ret["data"]
     >>> mask.shape # 3, 50, 50
-
-    Note that different from its reconstructed counterpart, the DC
-    component is at the center of the array.
-
     >>> import matplotlib.pyplot as plt
     >>> fix, ax = plt.subplots(nrows=1, ncols=3)
     >>> _ = [ax[i].imshow(mask[i]) for i in range(mask.shape[0])]
@@ -145,7 +141,7 @@ class BandPassReconstructed(ComposableFilter):
 
         grid = fftfreqn(
             shape=shape,
-            sampling_rate=0.5,
+            sampling_rate=1,
             shape_is_real_fourier=False,
             compute_euclidean_norm=True,
             fftshift=False,
@@ -182,19 +178,17 @@ def discrete_bandpass(
     BackendArray
         The bandpass filter in Fourier space.
     """
-    grid = be.astype(be.to_backend_array(grid), be._float_dtype)
+    grid = be.to_backend_array(grid, be._float)
     sampling_rate = be.to_backend_array(sampling_rate)
 
     highcut = grid.max()
     if lowpass is not None:
-        highcut = be.max(2 * sampling_rate / lowpass)
+        highcut = be.max(sampling_rate / lowpass)
 
     lowcut = 0
     if highpass is not None:
-        lowcut = be.max(2 * sampling_rate / highpass)
-
-    bandpass_filter = ((grid <= highcut) & (grid >= lowcut)) * 1.0
-    return bandpass_filter
+        lowcut = be.max(sampling_rate / highpass)
+    return (grid <= highcut) & (grid >= lowcut)
 
 
 def gaussian_bandpass(
@@ -225,41 +219,23 @@ def gaussian_bandpass(
     BackendArray
         The bandpass filter in Fourier space.
     """
-    grid = be.astype(be.to_backend_array(grid), be._float_dtype)
+    grid = be.to_backend_array(grid, be._float)
     grid = -be.square(grid, out=grid)
 
-    has_lowpass, has_highpass = False, False
-    norm = float(sqrt(2 * log(2)))
-    upper_sampling = float(be.max(be.multiply(2, be.to_backend_array(sampling_rate))))
+    upper_sampling = float(np.max(sampling_rate))
 
-    if lowpass is not None:
-        lowpass, has_lowpass = float(lowpass), True
-        lowpass = be.maximum(lowpass, be.eps(be._float_dtype))
-    if highpass is not None:
-        highpass, has_highpass = float(highpass), True
-        highpass = be.maximum(highpass, be.eps(be._float_dtype))
+    filters = []
+    for cutoff, invert in ((lowpass, False), (highpass, True)):
+        if cutoff is None:
+            continue
+        denom = (upper_sampling / float(cutoff)) ** 2 / log(2)
+        f = be.exp(grid / denom)
+        filters.append(be.subtract(1, f, out=f) if invert else f)
 
-    if has_lowpass:
-        lowpass = upper_sampling / (lowpass * norm)
-        lowpass = be.multiply(2, be.square(lowpass))
-        lowpass_filter = be.divide(grid, lowpass)
-        lowpass_filter = be.exp(lowpass_filter, out=lowpass_filter)
+    if not filters:
+        return be.full(grid.shape, fill_value=1, dtype=be._float)
 
-    if has_highpass:
-        highpass = upper_sampling / (highpass * norm)
-        highpass = be.multiply(2, be.square(highpass))
-        highpass_filter = be.divide(grid, highpass)
-        highpass_filter = be.exp(highpass_filter, out=highpass_filter)
-        highpass_filter = be.subtract(1, highpass_filter, out=highpass_filter)
-
-    if has_lowpass and not has_highpass:
-        bandpass_filter = lowpass_filter
-    elif not has_lowpass and has_highpass:
-        bandpass_filter = highpass_filter
-    elif has_lowpass and has_highpass:
-        bandpass_filter = be.multiply(
-            lowpass_filter, highpass_filter, out=lowpass_filter
-        )
-    else:
-        bandpass_filter = be.full(grid.shape, fill_value=1, dtype=be._float_dtype)
-    return bandpass_filter
+    result = filters[0]
+    for f in filters[1:]:
+        result = be.multiply(result, f, out=result)
+    return result

@@ -17,7 +17,6 @@ from ..rotations import euler_to_rotationmatrix
 
 __all__ = [
     "compute_tilt_shape",
-    "centered_grid",
     "frequency_grid_at_angle",
     "fftfreqn",
     "crop_real_fourier",
@@ -25,6 +24,10 @@ __all__ = [
     "shift_fourier",
     "create_reconstruction_filter",
     "pad_to_length",
+    "gridding_correction",
+    "radial_average",
+    "radial_bins",
+    "power_at_tilt",
 ]
 
 
@@ -51,26 +54,6 @@ def compute_tilt_shape(shape: Tuple[int], opening_axis: int, reduce_dim: bool = 
         tilt_shape = tuple(x for i, x in enumerate(shape) if i != opening_axis)
 
     return tilt_shape
-
-
-def centered_grid(shape: Tuple[int]) -> NDArray:
-    """
-    Generate an integer valued grid centered around size // 2
-
-    Parameters
-    ----------
-    shape : Tuple[int]
-        The shape of the grid.
-
-    Returns
-    -------
-    NDArray
-        The centered grid.
-    """
-    index_grid = np.array(
-        np.meshgrid(*[np.arange(size) - size // 2 for size in shape], indexing="ij")
-    )
-    return index_grid
 
 
 def frequency_grid_at_angle(
@@ -186,8 +169,8 @@ def fftfreqn(
     """
     # There is no real need to have these operations on GPU right now
     np_be = NumpyFFTWBackend()
-    norm = np_be.full(len(shape), fill_value=1, dtype=np_be._float_dtype)
-    center = np_be.astype(np_be.divide(shape, 2), np_be._int_dtype)
+    norm = np_be.full(len(shape), fill_value=1, dtype=np_be._float)
+    center = np_be.astype(np_be.divide(shape, 2), np_be._int)
     if sampling_rate is not None:
         norm = np_be.astype(np_be.multiply(shape, sampling_rate), int)
 
@@ -199,7 +182,7 @@ def fftfreqn(
     ndim, grids = len(shape), []
     for i, x in enumerate(shape):
         baseline_dims = tuple(1 if i != t else x for t in range(len(shape)))
-        grid = (np_be.arange(x, dtype=np_be._int_dtype) - center[i]) / norm[i]
+        grid = (np_be.arange(x, dtype=np_be._int) - center[i]) / norm[i]
 
         # We have to invert because we build the grid centered around shape // 2
         if not fftshift:
@@ -208,7 +191,7 @@ def fftfreqn(
             else:
                 grid = np.fft.ifftshift(grid)
 
-        grid = np_be.astype(grid, np_be._float_dtype)
+        grid = np_be.astype(grid, np_be._float)
         grids.append(np_be.reshape(grid, baseline_dims))
 
     if compute_euclidean_norm:
@@ -219,7 +202,7 @@ def fftfreqn(
     if return_sparse_grid:
         return grids
 
-    grid_flesh = np_be.full(shape, fill_value=1, dtype=np_be._float_dtype)
+    grid_flesh = np_be.full(shape, fill_value=1, dtype=np_be._float)
     return np_be.stack(tuple(grid * grid_flesh for grid in grids))
 
 
@@ -363,3 +346,200 @@ def create_reconstruction_filter(
 def pad_to_length(arr, length: int):
     ret = np.atleast_1d(arr)
     return np.repeat(ret, length // ret.size)
+
+
+def gridding_correction(
+    shape: Tuple[int, ...], padding_factor: int = 1, fftshift: bool = False
+) -> NDArray:
+    """
+    Compute separable sinc^2 gridding correction for trilinear interpolation.
+
+    Trilinear interpolation is separable, so the correction is the product
+    of per-axis sinc^2 terms rather than a single radial sinc^2.
+
+    Parameters
+    ----------
+    shape : Tuple[int, ...]
+        Shape of the data.
+    padding_factor : int
+        The oversampling/padding factor used during reconstruction.
+    fftshift : bool, optional
+        Whether to return a grid centered at shape // 2. Default is grid centered around
+        origin, which is compliant with the rfftn definitions used in this project.
+
+    Returns
+    -------
+    NDArray
+        Separable sinc^2 correction of given shape.
+    """
+    grids = fftfreqn(
+        shape, sampling_rate=None, fftshift=fftshift, return_sparse_grid=True
+    )
+    correction = np.ones(shape)
+    for i, grid in enumerate(grids):
+        normalized = grid / (shape[i] * padding_factor)
+        sinc_val = np.sinc(normalized)
+        correction *= sinc_val * sinc_val
+    return correction
+
+
+def radial_average(
+    data_fft: BackendArray, n_bins: int = None, shape_is_real_fourier: bool = True
+) -> Tuple[BackendArray, BackendArray]:
+    """
+    Compute the radial power spectrum of the input data.
+
+    Parameters
+    ----------
+    data_fft : BackendArray
+        The Fourier transform of the input data with DC at origin.
+    n_bins : int, optional
+        The number of bins for computing the spectrum, defaults to None.
+    shape_is_real_fourier : bool
+        Whether the input it the rfftn or fftn of the data.
+
+    Returns
+    -------
+    bin_centers : BackendArray
+        Frequency values at the center of each bin (range 0 to 1).
+    radial_averages : BackendArray
+        Normalized inverse-amplitude spectrum per bin.
+    """
+    from scipy.ndimage import mean as ndimean
+
+    if not shape_is_real_fourier:
+        data_fft = crop_real_fourier(data_fft)
+
+    bin_indices, bin_centers = radial_bins(data_fft.shape, n_bins)
+
+    fourier_spectrum = np.abs(data_fft)
+    fourier_spectrum = np.square(fourier_spectrum, out=fourier_spectrum)
+
+    radial_averages = ndimean(
+        fourier_spectrum, labels=bin_indices, index=np.arange(bin_centers.shape[0])
+    )
+    radial_averages = np.sqrt(radial_averages, out=radial_averages)
+
+    radial_averages = np.where(radial_averages != 0, 1 / radial_averages, 0)
+    norm_factor = radial_averages.max()
+    if norm_factor != 0:
+        radial_averages = np.divide(radial_averages, norm_factor)
+
+    return bin_centers, radial_averages
+
+
+def radial_bins(shape: Tuple[int, ...], n_bins: int = None) -> Tuple[NDArray, NDArray]:
+    """Assign the voxels of an rfft-shaped grid to radial shells.
+
+    Parameters
+    ----------
+    shape : tuple of int
+        Shape of the real Fourier (rfft) grid to bin.
+    n_bins : int, optional
+        Number of radial bins, capped at the largest meaningful value for the
+        shape. Defaults to that maximum.
+
+    Returns
+    -------
+    bin_indices : NDArray
+        Per voxel shell index over ``shape``.
+    bin_centers : NDArray
+        Fractional frequency (0 to 1 at Nyquist) at each shell center, of length
+        ``n_bins``.
+    """
+    max_bins = shape[-1]
+    if len(shape) > 1:
+        max_bins = max(max(shape[:-1]) // 2 + 1, max_bins)
+
+    n_bins = max_bins if n_bins is None else n_bins
+    n_bins = int(min(n_bins, max_bins))
+
+    freqs = fftfreqn(
+        shape=shape,
+        sampling_rate=0.5,
+        compute_euclidean_norm=True,
+        shape_is_real_fourier=True,
+        fftshift=False,
+    )
+    bin_indices = np.floor(freqs * (n_bins - 1) + 0.5).astype(int)
+    bin_centers = fftfreqn(
+        shape=(n_bins,),
+        sampling_rate=0.5,
+        compute_euclidean_norm=True,
+        shape_is_real_fourier=True,
+        fftshift=False,
+    )
+    return bin_indices, bin_centers
+
+
+def power_at_tilt(
+    data_fft: BackendArray,
+    n_bins: int = 90,
+    shape_is_real_fourier: bool = True,
+    mask: NDArray = None,
+) -> Tuple[NDArray, NDArray]:
+    """
+    Compute average Fourier power as a function of tilt angle.
+
+    For each angle, samples the 2D Fourier amplitude along a ray from the
+    origin at that angle using linear interpolation, and returns the mean
+    squared amplitude.
+
+    Parameters
+    ----------
+    data_fft : BackendArray
+        2D Fourier transform with DC at origin.
+    n_bins : int, optional
+        Number of angles from 0 to 90 degrees, defaults to 90.
+    shape_is_real_fourier : bool, optional
+        Whether data_fft is from rfftn (True) or fftn (False).
+    mask : NDArray, optional
+        Binary mask matching data_fft. When provided, averages only over
+        non-zero elements along each ray.
+
+    Returns
+    -------
+    bin_centers : NDArray
+        Angles in degrees (0 to 90).
+    powers : NDArray
+        Mean squared Fourier amplitude per angle.
+    """
+    from scipy.ndimage import map_coordinates
+
+    if not shape_is_real_fourier:
+        data_fft = crop_real_fourier(data_fft)
+        if mask is not None:
+            mask = crop_real_fourier(mask)
+
+    shape = data_fft.shape
+
+    fourier_power = np.abs(data_fft)
+    np.square(fourier_power, out=fourier_power)
+
+    n_samples = max(shape)
+    t = np.linspace(0, 1, n_samples)
+
+    angles = np.linspace(0, 90, n_bins)
+    angles_rad = np.radians(angles)
+
+    # (n_bins, n_samples) coordinates along each ray
+    freq_row = np.outer(np.sin(angles_rad), t)
+    freq_col = np.outer(np.cos(angles_rad), t)
+
+    row_idx = freq_row * shape[0] * 0.5
+    col_idx = freq_col * (shape[1] - 1)
+
+    coords = np.array([row_idx.ravel(), col_idx.ravel()])
+
+    sampled = map_coordinates(fourier_power, coords, order=1).reshape(n_bins, n_samples)
+
+    if mask is not None:
+        mask_sampled = map_coordinates(
+            mask.astype(np.float64), coords, order=1
+        ).reshape(n_bins, n_samples)
+        counts = np.maximum(mask_sampled.sum(axis=1), 1)
+        powers = (sampled * mask_sampled).sum(axis=1) / counts
+    else:
+        powers = sampled.mean(axis=1)
+
+    return angles, powers

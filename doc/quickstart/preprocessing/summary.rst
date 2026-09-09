@@ -2,10 +2,10 @@
 Summary
 =======
 
-The ``preprocessor_gui.py`` provides a graphical user interface for common preprocessing operations such as filtering or the creation of masks for template matching. You can launch it via:
+The ``pytme gui`` provides a graphical user interface for mask creation, candidate inspection, and basic visualization for template matching. You can launch it via:
 
 .. code-block:: bash
 
-    preprocessor_gui.py
+    pytme gui
 
-Users that aim to perform these operations programmatically can do so via :py:class:`Density <tme.density.Density>`, :py:class:`Preprocessor <tme.preprocessor.Preprocessor>`, and :py:meth:`create_mask <tme.matching_utils.create_mask>`.
+Users that aim to perform these operations programmatically can do so via :py:class:`Density <tme.density.Density>` and :py:meth:`create_mask <tme.matching_utils.create_mask>`.

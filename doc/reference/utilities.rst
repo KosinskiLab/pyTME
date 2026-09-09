@@ -1,6 +1,6 @@
-=========
-Utilities
-=========
+======================
+Extensions and Parsers
+======================
 
 .. toctree::
    :maxdepth: 2

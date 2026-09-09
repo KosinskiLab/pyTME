@@ -7,7 +7,8 @@ Author: Valentin Maurer <valentin.maurer@embl-hamburg.de>
 """
 
 import yaml
-from typing import Tuple
+import warnings
+from typing import Tuple, Optional
 from os.path import join, dirname
 
 import numpy as np
@@ -26,59 +27,52 @@ __all__ = [
 
 
 def _sample_cone(
-    angle: float, sampling: float, axis: Tuple[float] = (1, 0, 0)
+    angle: float, sampling: float, axis: Tuple[float] = (0, 0, 1)
 ) -> NDArray:
     """
-    Sample points on a cone surface around cone_axis using golden spiral distribution.
+    Sample points uniformly on a spherical cap.
 
     Parameters
     ----------
     angle : float
-        The half-angle of the cone in degrees.
+        Half-angle of the cone in degrees.
     sampling : float
-        Angular increment used for sampling points in degrees.
+        Target angular spacing between points in degrees.
     axis : tuple of floats
-        Vector to align the cone with.
+        Cone axis direction.
 
     Returns
     -------
     NDArray
         Array of points around axis with shape n,3.
-
-    References
-    ----------
-    .. [1] https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
     """
-    theta = np.linspace(0, angle, round(angle / sampling) + 1)
-    number_of_points = np.ceil(
-        360 * np.divide(np.sin(np.radians(theta)), sampling),
-    )
-    number_of_points = int(np.sum(number_of_points + 1) + 2)
+    angle = np.radians(min(max(angle, 0), 180))
 
-    indices = np.arange(0, number_of_points, dtype=float) + 0.5
-    radius = np.radians(angle * np.sqrt(indices / number_of_points))
-    theta = np.pi * (1 + np.sqrt(5)) * indices
+    # Surface area of unit spherical cap A = 2π(1 - cos(angle))
+    # Each point covers approximately sampling squre in steradians
+    cap_area = 2 * np.pi * (1 - np.cos(angle))
+    area_per_point = (np.radians(sampling)) ** 2
+    n_samples = max(1, int(np.ceil(cap_area / area_per_point)))
 
-    points = np.stack(
-        [
-            np.cos(radius),
-            np.cos(theta) * np.sin(radius),
-            np.sin(theta) * np.sin(radius),
-        ],
-        axis=1,
+    # Same construction as Mosaic
+    indices = np.arange(0, n_samples, dtype=float) + 0.5
+    phi = np.arccos(1 - (1 - np.cos(angle)) * indices / n_samples)
+    theta = np.pi * (1 + 5**0.5) * indices
+
+    points = np.column_stack(
+        [np.cos(theta) * np.sin(phi), np.sin(theta) * np.sin(phi), np.cos(phi)]
     )
-    rotation = Rotation.from_matrix(align_vectors((1, 0, 0), axis, seq=None))
+    rotation = Rotation.from_matrix(align_vectors((0, 0, 1), axis))
     return rotation.apply(points)
 
 
 def get_cone_rotations(
     cone_angle: float,
     cone_sampling: float,
-    axis: Tuple[float] = (1, 0, 0),
-    axis_angle: float = 360.0,
-    axis_sampling: float = None,
-    reference: Tuple[float] = (1, 0, 0),
-    n_symmetry: int = 1,
+    axis_angle: Optional[float] = None,
+    axis_sampling: Optional[float] = None,
+    reference: Tuple[float] = (0, 0, 1),
+    n_symmetry: Optional[int] = None,
     **kwargs,
 ) -> NDArray:
     """
@@ -87,85 +81,161 @@ def get_cone_rotations(
     Parameters
     ----------
     cone_angle : float
-        The half-angle of the cone in degrees.
+        Half-angle of the cone in degrees. Defines the maximum angular deviation
+        from the reference direction. Must be in range (0, 180].
     cone_sampling : float
-        Angular increment used for sampling points on the cone in degrees.
-    axis : Tuple[float], optional
-        Base-vector of the cone.
+        Angular spacing between sample points on the cone surface in degrees.
     axis_angle : float, optional
-        The total angle of rotation around the cone axis in degrees (default is 360.0).
+        Total rotation angle around the reference direction in degrees. Defaults
+        to 360.0 for complete in-plane rotation.
     axis_sampling : float, optional
-        Angular increment used for sampling points around the cone axis in degrees.
-        If None, it takes the value of cone_sampling.
+        Angular spacing for in-plane rotations along the reference in degrees.
+        If None, uses the value of cone_sampling.
     reference : Tuple[float], optional
-        Returned rotations will map this point onto the cone. In practice, this is
-        the principal axis of the template.
+        The central direction of the cone as a 3D vector (x, y, z). Rotations
+        will map this direction onto the cone surface. Defaults to z unit vector.
     n_symmetry : int, optional
-        Number of symmetry axis around the vector axis.
-    seq : str
-        Output convention.
-
-        .. deprecated:: 0.3.2
-
-            Returns rotation matrices always.
+        Symmetry order of the object around the reference direction.
+        The axis_angle is divided by this value. For example, use n_symmetry=2
+        for C2 symmetry. Default is 1 (no symmetry).
 
     Returns
     -------
     NDArray
-        An arary of rotations represented as stack of rotation matrices (n, 3, 3).
-    """
-    if axis_sampling is None:
-        axis_sampling = cone_sampling
+        Array of rotation matrices with shape (n, 3, 3).
 
-    points = _sample_cone(angle=cone_angle, sampling=cone_sampling, axis=axis)
+    Examples
+    --------
+    Sample orientations within 30° of the z-axis with full in-plane rotation:
+
+    >>> rotations = get_cone_rotations(
+    ...     cone_angle=30.0,
+    ...     cone_sampling=10.0,
+    ...     reference=(0, 0, 1)
+    ... )
+
+    Limited search with 2-fold symmetry around x-axis:
+
+    >>> rotations = get_cone_rotations(
+    ...     cone_angle=45.0,
+    ...     cone_sampling=15.0,
+    ...     axis_angle=180.0,
+    ...     reference=(1, 0, 0),
+    ...     n_symmetry=2
+    ... )
+
+    Notes
+    -----
+    The total number of rotations is approximately:
+        N ≈ (2π(1 - cos(cone_angle)) / cone_sampling²) × (axis_angle / axis_sampling)
+    """
+    axis_angle = 360.0 if axis_angle is None else axis_angle
+    axis_sampling = cone_sampling if axis_sampling is None else axis_sampling
+
     reference = np.asarray(reference).astype(np.float32)
     reference /= np.linalg.norm(reference)
 
-    axis_angle /= n_symmetry
+    if n_symmetry is not None:
+        axis_angle /= n_symmetry
+
     phi_steps = np.maximum(np.round(axis_angle / axis_sampling), 1).astype(int)
-    phi = np.linspace(0, axis_angle, phi_steps + 1)[:-1]
+    phi = np.linspace(-axis_angle / 2, axis_angle / 2, phi_steps, endpoint=False)
+    axis_rotation = Rotation.from_rotvec(reference * np.radians(phi)[:, None])
 
-    axis_rotation = Rotation.from_rotvec(axis * np.radians(phi)[:, None])
-    all_rotations = [
-        axis_rotation * Rotation.from_matrix(align_vectors(reference, x))
-        for x in points
-    ]
-    return Rotation.concatenate(all_rotations).as_matrix()
+    if cone_angle <= 0:
+        return axis_rotation.as_matrix()
+
+    points = _sample_cone(angle=cone_angle, sampling=cone_sampling, axis=reference)
+    rotations = Rotation.concatenate(
+        [
+            axis_rotation * Rotation.from_matrix(align_vectors(reference, x))
+            for x in points
+        ]
+    )
+    return rotations.as_matrix()
 
 
-def align_vectors(base: NDArray, target: NDArray = (0, 0, 1), **kwargs) -> NDArray:
+def align_vectors(base: NDArray, target: NDArray = (0, 0, 1)) -> NDArray:
     """
     Compute the rotation matrix or Euler angles required to align an initial
-    vector with a target vector.
+    vector with a target vector. As align_vectors(base, target) @ base = target
 
     Parameters
     ----------
     base : NDArray
-        The basis vector.
+        The basis vector. Can be shape (d,) or (n, d).
     target : NDArray, optional
-        The vector to map base to, defaults to (0,0,1).
-    seq : str
-        Output convention.
-
-        .. deprecated:: 0.3.2
-
-            Returns rotation matrices always.
+        The vector to map base to. Can be shape (d,) or (n, d). Default is (0,0,1).
 
     Returns
     -------
     NDArray
         Rotation matrix mapping base to target.
     """
-    base = np.asarray(base)
-    target = np.asarray(target)
+    base = np.atleast_2d(base)
+    target = np.atleast_2d(target)
 
-    # Support for (n, 3) and (3,) became available in scipy 1.12.0
-    rotation, _ = Rotation.align_vectors(np.atleast_2d(target), np.atleast_2d(base))
+    nb, nt = base.shape[0], target.shape[0]
+    if not (nt == nb or nt == 1 or nb == 1):
+        raise ValueError(
+            f"Incompatible shapes: base {base.shape}, target {target.shape}. "
+            "Provide either a single target or one per base."
+        )
+
+    base = base / np.linalg.norm(base, axis=1, keepdims=True)
+    target = target / np.linalg.norm(target, axis=1, keepdims=True)
+
+    # Rotation.from_quat expects scalar-last. Support for scalar first via
+    # scalar_first flag was not added until scipy v.14.0
+    quat = _align_vectors_to_quat(base, target)
+    rotation = Rotation.from_quat(quat[:, (1, 2, 3, 0)])
 
     rotation = rotation.as_matrix().astype(np.float32)
-    if base.ndim == 1:
+    if base.shape[0] == 1:
         return np.squeeze(rotation)
     return rotation
+
+
+def _align_vectors_to_quat(vec1: np.ndarray, vec2: np.ndarray) -> np.ndarray:
+    """
+    Compute quaternions for shortest rotation aligning vec1 to vec2.
+
+    Parameters
+    ----------
+    vec1, vec2 : np.ndarray
+        Normalized vectors, shape (N, 3).
+
+    Returns
+    -------
+    np.ndarray
+        Quaternions [w, x, y, z], shape (N, 4).
+    """
+    axis = np.cross(vec1, vec2)
+    cos_angle = np.sum(vec1 * vec2, axis=1)
+
+    aligned = cos_angle > (1 - 1e-8)
+    opposite = cos_angle < (-1 + 1e-8)
+    normal = ~(aligned | opposite)
+
+    quaternions = np.empty((vec1.shape[0], 4))
+    quaternions[aligned] = [1, 0, 0, 0]
+
+    # Half angle
+    if np.any(normal):
+        w = np.sqrt((1 + cos_angle[normal]) / 2)
+        xyz = axis[normal] / (2 * w[:, np.newaxis])
+        quaternions[normal, 0] = w
+        quaternions[normal, 1:] = xyz
+
+    # Opposite
+    if np.any(opposite):
+        for i in np.where(opposite)[0]:
+            v = vec1[i]
+            perp = np.cross(v, [1, 0, 0]) if abs(v[0]) < 0.9 else np.cross(v, [0, 1, 0])
+            perp = perp / np.linalg.norm(perp)
+            quaternions[i] = [0, perp[0], perp[1], perp[2]]
+
+    return quaternions
 
 
 def euler_to_rotationmatrix(angles: Tuple[float], seq: str = "ZYZ") -> NDArray:
@@ -184,8 +254,10 @@ def euler_to_rotationmatrix(angles: Tuple[float], seq: str = "ZYZ") -> NDArray:
     NDArray
         Corresponding rotation matrix.
     """
-    rotation = Rotation.from_euler(seq=seq, angles=angles, degrees=True)
-    return rotation.as_matrix().astype(np.float32)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        rotation = Rotation.from_euler(seq=seq, angles=angles, degrees=True)
+        return rotation.as_matrix().astype(np.float32)
 
 
 def euler_from_rotationmatrix(rotation_matrix: NDArray, seq: str = "ZYZ") -> NDArray:
@@ -204,7 +276,9 @@ def euler_from_rotationmatrix(rotation_matrix: NDArray, seq: str = "ZYZ") -> NDA
     NDArray
         Corresponding Euler angles in degrees.
     """
-    return Rotation.from_matrix(rotation_matrix).as_euler(seq=seq, degrees=True)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        return Rotation.from_matrix(rotation_matrix).as_euler(seq=seq, degrees=True)
 
 
 def get_rotation_matrices(
@@ -339,7 +413,7 @@ def get_symmetry_matrices(
     symmetry_type: str, axis: Tuple[float] = (0, 0, 1)
 ) -> NDArray:
     """
-    Get rotation matrices for common point group symmetries.
+    Get rotation matrices describing point group symmetries.
 
     Parameters
     ----------
@@ -381,12 +455,62 @@ def get_symmetry_matrices(
         perp = vh[-1].astype(np.float32)
         perp = perp / np.linalg.norm(perp)
         for i in range(n):
-            angle = 2 * np.pi * i / n
+            angle = np.pi * i / n
             R = Rotation.from_rotvec(angle * axis)
 
             R_180 = Rotation.from_rotvec(np.pi * R.apply(perp))
             matrices.append(R_180.as_matrix().astype(np.float32))
     else:
         raise ValueError(f"Unsupported symmetry type: {symmetry_type}")
-
     return np.array(matrices)
+
+
+def _canonical_quaternion(quats: NDArray) -> NDArray:
+    """Flip quaternion sign so the largest-magnitude component is positive."""
+    idx = np.argmax(np.abs(quats), axis=-1)
+    signs = np.sign(np.take_along_axis(quats, idx[..., None], axis=-1))
+    signs[signs == 0] = 1
+    return quats * signs
+
+
+def reduce_rotations_by_symmetry(
+    rotations: NDArray, symmetry: str = "C1", axis: Tuple[float] = (0, 0, 1)
+) -> NDArray:
+    """
+    Reduce rotation matrices to a point-group fundamental domain.
+
+    Each rotation is kept only when it is the canonical (lexicographically
+    largest, sign-canonicalized quaternion) member of its own symmetry orbit
+    ``{S_k . R}``. The orbit uses left multiplicatin to align with the rotation
+    pulling convention, so orientations that produce the identical
+    rotatde density differ by ``R ~ S_k . R``.
+
+    Parameters
+    ----------
+    rotations : NDArray
+        Rotation matrices with shape (n, 3, 3).
+    symmetry : str, optional
+        Point-group symmetry as 'C<n>' or 'D<n>', 'C1' by default.
+    axis : Tuple[float], optional
+        Symmetry axis as (x, y, z), defaults to (0, 0, 1).
+
+    Returns
+    -------
+    NDArray
+        Rotation matrices with shape (m, 3, 3), m <= n.
+    """
+    sym_ops = get_symmetry_matrices(symmetry, axis=axis)
+    if sym_ops.shape[0] <= 1:
+        return rotations
+
+    keep = []
+    for i in range(rotations.shape[0]):
+        orbit = _canonical_quaternion(
+            Rotation.from_matrix(sym_ops @ rotations[i]).as_quat()
+        )
+        order = np.lexsort(orbit.T[::-1])
+        # get_symmetry_matrices lists the identity first, so orbit element 0 is
+        # rotations[i] itself. Keep it when it holds the canonical value.
+        if np.allclose(orbit[0], orbit[order[-1]], atol=1e-6):
+            keep.append(i)
+    return rotations[keep]

@@ -32,7 +32,11 @@ class CupyBackend(NumpyFFTWBackend):
     ):
         import cupy as cp
         import cupyx.scipy.fft as cufft
-        from cupyx.scipy.ndimage import affine_transform, maximum_filter
+        from cupyx.scipy.ndimage import (
+            affine_transform,
+            maximum_filter,
+            distance_transform_edt,
+        )
 
         float_dtype = cp.float32 if float_dtype is None else float_dtype
         complex_dtype = cp.complex64 if complex_dtype is None else complex_dtype
@@ -46,10 +50,13 @@ class CupyBackend(NumpyFFTWBackend):
             complex_dtype=complex_dtype,
             int_dtype=int_dtype,
             overflow_safe_dtype=overflow_safe_dtype,
+            float16_dtype=cp.float16,
+            uint16_dtype=cp.uint16,
         )
         self._cufft = cufft
         self.maximum_filter = maximum_filter
         self.affine_transform = affine_transform
+        self.distance_transform_edt = distance_transform_edt
 
         itype = f"int{self.datatype_bytes(int_dtype) * 8}"
         ftype = f"float{self.datatype_bytes(float_dtype) * 8}"
@@ -73,6 +80,7 @@ class CupyBackend(NumpyFFTWBackend):
             tmp1 = arr;
             if (tmp2 < eps){
                 tmp1 = 0;
+                tmp2 = 1;
             }
             tmp2 *= n_obs;
             out = tmp1 / tmp2;
@@ -92,14 +100,16 @@ class CupyBackend(NumpyFFTWBackend):
         )
         self.texture_available = find_spec("voltools") is not None
 
-    def to_backend_array(self, arr: NDArray) -> CupyArray:
+    def to_backend_array(self, arr: NDArray, dtype: type = None) -> CupyArray:
         current_device = self._array_backend.cuda.device.get_device_id()
         if (
             isinstance(arr, self._array_backend.ndarray)
             and arr.device.id == current_device
         ):
+            if dtype is not None and arr.dtype != dtype:
+                return arr.astype(dtype)
             return arr
-        return self._array_backend.asarray(arr)
+        return self._array_backend.asarray(arr, dtype=dtype)
 
     def to_numpy_array(self, arr: CupyArray) -> NDArray:
         return self._array_backend.asnumpy(arr)
@@ -127,7 +137,7 @@ class CupyBackend(NumpyFFTWBackend):
         return self._cufft.rfftn(arr, **kwargs)
 
     def irfftn(self, arr: CupyArray, out: CupyArray = None, **kwargs) -> CupyArray:
-        return self._cufft.irfftn(arr, **kwargs).astype(self._float_dtype)
+        return self._cufft.irfftn(arr, **kwargs)
 
     def compute_convolution_shapes(
         self, arr1_shape: Tuple[int], arr2_shape: Tuple[int]
@@ -139,14 +149,6 @@ class CupyBackend(NumpyFFTWBackend):
         fast_ft_shape = list(fast_shape[:-1]) + [fast_shape[-1] // 2 + 1]
 
         return convolution_shape, fast_shape, fast_ft_shape
-
-    def max_filter_coordinates(self, score_space, min_distance: Tuple[int]):
-        score_box = tuple(min_distance for _ in range(score_space.ndim))
-        max_filter = self.maximum_filter(score_space, size=score_box, mode="constant")
-        max_filter = max_filter == score_space
-
-        peaks = self._array_backend.array(self._array_backend.nonzero(max_filter)).T
-        return peaks
 
     def _get_texture(self, arr: CupyArray, order: int = 3, prefilter: bool = False):
         key = id(arr)
@@ -181,21 +183,16 @@ class CupyBackend(NumpyFFTWBackend):
         order: int,
         cache: bool = False,
     ) -> CupyArray:
-        out_slice = tuple(slice(0, stop) for stop in data.shape)
-
         if data.ndim == 3 and cache and self.texture_available:
-            # Device memory pool (should) come to rescue performance
-            temp = self.zeros(data.shape, data.dtype)
             texture = self._get_texture(data, order=order, prefilter=prefilter)
-            texture.affine(transform_m=matrix, profile=False, output=temp)
-            output[out_slice] = temp
-            return None
+            texture.affine(transform_m=matrix, profile=False, output=output)
+            return output
 
         return self.affine_transform(
             input=data,
             matrix=matrix,
             mode="constant",
-            output=output[out_slice],
+            output=output,
             order=order,
             prefilter=prefilter,
         )

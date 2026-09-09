@@ -184,6 +184,31 @@ class TestBackends:
             assert arr.dtype == dtype_target
 
     @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
+    @pytest.mark.parametrize(
+        "dtype_attr",
+        ("_float_dtype", "_complex_dtype", "_int_dtype"),
+    )
+    def test_to_backend_array_dtype(self, backend, dtype_attr):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            dtype = getattr(backend, dtype_attr)
+
+            np_arr = np.ones((4, 4), dtype=np.float32)
+            arr = backend.to_backend_array(np_arr, dtype=dtype)
+            assert arr.dtype == dtype
+
+            base = backend.zeros((4, 4), dtype=backend._float_dtype)
+            arr = backend.to_backend_array(base, dtype=dtype)
+            assert arr.dtype == dtype
+
+            # Default path: dtype identity is not portable across backends
+            # (torch.float32 is not numpy.dtype('float32')), so we check the
+            # round trip instead.
+            arr = backend.to_backend_array(np_arr)
+            assert arr.shape == np_arr.shape
+            np.testing.assert_array_equal(backend.to_numpy_array(arr), np_arr)
+
+    @pytest.mark.parametrize("backend", BACKENDS_TO_TEST)
     @pytest.mark.parametrize("N", (0, 15, 30))
     def test_arange(self, backend, N):
         base = self.backend.arange(N)
@@ -372,7 +397,7 @@ class TestBackends:
             out=out,
             out_mask=out_mask,
             order=1,
-            use_geometric_center=True,
+            center="geometric",
         )
 
         arr = backend.to_backend_array(arr.copy())
@@ -390,7 +415,7 @@ class TestBackends:
             out=out_be,
             out_mask=out_mask,
             order=1,
-            use_geometric_center=True,
+            center="geometric",
         )
         out_be = backend.to_numpy_array(out_be)
         assert np.allclose(out, out_be, atol=0.3)
@@ -409,7 +434,7 @@ class TestBackends:
             arr=backend.to_backend_array(arr),
             rotation_matrix=backend.to_backend_array(rotation_matrix),
             order=1,
-            use_geometric_center=True,
+            center="geometric",
         )
         assert np.allclose(out, arr, atol=0.01)
 
