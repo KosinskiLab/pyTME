@@ -1,0 +1,6 @@
+Wedge.use\_tilt
+==========================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: Wedge.use_tilt

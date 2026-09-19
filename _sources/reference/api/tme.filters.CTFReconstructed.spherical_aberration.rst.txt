@@ -1,0 +1,6 @@
+CTFReconstructed.spherical\_aberration
+=================================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.spherical_aberration

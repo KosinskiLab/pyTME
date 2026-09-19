@@ -1,0 +1,6 @@
+CTF.astigmatism\_angle
+=================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.astigmatism_angle

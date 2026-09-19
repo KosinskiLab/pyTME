@@ -1,0 +1,6 @@
+PeakCallerSort.init\_state
+======================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerSort.init_state

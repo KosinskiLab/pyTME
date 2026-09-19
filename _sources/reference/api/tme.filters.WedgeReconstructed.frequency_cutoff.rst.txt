@@ -1,0 +1,6 @@
+WedgeReconstructed.frequency\_cutoff
+===============================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: WedgeReconstructed.frequency_cutoff

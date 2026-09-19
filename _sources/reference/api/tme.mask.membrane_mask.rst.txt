@@ -1,0 +1,6 @@
+﻿membrane\_mask
+======================
+
+.. currentmodule:: tme.mask
+
+.. autofunction:: membrane_mask

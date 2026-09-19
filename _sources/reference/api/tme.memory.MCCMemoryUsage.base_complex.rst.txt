@@ -1,0 +1,6 @@
+MCCMemoryUsage.base\_complex
+======================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: MCCMemoryUsage.base_complex

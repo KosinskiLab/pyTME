@@ -1,0 +1,50 @@
+﻿MemoryProfile
+=============
+
+.. currentmodule:: tme.memory
+
+.. autoclass:: MemoryProfile
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            MemoryProfile.base_complex
+         
+         
+            MemoryProfile.base_float
+         
+         
+            MemoryProfile.fork_complex
+         
+         
+            MemoryProfile.fork_float
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            MemoryProfile.base_usage
+         
+         
+            MemoryProfile.per_fork
+         
+
+   
+   

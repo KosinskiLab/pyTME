@@ -1,0 +1,6 @@
+Wedge.from\_file
+===========================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: Wedge.from_file

@@ -1,0 +1,6 @@
+PeakCallerRecursiveMasking.init\_state
+==================================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerRecursiveMasking.init_state

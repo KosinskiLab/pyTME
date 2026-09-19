@@ -1,0 +1,6 @@
+MemoryProfile.per\_fork
+=================================
+
+.. currentmodule:: tme.memory
+
+.. automethod:: MemoryProfile.per_fork

@@ -1,0 +1,6 @@
+MaxScoreOverRotationsMemoryUsage.fork\_float
+======================================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: MaxScoreOverRotationsMemoryUsage.fork_float

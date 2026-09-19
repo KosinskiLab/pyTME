@@ -1,0 +1,6 @@
+CTFReconstructed.angles
+===================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.angles

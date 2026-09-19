@@ -1,0 +1,6 @@
+﻿box\_mask
+=================
+
+.. currentmodule:: tme.mask
+
+.. autofunction:: box_mask

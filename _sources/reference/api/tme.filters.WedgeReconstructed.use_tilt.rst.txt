@@ -1,0 +1,6 @@
+WedgeReconstructed.use\_tilt
+=======================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: WedgeReconstructed.use_tilt

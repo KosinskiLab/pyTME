@@ -1,0 +1,6 @@
+﻿match\_exhaustive
+========================================
+
+.. currentmodule:: tme.matching_exhaustive
+
+.. autofunction:: match_exhaustive

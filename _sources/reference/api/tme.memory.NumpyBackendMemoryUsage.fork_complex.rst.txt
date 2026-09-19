@@ -1,0 +1,6 @@
+NumpyBackendMemoryUsage.fork\_complex
+===============================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: NumpyBackendMemoryUsage.fork_complex

@@ -1,0 +1,28 @@
+﻿Compose
+=======
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: Compose
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            Compose.__call__
+      
+
+      
+         
+
+   
+   

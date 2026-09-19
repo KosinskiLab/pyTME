@@ -1,0 +1,6 @@
+MLXBackend.copy
+============================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: MLXBackend.copy

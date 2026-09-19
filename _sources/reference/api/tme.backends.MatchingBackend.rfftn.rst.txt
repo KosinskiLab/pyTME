@@ -1,0 +1,6 @@
+MatchingBackend.rfftn
+==================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: MatchingBackend.rfftn

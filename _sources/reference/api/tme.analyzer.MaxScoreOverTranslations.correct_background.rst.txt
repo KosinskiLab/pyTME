@@ -1,0 +1,6 @@
+MaxScoreOverTranslations.correct\_background
+========================================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: MaxScoreOverTranslations.correct_background

@@ -1,0 +1,6 @@
+NumpyBackendMemoryUsage.base\_complex
+===============================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: NumpyBackendMemoryUsage.base_complex

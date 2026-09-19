@@ -1,0 +1,46 @@
+﻿BandPassReconstructed
+=====================
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: BandPassReconstructed
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            BandPassReconstructed.highpass
+         
+         
+            BandPassReconstructed.lowpass
+         
+         
+            BandPassReconstructed.sampling_rate
+         
+         
+            BandPassReconstructed.use_gaussian
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            BandPassReconstructed.__call__
+      
+
+      
+         
+
+   
+   

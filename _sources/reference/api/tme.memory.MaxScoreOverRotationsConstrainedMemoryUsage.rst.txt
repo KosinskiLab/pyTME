@@ -1,0 +1,50 @@
+﻿MaxScoreOverRotationsConstrainedMemoryUsage
+===========================================
+
+.. currentmodule:: tme.memory
+
+.. autoclass:: MaxScoreOverRotationsConstrainedMemoryUsage
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            MaxScoreOverRotationsConstrainedMemoryUsage.base_complex
+         
+         
+            MaxScoreOverRotationsConstrainedMemoryUsage.base_float
+         
+         
+            MaxScoreOverRotationsConstrainedMemoryUsage.fork_complex
+         
+         
+            MaxScoreOverRotationsConstrainedMemoryUsage.fork_float
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            MaxScoreOverRotationsConstrainedMemoryUsage.base_usage
+         
+         
+            MaxScoreOverRotationsConstrainedMemoryUsage.per_fork
+         
+
+   
+   

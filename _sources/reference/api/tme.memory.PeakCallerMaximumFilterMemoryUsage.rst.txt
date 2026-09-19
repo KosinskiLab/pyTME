@@ -1,0 +1,50 @@
+﻿PeakCallerMaximumFilterMemoryUsage
+==================================
+
+.. currentmodule:: tme.memory
+
+.. autoclass:: PeakCallerMaximumFilterMemoryUsage
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            PeakCallerMaximumFilterMemoryUsage.base_complex
+         
+         
+            PeakCallerMaximumFilterMemoryUsage.base_float
+         
+         
+            PeakCallerMaximumFilterMemoryUsage.fork_complex
+         
+         
+            PeakCallerMaximumFilterMemoryUsage.fork_float
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            PeakCallerMaximumFilterMemoryUsage.base_usage
+         
+         
+            PeakCallerMaximumFilterMemoryUsage.per_fork
+         
+
+   
+   

@@ -1,0 +1,6 @@
+CupyBackendMemoryUsage.base\_complex
+==============================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CupyBackendMemoryUsage.base_complex

@@ -1,0 +1,6 @@
+MemoryProfile.fork\_complex
+=====================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: MemoryProfile.fork_complex

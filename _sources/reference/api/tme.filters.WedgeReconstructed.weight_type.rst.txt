@@ -1,0 +1,6 @@
+WedgeReconstructed.weight\_type
+==========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: WedgeReconstructed.weight_type

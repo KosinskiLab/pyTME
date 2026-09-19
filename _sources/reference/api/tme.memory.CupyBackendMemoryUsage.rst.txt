@@ -1,0 +1,50 @@
+﻿CupyBackendMemoryUsage
+======================
+
+.. currentmodule:: tme.memory
+
+.. autoclass:: CupyBackendMemoryUsage
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            CupyBackendMemoryUsage.base_complex
+         
+         
+            CupyBackendMemoryUsage.base_float
+         
+         
+            CupyBackendMemoryUsage.fork_complex
+         
+         
+            CupyBackendMemoryUsage.fork_float
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            CupyBackendMemoryUsage.base_usage
+         
+         
+            CupyBackendMemoryUsage.per_fork
+         
+
+   
+   

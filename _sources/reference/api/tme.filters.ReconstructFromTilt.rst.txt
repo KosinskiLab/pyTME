@@ -1,0 +1,52 @@
+﻿ReconstructFromTilt
+===================
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: ReconstructFromTilt
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            ReconstructFromTilt.angles
+         
+         
+            ReconstructFromTilt.interpolation_order
+         
+         
+            ReconstructFromTilt.method
+         
+         
+            ReconstructFromTilt.opening_axis
+         
+         
+            ReconstructFromTilt.reconstruction_filter
+         
+         
+            ReconstructFromTilt.tilt_axis
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            ReconstructFromTilt.__call__
+      
+
+      
+         
+
+   
+   

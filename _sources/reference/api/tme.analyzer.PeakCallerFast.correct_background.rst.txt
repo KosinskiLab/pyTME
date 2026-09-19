@@ -1,0 +1,6 @@
+PeakCallerFast.correct\_background
+==============================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerFast.correct_background

@@ -1,0 +1,6 @@
+Curve.spectrum
+==========================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: Curve.spectrum

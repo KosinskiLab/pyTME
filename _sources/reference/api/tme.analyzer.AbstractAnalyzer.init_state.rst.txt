@@ -1,0 +1,6 @@
+AbstractAnalyzer.init\_state
+========================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: AbstractAnalyzer.init_state

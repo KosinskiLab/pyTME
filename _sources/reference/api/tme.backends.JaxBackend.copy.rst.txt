@@ -1,0 +1,6 @@
+JaxBackend.copy
+============================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: JaxBackend.copy

@@ -1,0 +1,6 @@
+﻿tube\_mask
+==================
+
+.. currentmodule:: tme.mask
+
+.. autofunction:: tube_mask

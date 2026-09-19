@@ -1,0 +1,6 @@
+FLCMemoryUsage.base\_complex
+======================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: FLCMemoryUsage.base_complex

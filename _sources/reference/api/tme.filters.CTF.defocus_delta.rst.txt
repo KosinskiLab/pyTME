@@ -1,0 +1,6 @@
+CTF.defocus\_delta
+=============================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.defocus_delta

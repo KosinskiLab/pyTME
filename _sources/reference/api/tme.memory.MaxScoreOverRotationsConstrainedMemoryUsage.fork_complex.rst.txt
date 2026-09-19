@@ -1,0 +1,6 @@
+MaxScoreOverRotationsConstrainedMemoryUsage.fork\_complex
+===================================================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: MaxScoreOverRotationsConstrainedMemoryUsage.fork_complex

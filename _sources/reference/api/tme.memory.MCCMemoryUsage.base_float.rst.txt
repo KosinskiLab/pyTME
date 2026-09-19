@@ -1,0 +1,6 @@
+MCCMemoryUsage.base\_float
+====================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: MCCMemoryUsage.base_float
