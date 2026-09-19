@@ -880,7 +880,7 @@ def main():
 
             # Apply offset along orientation direction
             if args.orientations_offset is not None:
-                normals = rotations.T @ np.array(analyzer_args["reference"])
+                normals = np.einsum("nji,j->ni", rotations, np.array(analyzer_args["reference"]))
                 translations = np.add(translations, normals * args.orientations_offset)
 
         # Orientations specified using mesh
