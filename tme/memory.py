@@ -393,8 +393,10 @@ def compute_schedule(
 
     mask = mode_kwargs.get("mask", None)
     mask_spacing = mode_kwargs.get("mask_spacing", 1.0)
-    if not isinstance(mask_spacing, tuple):
-        mask_spacing = (mask_spacing,) * len(shape)
+    mask_spacing = tuple(np.broadcast_to(mask_spacing, (len(shape),)))
+
+    # Voxels the boxes are solved in, per target voxel.
+    spacing = (1.0,) * len(shape)
 
     if isinstance(mask, np.ndarray) and mode == "subdivide":
         scaled_subset = tuple(
@@ -406,10 +408,15 @@ def compute_schedule(
         mask_subset = _bounding_box(mask)
         mode_kwargs["mask"] = mask[mask_subset]
 
-        shape = mode_kwargs["mask"].shape
+        spacing = mask_spacing
         offsets = tuple(
             (x.start + y.start) * s
             for x, y, s in zip(mask_subset, scaled_subset, mask_spacing)
+        )
+
+        # Same region the solver covers, said in the target's voxels.
+        shape = tuple(
+            int(round(n * s)) for n, s in zip(mode_kwargs["mask"].shape, spacing)
         )
 
     estimator = partial(
@@ -443,7 +450,9 @@ def compute_schedule(
         print(f"  - uniform: {len(boxes)} box(es), {n:,} voxels, score {score:.3e}")
 
     if mode == "subdivide":
-        bxs, schedule_mask = _schedule_subdivide(**kwargs)
+        bxs, schedule_mask = _schedule_subdivide(
+            **kwargs | {"cost_fn": partial(cost_fn, spacing=spacing)}
+        )
         sc_mask = _select_schedule(bxs, np.ceil(len(bxs) / max_workers), cost_fn)
 
         ratio = score / sc_mask
@@ -516,7 +525,12 @@ def _slice_to_shape(
     return tuple(s.stop - s.start + p for s, p in zip(slices, padding))
 
 
-def _box_cost(shapes, padding=None, n_sat: int = DEFAULT_N_SAT):
+def _box_cost(
+    shapes,
+    padding: tuple[int, ...] | None = None,
+    n_sat: int = DEFAULT_N_SAT,
+    spacing: tuple[float, ...] | None = None,
+):
     """
     Computes max(N_sat, V) * log1p(max(N_sat, V)) with V = prod(shape + padding).
 
@@ -525,6 +539,8 @@ def _box_cost(shapes, padding=None, n_sat: int = DEFAULT_N_SAT):
     shapes ``(n_boxes, ndim)``.
     """
     shapes = np.asarray(shapes, dtype=np.float64)
+    if spacing is not None:
+        shapes = shapes * np.asarray(spacing, dtype=np.float64)
     if padding is not None:
         shapes = shapes + np.asarray(padding, dtype=np.float64)
 
