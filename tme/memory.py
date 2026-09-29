@@ -434,6 +434,7 @@ def compute_schedule(
         "max_workers": max_workers,
         "max_memory": max_memory,
         "padding": padding,
+        "spacing": spacing,
         "memory_estimator": estimator,
         "verbose": verbose,
         "cost_fn": cost_fn,
@@ -670,6 +671,7 @@ def _bounding_box(segmentation: NDArray, threshold: float = 0) -> Tuple[slice, .
 def _schedule_subdivide(
     max_workers: int,
     mask: NDArray,
+    spacing: tuple[float, ...] | None = None,
     min_box_size: Optional[int] = 32,
     equal_shape: bool = False,
     verbose: bool = False,
@@ -685,6 +687,8 @@ def _schedule_subdivide(
         Reported back as the outer-parallelism count in the returned schedule.
     mask : NDArray
         Binary mask indicating regions of interest.
+    spacing : tuple of float, optional
+        Target voxels per voxel of ``mask``. Defaults to the target's own.
     min_box_size : int, optional
         Minimum extent along any axis for a candidate box, defaults to 32.
         ``None`` disables the check.
@@ -703,13 +707,29 @@ def _schedule_subdivide(
     tuple of int, int
         ``(max_workers, 1)`` (all parallelism is outer).
     """
-    boxes, cost = solve_subdivide(
+    if min_box_size is not None and spacing is not None:
+        min_box_size = max(max(int(min_box_size / s), 1) for s in spacing)
+
+    boxes, _ = solve_subdivide(
         mask=mask,
         min_box_size=min_box_size,
-        equal_shape=equal_shape,
         return_slices=True,
+        equal_shape=equal_shape,
         verbose=verbose,
         cost_fn=cost_fn,
+    )
+
+    if not len(boxes):
+        return (), (max_workers, 1)
+
+    # Back into the target's voxels, the frame every other box in this module is in.
+    scale = (1.0,) * len(boxes[0]) if spacing is None else spacing
+    boxes = tuple(
+        tuple(
+            slice(int(b.start * s), int(np.ceil(b.stop * s)))
+            for b, s in zip(box, scale)
+        )
+        for box in boxes
     )
     return boxes, (max_workers, 1)
 
