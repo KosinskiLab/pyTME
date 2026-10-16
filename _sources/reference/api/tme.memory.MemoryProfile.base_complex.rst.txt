@@ -1,0 +1,6 @@
+MemoryProfile.base\_complex
+=====================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: MemoryProfile.base_complex

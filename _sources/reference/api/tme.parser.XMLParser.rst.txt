@@ -1,0 +1,41 @@
+﻿XMLParser
+=========
+
+.. currentmodule:: tme.parser
+
+.. autoclass:: XMLParser
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            XMLParser.get
+         
+         
+            XMLParser.items
+         
+         
+            XMLParser.keys
+         
+         
+            XMLParser.parse_input
+         
+         
+            XMLParser.values
+         
+
+   
+   

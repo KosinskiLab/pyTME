@@ -1,0 +1,49 @@
+﻿AbstractAnalyzer
+================
+
+.. currentmodule:: tme.analyzer
+
+.. autoclass:: AbstractAnalyzer
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            AbstractAnalyzer.shareable
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            AbstractAnalyzer.__call__
+      
+
+      
+         
+         
+            AbstractAnalyzer.correct_background
+         
+         
+            AbstractAnalyzer.init_state
+         
+         
+            AbstractAnalyzer.merge
+         
+         
+            AbstractAnalyzer.result
+         
+
+   
+   

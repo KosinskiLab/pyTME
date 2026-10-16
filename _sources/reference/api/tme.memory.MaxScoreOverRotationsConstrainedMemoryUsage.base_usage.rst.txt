@@ -1,0 +1,6 @@
+MaxScoreOverRotationsConstrainedMemoryUsage.base\_usage
+=================================================================
+
+.. currentmodule:: tme.memory
+
+.. automethod:: MaxScoreOverRotationsConstrainedMemoryUsage.base_usage

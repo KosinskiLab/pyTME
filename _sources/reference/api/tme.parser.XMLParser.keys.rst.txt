@@ -1,0 +1,6 @@
+XMLParser.keys
+=========================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: XMLParser.keys

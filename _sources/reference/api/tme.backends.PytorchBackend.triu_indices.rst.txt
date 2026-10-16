@@ -1,0 +1,6 @@
+PytorchBackend.triu\_indices
+========================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: PytorchBackend.triu_indices

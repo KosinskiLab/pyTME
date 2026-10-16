@@ -1,0 +1,6 @@
+﻿standardize
+==============================
+
+.. currentmodule:: tme.matching_utils
+
+.. autofunction:: standardize

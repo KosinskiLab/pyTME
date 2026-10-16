@@ -1,0 +1,6 @@
+XMLParser.parse\_input
+================================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: XMLParser.parse_input

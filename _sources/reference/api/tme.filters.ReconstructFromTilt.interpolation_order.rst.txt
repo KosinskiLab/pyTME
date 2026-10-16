@@ -1,0 +1,6 @@
+ReconstructFromTilt.interpolation\_order
+===================================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: ReconstructFromTilt.interpolation_order

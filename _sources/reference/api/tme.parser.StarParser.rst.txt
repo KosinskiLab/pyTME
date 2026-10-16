@@ -1,0 +1,41 @@
+﻿StarParser
+==========
+
+.. currentmodule:: tme.parser
+
+.. autoclass:: StarParser
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            StarParser.get
+         
+         
+            StarParser.items
+         
+         
+            StarParser.keys
+         
+         
+            StarParser.parse_input
+         
+         
+            StarParser.values
+         
+
+   
+   

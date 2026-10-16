@@ -1,0 +1,6 @@
+MaxScoreOverTranslations.shareable
+===============================================
+
+.. currentmodule:: tme.analyzer
+
+.. autoproperty:: MaxScoreOverTranslations.shareable

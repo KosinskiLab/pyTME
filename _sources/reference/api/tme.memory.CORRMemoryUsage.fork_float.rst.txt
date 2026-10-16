@@ -1,0 +1,6 @@
+CORRMemoryUsage.fork\_float
+=====================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CORRMemoryUsage.fork_float

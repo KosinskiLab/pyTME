@@ -1,0 +1,6 @@
+MDOCParser.items
+===========================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: MDOCParser.items

@@ -1,0 +1,6 @@
+StarParser.keys
+==========================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: StarParser.keys

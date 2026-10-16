@@ -1,0 +1,6 @@
+CTF.wiener\_falloff
+==============================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.wiener_falloff

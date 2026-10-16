@@ -1,0 +1,6 @@
+CTF.from\_file
+=========================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: CTF.from_file

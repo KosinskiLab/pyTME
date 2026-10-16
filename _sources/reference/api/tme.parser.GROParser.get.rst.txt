@@ -1,0 +1,6 @@
+GROParser.get
+========================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: GROParser.get

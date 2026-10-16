@@ -1,0 +1,6 @@
+Wedge.angles
+========================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: Wedge.angles

@@ -1,0 +1,6 @@
+MemoryProfile.fork\_float
+===================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: MemoryProfile.fork_float

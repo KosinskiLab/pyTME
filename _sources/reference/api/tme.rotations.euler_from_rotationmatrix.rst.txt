@@ -1,0 +1,6 @@
+﻿euler\_from\_rotationmatrix
+=======================================
+
+.. currentmodule:: tme.rotations
+
+.. autofunction:: euler_from_rotationmatrix

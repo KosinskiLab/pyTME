@@ -1,0 +1,55 @@
+﻿BandPass
+========
+
+.. currentmodule:: tme.filters
+
+.. autoclass:: BandPass
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            BandPass.angles
+         
+         
+            BandPass.highpass
+         
+         
+            BandPass.lowpass
+         
+         
+            BandPass.opening_axis
+         
+         
+            BandPass.sampling_rate
+         
+         
+            BandPass.tilt_axis
+         
+         
+            BandPass.use_gaussian
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+            BandPass.__call__
+      
+
+      
+         
+
+   
+   

@@ -1,0 +1,6 @@
+CTF.correction\_mode
+===============================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.correction_mode

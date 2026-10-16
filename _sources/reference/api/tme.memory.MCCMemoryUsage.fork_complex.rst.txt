@@ -1,0 +1,6 @@
+MCCMemoryUsage.fork\_complex
+======================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: MCCMemoryUsage.fork_complex

@@ -1,0 +1,6 @@
+Wedge.opening\_axis
+==============================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: Wedge.opening_axis

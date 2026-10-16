@@ -1,0 +1,6 @@
+CTF.sampling\_rate
+=============================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTF.sampling_rate

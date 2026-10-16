@@ -1,0 +1,6 @@
+﻿register\_memory
+==========================
+
+.. currentmodule:: tme.memory
+
+.. autofunction:: register_memory

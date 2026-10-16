@@ -1,0 +1,6 @@
+MaxScoreOverRotations.correct\_background
+=====================================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: MaxScoreOverRotations.correct_background

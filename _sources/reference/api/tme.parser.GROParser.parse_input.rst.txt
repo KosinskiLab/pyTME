@@ -1,0 +1,6 @@
+GROParser.parse\_input
+================================
+
+.. currentmodule:: tme.parser
+
+.. automethod:: GROParser.parse_input

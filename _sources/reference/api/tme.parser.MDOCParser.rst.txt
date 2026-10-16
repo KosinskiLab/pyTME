@@ -1,0 +1,41 @@
+﻿MDOCParser
+==========
+
+.. currentmodule:: tme.parser
+
+.. autoclass:: MDOCParser
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            MDOCParser.get
+         
+         
+            MDOCParser.items
+         
+         
+            MDOCParser.keys
+         
+         
+            MDOCParser.parse_input
+         
+         
+            MDOCParser.values
+         
+
+   
+   

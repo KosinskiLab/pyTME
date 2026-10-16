@@ -1,0 +1,6 @@
+CupyBackend.addat
+==============================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: CupyBackend.addat

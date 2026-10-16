@@ -1,0 +1,6 @@
+PeakCallerMaximumFilterMemoryUsage.base\_float
+========================================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: PeakCallerMaximumFilterMemoryUsage.base_float

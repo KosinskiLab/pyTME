@@ -1,0 +1,6 @@
+Curve.\_\_call\_\_
+==========================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: Curve.__call__

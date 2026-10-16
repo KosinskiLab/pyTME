@@ -1,0 +1,6 @@
+PeakCallerMaximumFilterMemoryUsage.fork\_complex
+==========================================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: PeakCallerMaximumFilterMemoryUsage.fork_complex

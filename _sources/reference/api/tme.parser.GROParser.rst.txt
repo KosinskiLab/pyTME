@@ -1,0 +1,41 @@
+﻿GROParser
+=========
+
+.. currentmodule:: tme.parser
+
+.. autoclass:: GROParser
+
+   
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            GROParser.get
+         
+         
+            GROParser.items
+         
+         
+            GROParser.keys
+         
+         
+            GROParser.parse_input
+         
+         
+            GROParser.values
+         
+
+   
+   

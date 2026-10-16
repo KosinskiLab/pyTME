@@ -1,0 +1,6 @@
+﻿elliptical\_mask
+========================
+
+.. currentmodule:: tme.mask
+
+.. autofunction:: elliptical_mask

@@ -1,0 +1,6 @@
+BandPass.angles
+===========================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: BandPass.angles

@@ -1,0 +1,6 @@
+NumpyBackendMemoryUsage.base\_float
+=============================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: NumpyBackendMemoryUsage.base_float

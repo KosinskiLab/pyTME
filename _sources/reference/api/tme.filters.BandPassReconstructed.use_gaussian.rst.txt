@@ -1,0 +1,6 @@
+BandPassReconstructed.use\_gaussian
+==============================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: BandPassReconstructed.use_gaussian

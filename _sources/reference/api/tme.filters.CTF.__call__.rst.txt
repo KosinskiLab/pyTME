@@ -1,0 +1,6 @@
+CTF.\_\_call\_\_
+========================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: CTF.__call__

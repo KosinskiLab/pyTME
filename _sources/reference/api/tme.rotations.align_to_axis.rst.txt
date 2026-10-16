@@ -1,0 +1,6 @@
+﻿align\_to\_axis
+===========================
+
+.. currentmodule:: tme.rotations
+
+.. autofunction:: align_to_axis

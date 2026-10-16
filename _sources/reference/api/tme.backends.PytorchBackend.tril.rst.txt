@@ -1,0 +1,6 @@
+PytorchBackend.tril
+================================
+
+.. currentmodule:: tme.backends
+
+.. automethod:: PytorchBackend.tril

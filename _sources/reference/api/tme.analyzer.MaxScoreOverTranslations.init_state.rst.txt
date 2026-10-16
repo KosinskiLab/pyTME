@@ -1,0 +1,6 @@
+MaxScoreOverTranslations.init\_state
+================================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: MaxScoreOverTranslations.init_state

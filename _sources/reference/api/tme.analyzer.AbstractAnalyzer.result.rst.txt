@@ -1,0 +1,6 @@
+AbstractAnalyzer.result
+====================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: AbstractAnalyzer.result

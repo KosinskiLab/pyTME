@@ -1,0 +1,6 @@
+CTFReconstructed.astigmatism\_angle
+==============================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: CTFReconstructed.astigmatism_angle

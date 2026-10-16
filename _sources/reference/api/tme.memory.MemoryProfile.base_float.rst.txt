@@ -1,0 +1,6 @@
+MemoryProfile.base\_float
+===================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: MemoryProfile.base_float

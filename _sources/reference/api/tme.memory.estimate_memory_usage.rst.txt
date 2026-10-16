@@ -1,0 +1,6 @@
+﻿estimate\_memory\_usage
+================================
+
+.. currentmodule:: tme.memory
+
+.. autofunction:: estimate_memory_usage

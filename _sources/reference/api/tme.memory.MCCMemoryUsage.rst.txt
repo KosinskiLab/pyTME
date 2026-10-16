@@ -1,0 +1,50 @@
+﻿MCCMemoryUsage
+==============
+
+.. currentmodule:: tme.memory
+
+.. autoclass:: MCCMemoryUsage
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            MCCMemoryUsage.base_complex
+         
+         
+            MCCMemoryUsage.base_float
+         
+         
+            MCCMemoryUsage.fork_complex
+         
+         
+            MCCMemoryUsage.fork_float
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            MCCMemoryUsage.base_usage
+         
+         
+            MCCMemoryUsage.per_fork
+         
+
+   
+   

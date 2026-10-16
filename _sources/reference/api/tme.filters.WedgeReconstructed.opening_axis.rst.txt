@@ -1,0 +1,6 @@
+WedgeReconstructed.opening\_axis
+===========================================
+
+.. currentmodule:: tme.filters
+
+.. autoattribute:: WedgeReconstructed.opening_axis

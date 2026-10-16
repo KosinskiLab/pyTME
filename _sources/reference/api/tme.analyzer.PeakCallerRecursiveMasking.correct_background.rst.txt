@@ -1,0 +1,6 @@
+PeakCallerRecursiveMasking.correct\_background
+==========================================================
+
+.. currentmodule:: tme.analyzer
+
+.. automethod:: PeakCallerRecursiveMasking.correct_background

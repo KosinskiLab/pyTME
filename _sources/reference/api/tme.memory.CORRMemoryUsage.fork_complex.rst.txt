@@ -1,0 +1,6 @@
+CORRMemoryUsage.fork\_complex
+=======================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: CORRMemoryUsage.fork_complex

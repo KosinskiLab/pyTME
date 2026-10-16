@@ -1,0 +1,50 @@
+﻿NumpyBackendMemoryUsage
+=======================
+
+.. currentmodule:: tme.memory
+
+.. autoclass:: NumpyBackendMemoryUsage
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+      
+         
+            NumpyBackendMemoryUsage.base_complex
+         
+         
+            NumpyBackendMemoryUsage.base_float
+         
+         
+            NumpyBackendMemoryUsage.fork_complex
+         
+         
+            NumpyBackendMemoryUsage.fork_float
+         
+   
+   
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+
+      
+
+      
+         
+         
+            NumpyBackendMemoryUsage.base_usage
+         
+         
+            NumpyBackendMemoryUsage.per_fork
+         
+
+   
+   

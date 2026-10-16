@@ -1,0 +1,6 @@
+NumpyBackendMemoryUsage.fork\_float
+=============================================
+
+.. currentmodule:: tme.memory
+
+.. autoattribute:: NumpyBackendMemoryUsage.fork_float

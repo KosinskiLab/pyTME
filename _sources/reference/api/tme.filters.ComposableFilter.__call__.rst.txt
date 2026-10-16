@@ -1,0 +1,6 @@
+ComposableFilter.\_\_call\_\_
+=====================================
+
+.. currentmodule:: tme.filters
+
+.. automethod:: ComposableFilter.__call__
