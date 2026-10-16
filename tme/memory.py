@@ -393,8 +393,10 @@ def compute_schedule(
 
     mask = mode_kwargs.get("mask", None)
     mask_spacing = mode_kwargs.get("mask_spacing", 1.0)
-    if not isinstance(mask_spacing, tuple):
-        mask_spacing = (mask_spacing,) * len(shape)
+    mask_spacing = tuple(np.broadcast_to(mask_spacing, (len(shape),)))
+
+    # Voxels the boxes are solved in, per target voxel.
+    spacing = (1.0,) * len(shape)
 
     if isinstance(mask, np.ndarray) and mode == "subdivide":
         scaled_subset = tuple(
@@ -406,10 +408,15 @@ def compute_schedule(
         mask_subset = _bounding_box(mask)
         mode_kwargs["mask"] = mask[mask_subset]
 
-        shape = mode_kwargs["mask"].shape
+        spacing = mask_spacing
         offsets = tuple(
             (x.start + y.start) * s
             for x, y, s in zip(mask_subset, scaled_subset, mask_spacing)
+        )
+
+        # Same region the solver covers, said in the target's voxels.
+        shape = tuple(
+            int(round(n * s)) for n, s in zip(mode_kwargs["mask"].shape, spacing)
         )
 
     estimator = partial(
@@ -427,6 +434,7 @@ def compute_schedule(
         "max_workers": max_workers,
         "max_memory": max_memory,
         "padding": padding,
+        "spacing": spacing,
         "memory_estimator": estimator,
         "verbose": verbose,
         "cost_fn": cost_fn,
@@ -443,7 +451,9 @@ def compute_schedule(
         print(f"  - uniform: {len(boxes)} box(es), {n:,} voxels, score {score:.3e}")
 
     if mode == "subdivide":
-        bxs, schedule_mask = _schedule_subdivide(**kwargs)
+        bxs, schedule_mask = _schedule_subdivide(
+            **kwargs | {"cost_fn": partial(cost_fn, spacing=spacing)}
+        )
         sc_mask = _select_schedule(bxs, np.ceil(len(bxs) / max_workers), cost_fn)
 
         ratio = score / sc_mask
@@ -516,7 +526,12 @@ def _slice_to_shape(
     return tuple(s.stop - s.start + p for s, p in zip(slices, padding))
 
 
-def _box_cost(shapes, padding=None, n_sat: int = DEFAULT_N_SAT):
+def _box_cost(
+    shapes,
+    padding: tuple[int, ...] | None = None,
+    n_sat: int = DEFAULT_N_SAT,
+    spacing: tuple[float, ...] | None = None,
+):
     """
     Computes max(N_sat, V) * log1p(max(N_sat, V)) with V = prod(shape + padding).
 
@@ -525,6 +540,8 @@ def _box_cost(shapes, padding=None, n_sat: int = DEFAULT_N_SAT):
     shapes ``(n_boxes, ndim)``.
     """
     shapes = np.asarray(shapes, dtype=np.float64)
+    if spacing is not None:
+        shapes = shapes * np.asarray(spacing, dtype=np.float64)
     if padding is not None:
         shapes = shapes + np.asarray(padding, dtype=np.float64)
 
@@ -654,6 +671,7 @@ def _bounding_box(segmentation: NDArray, threshold: float = 0) -> Tuple[slice, .
 def _schedule_subdivide(
     max_workers: int,
     mask: NDArray,
+    spacing: tuple[float, ...] | None = None,
     min_box_size: Optional[int] = 32,
     equal_shape: bool = False,
     verbose: bool = False,
@@ -669,6 +687,8 @@ def _schedule_subdivide(
         Reported back as the outer-parallelism count in the returned schedule.
     mask : NDArray
         Binary mask indicating regions of interest.
+    spacing : tuple of float, optional
+        Target voxels per voxel of ``mask``. Defaults to the target's own.
     min_box_size : int, optional
         Minimum extent along any axis for a candidate box, defaults to 32.
         ``None`` disables the check.
@@ -687,13 +707,29 @@ def _schedule_subdivide(
     tuple of int, int
         ``(max_workers, 1)`` (all parallelism is outer).
     """
-    boxes, cost = solve_subdivide(
+    if min_box_size is not None and spacing is not None:
+        min_box_size = max(max(int(min_box_size / s), 1) for s in spacing)
+
+    boxes, _ = solve_subdivide(
         mask=mask,
         min_box_size=min_box_size,
-        equal_shape=equal_shape,
         return_slices=True,
+        equal_shape=equal_shape,
         verbose=verbose,
         cost_fn=cost_fn,
+    )
+
+    if not len(boxes):
+        return (), (max_workers, 1)
+
+    # Back into the target's voxels, the frame every other box in this module is in.
+    scale = (1.0,) * len(boxes[0]) if spacing is None else spacing
+    boxes = tuple(
+        tuple(
+            slice(int(b.start * s), int(np.ceil(b.stop * s)))
+            for b, s in zip(box, scale)
+        )
+        for box in boxes
     )
     return boxes, (max_workers, 1)
 
